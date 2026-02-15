@@ -160,6 +160,8 @@ function void LTSM_env::connect_phase(uvm_phase phase);
 
     v_seqr.tx_seqr = tx_agent.seqr;
     v_seqr.rx_seqr = rx_agent.seqr;
+    v_seqr.LTSM_ctrl_seqr = LTSM_ctrl_agt.seqr;
+    v_seqr.ltsm_rdi_seqr = rdi_agt.seqr;
 endfunction : connect_phase
 
 // configure_agents
