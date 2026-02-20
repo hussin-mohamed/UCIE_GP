@@ -90,7 +90,7 @@ task phy_sb_driver::run_phase(phy_sequence_item item);
             else  begin
                 vif.i_rx_sb_clk=vif.clk;
             end
-            vif.i_rx_sb_data = item.pattern[i];
+            vif.i_rx_sb_data = item.pattern[63-i];
             @(negedge vif.clk);
         end
     end
@@ -98,19 +98,19 @@ task phy_sb_driver::run_phase(phy_sequence_item item);
         if (item.size==64) begin
             for (int i = 0; i < 64; i++) begin
                 vif.i_rx_sb_clk=vif.clk;
-                vif.i_rx_sb_data = item.header[i];
+                vif.i_rx_sb_data = item.header[63-i];
                 @(negedge vif.clk);
             end
         end
         else if (item.size==128) begin
             for (int i = 0; i < 64; i++) begin
                 vif.i_rx_sb_clk=vif.clk;
-                vif.i_rx_sb_data = item.header[i];
+                vif.i_rx_sb_data = item.header[63-i];
                 @(negedge vif.clk);
             end
             for (int i = 0; i < 64; i++) begin
                 vif.i_rx_sb_clk=vif.clk;
-                vif.i_rx_sb_data = item.data[i];
+                vif.i_rx_sb_data = item.data[63-i];
                 @(negedge vif.clk);
             end
         end
