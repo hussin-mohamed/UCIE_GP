@@ -36,7 +36,7 @@ class phy_sequence_item extends ltsm_sequence_item_base;
   // Fields representing LTSM control and status signals
         logic [63:0] header;
         operation_t op;
-        logic [95:0] pattern; 
+        rand logic [95:0] pattern; 
         logic [63:0] payload; // will be used in monitoring to be able to capture all cases
     `uvm_object_utils_begin(phy_sequence_item)
         `uvm_field_int(header, UVM_NORECORD)
@@ -52,4 +52,5 @@ endclass : phy_sequence_item
 
 function phy_sequence_item::new(string name = "phy_sequence_item");
     super.new(name);
+
 endfunction
