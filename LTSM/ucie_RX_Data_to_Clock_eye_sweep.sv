@@ -5,7 +5,13 @@
 //              patterns from TX and reporting results back
 //================================================================================
 
-module ucie_RX_Data_to_Clock_eye_sweep (
+module ucie_RX_Data_to_Clock_eye_sweep #(
+    parameter DECODING_WIDTH = 9,   // Width of command decoding input
+    parameter DATA_WIDTH = 64,       // Width of data input/output
+    parameter INFO_WIDTH = 16,      // Width of info/control output
+    parameter ERROR_THRESHOLD = 1,   // Error threshold for test pass/fail
+    parameter MAXIMUM_ITERATIONS = 4 // Maximum retry attempts before train_error
+) (
     // Clock and reset
     input i_clk,
     input i_reset,
@@ -59,6 +65,9 @@ localparam END_HANDSHAKE = 3'b101;            // Final completion handshake
 logic [2:0] CS;  // Current state
 logic [2:0] NS;  // Next state
 
+logic [1:0] count;
+logic [1:0] count_reg;
+
 //================================================================================
 // Combinational Logic
 //================================================================================
@@ -74,8 +83,10 @@ assign failed_test = !(&result);
 always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
         CS <= REQ_HANDSHAKE;  // Reset to initial state
+        count <= 0;
     end else begin
         CS <= NS;             // Advance to next state
+        count <= count_reg;
     end
 end
 
@@ -109,6 +120,7 @@ always @(*) begin
             REQ_HANDSHAKE: begin
                 o_xx_encoding = 'h180;  // Request encoding
                 done = 0;
+                count_reg = 0;  // Reset retry count
 
                 // Request handshake with acknowledge
                 if (done_ack) o_xx_sb_req = 0;
@@ -128,10 +140,14 @@ always @(*) begin
 
                 // Response handshake
                 if (done_ack) o_xx_sb_rsp = 0;
-                else if (i_sb_xx_req) o_xx_sb_rsp = 1
+                else if (i_sb_xx_req) o_xx_sb_rsp = 1;
+                else o_xx_sb_rsp = 0;
 
                 // Wait for LFSR setup done signal
-                if (i_sb_xx_done && i_xx_decoding == 'h181) NS = DATA_DETECTION;
+                if (i_sb_xx_done && i_xx_decoding == 'h181) begin
+                    count_reg = count + 1;  // Increment count for retries
+                    NS = DATA_DETECTION;
+                end
                 else NS = LFSR_HANDSHAKE;
             end 
 
@@ -153,12 +169,18 @@ always @(*) begin
 
                 // Response handshake
                 if (done_ack) o_xx_sb_rsp = 0;
-                else if (i_sb_xx_req) o_xx_sb_rsp = 1
+                else if (i_sb_xx_req) o_xx_sb_rsp = 1;
+                else o_xx_sb_rsp = 0;
 
                 // Check if we need to retry or send sweep results
-                if (i_sb_xx_rsp && i_xx_decoding == 'h183) begin
-                    // Retry if failed and retries allowed, otherwise get sweep result
-                    if (failed_test && !no_retry) NS = LFSR_HANDSHAKE;
+                if (i_sb_xx_done && i_xx_decoding == 'h183) begin
+                    if (failed_test && !no_retry)
+                        if (count == MAXIMUM_ITERATIONS-1) begin
+                            train_error = 1;  // Mark training error if max retries reached
+                        end else begin
+                            NS = LFSR_HANDSHAKE;
+                            train_error = 0;  // Clear training error for retry
+                        end
                     else NS = SWEEP_RESULT_HANDSHAKE;
                 end else NS = RESULT_HANDSHAKE;
             end 
@@ -185,7 +207,6 @@ always @(*) begin
                 if (i_sb_xx_rsp && i_xx_decoding == 'h185) done = 1;
                 else done = 0;
             end 
-            default: 
         endcase
     end else begin
         //====================================================================
@@ -196,10 +217,12 @@ always @(*) begin
             REQ_HANDSHAKE: begin
                 o_xx_encoding = 'h180;  // Response encoding
                 done = 0;
+                count_reg = 0;  // Reset retry count
 
                 // Response handshake
                 if (done_ack) o_xx_sb_rsp = 0;
                 else if (i_sb_xx_req) o_xx_sb_rsp = 1;
+                else o_xx_sb_rsp = 0;
 
                 // Wait for done signal
                 if (i_sb_xx_done && i_xx_decoding == 'h180) NS = LFSR_HANDSHAKE;
@@ -214,9 +237,13 @@ always @(*) begin
                 // Response handshake
                 if (done_ack) o_xx_sb_rsp = 0;
                 else if (i_sb_xx_req) o_xx_sb_rsp = 1;
+                else o_xx_sb_rsp = 0;
 
                 // Wait for done signal
-                if (i_sb_xx_done && i_xx_decoding == 'h181) NS = DATA_DETECTION;
+                if (i_sb_xx_done && i_xx_decoding == 'h181) begin
+                    count_reg = count + 1;  // Increment count for retries
+                    NS = DATA_DETECTION;
+                end
                 else NS = LFSR_HANDSHAKE;
             end 
     
@@ -238,12 +265,18 @@ always @(*) begin
 
                 // Response handshake
                 if (done_ack) o_xx_sb_rsp = 0;
-                else if (i_sb_xx_req) o_xx_sb_rsp = 1
+                else if (i_sb_xx_req) o_xx_sb_rsp = 1;
+                else o_xx_sb_rsp = 0;
 
                 // Check if we need to retry or complete
                 if (i_sb_xx_rsp && i_xx_decoding == 'h183) begin
-                    // Retry if failed and retries allowed, otherwise get sweep result
-                    if (failed_test && !no_retry) NS = LFSR_HANDSHAKE;
+                    if (failed_test && !no_retry)
+                        if (count == MAXIMUM_ITERATIONS-1) begin
+                            train_error = 1;  // Mark training error if max retries reached
+                        end else begin
+                            NS = LFSR_HANDSHAKE;
+                            train_error = 0;  // Clear training error for retry
+                        end
                     else NS = SWEEP_RESULT_HANDSHAKE;
                 end else NS = RESULT_HANDSHAKE;
             end 
@@ -255,12 +288,12 @@ always @(*) begin
                 // Response handshake
                 if (done_ack) o_xx_sb_rsp = 0;
                 else if (i_sb_xx_req) o_xx_sb_rsp = 1;
+                else o_xx_sb_rsp = 0;
     
                 // Signal completion when done received
                 if (i_sb_xx_done && i_xx_decoding == 'h184) done = 1;
                 else done = 0;
             end 
-            default: 
         endcase
     end
 end
