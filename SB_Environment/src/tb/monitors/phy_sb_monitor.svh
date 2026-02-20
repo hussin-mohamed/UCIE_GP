@@ -86,7 +86,7 @@ task phy_sb_monitor::run_phase(phy_sequence_item item);
         item = phy_sequence_item::type_id::create("item");
         for (int i = 0; i < 64; i++) begin
             @(negedge vif.clk);
-           item.payload[i] = vif.o_tx_sb_data; 
+           item.payload[63-i] = vif.o_tx_sb_data; 
         end
         if (item.payload [36:32] ==5'b10010 ) begin
             item.header=item.payload;
@@ -95,11 +95,11 @@ task phy_sb_monitor::run_phase(phy_sequence_item item);
             item.header=item.payload;
             for (int i = 0; i < 64; i++) begin
                 @(negedge vif.clk);
-                item.data[i] = vif.o_tx_sb_data; 
+                item.data[63-i] = vif.o_tx_sb_data; 
             end
         end
         else begin
-            item.pattern=item.payload;
+            item.pattern[63:0]=item.payload;
             for (int i = 0; i < 32; i++) begin
                 @(negedge vif.clk);
                 item.pattern[64+i] = vif.o_tx_sb_data; 
