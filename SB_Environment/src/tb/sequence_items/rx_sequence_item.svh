@@ -25,9 +25,9 @@ import shared_pkg::*;
 import uvm_pkg::*;
 `include "uvm_macros.svh"
 class rx_sequence_item extends ltsm_sequence_item_base;
-    encoding_t encoding;
+    encoding_rx_t encoding;
     `uvm_object_utils_begin(rx_sequence_item)
-        `uvm_field_enum(encoding, encoding_t, UVM_NORECORD)
+        `uvm_field_enum(encoding, encoding_rx_t, UVM_NORECORD)
     `uvm_object_utils_end
 
     // Function: new
