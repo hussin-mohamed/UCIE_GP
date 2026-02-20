@@ -88,10 +88,10 @@ task phy_sb_monitor::run_phase(phy_sequence_item item);
             @(negedge vif.clk);
            item.payload[i] = vif.o_tx_sb_data; 
         end
-        if (item.payload [4:0] ==5'b10010 ) begin
+        if (item.payload [36:32] ==5'b10010 ) begin
             item.header=item.payload;
         end
-        else if (item.payload [4:0] ==5'b11011 ) begin
+        else if (item.payload [36:32] ==5'b11011 ) begin
             item.header=item.payload;
             for (int i = 0; i < 64; i++) begin
                 @(negedge vif.clk);
