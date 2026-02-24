@@ -876,6 +876,7 @@ always @(*) begin
                             end  
                         endcase
                     end
+                    
                     if (req_received && encoding_req_received == 'hA8) begin
                         NS = RXDESKEW;
                         o_rx_encoding_reg = 'hA8;

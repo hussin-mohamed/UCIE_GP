@@ -131,10 +131,10 @@ initial begin
     // Trigger REQ→LFSR + immediately check LFSR_HANDSHAKE outputs
     // i_sb_xx_rsp=1 : REQ→LFSR transition trigger AND fires o_xx_sb_done
     // i_sb_xx_req=1 : drives o_xx_sb_rsp=1 in LFSR state (combinational, after CS changes)
-    i_sb_xx_rsp = 1;
+    i_sb_xx_rsp = 0;
     i_sb_xx_req = 1;
     done_ack    = 0;
-    i_xx_decoding = 'h185;
+    i_xx_decoding = 'h186;
 
     // --- LFSR_HANDSHAKE (encoding 0x181) ---
     // RX init: output is o_xx_sb_rsp (NOT req) when i_sb_xx_req=1
@@ -152,17 +152,8 @@ initial begin
 
     i_sb_xx_rsp = 0;
     i_sb_xx_req = 0;
-    o_xx_sb_rsp_expected  = 0;
-    o_xx_sb_done_expected = 0;
-
-    @(negedge i_clk);
-    assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
-    else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
-    
-
-    i_sb_xx_req = 1;
-
     o_xx_sb_rsp_expected  = 1;
+    o_xx_sb_done_expected = 0;
 
     @(negedge i_clk);
     assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
@@ -185,18 +176,8 @@ initial begin
     assert (o_xx_encoding_expected == o_xx_encoding)
     else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
     
-
-    i_sb_xx_done = 0;
-    i_xx_done    = 0;
-
-    @(negedge i_clk);
-    
-
-    // Trigger DATA→RESULT via i_xx_done
-    // Also drive i_sb_xx_req now so o_xx_sb_rsp=1 is visible on that same negedge
-    @(negedge i_clk);
-    i_xx_done    = 1;
-    i_sb_xx_req = 0;
+    i_sb_xx_req    = 1;
+    i_xx_decoding = 'h188;
 
     // --- RESULT_HANDSHAKE (encoding 0x183) ---
     // RX init: o_xx_sb_rsp=1 (when i_sb_xx_req), NOT o_xx_sb_req
@@ -210,7 +191,7 @@ initial begin
     done_ack    = 0;
     i_xx_done   = 0;
     i_sb_xx_req = 0;
-    o_xx_sb_rsp_expected = 0;
+    o_xx_sb_rsp_expected = 1;
 
     @(negedge i_clk);
     assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
@@ -220,10 +201,8 @@ initial begin
     // i_sb_xx_rsp=1 && dec==0x183 triggers transition (same as TX)
     // i_sb_xx_req=1 drives o_xx_sb_rsp in RESULT before transition fires
     @(negedge i_clk);
-    i_sb_xx_req   = 1;
 
     o_xx_sb_rsp_expected   = 1; // from i_sb_xx_req in RESULT state
-    o_xx_sb_done_expected = 1; // fires from i_sb_xx_rsp or i_sb_xx_req
 
     @(negedge i_clk);
     assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
@@ -231,20 +210,14 @@ initial begin
     
     
     i_sb_xx_done   = 1;
-    i_sb_xx_req = 0;
+    i_sb_xx_req = 1;
     done_ack      = 1;
-    i_xx_decoding = 'h188;
-    result        = 'hFFFFFFFFFFFFFFFF; // pass → goes to SWEEP_RESULT, not LFSR
+    i_xx_decoding = 'h189;
 
     // RX: failed_test = !(&result) = !result (1-bit)
     failed_test_expected  = !result; // 0
-    
-    o_xx_encoding_expected = 'h189; // SWEEP_RESULT_HANDSHAKE (check AFTER transition)
-    // Note: in SWEEP_RESULT state there is no req/rsp output, so we don't check rsp here
 
     @(negedge i_clk);
-    assert (o_xx_encoding_expected == o_xx_encoding)
-    else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
     assert (failed_test_expected == failed_test)
     else $display("ERROR: Expected failed_test = %h, got %h, time %0t", failed_test_expected, failed_test, $time);
 
@@ -254,31 +227,22 @@ initial begin
     i_sb_xx_done = 0;
     i_sb_xx_req = 0;
     i_xx_data = 'hAB; // sweep data → o_xx_sweep_result should latch 0xAB
+    o_xx_encoding_expected = 'h190;
 
     o_xx_sb_done_expected = 0; // self-clears
     o_xx_sweep_result_expected = i_xx_data[7:0];
 
     @(negedge i_clk);
-    
-
     assert (o_xx_sweep_result_expected == o_xx_sweep_result)
     else $display("ERROR: Expected o_xx_sweep_result = %h, got %h, time %0t", o_xx_sweep_result_expected, o_xx_sweep_result, $time);
-
-    @(negedge i_clk);
-    i_sb_xx_done  = 1;
-    done_ack      = 0;
-    i_xx_decoding = 'h189;
-
-    // --- END_HANDSHAKE (encoding 0x185) ---
-    // RX init: o_xx_sb_req=1 (same pattern as REQ_HANDSHAKE)
-    // Transition: i_sb_xx_rsp && dec==0x185
-    o_xx_encoding_expected = 'h190;
-
-    @(negedge i_clk);
     assert (o_xx_encoding_expected == o_xx_encoding)
     else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
 
+    // --- END_HANDSHAKE (encoding 0x185) ---
+    // RX init: o_xx_sb_req=1 (same pattern as REQ_HANDSHAKE)
+    // Transition: i_sb_xx_rsp && dec==0x18
     i_sb_xx_done = 0;
+    done_ack = 0;
     o_xx_sb_req_expected = 1;
 
     @(negedge i_clk);
@@ -299,16 +263,26 @@ initial begin
     else $display("ERROR: Expected done = %h, got %h, time %0t", done_expected, done, $time);
 
     // =========================================================================
-    // TEST 2: init=1, no_retry=0 (retry enabled — fail MAXIMUM_ITERATIONS-1 times then train_error)
-    // count increments each time LFSR_HANDSHAKE exits to DATA_DETECTION:
-    //   count=1 after 1st LFSR: count(1) != MAXIMUM_ITERATIONS-1(3), retry
-    //   count=2 after 2nd LFSR: count(2) != MAXIMUM_ITERATIONS-1(3), retry
-    //   count=3 after 3rd LFSR: count(3) == MAXIMUM_ITERATIONS-1(3), train_error
-    // repeat(2) covers the first two retries; the final check after the loop hits train_error
+    // TEST 2: init=1, no_retry=0 (retry path — 2 retries via req+dec, then pass)
+    //
+    // Key design changes from old to new (init=1 mode):
+    //   DATA_DETECTION  : transitions on i_sb_xx_req && dec==0x188 (NOT i_xx_done)
+    //   LFSR_HANDSHAKE  : o_xx_sb_rsp=1 always when !done_ack (NOT req-gated)
+    //   RESULT_HANDSHAKE: o_xx_sb_rsp=1 always when !done_ack (NOT req-gated)
+    //   retry path      : triggered externally by i_sb_xx_req && dec==0x186
+    //   pass path       : triggered externally by i_sb_xx_req && dec==0x189
+    //   SWEEP_RESULT    : immediate transition (no wait signal)
+    //   train_error     : removed from init=1 mode; retry/pass fully TB-controlled
+    //
+    // Sequence:
+    //   REQ_HANDSHAKE → LFSR_HANDSHAKE → DATA_DETECTION → RESULT_HANDSHAKE
+    //   [repeat 2: RESULT→LFSR(retry)→DATA→RESULT]
+    //   RESULT→SWEEP_RESULT(pass) → END_HANDSHAKE → done=1
     // =========================================================================
-    init    = 1;
-    i_reset = 1;
+    init     = 1;
+    i_reset  = 1;
     no_retry = 0;
+    result   = 1;
     i_sb_xx_rsp  = 0;
     i_sb_xx_req  = 0;
     i_sb_xx_done = 0;
@@ -317,11 +291,12 @@ initial begin
     @(negedge i_clk);
     i_reset = 0;
 
-    // --- REQ_HANDSHAKE (encoding 0x180) ---
+    // --- REQ_HANDSHAKE (encoding 0x185) ---
+    // DUT asserts o_xx_sb_req=1; done_ack clears it;
+    // TB sends i_sb_xx_req=1 && dec==0x186 to trigger REQ→LFSR transition
     o_xx_encoding_expected = 'h185;
     o_xx_sb_req_expected   = 1;
     o_xx_info_expected     = ERROR_THRESHOLD;
-    o_xx_sb_done_expected  = 0;
 
     @(negedge i_clk);
     assert (o_xx_encoding_expected == o_xx_encoding)
@@ -330,9 +305,9 @@ initial begin
     else $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
     assert (o_xx_info_expected == o_xx_info)
     else $display("ERROR: Expected o_xx_info = %h, got %h, time %0t", o_xx_info_expected, o_xx_info, $time);
-    
 
-    done_ack = 1; // clear req
+    // done_ack → clears req
+    done_ack             = 1;
     o_xx_sb_req_expected = 0;
 
     @(negedge i_clk);
@@ -341,220 +316,205 @@ initial begin
 
     repeat (3) @(negedge i_clk);
 
-    // Trigger REQ→LFSR + check LFSR_HANDSHAKE outputs
-    // i_sb_xx_rsp=1 : REQ→LFSR transition trigger AND fires o_xx_sb_done
-    // i_sb_xx_req=1 : drives o_xx_sb_rsp=1 in LFSR state (combinational, after CS changes)
-    i_sb_xx_rsp = 1;
-    i_sb_xx_req = 1;
-    done_ack    = 0;
-    i_xx_decoding = 'h185;
-
-    // --- LFSR_HANDSHAKE (encoding 0x181) ---
-    // o_xx_sb_done fires from i_sb_xx_rsp (the REQ→LFSR edge)
-    // o_xx_sb_rsp=1 because i_sb_xx_req=1
-    o_xx_sb_done_expected  = 1;
-    o_xx_encoding_expected = 'h186;
-    o_xx_sb_rsp_expected   = 1;
-
-    @(negedge i_clk);
-    assert (o_xx_encoding_expected == o_xx_encoding)
-    else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-    assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
-    else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
-    
-
-    i_sb_xx_rsp = 0;
-    i_sb_xx_req = 0;
-    o_xx_sb_rsp_expected  = 0;
-    o_xx_sb_done_expected = 0;
-
-    @(negedge i_clk);
-    assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
-    else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
-    
-
-    i_sb_xx_req = 1;
-    o_xx_sb_rsp_expected = 1;
-
-    @(negedge i_clk);
-    assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
-    else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
-
-    // Trigger LFSR→DATA (initial, count: 0→1)
-    // i_sb_xx_done && dec==0x181 : LFSR→DATA transition; i_sb_xx_done does NOT fire o_xx_sb_done
-    repeat (5) @(negedge i_clk);
-    i_sb_xx_done  = 1;
-    done_ack      = 1;
-    i_sb_xx_req   = 0;
+    // Trigger REQ→LFSR: i_sb_xx_req=1 && dec==0x186
+    i_sb_xx_req   = 1;
+    done_ack      = 0;
     i_xx_decoding = 'h186;
 
-    repeat (2) begin
-
-        // --- DATA_DETECTION (encoding 0x182) ---
-        // o_xx_sb_done=0 because i_sb_xx_done does NOT fire o_xx_sb_done
-        o_xx_encoding_expected = 'h187;
-        o_xx_sb_done_expected  = 0;
-
-        @(negedge i_clk);
-        assert (o_xx_encoding_expected == o_xx_encoding)
-        else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-        
-
-        i_sb_xx_done = 0;
-        i_xx_done    = 0;
-
-        @(negedge i_clk);
-        
-
-        // Trigger DATA→RESULT via i_xx_done
-        @(negedge i_clk);
-        i_xx_done   = 1;
-        i_sb_xx_req = 0;
-
-        // --- RESULT_HANDSHAKE (encoding 0x183, fail) ---
-        // RX init: o_xx_sb_rsp=1 when i_sb_xx_req=1
-        o_xx_encoding_expected = 'h188;
-
-        @(negedge i_clk);
-        assert (o_xx_encoding_expected == o_xx_encoding)
-        else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-
-        done_ack    = 0;
-        i_xx_done   = 0;
-        i_sb_xx_req = 0;
-        o_xx_sb_rsp_expected = 0;
-
-        @(negedge i_clk);
-        assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
-        else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
-
-        i_sb_xx_req           = 1;
-        o_xx_sb_rsp_expected  = 1;
-        o_xx_sb_done_expected = 1; // fires from i_sb_xx_req
-
-        @(negedge i_clk);
-        assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
-        else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
-        
-
-        // Trigger RESULT→LFSR (fail, retry — count < MAXIMUM_ITERATIONS-1)
-        // result=0 → failed_test=1; no_retry=0 → retry to LFSR_HANDSHAKE
-        i_sb_xx_done  = 1;
-        i_sb_xx_req   = 0;
-        done_ack      = 1;
-        i_xx_decoding = 'h188;
-        result        = 0; // fail → retry
-
-        failed_test_expected  = !result; // 1
-        o_xx_encoding_expected = 'h186;  // retry → back to LFSR
-
-        @(negedge i_clk);
-        assert (o_xx_encoding_expected == o_xx_encoding)
-        else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-        assert (failed_test_expected == failed_test)
-        else $display("ERROR: Expected failed_test = %h, got %h, time %0t", failed_test_expected, failed_test, $time);
-
-        // --- LFSR_HANDSHAKE (retry, encoding 0x181) ---
-        // Entry: done_ack=1, i_sb_xx_req=0 → o_xx_sb_rsp=0, o_xx_sb_done=0 (self-cleared)
-        // Drive i_sb_xx_req=1 to verify rsp handshake and fire o_xx_sb_done
-        done_ack      = 0;
-        i_sb_xx_done  = 0;
-        i_sb_xx_req   = 1;
-        o_xx_sb_rsp_expected  = 1;
-        o_xx_sb_done_expected = 1; // fires from i_sb_xx_req
-
-        @(negedge i_clk);
-        assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
-        else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
-        
-
-        i_sb_xx_req           = 0;
-        o_xx_sb_rsp_expected  = 0;
-        o_xx_sb_done_expected = 0;
-
-        @(negedge i_clk);
-        assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
-        else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
-        
-
-        i_sb_xx_req          = 1;
-        o_xx_sb_rsp_expected = 1;
-
-        @(negedge i_clk);
-        assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
-        else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
-
-        // Trigger LFSR→DATA (count increments on each iteration)
-        repeat (5) @(negedge i_clk);
-        i_sb_xx_done  = 1;
-        done_ack      = 1;
-        i_sb_xx_req   = 0;
-        i_xx_decoding = 'h186;
-    end
-
-    // --- Final DATA_DETECTION (encoding 0x182) ---
-    // count==3 will be checked in the next RESULT_HANDSHAKE → train_error
-    o_xx_encoding_expected = 'h187;
-    o_xx_sb_done_expected  = 0;
+    // --- LFSR_HANDSHAKE (encoding 0x186) ---
+    // NEW: o_xx_sb_rsp=1 immediately (not req-gated); done_ack clears it
+    o_xx_encoding_expected = 'h186;
+    o_xx_sb_rsp_expected   = 1;  // asserted unconditionally while !done_ack
 
     @(negedge i_clk);
+    i_sb_xx_req   = 0;
+    i_xx_decoding = 0;
     assert (o_xx_encoding_expected == o_xx_encoding)
     else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-    
+    assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
+    else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
 
-    i_sb_xx_done = 0;
-    i_xx_done    = 0;
-
-    @(negedge i_clk);
-    
-
-    // Trigger DATA→RESULT via i_xx_done
-    @(negedge i_clk);
-    i_xx_done   = 1;
-    i_sb_xx_req = 0;
-
-    // --- Final RESULT_HANDSHAKE (encoding 0x183, train_error) ---
-    // count==MAXIMUM_ITERATIONS-1(3): failed_test=1 + no_retry=0 → train_error instead of retry
-    o_xx_encoding_expected = 'h188;
-
-    @(negedge i_clk);
-    assert (o_xx_encoding_expected == o_xx_encoding)
-    else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-
-    done_ack    = 0;
-    i_xx_done   = 0;
-    i_sb_xx_req = 0;
+    // done_ack → clears rsp
+    done_ack             = 1;
     o_xx_sb_rsp_expected = 0;
 
     @(negedge i_clk);
     assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
     else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
 
-    i_sb_xx_req           = 1;
-    o_xx_sb_rsp_expected  = 1;
-    o_xx_sb_done_expected = 1; // fires from i_sb_xx_req
+    // Trigger LFSR→DATA: i_sb_xx_done=1 (no decoding check in new design)
+    repeat (3) @(negedge i_clk);
+    i_sb_xx_done  = 1;
+    done_ack      = 0;
+
+    // =========================================================================
+    // Retry loop x2: DATA_DETECTION → RESULT_HANDSHAKE → retry → LFSR_HANDSHAKE
+    // =========================================================================
+    repeat (2) begin
+
+        // --- DATA_DETECTION (encoding 0x187) ---
+        // NEW: transition triggered by i_sb_xx_req && dec==0x188 (NOT i_xx_done)
+        o_xx_encoding_expected = 'h187;
+
+        @(negedge i_clk);
+        i_sb_xx_done = 0;
+        assert (o_xx_encoding_expected == o_xx_encoding)
+        else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
+
+        // TB drives req + dec==0x188 → DATA→RESULT transition (combinational this cycle)
+        i_sb_xx_req   = 1;
+        i_xx_decoding = 'h188;
+
+        // --- RESULT_HANDSHAKE (encoding 0x188) ---
+        // NEW: o_xx_sb_rsp=1 immediately when !done_ack (not req-gated)
+        o_xx_encoding_expected = 'h188;
+        o_xx_sb_rsp_expected   = 1;
+
+        @(negedge i_clk);
+        i_sb_xx_req   = 0;
+        i_xx_decoding = 0;
+        assert (o_xx_encoding_expected == o_xx_encoding)
+        else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
+        assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
+        else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
+
+        // done_ack → clears rsp
+        done_ack             = 1;
+        o_xx_sb_rsp_expected = 0;
+
+        @(negedge i_clk);
+        assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
+        else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
+
+        // Trigger RESULT→LFSR (retry): i_sb_xx_req=1 && dec==0x186
+        // (retry/pass decision is fully TB-driven; no internal failed_test/no_retry logic)
+        done_ack      = 0;
+        i_sb_xx_req   = 1;
+        i_xx_decoding = 'h186;
+
+        o_xx_encoding_expected = 'h186;  // DUT back in LFSR_HANDSHAKE
+
+        @(negedge i_clk);
+        i_sb_xx_req   = 0;
+        i_xx_decoding = 0;
+        assert (o_xx_encoding_expected == o_xx_encoding)
+        else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
+
+        // --- LFSR_HANDSHAKE (retry, encoding 0x186) ---
+        // NEW: rsp=1 immediately while !done_ack; no req needed
+        o_xx_sb_rsp_expected = 1;
+
+        @(negedge i_clk);
+        assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
+        else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
+
+        // done_ack → clears rsp
+        done_ack             = 1;
+        o_xx_sb_rsp_expected = 0;
+
+        @(negedge i_clk);
+        assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
+        else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
+
+        // Trigger LFSR→DATA: i_sb_xx_done=1
+        repeat (3) @(negedge i_clk);
+        i_sb_xx_done = 1;
+        done_ack     = 0;
+
+    end // repeat (2) retry loop
+
+    // =========================================================================
+    // Final DATA_DETECTION → RESULT_HANDSHAKE → PASS → SWEEP_RESULT → END
+    // =========================================================================
+
+    // --- Final DATA_DETECTION (encoding 0x187) ---
+    o_xx_encoding_expected = 'h187;
+
+    @(negedge i_clk);
+    i_sb_xx_done = 0;
+    assert (o_xx_encoding_expected == o_xx_encoding)
+    else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
+
+    // Trigger DATA→RESULT: i_sb_xx_req=1 && dec==0x188
+    i_sb_xx_req   = 1;
+    i_xx_decoding = 'h188;
+
+    // --- Final RESULT_HANDSHAKE (encoding 0x188, pass) ---
+    // rsp=1 immediately (done_ack=0)
+    o_xx_encoding_expected = 'h188;
+    o_xx_sb_rsp_expected   = 1;
+
+    @(negedge i_clk);
+    i_sb_xx_req   = 0;
+    i_xx_decoding = 0;
+    assert (o_xx_encoding_expected == o_xx_encoding)
+    else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
+    assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
+    else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
+
+    // done_ack → clears rsp
+    done_ack             = 1;
+    o_xx_sb_rsp_expected = 0;
 
     @(negedge i_clk);
     assert (o_xx_sb_rsp_expected == o_xx_sb_rsp)
     else $display("ERROR: Expected o_xx_sb_rsp = %h, got %h, time %0t", o_xx_sb_rsp_expected, o_xx_sb_rsp, $time);
-    
 
-    // Trigger final RESULT evaluation (count==MAXIMUM_ITERATIONS-1 → train_error, NS stays RESULT)
-    // result=0 → failed_test=1; no_retry=0; count==3==MAXIMUM_ITERATIONS-1 → train_error=1
-    i_sb_xx_done  = 1;
-    i_sb_xx_req   = 0;
-    done_ack      = 1;
-    i_xx_decoding = 'h188;
-    result        = 0; // fail → train_error (max retries reached)
+    // Trigger RESULT→SWEEP_RESULT (pass): i_sb_xx_req=1 && dec==0x189
+    done_ack      = 0;
+    i_sb_xx_req   = 1;
+    i_xx_decoding = 'h189;
+    i_xx_data     = 64'hAB; // sweep data captured into o_xx_sweep_result[7:0]
 
-    failed_test_expected = !result; // 1
-    train_error_expected = 1;
+    // --- SWEEP_RESULT_HANDSHAKE (encoding 0x189) ---
+    // NEW: immediate transition (NS=END_HANDSHAKE unconditionally, no wait)
+    // DUT latches o_xx_sweep_result = i_xx_data[7:0] and moves to END_HANDSHAKE
+    o_xx_encoding_expected      = 'h189;
+    o_xx_sweep_result_expected  = i_xx_data[7:0]; // 0xAB
 
     @(negedge i_clk);
-    assert (train_error_expected == train_error)
-    else $display("ERROR: Expected train_error = %h, got %h, time %0t", train_error_expected, train_error, $time);
+    i_sb_xx_req   = 0;
+    i_xx_decoding = 0;
+    assert (o_xx_sweep_result_expected == o_xx_sweep_result)
+    else $display("ERROR: Expected o_xx_sweep_result = %h, got %h, time %0t", o_xx_sweep_result_expected, o_xx_sweep_result, $time);
 
-    $display("Test completed");
+    // --- END_HANDSHAKE (encoding 0x190) ---
+    // SWEEP_RESULT is immediate, so END_HANDSHAKE starts next cycle
+    // DUT asserts o_xx_sb_req=1; done_ack clears it;
+    // TB sends i_sb_xx_rsp=1 && dec==0x190 → done=1
+    done_ack             = 0;
+    o_xx_encoding_expected = 'h190;
+    o_xx_sb_req_expected   = 1;
+
+    @(negedge i_clk);
+    assert (o_xx_encoding_expected == o_xx_encoding)
+    else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
+    assert (o_xx_sb_req_expected == o_xx_sb_req)
+    else $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
+
+    // done_ack → clears req
+    done_ack             = 1;
+    o_xx_sb_req_expected = 0;
+
+    @(negedge i_clk);
+    assert (o_xx_sb_req_expected == o_xx_sb_req)
+    else $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
+
+    // Trigger END→done: i_sb_xx_rsp=1 && dec==0x190
+    repeat (3) @(negedge i_clk);
+    i_sb_xx_rsp   = 1;
+    done_ack      = 0;
+    i_xx_decoding = 'h190;
+
+    done_expected = 1;
+
+    @(negedge i_clk);
+    i_sb_xx_rsp   = 0;
+    i_xx_decoding = 0;
+    assert (done_expected == done)
+    else $display("ERROR: Expected done = %h, got %h, time %0t", done_expected, done, $time);
+
+    $display("All tests completed");
     $finish;
 end
     

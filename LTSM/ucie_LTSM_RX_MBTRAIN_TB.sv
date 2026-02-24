@@ -82,7 +82,6 @@ logic                       i_reset;
 // RX interface inputs (data coming from remote TX, driven by TB)
 logic [DECODING_WIDTH-1:0]  i_rx_decoding;
 logic [DATA_WIDTH-1:0]      i_rx_data;
-logic [DATA_WIDTH-1:0]      result;
 logic [INFO_WIDTH-1:0]      i_rx_info;
 logic [7:0]                 i_rx_sweep_result;
 
@@ -140,7 +139,6 @@ ucie_LTSM_RX_MBTRAIN #(
     .i_rx_decoding         (i_rx_decoding),
     .i_rx_data             (i_rx_data),
     .i_rx_info             (i_rx_info),
-    .result                (result),
     .i_rx_sweep_result     (i_rx_sweep_result),
     .i_sb_rx_req           (i_sb_rx_req),
     .i_sb_rx_rsp           (i_sb_rx_rsp),
@@ -178,6 +176,9 @@ end
 //  failed_test would be X causing indeterminate retry behavior in init=1
 //  states with no_retry=0)
 // -----------------------------------------------------------------------
+initial begin
+    force DUT.result = 1'b1;
+end
 
 // =======================================================================
 // Helper Tasks
@@ -334,27 +335,40 @@ endtask
 
 // --- do_eye_sweep_happy_pass_rx ------------------------------------------
 // Drive the embedded ucie_RX_Data_to_Clock_eye_sweep through a full
-// successful sweep in init=1 mode (RX is the initiator):
+// successful sweep in init=1 mode (RX is the initiator).
+//
+// Updated sequence (matches redesigned eye sweep module):
 //
 //   REQ_HANDSHAKE  (0x185): DUT asserts o_rx_sb_req
-//                           TB done_ack  → DUT clears req
-//                           TB rsp+0x185 → NS=LFSR_HANDSHAKE
-//   LFSR_HANDSHAKE (0x186): TB req+0x186 → DUT asserts o_rx_sb_rsp
-//                           TB done+0x186 → done_ack → NS=DATA_DETECTION
-//   DATA_DETECTION (0x187): TB asserts i_rx_done → NS=RESULT_HANDSHAKE
-//   RESULT_HS      (0x188): TB req+0x188 → DUT asserts o_rx_sb_rsp
-//                           TB done+0x188 → done_ack → pass → SWEEP_RESULT_HS
-//   SWEEP_RESULT_HS(0x189): TB done+0x189 → NS=END_HANDSHAKE
+//                           TB done_ack → DUT clears req
+//                           TB req+dec=0x186 → NS=LFSR_HANDSHAKE
+//
+//   LFSR_HANDSHAKE (0x186): DUT asserts o_rx_sb_rsp immediately (!done_ack)
+//                           TB done_ack → DUT clears rsp
+//                           TB i_sb_rx_done → NS=DATA_DETECTION
+//
+//   DATA_DETECTION (0x187): TB req+dec=0x188 → NS=RESULT_HANDSHAKE
+//                           (i_rx_done no longer used in init=1 mode)
+//
+//   RESULT_HS      (0x188): DUT asserts o_rx_sb_rsp immediately (!done_ack)
+//                           TB done_ack → DUT clears rsp
+//                           TB req+dec=0x189 → NS=SWEEP_RESULT_HANDSHAKE
+//
+//   SWEEP_RESULT_HS(0x189): Immediate transition (NS=END unconditionally)
+//                           DUT captures i_rx_data[7:0] → o_rx_sb_done_data_to_clock_test
+//                           No wait signal needed; END starts next cycle
+//
 //   END_HANDSHAKE  (0x190): DUT asserts o_rx_sb_req
 //                           TB done_ack → DUT clears req
-//                           TB rsp+0x190 → done=1 → LTSM substate exits
+//                           TB rsp+dec=0x190 → done=1 → LTSM substate exits
 // -------------------------------------------------------------------------
 task do_eye_sweep_happy_pass_rx ();
     begin
         $display("INFO  [eye_sweep_rx] starting eye-sweep at %0t", $time);
 
         // ================================================================
-        // REQ_HANDSHAKE (0x185) — DUT sends req, TB ack then rsp
+        // REQ_HANDSHAKE (0x185) — DUT sends req, TB done_ack clears it,
+        //                         TB req+dec=0x186 triggers REQ→LFSR
         // ================================================================
         o_rx_encoding_expected = 'h185;
         o_rx_sb_req_expected   = 1;
@@ -367,7 +381,7 @@ task do_eye_sweep_happy_pass_rx ();
         else $display("ERROR [eye_sweep] Expected o_rx_sb_req=%h, got %h at %0t",
                       o_rx_sb_req_expected, o_rx_sb_req, $time);
 
-        // TB done_ack → DUT clears req
+        // done_ack → DUT clears req
         i_sb_rx_done         = 1;
         o_rx_sb_req_expected = 0;
 
@@ -380,55 +394,53 @@ task do_eye_sweep_happy_pass_rx ();
 
         repeat (2) @(negedge i_clk);
 
-        // TB rsp + matching decoding → NS = LFSR_HANDSHAKE
-        i_sb_rx_rsp   = 1;
-        i_rx_decoding = 'h185;
+        // TB req + dec=0x186 → REQ→LFSR transition
+        i_sb_rx_req            = 1;
+        i_rx_decoding          = 'h186;
         o_rx_encoding_expected = 'h186;
 
         @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = 0;
+
         assert (o_rx_encoding_expected == o_rx_encoding)
         else $display("ERROR [eye_sweep] Expected o_rx_encoding=%h, got %h at %0t",
                       o_rx_encoding_expected, o_rx_encoding, $time);
 
-        i_sb_rx_rsp   = 0;
-        i_rx_decoding = 0;
-
         // ================================================================
-        // LFSR_HANDSHAKE (0x186) — TB req → DUT rsp → TB done+decoding
+        // LFSR_HANDSHAKE (0x186) — DUT rsp is immediate (!done_ack);
+        //                          TB done_ack clears rsp;
+        //                          TB i_sb_rx_done → LFSR→DATA
         // ================================================================
-        repeat (2) @(negedge i_clk);
-
-        i_sb_rx_req          = 1;
-        i_rx_decoding        = 'h186;
-        o_rx_sb_rsp_expected = 1;
-        o_rx_encoding_expected = 'h186;
+        o_rx_sb_rsp_expected = 1;  // already asserted, no req needed
 
         @(negedge i_clk);
         assert (o_rx_sb_rsp_expected == o_rx_sb_rsp)
         else $display("ERROR [eye_sweep] Expected o_rx_sb_rsp=%h, got %h at %0t",
                       o_rx_sb_rsp_expected, o_rx_sb_rsp, $time);
-        assert (o_rx_encoding_expected == o_rx_encoding)
-        else $display("ERROR [eye_sweep] Expected o_rx_encoding=%h, got %h at %0t",
-                      o_rx_encoding_expected, o_rx_encoding, $time);
 
-        // TB done + decoding → done_ack → NS = DATA_DETECTION
+        // done_ack → DUT clears rsp
         i_sb_rx_done         = 1;
         o_rx_sb_rsp_expected = 0;
 
         @(negedge i_clk);
-        i_sb_rx_req   = 0;
-        i_sb_rx_done  = 0;
-        i_rx_decoding = 0;
+        i_sb_rx_done = 0;
 
         assert (o_rx_sb_rsp_expected == o_rx_sb_rsp)
         else $display("ERROR [eye_sweep] Expected o_rx_sb_rsp=%h, got %h at %0t",
                       o_rx_sb_rsp_expected, o_rx_sb_rsp, $time);
 
-        // ================================================================
-        // DATA_DETECTION (0x187) — TB asserts i_rx_done
-        // ================================================================
-        repeat (3) @(negedge i_clk);
+        // i_sb_rx_done → LFSR→DATA_DETECTION (no decoding check in new design)
+        repeat (2) @(negedge i_clk);
+        i_sb_rx_done = 1;
 
+        @(negedge i_clk);
+        i_sb_rx_done = 0;
+
+        // ================================================================
+        // DATA_DETECTION (0x187) — TB req+dec=0x188 → DATA→RESULT
+        //                          (i_rx_done no longer used in init=1 mode)
+        // ================================================================
         o_rx_encoding_expected = 'h187;
 
         @(negedge i_clk);
@@ -436,56 +448,50 @@ task do_eye_sweep_happy_pass_rx ();
         else $display("ERROR [eye_sweep] Expected o_rx_encoding=%h, got %h at %0t",
                       o_rx_encoding_expected, o_rx_encoding, $time);
 
-        i_rx_done              = 1;
+        // TB req+dec=0x188 → DATA→RESULT_HANDSHAKE transition
+        i_sb_rx_req            = 1;
+        i_rx_decoding          = 'h188;
         o_rx_encoding_expected = 'h188;
-        result = {DATA_WIDTH{1'b1}};
 
         @(negedge i_clk);
-        i_rx_done = 0;
+        i_sb_rx_req   = 0;
+        i_rx_decoding = 0;
 
         assert (o_rx_encoding_expected == o_rx_encoding)
         else $display("ERROR [eye_sweep] Expected o_rx_encoding=%h, got %h at %0t",
                       o_rx_encoding_expected, o_rx_encoding, $time);
 
         // ================================================================
-        // RESULT_HANDSHAKE (0x188) — TB req → DUT rsp → TB done+decoding
-        // (result wire forced=1 → failed_test=0 → pass → SWEEP_RESULT_HS)
+        // RESULT_HANDSHAKE (0x188) — DUT rsp is immediate (!done_ack);
+        //                            TB done_ack clears rsp;
+        //                            TB req+dec=0x189 → RESULT→SWEEP_RESULT
         // ================================================================
-        i_sb_rx_req          = 1;
-        i_rx_decoding        = 'h189;
-
-        @(negedge i_clk);
-        // TB done + decoding → done_ack → pass (result=1) → SWEEP_RESULT_HS
-        i_sb_rx_done         = 1;
-        o_rx_sb_rsp_expected = 0;
-
-        i_sb_rx_req   = 0;
-        i_sb_rx_done  = 0;
-        i_rx_decoding = 0;
+        o_rx_sb_rsp_expected = 1;  // already asserted, no req needed
 
         @(negedge i_clk);
         assert (o_rx_sb_rsp_expected == o_rx_sb_rsp)
         else $display("ERROR [eye_sweep] Expected o_rx_sb_rsp=%h, got %h at %0t",
                       o_rx_sb_rsp_expected, o_rx_sb_rsp, $time);
 
-        // ================================================================
-        // SWEEP_RESULT_HANDSHAKE (0x189) — TB sends done+decoding
-        // ================================================================
-        i_sb_rx_req   = 1;
-        i_rx_decoding = 'h189;
+        // done_ack → DUT clears rsp
+        i_sb_rx_done         = 1;
+        o_rx_sb_rsp_expected = 0;
+
+        @(negedge i_clk);
+        i_sb_rx_done = 0;
+
+        assert (o_rx_sb_rsp_expected == o_rx_sb_rsp)
+        else $display("ERROR [eye_sweep] Expected o_rx_sb_rsp=%h, got %h at %0t",
+                      o_rx_sb_rsp_expected, o_rx_sb_rsp, $time);
+
+        // TB req+dec=0x189 → RESULT→SWEEP_RESULT_HANDSHAKE (pass path)
+        repeat (2) @(negedge i_clk);
+        i_sb_rx_req            = 1;
+        i_rx_decoding          = 'h189;
         o_rx_encoding_expected = 'h189;
 
         @(negedge i_clk);
-        assert (o_rx_encoding_expected == o_rx_encoding)
-        else $display("ERROR [eye_sweep] Expected o_rx_encoding=%h, got %h at %0t",
-                      o_rx_encoding_expected, o_rx_encoding, $time);
-
-        i_sb_rx_done           = 1;
-        i_rx_decoding          = 'h189;
-        o_rx_encoding_expected = 'h190;
-
-        @(negedge i_clk);
-        i_sb_rx_done  = 0;
+        i_sb_rx_req   = 0;
         i_rx_decoding = 0;
 
         assert (o_rx_encoding_expected == o_rx_encoding)
@@ -493,7 +499,22 @@ task do_eye_sweep_happy_pass_rx ();
                       o_rx_encoding_expected, o_rx_encoding, $time);
 
         // ================================================================
-        // END_HANDSHAKE (0x190) — DUT asserts req, TB ack then rsp → done=1
+        // SWEEP_RESULT_HANDSHAKE (0x189) — Immediate: NS=END_HANDSHAKE
+        //   unconditionally, no wait signal. DUT latches i_rx_data[7:0].
+        //   END_HANDSHAKE starts the very next cycle.
+        // ================================================================
+        // (encoding 0x189 was already checked above immediately after transition)
+        // Just wait one cycle for SWEEP_RESULT to pass through, then END starts
+        o_rx_encoding_expected = 'h190;
+
+        @(negedge i_clk);
+        assert (o_rx_encoding_expected == o_rx_encoding)
+        else $display("ERROR [eye_sweep] Expected o_rx_encoding=%h, got %h at %0t",
+                      o_rx_encoding_expected, o_rx_encoding, $time);
+
+        // ================================================================
+        // END_HANDSHAKE (0x190) — DUT asserts req, TB done_ack clears it,
+        //                         TB rsp+dec=0x190 → done=1 → LTSM exits
         // ================================================================
         o_rx_sb_req_expected = 1;
 
@@ -502,7 +523,7 @@ task do_eye_sweep_happy_pass_rx ();
         else $display("ERROR [eye_sweep] Expected o_rx_sb_req=%h, got %h at %0t",
                       o_rx_sb_req_expected, o_rx_sb_req, $time);
 
-        // TB done_ack → DUT clears req
+        // done_ack → DUT clears req
         i_sb_rx_done         = 1;
         o_rx_sb_req_expected = 0;
 
@@ -515,7 +536,7 @@ task do_eye_sweep_happy_pass_rx ();
 
         repeat (2) @(negedge i_clk);
 
-        // TB rsp + matching decoding → done=1 → clock_to_test_done → LTSM exits sub1
+        // TB rsp+dec=0x190 → done=1 → clock_to_test_done → LTSM exits sub1
         i_sb_rx_rsp   = 1;
         i_rx_decoding = 'h190;
 
@@ -587,10 +608,9 @@ initial begin
 
     // TB sends req → DUT should assert rsp
     i_sb_rx_req          = 1;
-
-    @(negedge i_clk);
     o_rx_sb_rsp_expected = 1;
 
+    @(negedge i_clk);
     assert (o_rx_sb_rsp_expected == o_rx_sb_rsp)
     else $display("ERROR: Expected o_rx_sb_rsp=%h, got %h at %0t",
                   o_rx_sb_rsp_expected, o_rx_sb_rsp, $time);
