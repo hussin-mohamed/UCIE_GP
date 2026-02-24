@@ -30,8 +30,12 @@ module ucie_LTSM_TX_MBTRAIN #(
     // Training control inputs
     input init_train_en,   // Enable training initialization
     input timeout,         // Training timeout error
-    input o_rx_sb_rsp,     // Response from local RX
     input [2:0] o_pl_speedmode,  // Physical layer speed mode
+
+    input [DECODING_WIDTH-1:0] encoding_rsp_sent,      // Encoding value when response sent
+    input [DECODING_WIDTH-1:0] encoding_rsp_received,  // Encoding value when response received
+    input rsp_received,               // Response sent flag
+    input rsp_sent,                   // Response sent flag
     
     // TX interface outputs - data going to remote RX
     output logic [DECODING_WIDTH-1:0] o_tx_encoding,  // Encoded command to send
@@ -77,12 +81,14 @@ localparam REPAIR = 4'b1010;             // Link repair state
 
 // Register outputs - used for combinational logic assignment
 logic [DECODING_WIDTH-1:0] o_tx_encoding_reg;
+logic [DECODING_WIDTH-1:0] o_tx_encoding_old;
 logic [DATA_WIDTH-1:0] o_tx_data_reg;
 logic [INFO_WIDTH-1:0] o_tx_info_reg;
 logic o_tx_sb_req_reg;
 logic o_tx_sb_rsp_reg;
 logic o_tx_sb_done_reg;
 logic train_error_reg;
+logic train_active_en_reg;
 logic failed_test;  // Indicates if current test failed
 
 // Signals from eye sweep test module
@@ -99,14 +105,17 @@ logic [2:0] current_substate;  // Current substate within main state
 logic [2:0] next_substate;     // Next substate
 
 // Handshake control signals
+logic SPEEDIDLE_trainerror;       // Indicates speed error in SPEEDIDLE state
+logic state_enb;                  // Enable signal for current state operations
 logic done_ack;                   // Acknowledge that done was received
-logic clock_to_test_enable;       // Enable the eye sweep test module
-logic clock_to_test_done;         // Eye sweep test complete
 logic substates_done;             // All substates completed
 logic previous_state_done;        // Previous state handshake complete
-logic rsp_sent;                   // Response sent flag
-logic [DECODING_WIDTH-1:0] encoding_rsp_sent;      // Encoding value when response sent
-logic [DECODING_WIDTH-1:0] encoding_rsp_received;  // Encoding value when response received
+
+logic clock_to_test_enable;       // Enable the eye sweep test module
+logic init;        // Initialization mode for eye sweep test
+logic no_retry;    // No retry mode for eye sweep test
+logic clock_to_test_done;         // Eye sweep test complete
+
 
 //================================================================================
 // Eye Sweep Test Module Instantiation
@@ -117,7 +126,7 @@ ucie_TX_Data_to_Clock_eye_sweep ucie_TX_Data_to_Clock_eye_sweep_inst (
     .i_reset(i_reset || !clock_to_test_enable),  // Reset when disabled
     .i_xx_decoding(i_tx_decoding),
     .i_xx_data(i_tx_data),
-    .i_xx_sweep_result(i_xx_sweep_result),
+    .i_xx_sweep_result(i_tx_sweep_result),
     .i_sb_xx_req(i_sb_tx_req),
     .i_sb_xx_rsp(i_sb_tx_rsp),
     .i_sb_xx_done(i_sb_tx_done),
@@ -130,7 +139,6 @@ ucie_TX_Data_to_Clock_eye_sweep ucie_TX_Data_to_Clock_eye_sweep_inst (
     .o_xx_info(o_tx_info_data_to_clock_test),
     .o_xx_sb_req(o_tx_sb_req_data_to_clock_test), 
     .o_xx_sb_rsp(o_tx_sb_rsp_data_to_clock_test),
-    .o_xx_sb_done(o_tx_sb_done_data_to_clock_test),
     .train_error(train_error_data_to_clock_test),
     .failed_test(failed_test),
     .done(clock_to_test_done)
@@ -141,7 +149,7 @@ ucie_TX_Data_to_Clock_eye_sweep ucie_TX_Data_to_Clock_eye_sweep_inst (
 //================================================================================
 
 // Previous state completion logic - checks if handshake is complete
-assign previous_state_done = (!i_reset)? 0 : (rsp_sent & rsp_received);
+assign previous_state_done = (i_reset)? 0 : (rsp_sent & rsp_received);
 
 // Training error aggregation - timeout, eye sweep error, or speed idle error
 assign train_error_reg = timeout || train_error_data_to_clock_test || SPEEDIDLE_trainerror;
@@ -152,12 +160,38 @@ assign train_error_reg = timeout || train_error_data_to_clock_test || SPEEDIDLE_
 
 // Main state machine and substate registers
 always @(posedge i_clk or posedge i_reset) begin
-    if (i_reset || !init_train_en) begin
+    if (i_reset) begin
         CS <= VALVREF;           // Reset to initial training state
         current_substate <= 0;   // Reset substate
+        o_tx_encoding <= 0;
+        o_tx_data <= 0;     
+        o_tx_info <= 0;
+        o_tx_sb_req <= 0; 
+        o_tx_sb_rsp <= 0;
+        train_error <= 0;    
+        train_active_en <= 0; 
     end else begin
-        CS <= NS;                // Advance to next state
-        current_substate <= next_substate;
+        if (!state_enb) begin
+            CS <= VALVREF;           // Reset to initial training state
+            current_substate <= 0;   // Reset substate
+            o_tx_encoding <= 0;
+            o_tx_data <= 0;     
+            o_tx_info <= 0;
+            o_tx_sb_req <= 0; 
+            o_tx_sb_rsp <= 0;
+            train_error <= 0;   
+            train_active_en <= train_active_en_reg; 
+        end else begin
+            CS <= NS;                // Advance to next state
+            current_substate <= next_substate;
+            o_tx_encoding <= o_tx_encoding_reg;
+            o_tx_data <= o_tx_data_reg;     
+            o_tx_info <= o_tx_info_reg;
+            o_tx_sb_req <= o_tx_sb_req_reg; 
+            o_tx_sb_rsp <= o_tx_sb_rsp_reg;
+            train_error <= train_error_reg;    
+            train_active_en <= train_active_en_reg; 
+        end
     end 
 end
 
@@ -165,13 +199,31 @@ end
 // Done Acknowledgement Logic
 //================================================================================
 // Tracks when done signal has been acknowledged in handshake protocol
-always @(posedge i_clk or posedge i_reset) begin
+always @(*) begin
     if (i_reset) done_ack <= 0;
+    else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;
     else if (i_sb_tx_done) begin
-        done_ack <= 1;  // Set when done received
+        done_ack = 1;  // Set when done received
     end else if (i_sb_tx_rsp) begin
-        done_ack <= 0;  // Clear on response to allow next transaction
+        done_ack = 0;  // Clear on response to allow next transaction
     end
+end
+
+always @(posedge i_clk) begin
+    o_tx_encoding_old <= o_tx_encoding;  // Register to track previous encoding for done_ack logic
+end
+
+
+//================================================================================
+// State Enable Logic
+//================================================================================
+always @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) begin
+        state_enb <= 0; // Disable state operations until training is initialized
+    end else if (init_train_en) begin
+        if (train_active_en_reg) state_enb <= 0;  // If training is active, keep state operations disabled to prevent interference
+        else state_enb <= 1;  // Enable state operations when training is initialized
+    end else if (train_active_en_reg) state_enb <= 0;
 end
 
 //================================================================================
@@ -180,9 +232,9 @@ end
 // Generates done pulse for sideband protocol
 always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
-        o_tx_sb_done <= 0;;
+        o_tx_sb_done <= 0;
     end else begin
-        if (o_tx_sb_done) begin
+        if (o_tx_sb_done && !(i_sb_tx_rsp || i_sb_tx_req)) begin
             o_tx_sb_done <= 0;  // Self-clearing pulse
         end else if (i_sb_tx_rsp || i_sb_tx_req) begin
             o_tx_sb_done <= 1;  // Assert on request or response
@@ -191,711 +243,760 @@ always @(posedge i_clk or posedge i_reset) begin
 end
 
 //================================================================================
-// Handshake Response Tracking
-//================================================================================
-// Tracks sent and received handshake responses with their encoding values
-always @(posedge i_clk or posedge i_reset) begin
-    if (i_reset) begin
-        rsp_sent <= 0;
-        rsp_received <= 0;
-        encoding_rsp_sent <= 0;
-        encoding_rsp_received <= 0;
-    end else begin
-        if (previous_state_done) begin
-            // Clear all flags when state transition completes
-            rsp_sent <= 0;
-            rsp_received <= 0;
-            encoding_rsp_sent <= 0;
-            encoding_rsp_received <= 0;
-        end else begin
-            // Track when we send a response
-            if (o_rx_sb_rsp) begin
-                rsp_sent <= 1;
-                encoding_rsp_sent <= o_tx_encoding;
-            end
-
-            // Track when we receive a response
-            if (i_sb_tx_rsp) begin
-                rsp_received <= 1;
-                encoding_rsp_received <= i_tx_decoding;
-            end
-        end
-        
-    end
-end
-
-//================================================================================
 // Main State Machine Combinational Logic
 //================================================================================
 always @(*) begin
-    // On training error, return to initial state
+    if (i_reset) begin
+        substates_done = 0;
+        train_active_en_reg = 0;
+    end else begin
+        // On training error, return to initial state
     if (train_error_reg) begin
         NS = VALVREF;
         substates_done = 0;
     end else begin
-        case (CS)
-            //====================================================================
-            // VALVREF State: Valid Signal Reference Voltage Calibration
-            //====================================================================
-            VALVREF: begin
-                if (!substates_done) begin
-                    case (current_substate)
-                        // Substate 0: Send initial handshake request
-                        0: begin
-                            o_tx_encoding_reg = 'h80;  // VALVREF request encoding
-                            train_active_en = 0;
-                            NS = VALVREF;
-                            substates_done = 0;
-                            clock_to_test_enable = 0;
-                            train_error_data_to_clock_test = 0;
-                            SPEEDIDLE_trainerror = 0;
-
-                            // Request/acknowledge handshake
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            // Wait for matching response
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h80) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        // Substate 1: Run eye sweep test
-                        1:begin
-                            clock_to_test_enable = 1;  // Enable eye sweep module
-                            // Connect eye sweep outputs to TX outputs
-                            o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
-                            o_tx_data_reg = o_tx_data_data_to_clock_test;
-                            o_tx_info_reg = o_tx_info_data_to_clock_test;
-                            o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
-                            o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
-                            o_tx_sb_done_reg = o_tx_sb_done_data_to_clock_test;
-                            init = 0;        // Not initialization mode
-                            no_retry = 0;    // Allow retries
-                            substates_done = 0;
-
-                            // Wait for eye sweep completion
-                            if (clock_to_test_done) next_substate = 1;
-                            else next_substate = 0;
-                        end
-
-                        // Substate 2: Send completion handshake
-                        2: begin
-                            clock_to_test_enable = 0;
-                            train_error_data_to_clock_test = 0;
-
-                            o_tx_encoding_reg = 'h82;  // VALVREF complete encoding
-                            NS = VALVREF;
-
-                            // Request/acknowledge handshake
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            // Wait for matching response to complete substates
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h82) begin
-                                substates_done = 1;
+            case (CS)
+                //====================================================================
+                // VALVREF State: Valid Signal Reference Voltage Calibration
+                //====================================================================
+                VALVREF: begin
+                    if (!substates_done) begin
+                        case (current_substate)
+                            // Substate 0: Send initial handshake request
+                            0: begin
+                                o_tx_encoding_reg = 'h80;  // VALVREF request encoding
+                                NS = VALVREF;
                                 next_substate = 0;
-                            end else begin
                                 substates_done = 0;
-                                next_substate = 2;
-                            end 
-                        end  
-                    endcase
-                end
-                // Check if both sides completed the state (handshake complete)
-                if (previous_state_done && encoding_rsp_sent == 'h82 && encoding_rsp_received == 'h82) begin
-                    NS = DATAVREF;  // Move to next training state
-                    substates_done = 0;
-                end else begin
-                    NS = VALVREF;
-                    substates_done = 1;
-                end 
-            end
+                                clock_to_test_enable = 0;
+                                o_tx_sb_rsp_reg = 0;
+                                SPEEDIDLE_trainerror = 0;
 
-            //====================================================================
-            // DATAVREF State: Data Signal Reference Voltage Calibration
-            //====================================================================
-            DATAVREF: begin
-                if (!substates_done) begin
-                    case (current_substate)
-                        0: begin
-                            o_tx_encoding_reg = 'h84;
-                            NS = DATAVREF;
-                            substates_done = 0;
+                                // Request/acknowledge handshake
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
 
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h84) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        1: begin
-                            clock_to_test_enable = 1;
-                            o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
-                            o_tx_data_reg = o_tx_data_data_to_clock_test;
-                            o_tx_info_reg = o_tx_info_data_to_clock_test;
-                            o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
-                            o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
-                            o_tx_sb_done_reg = o_tx_sb_done_data_to_clock_test;
-                            init = 0;
-                            no_retry = 0;
-                            substates_done = 0;
-
-                            if (clock_to_test_done) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        2: begin
-                            clock_to_test_enable = 0;
-                            train_error_data_to_clock_test = 0;
-
-                            o_tx_encoding_reg = 'h86;
-                            NS = DATAVREF; 
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h86) begin
-                                substates_done = 1;
-                                next_substate = 0;
-                            end else begin
+                                // Wait for matching response
+                                if (i_sb_tx_req && i_tx_decoding == 'h185) begin
+                                    o_tx_encoding_reg = 'h185;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                    next_substate = 1;
+                                end else next_substate = 0;
+                            end  
+                            // Substate 1: Run eye sweep test
+                            1:begin
+                                clock_to_test_enable = 1;  // Enable eye sweep module
+                                // Connect eye sweep outputs to TX outputs
+                                o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
+                                o_tx_data_reg = o_tx_data_data_to_clock_test;
+                                o_tx_info_reg = o_tx_info_data_to_clock_test;
+                                o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
+                                o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
+                                
+                                init = 0;        // Not initialization mode
+                                no_retry = 0;    // Allow retries
                                 substates_done = 0;
-                                next_substate = 2;
-                            end 
-                        end  
-                    endcase
+
+                                // Wait for eye sweep completion
+                                if (clock_to_test_done) begin
+                                    o_tx_encoding_reg = 'h82;
+                                    next_substate = 2;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 1;
+                            end
+
+                            // Substate 2: Send completion handshake
+                            2: begin
+                                clock_to_test_enable = 0;
+                                o_tx_sb_rsp_reg = 0;
+
+                                o_tx_encoding_reg = 'h82;  // VALVREF complete encoding
+                                NS = VALVREF;
+
+                                // Request/acknowledge handshake
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                // Wait for matching response to complete substates
+                                if (i_sb_tx_rsp && i_tx_decoding == 'h82) begin
+                                    substates_done = 1;
+                                    next_substate = 0;
+                                end else begin
+                                    substates_done = 0;
+                                    next_substate = 2;
+                                end 
+                            end  
+                        endcase
+                    end
+                    // Check if both sides completed the state (handshake complete)
+                    if (previous_state_done && encoding_rsp_sent == 'h82 && encoding_rsp_received == 'h82) begin
+                        NS = DATAVREF;  // Move to next training state
+                        o_tx_encoding_reg = 'h88;
+                        substates_done = 0;
+                        o_tx_sb_req_reg = 0;
+                        o_tx_sb_rsp_reg = 0;
+                    end else begin
+                        NS = VALVREF;
+                    end 
                 end
-                if (previous_state_done && encoding_rsp_sent == 'h86 && encoding_rsp_received == 'h86) begin
-                    NS = SPEEDIDLE;
-                    substates_done = 0;
-                end else begin
-                    NS = DATAVREF;
-                    substates_done = 1;
-                end 
-            end
 
-            //====================================================================
-            // SPEEDIDLE State: Speed and Idle Configuration
-            //====================================================================
-            SPEEDIDLE: begin
-                if (!substates_done) begin
-                    case (current_substate)
-                        0: begin
-                            o_tx_encoding_reg = 'h88;
-                            NS = SPEEDIDLE;
-                            substates_done = 0;
+                //====================================================================
+                // DATAVREF State: Data Signal Reference Voltage Calibration
+                //====================================================================
+                DATAVREF: begin
+                    if (!substates_done) begin
+                        case (current_substate)
+                            0: begin
+                                o_tx_encoding_reg = 'h88;
+                                NS = DATAVREF;
+                                substates_done = 0;
 
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
 
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h88) begin
-                                if (i_tx_data == o_pl_speedmode) next_substate = 1;
-                                else begin
+                                if (i_sb_tx_req && i_tx_decoding == 'h185) begin
+                                    o_tx_encoding_reg = 'h185;
+                                    next_substate = 1;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 0;
+                            end  
+
+                            1: begin
+                                clock_to_test_enable = 1;
+                                o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
+                                o_tx_data_reg = o_tx_data_data_to_clock_test;
+                                o_tx_info_reg = o_tx_info_data_to_clock_test;
+                                o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
+                                o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
+                                
+                                init = 0;
+                                no_retry = 0;
+                                substates_done = 0;
+
+                                if (clock_to_test_done) begin
+                                    o_tx_encoding_reg = 'h8A;
+                                    next_substate = 2;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 1;
+                            end  
+
+                            2: begin
+                                clock_to_test_enable = 0;
+                                o_tx_sb_rsp_reg = 0;
+                                o_tx_encoding_reg = 'h8A;
+                                NS = DATAVREF; 
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_rsp && i_tx_decoding == 'h8A) begin
+                                    substates_done = 1;
+                                    next_substate = 0;
+                                end else begin
+                                    substates_done = 0;
+                                    next_substate = 2;
+                                end 
+                            end  
+                        endcase
+                    end
+                    if (previous_state_done && encoding_rsp_sent == 'h8A && encoding_rsp_received == 'h8A) begin
+                        NS = SPEEDIDLE;
+                        o_tx_sb_req_reg = 0;
+                        o_tx_sb_rsp_reg = 0;
+                        o_tx_encoding_reg = 'hC8;
+                        substates_done = 0;
+                    end else begin
+                        NS = DATAVREF;
+                    end 
+                end
+
+                //====================================================================
+                // SPEEDIDLE State: Speed and Idle Configuration
+                //====================================================================
+                SPEEDIDLE: begin
+                    if (!substates_done) begin
+                        case (current_substate)
+                            0: begin
+                                NS = SPEEDIDLE;
+                                substates_done = 0;
+
+                                if (o_pl_speedmode) begin
+                                    o_tx_encoding_reg = 'hC8;
+                                    next_substate = 1;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else begin
                                     // Speed mismatch error
                                     SPEEDIDLE_trainerror = 1;
                                 end
-                            end else next_substate = 0;
-                        end  
+                            end  
 
-                        1: begin
-                            o_tx_encoding_reg = 'h8A;
-                            NS = SPEEDIDLE; 
+                            1: begin
+                                o_tx_encoding_reg = 'hCA;
+                                NS = SPEEDIDLE; 
 
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
 
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h8A) begin
-                                substates_done = 1;
-                                next_substate = 0;
-                            end else begin
-                                substates_done = 0;
-                                next_substate = 1;
-                            end 
-                        end  
-                    endcase
+                                if (i_sb_tx_rsp && i_tx_decoding == 'hCA) begin
+                                    substates_done = 1;
+                                    next_substate = 0;
+                                end else begin
+                                    substates_done = 0;
+                                    next_substate = 1;
+                                end 
+                            end  
+                        endcase
+                    end
+                    if (previous_state_done && encoding_rsp_sent == 'hCA && encoding_rsp_received == 'hCA) begin
+                        NS = TXSELFCAL;
+                        o_tx_sb_req_reg = 0;
+                        o_tx_sb_rsp_reg = 0;
+                        o_tx_encoding_reg = 'hD0;
+                        substates_done = 0;
+                    end else begin
+                        NS = SPEEDIDLE;
+                    end 
                 end
-                if (previous_state_done && encoding_rsp_sent == 'h8A && encoding_rsp_received == 'h8A) begin
-                    NS = TXSELFCAL;
-                    substates_done = 0;
-                end else begin
-                    NS = SPEEDIDLE;
-                    substates_done = 1;
-                end 
-            end
 
-            //====================================================================
-            // TXSELFCAL State: TX Self-Calibration
-            //====================================================================
-            TXSELFCAL: begin
-                if (!substates_done) begin
-                    case (current_substate)
-                        0: begin
-                            o_tx_encoding_reg = 'h8C;
-                            NS = TXSELFCAL;
-                            substates_done = 0;
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h8C) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        1: begin
-                            o_tx_encoding_reg = 'h8E;
-                            NS = TXSELFCAL; 
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h8E) begin
-                                substates_done = 1;
-                                next_substate = 0;
-                            end else begin
+                //====================================================================
+                // TXSELFCAL State: TX Self-Calibration
+                //====================================================================
+                TXSELFCAL: begin
+                    if (!substates_done) begin
+                        case (current_substate)
+                            0: begin
+                                o_tx_encoding_reg = 'hD0;
+                                NS = TXSELFCAL;
                                 substates_done = 0;
-                                next_substate = 1;
-                            end 
-                        end  
-                    endcase
+
+                                if (i_tx_done) begin
+                                    o_tx_encoding_reg = 'hD1;
+                                    next_substate = 1;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 0;
+                            end  
+
+                            1: begin
+                                o_tx_encoding_reg = 'hD1;
+                                NS = TXSELFCAL; 
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_rsp && i_tx_decoding == 'hD1) begin
+                                    substates_done = 1;
+                                    next_substate = 0;
+                                end else begin
+                                    substates_done = 0;
+                                    next_substate = 1;
+                                end 
+                            end  
+                        endcase
+                    end
+                    if (previous_state_done && encoding_rsp_sent == 'hD1 && encoding_rsp_received == 'hD1) begin
+                        NS = RXCLKCAL;
+                        o_tx_sb_req_reg = 0;
+                        o_tx_sb_rsp_reg = 0;
+                        o_tx_encoding_reg = 'h98;
+                        substates_done = 0;
+                    end else begin
+                        NS = TXSELFCAL;
+                    end 
                 end
-                if (previous_state_done && encoding_rsp_sent == 'h8E && encoding_rsp_received == 'h8E) begin
-                    NS = RXCLKCAL;
-                    substates_done = 0;
-                end else begin
-                    NS = TXSELFCAL;
-                    substates_done = 1;
-                end 
-            end
 
-            //====================================================================
-            // RXCLKCAL State: RX Clock Calibration
-            //====================================================================
-            RXCLKCAL: begin
-                if (!substates_done) begin
-                    case (current_substate)
-                        0: begin
-                            o_tx_encoding_reg = 'h90;
-                            NS = RXCLKCAL;
-                            substates_done = 0;
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h90) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        1: begin
-                            clock_to_test_enable = 1;
-                            o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
-                            o_tx_data_reg = o_tx_data_data_to_clock_test;
-                            o_tx_info_reg = o_tx_info_data_to_clock_test;
-                            o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
-                            o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
-                            o_tx_sb_done_reg = o_tx_sb_done_data_to_clock_test;
-                            init = 1;        // Initialization mode
-                            no_retry = 0;
-                            substates_done = 0;
-
-                            if (clock_to_test_done) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        2: begin
-                            clock_to_test_enable = 0;
-                            train_error_data_to_clock_test = 0;
-
-                            o_tx_encoding_reg = 'h92;
-                            NS = RXCLKCAL; 
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h92) begin
-                                substates_done = 1;
-                                next_substate = 0;
-                            end else begin
+                //====================================================================
+                // RXCLKCAL State: RX Clock Calibration
+                //====================================================================
+                RXCLKCAL: begin
+                    if (!substates_done) begin
+                        case (current_substate)
+                            0: begin
+                                o_tx_encoding_reg = 'h98;
+                                NS = RXCLKCAL;
                                 substates_done = 0;
-                                next_substate = 2;
-                            end 
-                        end  
-                    endcase
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_req && i_tx_decoding == 'h185) begin
+                                    o_tx_encoding_reg = 'h185;
+                                    next_substate = 1;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 0;
+                            end  
+
+                            1: begin
+                                clock_to_test_enable = 1;
+                                o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
+                                o_tx_data_reg = o_tx_data_data_to_clock_test;
+                                o_tx_info_reg = o_tx_info_data_to_clock_test;
+                                o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
+                                o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
+                                
+                                init = 0;        // Non-initialization mode (RX-initiated test)
+                                no_retry = 0;
+                                substates_done = 0;
+
+                                if (clock_to_test_done) begin
+                                    o_tx_encoding_reg = 'h9A;
+                                    next_substate = 2;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 1;
+                            end  
+
+                            2: begin
+                                clock_to_test_enable = 0;
+                                o_tx_sb_rsp_reg = 0;
+                                o_tx_encoding_reg = 'h9A;
+                                NS = RXCLKCAL; 
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_rsp && i_tx_decoding == 'h9A) begin
+                                    substates_done = 1;
+                                    next_substate = 0;
+                                end else begin
+                                    substates_done = 0;
+                                    next_substate = 2;
+                                end 
+                            end  
+                        endcase
+                    end
+                    if (previous_state_done && encoding_rsp_sent == 'h9A && encoding_rsp_received == 'h9A) begin
+                        NS = VALTRAINCENTER;
+                        o_tx_encoding_reg = 'hA0;
+                        o_tx_sb_req_reg = 0;
+                        o_tx_sb_rsp_reg = 0;
+                        substates_done = 0;
+                    end else begin
+                        NS = RXCLKCAL;
+                    end 
                 end
-                if (previous_state_done && encoding_rsp_sent == 'h92 && encoding_rsp_received == 'h92) begin
-                    NS = VALTRAINCENTER;
-                    substates_done = 0;
-                end else begin
-                    NS = RXCLKCAL;
-                    substates_done = 1;
-                end 
-            end
 
-            //====================================================================
-            // VALTRAINCENTER State: Valid Signal Training - Center Position
-            //====================================================================
-            VALTRAINCENTER: begin
-                if (!substates_done) begin
-                    case (current_substate)
-                        0: begin
-                            o_tx_encoding_reg = 'h94;
-                            NS = VALTRAINCENTER;
-                            substates_done = 0;
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h94) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        1: begin
-                            clock_to_test_enable = 1;
-                            o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
-                            o_tx_data_reg = o_tx_data_data_to_clock_test;
-                            o_tx_info_reg = o_tx_info_data_to_clock_test;
-                            o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
-                            o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
-                            o_tx_sb_done_reg = o_tx_sb_done_data_to_clock_test;
-                            init = 0;
-                            no_retry = 0;
-                            substates_done = 0;
-
-                            if (clock_to_test_done) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        2: begin
-                            clock_to_test_enable = 0;
-                            train_error_data_to_clock_test = 0;
-
-                            o_tx_encoding_reg = 'h96;
-                            NS = VALTRAINCENTER; 
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h96) begin
-                                substates_done = 1;
-                                next_substate = 0;
-                            end else begin
+                //====================================================================
+                // VALTRAINCENTER State: Valid Signal Training - Center Position
+                //====================================================================
+                VALTRAINCENTER: begin
+                    if (!substates_done) begin
+                        case (current_substate)
+                            0: begin
+                                o_tx_encoding_reg = 'hA0;
+                                NS = VALTRAINCENTER;
                                 substates_done = 0;
-                                next_substate = 2;
-                            end 
-                        end  
-                    endcase
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_req && i_tx_decoding == 'h185) begin
+                                    o_tx_encoding_reg = 'h185;
+                                    next_substate = 1;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 0;
+                            end  
+
+                            1: begin
+                                clock_to_test_enable = 1;
+                                o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
+                                o_tx_data_reg = o_tx_data_data_to_clock_test;
+                                o_tx_info_reg = o_tx_info_data_to_clock_test;
+                                o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
+                                o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
+                                
+                                init = 0;
+                                no_retry = 0;
+                                substates_done = 0;
+
+                                if (clock_to_test_done) begin
+                                    o_tx_encoding_reg = 'hA2;
+                                    next_substate = 2;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 1;
+                            end  
+
+                            2: begin
+                                clock_to_test_enable = 0;
+                                o_tx_sb_rsp_reg = 0;
+
+                                o_tx_encoding_reg = 'hA2;
+                                NS = VALTRAINCENTER; 
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_rsp && i_tx_decoding == 'hA2) begin
+                                    substates_done = 1;
+                                    next_substate = 0;
+                                end else begin
+                                    substates_done = 0;
+                                    next_substate = 2;
+                                end 
+                            end  
+                        endcase
+                    end
+                    if (previous_state_done && encoding_rsp_sent == 'hA2 && encoding_rsp_received == 'hA2) begin
+                        NS = VALTRAINVREF;
+                        o_tx_encoding_reg = 'hE8;
+                        substates_done = 0;
+                        o_tx_sb_req_reg = 0;
+                        o_tx_sb_rsp_reg = 0;
+                    end else begin
+                        NS = VALTRAINCENTER;
+                    end 
                 end
-                if (previous_state_done && encoding_rsp_sent == 'h96 && encoding_rsp_received == 'h96) begin
-                    NS = VALTRAINVREF;
-                    substates_done = 0;
-                end else begin
-                    NS = VALTRAINCENTER;
-                    substates_done = 1;
-                end 
-            end
 
-            //====================================================================
-            // VALTRAINVREF State: Valid Signal Training - Voltage Reference
-            //====================================================================
-            VALTRAINVREF: begin
-                if (!substates_done) begin
-                    case (current_substate)
-                        0: begin
-                            o_tx_encoding_reg = 'h98;
-                            NS = VALTRAINVREF;
-                            substates_done = 0;
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h98) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        1: begin
-                            clock_to_test_enable = 1;
-                            o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
-                            o_tx_data_reg = o_tx_data_data_to_clock_test;
-                            o_tx_info_reg = o_tx_info_data_to_clock_test;
-                            o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
-                            o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
-                            o_tx_sb_done_reg = o_tx_sb_done_data_to_clock_test;
-                            init = 0;
-                            no_retry = 0;
-                            substates_done = 0;
-
-                            if (clock_to_test_done) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        2: begin
-                            clock_to_test_enable = 0;
-                            train_error_data_to_clock_test = 0;
-
-                            o_tx_encoding_reg = 'h9A;
-                            NS = VALTRAINVREF; 
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h9A) begin
-                                substates_done = 1;
-                                next_substate = 0;
-                            end else begin
+                //====================================================================
+                // VALTRAINVREF State: Valid Signal Training - Voltage Reference
+                //====================================================================
+                VALTRAINVREF: begin
+                    if (!substates_done) begin
+                        case (current_substate)
+                            0: begin
+                                o_tx_encoding_reg = 'hE8;
+                                NS = VALTRAINVREF;
                                 substates_done = 0;
-                                next_substate = 2;
-                            end 
-                        end  
-                    endcase
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_req && i_tx_decoding == 'h185) begin
+                                    o_tx_encoding_reg = 'h185;
+                                    next_substate = 1;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 0;
+                            end  
+
+                            1: begin
+                                clock_to_test_enable = 1;
+                                o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
+                                o_tx_data_reg = o_tx_data_data_to_clock_test;
+                                o_tx_info_reg = o_tx_info_data_to_clock_test;
+                                o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
+                                o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
+                                
+                                init = 0;
+                                no_retry = 0;
+                                substates_done = 0;
+
+                                if (clock_to_test_done) begin
+                                    o_tx_encoding_reg = 'hEA;
+                                    next_substate = 2;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 1;
+                            end  
+
+                            2: begin
+                                clock_to_test_enable = 0;
+                                o_tx_sb_rsp_reg = 0;
+                                o_tx_encoding_reg = 'hEA;
+                                NS = VALTRAINVREF; 
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_rsp && i_tx_decoding == 'hEA) begin
+                                    substates_done = 1;
+                                    next_substate = 0;
+                                end else begin
+                                    substates_done = 0;
+                                    next_substate = 2;
+                                end 
+                            end  
+                        endcase
+                    end
+                    if (previous_state_done && encoding_rsp_sent == 'hEA && encoding_rsp_received == 'hEA) begin
+                        NS = DATATRAINCENTER1;
+                        substates_done = 0;
+                        o_tx_encoding_reg = 'h90;
+                        o_tx_sb_req_reg = 0;
+                        o_tx_sb_rsp_reg = 0;
+                    end else begin
+                        NS = VALTRAINVREF;
+                    end 
                 end
-                if (previous_state_done && encoding_rsp_sent == 'h9A && encoding_rsp_received == 'h9A) begin
-                    NS = DATATRAINCENTER1;
-                    substates_done = 0;
-                end else begin
-                    NS = VALTRAINVREF;
-                    substates_done = 1;
-                end 
-            end
 
-            //====================================================================
-            // DATATRAINCENTER1 State: Data Training Center - Phase 1
-            //====================================================================
-            DATATRAINCENTER1: begin
-                if (!substates_done) begin
-                    case (current_substate)
-                        0: begin
-                            o_tx_encoding_reg = 'h9C;
-                            NS = DATATRAINCENTER1;
-                            substates_done = 0;
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h9C) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        1: begin
-                            clock_to_test_enable = 1;
-                            o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
-                            o_tx_data_reg = o_tx_data_data_to_clock_test;
-                            o_tx_info_reg = o_tx_info_data_to_clock_test;
-                            o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
-                            o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
-                            o_tx_sb_done_reg = o_tx_sb_done_data_to_clock_test;
-                            init = 0;
-                            no_retry = 1;    // No retries for this phase
-                            substates_done = 0;
-
-
-                            if (clock_to_test_done) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        2: begin
-                            clock_to_test_enable = 0;
-                            train_error_data_to_clock_test = 0;
-
-                            o_tx_encoditmnuhy
-                            ng_reg = 'h92; 
-                            NS = DATATRAINCENTER1;
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'h92) begin
-                                substates_done = 1;
-                                next_substate = 0;
-                            end else begin
+                //====================================================================
+                // DATATRAINCENTER1 State: Data Training Center - Phase 1
+                //====================================================================
+                DATATRAINCENTER1: begin
+                    if (!substates_done) begin
+                        case (current_substate)
+                            0: begin
+                                o_tx_encoding_reg = 'h90;
+                                NS = DATATRAINCENTER1;
                                 substates_done = 0;
-                                next_substate = 2;
-                            end 
-                        end  
-                    endcase
-                end 
-                if (previous_state_done && encoding_rsp_sent == 'h92 && encoding_rsp_received == 'h92) begin
-                    NS = DATATRAINVREF;
-                    substates_done = 0;
-                end else begin
-                    NS = DATATRAINCENTER1;
-                    substates_done = 1;
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_req && i_tx_decoding == 'h185) begin
+                                    o_tx_encoding_reg = 'h185;
+                                    next_substate = 1;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 0;
+                            end  
+
+                            1: begin
+                                clock_to_test_enable = 1;
+                                o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
+                                o_tx_data_reg = o_tx_data_data_to_clock_test;
+                                o_tx_info_reg = o_tx_info_data_to_clock_test;
+                                o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
+                                o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
+                                
+                                init = 0;
+                                no_retry = 1;    // No retries for this phase
+                                substates_done = 0;
+
+                                if (clock_to_test_done) begin
+                                    o_tx_encoding_reg = 'h92;
+                                    next_substate = 2;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 1;
+                            end  
+
+                            2: begin
+                                clock_to_test_enable = 0;
+                                o_tx_sb_rsp_reg = 0;
+                                o_tx_encoding_reg = 'h92; 
+                                NS = DATATRAINCENTER1;
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_rsp && i_tx_decoding == 'h92) begin
+                                    substates_done = 1;
+                                    next_substate = 0;
+                                end else begin
+                                    substates_done = 0;
+                                    next_substate = 2;
+                                end 
+                            end  
+                        endcase
+                    end 
+                    if (previous_state_done && encoding_rsp_sent == 'h92 && encoding_rsp_received == 'h92) begin
+                        NS = DATATRAINVREF;
+                        o_tx_encoding_reg = 'hF0;
+                        o_tx_sb_req_reg = 0;
+                        o_tx_sb_rsp_reg = 0;
+                        substates_done = 0;
+                    end else begin
+                        NS = DATATRAINCENTER1;
+                    end
                 end
-            end
 
-            //====================================================================
-            // DATATRAINVREF State: Data Training - Voltage Reference
-            //====================================================================
-            DATATRAINVREF: begin
-                if (!substates_done) begin
-                    case (current_substate)
-                        0: begin
-                            o_tx_encoding_reg = 'hF0;
-                            NS = DATATRAINVREF;
-                            substates_done = 0;
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'hF0) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        1: begin
-                            clock_to_test_enable = 1;
-                            o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
-                            o_tx_data_reg = o_tx_data_data_to_clock_test;
-                            o_tx_info_reg = o_tx_info_data_to_clock_test;
-                            o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
-                            o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
-                            o_tx_sb_done_reg = o_tx_sb_done_data_to_clock_test;
-                            init = 0;
-                            no_retry = 0;
-                            substates_done = 0;
-
-                            if (clock_to_test_done) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        2: begin
-                            clock_to_test_enable = 0;
-                            train_error_data_to_clock_test = 0;
-
-                            o_tx_encoding_reg = 'hF2;
-                            NS = DATATRAINVREF; 
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'hF2) begin
-                                substates_done = 1;
-                                next_substate = 0;
-                            end else begin
+                //====================================================================
+                // DATATRAINVREF State: Data Training - Voltage Reference
+                //====================================================================
+                DATATRAINVREF: begin
+                    if (!substates_done) begin
+                        case (current_substate)
+                            0: begin
+                                o_tx_encoding_reg = 'hF0;
+                                NS = DATATRAINVREF;
                                 substates_done = 0;
-                                next_substate = 2;
-                            end 
-                        end  
-                    endcase
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_req && i_tx_decoding == 'h185) begin
+                                    o_tx_encoding_reg = 'h185;
+                                    next_substate = 1;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 0;
+                            end  
+
+                            1: begin
+                                clock_to_test_enable = 1;
+                                o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
+                                o_tx_data_reg = o_tx_data_data_to_clock_test;
+                                o_tx_info_reg = o_tx_info_data_to_clock_test;
+                                o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
+                                o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
+                                
+                                init = 0;
+                                no_retry = 0;
+                                substates_done = 0;
+
+                                if (clock_to_test_done) begin
+                                    o_tx_encoding_reg = 'hF2;
+                                    next_substate = 2;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 1;
+                            end  
+
+                            2: begin
+                                clock_to_test_enable = 0;
+                                o_tx_sb_rsp_reg = 0;
+
+
+                                o_tx_encoding_reg = 'hF2;
+                                NS = DATATRAINVREF; 
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_rsp && i_tx_decoding == 'hF2) begin
+                                    substates_done = 1;
+                                    next_substate = 0;
+                                end else begin
+                                    substates_done = 0;
+                                    next_substate = 2;
+                                end 
+                            end  
+                        endcase
+                    end
+                    if (previous_state_done && encoding_rsp_sent == 'hF2 && encoding_rsp_received == 'hF2) begin
+                        NS = RXDESKEW;
+                        o_tx_encoding_reg = 'hF2;
+                        substates_done = 0;
+                        o_tx_sb_req_reg = 0;
+                        o_tx_sb_rsp_reg = 0;
+                    end else begin
+                        NS = DATATRAINVREF;
+                    end 
                 end
-                if (previous_state_done && encoding_rsp_sent == 'h8A && encoding_rsp_received == 'h8A) begin
-                    NS = SPEEDIDLE;
-                    substates_done = 0;
-                end else begin
-                    NS = DATATRAINVREF;
-                    substates_done = 1;
-                end 
-            end
 
-            //====================================================================
-            // RXDESKEW State: RX Deskew Calibration
-            //====================================================================
-            RXDESKEW: begin
-                if (!substates_done) begin
-                    case (current_substate)
-                        0: begin
-                            o_tx_encoding_reg = 'hA8;
-                            NS = RXDESKEW;
-                            substates_done = 0;
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'hA8) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        1: begin
-                            o_tx_encoding_reg = 'hAC; 
-                            NS = RXDESKEW;
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'hAC) begin
-                                substates_done = 1;
-                                next_substate = 0;
-                            end else begin
+                //====================================================================
+                // RXDESKEW State: RX Deskew Calibration
+                //====================================================================
+                RXDESKEW: begin
+                    if (!substates_done) begin
+                        case (current_substate)
+                            0: begin
+                                o_tx_encoding_reg = 'hA8;
+                                NS = RXDESKEW;
                                 substates_done = 0;
-                                next_substate = 1;
-                            end 
-                        end  
-                    endcase
-                end 
-                if (previous_state_done && encoding_rsp_sent == 'hAC && encoding_rsp_received == 'hAC) begin
-                    NS = DATATRAINCENTER2;
-                    substates_done = 0;
-                end else begin
-                    NS = RXDESKEW;
-                    substates_done = 1;
-                end 
-            end
 
-            //====================================================================
-            // DATATRAINCENTER2 State: Data Training Center - Phase 2
-            //====================================================================
-            DATATRAINCENTER2: begin
-                if (!substates_done) begin
-                    case (current_substate)
-                        0: begin
-                            o_tx_encoding_reg = 'hB0;
-                            NS = DATATRAINCENTER2;
-                            substates_done = 0;
-                            i_tx_info = ERROR_THRESHOLD;  // Set error threshold
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
 
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
+                                if (i_sb_tx_rsp && i_tx_decoding == 'hA8) begin
+                                    o_tx_encoding_reg = 'hAC;
+                                    next_substate = 1;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 0;
+                            end  
 
-                            if (i_sb_tx_rsp && i_tx_decoding == 'hB0) next_substate = 1;
-                            else next_substate = 0;
-                        end  
+                            1: begin
+                                o_tx_encoding_reg = 'hAC; 
+                                NS = RXDESKEW;
 
-                        1: begin
-                            clock_to_test_enable = 1;
-                            o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
-                            o_tx_data_reg = o_tx_data_data_to_clock_test;
-                            o_tx_info_reg = o_tx_info_data_to_clock_test;
-                            o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
-                            o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
-                            o_tx_sb_done_reg = o_tx_sb_done_data_to_clock_test;
-                            init = 0;
-                            no_retry = 1;
-                            substates_done = 0;
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
 
-
-                            if (clock_to_test_done) next_substate = 1;
-                            else next_substate = 0;
-                        end  
-
-                        2: begin
-                            clock_to_test_enable = 0;
-                            train_error_data_to_clock_test = 0;
-
-                            o_tx_encoditmnuhy
-                            ng_reg = 'hB2; 
-                            NS = DATATRAINCENTER2;
-
-                            if (done_ack) o_tx_sb_req_reg = 0;
-                            else o_tx_sb_req_reg = 1;
-
-                            if (i_sb_tx_rsp && i_tx_decoding == 'hB2) begin
-                                substates_done = 1;
-                                next_substate = 0;
-                            end else begin
-                                substates_done = 0;
-                                next_substate = 2;
-                            end 
-                        end  
-                    endcase
-                end 
-                // Training complete - return to VALVREF with training enabled
-                if (previous_state_done && encoding_rsp_sent == 'hB2 && encoding_rsp_received == 'hB2) begin
-                    train_active_en = 1;  // Mark training as active/complete
-                    NS = VALVREF;
-                    substates_done = 0;
-                end else begin  
-                    NS = DATATRAINCENTER2;
-                    substates_done = 1;
+                                if (i_sb_tx_rsp && i_tx_decoding == 'hAC) begin
+                                    substates_done = 1;
+                                    next_substate = 0;
+                                end else begin
+                                    substates_done = 0;
+                                    next_substate = 1;
+                                end 
+                            end  
+                        endcase
+                    end 
+                    if (previous_state_done && encoding_rsp_sent == 'hAC && encoding_rsp_received == 'hAC) begin
+                        NS = DATATRAINCENTER2;
+                        o_tx_encoding_reg = 'hB0;
+                        substates_done = 0;
+                        o_tx_sb_req_reg = 0;
+                        o_tx_sb_rsp_reg = 0;
+                    end else begin
+                        NS = RXDESKEW;
+                    end 
                 end
-            end
-        endcase
+
+                //====================================================================
+                // DATATRAINCENTER2 State: Data Training Center - Phase 2
+                //====================================================================
+                DATATRAINCENTER2: begin
+                    if (!substates_done) begin
+                        case (current_substate)
+                            0: begin
+                                o_tx_encoding_reg = 'hB0;
+                                NS = DATATRAINCENTER2;
+                                substates_done = 0;
+                                o_tx_info = ERROR_THRESHOLD;  // Set error threshold
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_req && i_tx_decoding == 'h185) begin
+                                    o_tx_encoding_reg = 'h185;
+                                    next_substate = 1;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 0;
+                            end  
+
+                            1: begin
+                                clock_to_test_enable = 1;
+                                o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
+                                o_tx_data_reg = o_tx_data_data_to_clock_test;
+                                o_tx_info_reg = o_tx_info_data_to_clock_test;
+                                o_tx_sb_req_reg = o_tx_sb_req_data_to_clock_test;
+                                o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
+                                
+                                init = 0;
+                                no_retry = 1;
+                                substates_done = 0;
+
+                                if (clock_to_test_done) begin
+                                    o_tx_encoding_reg = 'hB2;
+                                    next_substate = 2;
+                                    o_tx_sb_req_reg = 0;
+                                    o_tx_sb_rsp_reg = 0;
+                                end else next_substate = 1;
+                            end  
+
+                            2: begin
+                                clock_to_test_enable = 0;
+                                o_tx_sb_rsp_reg = 0;
+                                o_tx_encoding_reg = 'hB2; 
+                                NS = DATATRAINCENTER2;
+
+                                if (done_ack) o_tx_sb_req_reg = 0;
+                                else o_tx_sb_req_reg = 1;
+
+                                if (i_sb_tx_rsp && i_tx_decoding == 'hB2) begin
+                                    substates_done = 1;
+                                    next_substate = 0;
+                                end else begin
+                                    substates_done = 0;
+                                    next_substate = 2;
+                                end 
+                            end  
+                        endcase
+                    end 
+                    // Training complete - return to VALVREF with training enabled
+                    if (previous_state_done && encoding_rsp_sent == 'hB2 && encoding_rsp_received == 'hB2) begin
+                        train_active_en_reg = 1;  // Mark training as active/complete
+                        o_tx_sb_req_reg = 0;
+                        o_tx_sb_rsp_reg = 0;
+                        substates_done = 0;
+                    end else begin  
+                        NS = DATATRAINCENTER2;
+                    end
+                end
+            endcase
+        end
     end
 end
 

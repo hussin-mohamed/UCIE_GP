@@ -63,7 +63,6 @@ ucie_TX_Data_to_Clock_eye_sweep #(
    .o_xx_info(o_xx_info),         
    .o_xx_sb_req(o_xx_sb_req),
    .o_xx_sb_rsp(o_xx_sb_rsp),   
-   .o_xx_sb_done(o_xx_sb_done), 
    .train_error(train_error),  
    .failed_test(failed_test),
    .done(done)        
@@ -101,15 +100,11 @@ initial begin
     @(negedge i_clk);
     assert (o_xx_encoding_expected == o_xx_encoding) 
     else    $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-    
     assert (o_xx_sb_req_expected == o_xx_sb_req) 
     else    $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
 
     assert (o_xx_info_expected == o_xx_info) 
     else    $display("ERROR: Expected o_xx_info = %h, got %h, time %0t", o_xx_info_expected, o_xx_info, $time);
-    
-    assert (o_xx_sb_done_expected == o_xx_sb_done) 
-    else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
 
     done_ack = 1; // Clear o_xx_sb_req — DUT holds req until done_ack
     o_xx_sb_req_expected = 0;
@@ -134,16 +129,11 @@ initial begin
     o_xx_sb_done_expected  = 1;
     o_xx_encoding_expected = 'h181;
     o_xx_sb_req_expected   = 1;
-    
     @(negedge i_clk);
     assert (o_xx_encoding_expected == o_xx_encoding) 
     else    $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-    
     assert (o_xx_sb_req_expected == o_xx_sb_req) 
     else    $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
-    
-    assert (o_xx_sb_done_expected == o_xx_sb_done) 
-    else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
 
     i_sb_xx_rsp = 0;
     done_ack    = 1; // Clear o_xx_sb_req
@@ -154,8 +144,6 @@ initial begin
     assert (o_xx_sb_req_expected == o_xx_sb_req) 
     else    $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
 
-    assert (o_xx_sb_done_expected == o_xx_sb_done) 
-    else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
 
     // Trigger LFSR→DATA
     // i_sb_xx_rsp=1 && dec==0x181 : causes LFSR→DATA transition
@@ -175,17 +163,12 @@ initial begin
     @(negedge i_clk);
     assert (o_xx_encoding_expected == o_xx_encoding) 
     else    $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-        
-    assert (o_xx_sb_done_expected == o_xx_sb_done) 
-    else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
 
     i_sb_xx_rsp   = 0;
     o_xx_sb_done_expected = 0; // Self-clears
     i_xx_done     = 0;
 
     @(negedge i_clk);
-    assert (o_xx_sb_done_expected == o_xx_sb_done) 
-    else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
 
     // Trigger DATA→RESULT via i_xx_done
     @(negedge i_clk); // Wait for some cycles
@@ -196,14 +179,11 @@ initial begin
     // Stays here until i_sb_xx_rsp=1 && dec==0x183 (RX responds with its measurement)
     o_xx_encoding_expected = 'h183;
     o_xx_sb_req_expected   = 1;
-    
     @(negedge i_clk);
     assert (o_xx_encoding_expected == o_xx_encoding) 
     else    $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-    
     assert (o_xx_sb_req_expected == o_xx_sb_req) 
     else    $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
-    
     done_ack  = 1; // Clear o_xx_sb_req
     i_xx_done = 0;
     o_xx_sb_req_expected = 0;
@@ -230,17 +210,11 @@ initial begin
     o_xx_sb_done_expected = 1;
     o_xx_encoding_expected = 'h184;
     o_xx_sb_req_expected   = 1;
-    
     @(negedge i_clk);
     assert (o_xx_encoding_expected == o_xx_encoding) 
     else    $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-    
     assert (o_xx_sb_req_expected == o_xx_sb_req) 
     else    $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
-    
-    assert (o_xx_sb_done_expected == o_xx_sb_done) 
-    else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
-    
     assert (failed_test_expected == failed_test) 
     else    $display("ERROR: Expected failed_test = %h, got %h, time %0t", failed_test_expected, failed_test, $time);
 
@@ -253,8 +227,6 @@ initial begin
     assert (o_xx_sb_req_expected == o_xx_sb_req) 
     else    $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
 
-    assert (o_xx_sb_done_expected == o_xx_sb_done) 
-    else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
 
     // Trigger END→done
     // i_sb_xx_rsp=1 && dec==0x184 : sets done=1 (test fully complete)
@@ -292,15 +264,11 @@ initial begin
     @(negedge i_clk);
     assert (o_xx_encoding_expected == o_xx_encoding) 
     else    $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-    
     assert (o_xx_sb_req_expected == o_xx_sb_req) 
     else    $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
 
     assert (o_xx_info_expected == o_xx_info) 
     else    $display("ERROR: Expected o_xx_info = %h, got %h, time %0t", o_xx_info_expected, o_xx_info, $time);
-    
-    assert (o_xx_sb_done_expected == o_xx_sb_done) 
-    else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
 
     done_ack = 1; // Clear o_xx_sb_req
     o_xx_sb_req_expected = 0;
@@ -321,16 +289,11 @@ initial begin
     o_xx_sb_done_expected  = 1;
     o_xx_encoding_expected = 'h181;
     o_xx_sb_req_expected   = 1;
-    
     @(negedge i_clk);
     assert (o_xx_encoding_expected == o_xx_encoding) 
     else    $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-    
     assert (o_xx_sb_req_expected == o_xx_sb_req) 
     else    $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
-    
-    assert (o_xx_sb_done_expected == o_xx_sb_done) 
-    else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
 
     i_sb_xx_rsp = 0;
     done_ack    = 1; // Clear o_xx_sb_req
@@ -341,8 +304,6 @@ initial begin
     assert (o_xx_sb_req_expected == o_xx_sb_req) 
     else    $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
 
-    assert (o_xx_sb_done_expected == o_xx_sb_done) 
-    else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
 
     // Trigger LFSR→DATA (before retry loop)
     // i_sb_xx_rsp=1 && dec==0x181 : causes LFSR→DATA transition
@@ -364,16 +325,12 @@ initial begin
         assert (o_xx_encoding_expected == o_xx_encoding) 
         else    $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
 
-        assert (o_xx_sb_done_expected == o_xx_sb_done) 
-        else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
 
         i_sb_xx_rsp   = 0;
         o_xx_sb_done_expected = 0; // Self-clears
         i_xx_done     = 0;
 
         @(negedge i_clk);
-        assert (o_xx_sb_done_expected == o_xx_sb_done) 
-        else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
 
         // Trigger DATA→RESULT via i_xx_done
         @(negedge i_clk); // Wait for some cycles
@@ -409,7 +366,6 @@ initial begin
         done_ack      = 0;
         i_xx_decoding = 'h183;
         i_xx_data     = 1; // Not all 1s → test fail → retry
-    
         // --- LFSR_HANDSHAKE retry (encoding 0x181) ---
         // failed_test = !(&i_xx_data) = 1 (fail)
         // no_retry=0 and count < MAXIMUM_ITERATIONS → retry back to LFSR
@@ -418,32 +374,20 @@ initial begin
         o_xx_sb_done_expected = 1;
         o_xx_encoding_expected = 'h181; // Retry → back to LFSR
         o_xx_sb_req_expected   = 1;
-        
         @(negedge i_clk);
         assert (o_xx_encoding_expected == o_xx_encoding) 
         else    $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-        
         assert (o_xx_sb_req_expected == o_xx_sb_req) 
         else    $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
-        
-        assert (o_xx_sb_done_expected == o_xx_sb_done) 
-        else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
-        
         assert (failed_test_expected == failed_test) 
         else    $display("ERROR: Expected failed_test = %h, got %h, time %0t", failed_test_expected, failed_test, $time);
-    
         done_ack = 1; // Clear o_xx_sb_req
         o_xx_sb_req_expected  = 0;
         o_xx_sb_done_expected = 0;
         i_sb_xx_rsp = 0;
-    
         @(negedge i_clk);
         assert (o_xx_sb_req_expected == o_xx_sb_req) 
         else    $display("ERROR: Expected o_xx_sb_req = %h, got %h, time %0t", o_xx_sb_req_expected, o_xx_sb_req, $time);
-    
-        assert (o_xx_sb_done_expected == o_xx_sb_done) 
-        else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
-    
         // Trigger LFSR→DATA again (for next retry iteration)
         // i_sb_xx_rsp=1 && dec==0x181 : causes LFSR→DATA transition
         repeat (5) @(negedge i_clk); // Wait for some cycles
@@ -460,17 +404,12 @@ initial begin
     @(negedge i_clk);
     assert (o_xx_encoding_expected == o_xx_encoding) 
     else    $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
-    assert (o_xx_sb_done_expected == o_xx_sb_done) 
-    else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
 
     i_sb_xx_rsp   = 0;
     o_xx_sb_done_expected = 0;
     i_xx_done     = 0;
 
     @(negedge i_clk);
-    assert (o_xx_sb_done_expected == o_xx_sb_done) 
-    else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
-    
     // Trigger DATA→RESULT via i_xx_done
     @(negedge i_clk); // Wait for some cycles
     i_xx_done = 1;
@@ -511,12 +450,8 @@ initial begin
     @(negedge i_clk);
     assert (train_error_expected == train_error) 
     else    $display("ERROR: Expected train_error = %h, got %h, time %0t", train_error_expected, train_error, $time);
-        
-    assert (o_xx_sb_done_expected == o_xx_sb_done) 
-    else    $display("ERROR: Expected o_xx_sb_done = %h, got %h, time %0t", o_xx_sb_done_expected, o_xx_sb_done, $time);
 
     $display("Test completed");
     $finish;
 end
-    
 endmodule

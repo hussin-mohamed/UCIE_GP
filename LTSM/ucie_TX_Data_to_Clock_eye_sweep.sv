@@ -9,7 +9,7 @@ module ucie_TX_Data_to_Clock_eye_sweep # (
     parameter DECODING_WIDTH = 9,   // Width of command decoding input
     parameter DATA_WIDTH = 64,       // Width of data input/output
     parameter INFO_WIDTH = 16,      // Width of info/control output
-    parameter MAXIMUM_ITERATIONS = 4,      // Width of info/control output
+    parameter MAXIMUM_ITERATIONS = 4,      // Maximum number of test retry iterations
     parameter ERROR_THRESHOLD = 1   // Error threshold for test pass/fail
 ) (
     // Clock and reset
@@ -40,7 +40,6 @@ module ucie_TX_Data_to_Clock_eye_sweep # (
     // Sideband control outputs
     output logic o_xx_sb_req,   // Sideband request to remote
     output logic o_xx_sb_rsp,   // Sideband response to remote
-    output logic o_xx_sb_done,  // Sideband done to remote
     
     // Status outputs
     output logic train_error,   // Training error occurred
@@ -83,22 +82,6 @@ always @(posedge i_clk or posedge i_reset) begin
 end
 
 //================================================================================
-// Sideband Done Signal Logic
-//================================================================================
-// Generates done pulse for sideband protocol
-always @(posedge i_clk or posedge i_reset) begin
-    if (i_reset) begin
-        o_xx_sb_done <= 0;;
-    end else begin
-        if (o_xx_sb_done) begin
-            o_xx_sb_done <= 0;  // Self-clearing pulse
-        end else if (i_sb_xx_rsp || i_sb_xx_req) begin
-            o_xx_sb_done <= 1;  // Assert on request or response
-        end
-    end
-end
-
-//================================================================================
 // Main State Machine Combinational Logic
 //================================================================================
 always @(*) begin
@@ -113,6 +96,7 @@ always @(*) begin
                 o_xx_encoding = 'h180;  // Request encoding
                 done = 0;
                 count_reg = 0;  // Reset retry count
+                train_error = 0;
 
                 // Request handshake with acknowledge
                 if (done_ack) o_xx_sb_req = 0;
@@ -121,7 +105,12 @@ always @(*) begin
                 o_xx_info = ERROR_THRESHOLD;  // Send error threshold parameter
 
                 // Wait for matching response
-                if (i_sb_xx_rsp && i_xx_decoding == 'h180) NS = LFSR_HANDSHAKE;
+                if (i_sb_xx_rsp && i_xx_decoding == 'h180) begin
+                    o_xx_encoding = 'h181;  // LFSR setup encoding
+                    NS = LFSR_HANDSHAKE;
+                    o_xx_sb_req = 0;
+                    o_xx_sb_rsp = 0;
+                end 
                 else NS = REQ_HANDSHAKE;
             end 
 
@@ -135,8 +124,11 @@ always @(*) begin
 
                 // Wait for LFSR setup confirmation
                 if (i_sb_xx_rsp && i_xx_decoding == 'h181) begin
+                    o_xx_encoding = 'h182;  // Data generation encoding
                     count_reg = count + 1;  // Increment count for retries
                     NS = DATA_GENERATE;
+                    o_xx_sb_req = 0;
+                    o_xx_sb_rsp = 0;
                 end 
                 else NS = LFSR_HANDSHAKE;
             end 
@@ -147,7 +139,12 @@ always @(*) begin
                 done = 0;
 
                 // Wait for data generation to complete
-                if (i_xx_done) NS = RESULT_HANDSHAKE;
+                if (i_xx_done) begin
+                    o_xx_encoding = 'h183;  // Result collection encoding
+                    NS = RESULT_HANDSHAKE;
+                    o_xx_sb_req = 0;
+                    o_xx_sb_rsp = 0;
+                end
                 else NS = DATA_GENERATE;
             end 
 
@@ -167,10 +164,18 @@ always @(*) begin
                         if (count == MAXIMUM_ITERATIONS-1) begin
                             train_error = 1;  // Mark training error if max retries reached
                         end else begin
+                            o_xx_encoding = 'h181;  // LFSR setup encoding
                             NS = LFSR_HANDSHAKE;
+                            o_xx_sb_req = 0;
+                            o_xx_sb_rsp = 0;
                             train_error = 0;  // Clear training error for retry
                         end 
-                    else NS = END_HANDSHAKE;
+                    else begin
+                        o_xx_encoding = 'h184;  // End encoding
+                        NS = END_HANDSHAKE;
+                        o_xx_sb_req = 0;
+                        o_xx_sb_rsp = 0;
+                    end
                 end else NS = RESULT_HANDSHAKE;
                 
             end 
@@ -197,13 +202,19 @@ always @(*) begin
                 o_xx_encoding = 'h185;  // Response encoding
                 done = 0;
                 count_reg = 0;  // Reset retry count
+                train_error = 0;
 
                 // Response handshake
-                if (done_ack) o_xx_sb_rsp = 0;
-                else if (i_sb_xx_req) o_xx_sb_rsp = 1;
+                if (i_sb_xx_done) o_xx_sb_rsp = 0;
+                else o_xx_sb_rsp = 1;
 
                 // Wait for done signal
-                if (i_sb_xx_done && i_xx_decoding == 'h185) NS = LFSR_HANDSHAKE;
+                if (i_sb_xx_done) begin
+                    o_xx_encoding = 'h186;  // LFSR setup encoding
+                    NS = LFSR_HANDSHAKE;
+                    o_xx_sb_req = 0;
+                    o_xx_sb_rsp = 0;
+                end
                 else NS = REQ_HANDSHAKE;
             end 
     
@@ -211,14 +222,16 @@ always @(*) begin
             LFSR_HANDSHAKE: begin
                 o_xx_encoding = 'h186;  // LFSR setup encoding
                 done = 0;
-                
-
+            
                 if (done_ack) o_xx_sb_req = 0;
                 else o_xx_sb_req = 1;
 
                 if (i_sb_xx_rsp && i_xx_decoding == 'h186) begin
+                    o_xx_encoding = 'h187;  // Data generation encoding
                     count_reg = count + 1;  // Increment count for retries
                     NS = DATA_GENERATE;
+                    o_xx_sb_req = 0;
+                    o_xx_sb_rsp = 0;
                 end 
                 else NS = LFSR_HANDSHAKE;
             end 
@@ -228,7 +241,12 @@ always @(*) begin
                 o_xx_encoding = 'h187;  // Data generation encoding
                 done = 0;
 
-                if (i_xx_done) NS = RESULT_HANDSHAKE;
+                if (i_xx_done) begin
+                    o_xx_encoding = 'h188;  // Result collection encoding
+                    o_xx_sb_req = 0;
+                    o_xx_sb_rsp = 0;
+                    NS = RESULT_HANDSHAKE;
+                end
                 else NS = DATA_GENERATE;
             end
     
@@ -248,10 +266,18 @@ always @(*) begin
                         if (count == MAXIMUM_ITERATIONS-1) begin
                             train_error = 1;  // Mark training error if max retries reached
                         end else begin
+                            o_xx_encoding = 'h186;  // LFSR setup encoding
                             NS = LFSR_HANDSHAKE;
+                            o_xx_sb_req = 0;
+                            o_xx_sb_rsp = 0;
                             train_error = 0;  // Clear training error for retry
                         end
-                    else NS = SWEEP_RESULT_HANDSHAKE;
+                    else begin
+                        o_xx_encoding = 'h189;  // Sweep result encoding
+                        o_xx_sb_req = 0;
+                        o_xx_sb_rsp = 0;
+                        NS = SWEEP_RESULT_HANDSHAKE;
+                    end
                 end else NS = RESULT_HANDSHAKE;
             end 
 
@@ -265,21 +291,26 @@ always @(*) begin
                 else o_xx_sb_req = 1;
 
                 // Wait for acknowledgement
-                if (done_ack && i_xx_decoding == 'h189) NS = END_HANDSHAKE;
+                if (i_sb_xx_req && i_xx_decoding == 'h190) begin
+                    o_xx_encoding = 'h190;  // End encoding
+                    NS = END_HANDSHAKE;
+                    o_xx_sb_req = 0;
+                    o_xx_sb_rsp = 0;
+                end
                 else NS = SWEEP_RESULT_HANDSHAKE;
             end 
     
             // State 5: Final handshake to complete test
             END_HANDSHAKE: begin
-                o_xx_encoding = 'h189;  // End encoding
+                o_xx_encoding = 'h190;  // End encoding
                 o_xx_data = 0;          // Clear data
     
                 // Response handshake
-                if (done_ack) o_xx_sb_rsp = 0;
-                else if (i_sb_xx_req) o_xx_sb_rsp = 1;
+                if (i_sb_xx_done) o_xx_sb_rsp = 0;
+                else o_xx_sb_rsp = 1;
     
                 // Signal completion when done received
-                if (i_sb_xx_done && i_xx_decoding == 'h189) done = 1;
+                if (i_sb_xx_done) done = 1;
                 else done = 0;
             end 
         endcase
