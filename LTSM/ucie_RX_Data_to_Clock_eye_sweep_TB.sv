@@ -105,7 +105,7 @@ initial begin
 
     // --- REQ_HANDSHAKE (encoding 0x180) ---
     // RX init: o_xx_sb_req=1 unconditionally (same as TX)
-    o_xx_encoding_expected = 'h185;
+    o_xx_encoding_expected = 'h188;
     o_xx_sb_req_expected   = 1;
     o_xx_info_expected     = ERROR_THRESHOLD;
     o_xx_sb_done_expected  = 0;
@@ -134,13 +134,13 @@ initial begin
     i_sb_xx_rsp = 0;
     i_sb_xx_req = 1;
     done_ack    = 0;
-    i_xx_decoding = 'h186;
+    i_xx_decoding = 'h189;
 
     // --- LFSR_HANDSHAKE (encoding 0x181) ---
     // RX init: output is o_xx_sb_rsp (NOT req) when i_sb_xx_req=1
     // o_xx_sb_done fires from i_sb_xx_rsp (the REQ→LFSR edge)
     o_xx_sb_done_expected  = 1;
-    o_xx_encoding_expected = 'h186;
+    o_xx_encoding_expected = 'h189;
     o_xx_sb_rsp_expected   = 1;
 
     @(negedge i_clk);
@@ -166,10 +166,10 @@ initial begin
     i_sb_xx_done  = 1;
     done_ack      = 1;
     i_sb_xx_req = 0;
-    i_xx_decoding = 'h186;
+    i_xx_decoding = 'h189;
 
     // --- DATA_DETECTION (encoding 0x182) ---
-    o_xx_encoding_expected = 'h187;
+    o_xx_encoding_expected = 'h18A;
     o_xx_sb_done_expected  = 0; // i_sb_xx_done does NOT fire o_xx_sb_done
 
     @(negedge i_clk);
@@ -177,12 +177,12 @@ initial begin
     else $display("ERROR: Expected o_xx_encoding = %h, got %h, time %0t", o_xx_encoding_expected, o_xx_encoding, $time);
     
     i_sb_xx_req    = 1;
-    i_xx_decoding = 'h188;
+    i_xx_decoding = 'h18B;
 
     // --- RESULT_HANDSHAKE (encoding 0x183) ---
     // RX init: o_xx_sb_rsp=1 (when i_sb_xx_req), NOT o_xx_sb_req
     // result=1 → failed_test=0 → will transition to SWEEP_RESULT (not END directly)
-    o_xx_encoding_expected = 'h188;
+    o_xx_encoding_expected = 'h18B;
 
     @(negedge i_clk);
     assert (o_xx_encoding_expected == o_xx_encoding)
@@ -212,7 +212,7 @@ initial begin
     i_sb_xx_done   = 1;
     i_sb_xx_req = 1;
     done_ack      = 1;
-    i_xx_decoding = 'h189;
+    i_xx_decoding = 'h18C;
 
     // RX: failed_test = !(&result) = !result (1-bit)
     failed_test_expected  = !result; // 0
@@ -227,7 +227,7 @@ initial begin
     i_sb_xx_done = 0;
     i_sb_xx_req = 0;
     i_xx_data = 'hAB; // sweep data → o_xx_sweep_result should latch 0xAB
-    o_xx_encoding_expected = 'h190;
+    o_xx_encoding_expected = 'h18D;
 
     o_xx_sb_done_expected = 0; // self-clears
     o_xx_sweep_result_expected = i_xx_data[7:0];
@@ -253,7 +253,7 @@ initial begin
     repeat (5) @(negedge i_clk);
     i_sb_xx_rsp   = 1;
     done_ack      = 0;
-    i_xx_decoding = 'h190;
+    i_xx_decoding = 'h18D;
 
     done_expected = 1;
 
@@ -294,7 +294,7 @@ initial begin
     // --- REQ_HANDSHAKE (encoding 0x185) ---
     // DUT asserts o_xx_sb_req=1; done_ack clears it;
     // TB sends i_sb_xx_req=1 && dec==0x186 to trigger REQ→LFSR transition
-    o_xx_encoding_expected = 'h185;
+    o_xx_encoding_expected = 'h188;
     o_xx_sb_req_expected   = 1;
     o_xx_info_expected     = ERROR_THRESHOLD;
 
@@ -319,11 +319,11 @@ initial begin
     // Trigger REQ→LFSR: i_sb_xx_req=1 && dec==0x186
     i_sb_xx_req   = 1;
     done_ack      = 0;
-    i_xx_decoding = 'h186;
+    i_xx_decoding = 'h189;
 
     // --- LFSR_HANDSHAKE (encoding 0x186) ---
     // NEW: o_xx_sb_rsp=1 immediately (not req-gated); done_ack clears it
-    o_xx_encoding_expected = 'h186;
+    o_xx_encoding_expected = 'h189;
     o_xx_sb_rsp_expected   = 1;  // asserted unconditionally while !done_ack
 
     @(negedge i_clk);
@@ -354,7 +354,7 @@ initial begin
 
         // --- DATA_DETECTION (encoding 0x187) ---
         // NEW: transition triggered by i_sb_xx_req && dec==0x188 (NOT i_xx_done)
-        o_xx_encoding_expected = 'h187;
+        o_xx_encoding_expected = 'h18A;
 
         @(negedge i_clk);
         i_sb_xx_done = 0;
@@ -363,11 +363,11 @@ initial begin
 
         // TB drives req + dec==0x188 → DATA→RESULT transition (combinational this cycle)
         i_sb_xx_req   = 1;
-        i_xx_decoding = 'h188;
+        i_xx_decoding = 'h18B;
 
         // --- RESULT_HANDSHAKE (encoding 0x188) ---
         // NEW: o_xx_sb_rsp=1 immediately when !done_ack (not req-gated)
-        o_xx_encoding_expected = 'h188;
+        o_xx_encoding_expected = 'h18B;
         o_xx_sb_rsp_expected   = 1;
 
         @(negedge i_clk);
@@ -390,9 +390,9 @@ initial begin
         // (retry/pass decision is fully TB-driven; no internal failed_test/no_retry logic)
         done_ack      = 0;
         i_sb_xx_req   = 1;
-        i_xx_decoding = 'h186;
+        i_xx_decoding = 'h189;
 
-        o_xx_encoding_expected = 'h186;  // DUT back in LFSR_HANDSHAKE
+        o_xx_encoding_expected = 'h189;  // DUT back in LFSR_HANDSHAKE
 
         @(negedge i_clk);
         i_sb_xx_req   = 0;
@@ -428,7 +428,7 @@ initial begin
     // =========================================================================
 
     // --- Final DATA_DETECTION (encoding 0x187) ---
-    o_xx_encoding_expected = 'h187;
+    o_xx_encoding_expected = 'h18A;
 
     @(negedge i_clk);
     i_sb_xx_done = 0;
@@ -437,11 +437,11 @@ initial begin
 
     // Trigger DATA→RESULT: i_sb_xx_req=1 && dec==0x188
     i_sb_xx_req   = 1;
-    i_xx_decoding = 'h188;
+    i_xx_decoding = 'h18B;
 
     // --- Final RESULT_HANDSHAKE (encoding 0x188, pass) ---
     // rsp=1 immediately (done_ack=0)
-    o_xx_encoding_expected = 'h188;
+    o_xx_encoding_expected = 'h18B;
     o_xx_sb_rsp_expected   = 1;
 
     @(negedge i_clk);
@@ -463,13 +463,13 @@ initial begin
     // Trigger RESULT→SWEEP_RESULT (pass): i_sb_xx_req=1 && dec==0x189
     done_ack      = 0;
     i_sb_xx_req   = 1;
-    i_xx_decoding = 'h189;
+    i_xx_decoding = 'h18C;
     i_xx_data     = 64'hAB; // sweep data captured into o_xx_sweep_result[7:0]
 
     // --- SWEEP_RESULT_HANDSHAKE (encoding 0x189) ---
     // NEW: immediate transition (NS=END_HANDSHAKE unconditionally, no wait)
     // DUT latches o_xx_sweep_result = i_xx_data[7:0] and moves to END_HANDSHAKE
-    o_xx_encoding_expected      = 'h189;
+    o_xx_encoding_expected      = 'h18C;
     o_xx_sweep_result_expected  = i_xx_data[7:0]; // 0xAB
 
     @(negedge i_clk);
@@ -483,7 +483,7 @@ initial begin
     // DUT asserts o_xx_sb_req=1; done_ack clears it;
     // TB sends i_sb_xx_rsp=1 && dec==0x190 → done=1
     done_ack             = 0;
-    o_xx_encoding_expected = 'h190;
+    o_xx_encoding_expected = 'h18D;
     o_xx_sb_req_expected   = 1;
 
     @(negedge i_clk);
@@ -504,7 +504,7 @@ initial begin
     repeat (3) @(negedge i_clk);
     i_sb_xx_rsp   = 1;
     done_ack      = 0;
-    i_xx_decoding = 'h190;
+    i_xx_decoding = 'h18D;
 
     done_expected = 1;
 

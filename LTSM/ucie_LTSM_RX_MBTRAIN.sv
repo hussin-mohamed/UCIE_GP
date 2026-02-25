@@ -296,7 +296,7 @@ always @(*) begin
 
                                 // Wait for matching done signal
                                 if (i_sb_rx_done) begin
-                                    o_rx_encoding_reg = 'h185;
+                                    o_rx_encoding_reg = 'h188;
                                     o_rx_sb_req_reg = 0;
                                     o_rx_sb_rsp_reg = 0;
                                     next_substate = 1;
@@ -376,7 +376,7 @@ always @(*) begin
                                 else o_rx_sb_rsp_reg = 1;
 
                                 if (i_sb_rx_done) begin
-                                    o_rx_encoding_reg = 'h185;
+                                    o_rx_encoding_reg = 'h188;
                                     next_substate = 1;
                                     o_rx_sb_req_reg = 0;
                                     o_rx_sb_rsp_reg = 0;
@@ -532,8 +532,8 @@ always @(*) begin
                                 if (done_ack) o_rx_sb_rsp_reg = 0;
                                 else o_rx_sb_rsp_reg = 1;
 
-                                if (i_sb_rx_done) begin
-                                    o_rx_encoding_reg = 'h185;
+                                if (i_sb_rx_req && i_rx_decoding == 'h9A) begin
+                                    o_rx_encoding_reg = 'h19A;
                                     next_substate = 1;
                                     o_rx_sb_req_reg = 0;
                                     o_rx_sb_rsp_reg = 0;
@@ -542,29 +542,6 @@ always @(*) begin
                             end  
 
                             1: begin
-                                clock_to_test_enable = 1;
-                                o_rx_encoding_reg = o_rx_encoding_data_to_clock_test;
-                                o_rx_data_reg = o_rx_data_data_to_clock_test;
-                                o_rx_info_reg = o_rx_info_data_to_clock_test;
-                                o_rx_sb_req_reg = o_rx_sb_req_data_to_clock_test;
-                                o_rx_sb_rsp_reg = o_rx_sb_rsp_data_to_clock_test;
-                                o_rx_sb_done_reg = o_rx_sb_done_data_to_clock_test;
-                                init = 1;        // Not initialization mode (different from TX)
-                                no_retry = 0;
-                                substates_done = 0;
-
-                                if (i_sb_rx_req && i_rx_decoding == 'h9A) begin
-                                    o_rx_encoding_reg = 'h9A;
-                                    next_substate = 2;
-                                    o_rx_sb_req_reg = 0;
-                                    o_rx_sb_rsp_reg = 0;
-                                end else next_substate = 1;
-                            end  
-
-                            2: begin
-                                clock_to_test_enable = 0;
-                                
-
                                 o_rx_encoding_reg = 'h9A;
                                 NS = RXCLKCAL; 
 
@@ -576,7 +553,7 @@ always @(*) begin
                                     next_substate = 0;
                                 end else begin
                                     substates_done = 0;
-                                    next_substate = 2;
+                                    next_substate = 1;
                                 end 
                             end  
                         endcase
@@ -607,7 +584,7 @@ always @(*) begin
                                 else o_rx_sb_rsp_reg = 1;
 
                                 if (i_sb_rx_done) begin
-                                    o_rx_encoding_reg = 'h185;
+                                    o_rx_encoding_reg = 'h188;
                                     next_substate = 1;
                                     o_rx_sb_req_reg = 0;
                                     o_rx_sb_rsp_reg = 0;
@@ -681,7 +658,7 @@ always @(*) begin
                                 else o_rx_sb_rsp_reg = 1;
 
                                 if (i_sb_rx_done) begin
-                                    o_rx_encoding_reg = 'h185;
+                                    o_rx_encoding_reg = 'h188;
                                     next_substate = 1;
                                     o_rx_sb_req_reg = 0;
                                     o_rx_sb_rsp_reg = 0;
@@ -755,7 +732,7 @@ always @(*) begin
                                 else o_rx_sb_rsp_reg = 1;
 
                                 if (i_sb_rx_done) begin
-                                    o_rx_encoding_reg = 'h185;
+                                    o_rx_encoding_reg = 'h188;
                                     next_substate = 1;
                                     o_rx_sb_req_reg = 0;
                                     o_rx_sb_rsp_reg = 0;
@@ -830,7 +807,7 @@ always @(*) begin
                                 else o_rx_sb_rsp_reg = 1;
 
                                 if (i_sb_rx_done) begin
-                                    o_rx_encoding_reg = 'h185;
+                                    o_rx_encoding_reg = 'h188;
                                     next_substate = 1;
                                     o_rx_sb_req_reg = 0;
                                     o_rx_sb_rsp_reg = 0;
@@ -954,7 +931,7 @@ always @(*) begin
                                 else o_rx_sb_rsp_reg = 1;
 
                                 if (i_sb_rx_done) begin
-                                    o_rx_encoding_reg = 'h185;
+                                    o_rx_encoding_reg = 'h188;
                                     next_substate = 1;
                                     o_rx_sb_req_reg = 0;
                                     o_rx_sb_rsp_reg = 0;

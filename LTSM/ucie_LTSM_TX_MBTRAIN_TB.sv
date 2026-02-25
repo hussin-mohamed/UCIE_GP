@@ -201,7 +201,7 @@ task do_req_hs (input [DECODING_WIDTH-1:0] enc);
         o_tx_sb_done_expected = 1;
 
         i_sb_tx_req = 1;
-        i_tx_decoding = 'h185;
+        i_tx_decoding = 'h188;
 
         @(negedge i_clk);
         i_sb_tx_req = 0;
@@ -253,7 +253,7 @@ task do_eye_sweep_happy_pass();
         $display("INFO  [eye_sweep] starting eye-sweep handshake at %0t", $time);
 
         // --- REQ_HANDSHAKE (0x180) ---
-        o_tx_encoding_expected = 'h185;
+        o_tx_encoding_expected = 'h188;
         i_sb_tx_req = 0;
 
         @(negedge i_clk);
@@ -274,10 +274,10 @@ task do_eye_sweep_happy_pass();
 
         i_sb_tx_done   = 1;
         i_sb_tx_req = 0;
-        i_tx_decoding  = 'h185;
+        i_tx_decoding  = 'h188;
 
         o_tx_sb_rsp_expected = 0;
-        o_tx_encoding_expected = 'h186;
+        o_tx_encoding_expected = 'h189;
         
         @(negedge i_clk);
         assert (o_tx_sb_rsp_expected == o_tx_sb_rsp)
@@ -314,10 +314,10 @@ task do_eye_sweep_happy_pass();
 
         // rsp → advance to DATA_GENERATE (0x182)
         i_sb_tx_rsp    = 1;
-        i_tx_decoding  = 'h186;
+        i_tx_decoding  = 'h189;
 
         o_tx_sb_done_expected  = 1;
-        o_tx_encoding_expected = 'h187;
+        o_tx_encoding_expected = 'h18A;
 
         @(negedge i_clk);
         assert (o_tx_encoding_expected == o_tx_encoding)
@@ -341,7 +341,7 @@ task do_eye_sweep_happy_pass();
         i_tx_done = 1;
 
         // → advance to RESULT_HANDSHAKE (0x183)
-        o_tx_encoding_expected = 'h188;
+        o_tx_encoding_expected = 'h18B;
 
         @(negedge i_clk);
         i_tx_done = 0;
@@ -372,11 +372,11 @@ task do_eye_sweep_happy_pass();
 
         // rsp + all-1s data → PASS → advance to END_HANDSHAKE (0x184)
         i_sb_tx_rsp    = 1;
-        i_tx_decoding  = 'h188;
+        i_tx_decoding  = 'h18B;
         i_tx_data      = {DATA_WIDTH{1'b1}};   // all 1s = test pass
 
         o_tx_sb_done_expected  = 1;
-        o_tx_encoding_expected = 'h189;
+        o_tx_encoding_expected = 'h18C;
         o_tx_data_expected     = i_tx_sweep_result;
 
         @(negedge i_clk);
@@ -414,10 +414,10 @@ task do_eye_sweep_happy_pass();
 
         // rsp → clock_to_test_done → LTSM substate 1 finishes → substate 2
         i_sb_tx_req   = 1;
-        i_tx_decoding = 'h190;
+        i_tx_decoding = 'h18D;
 
         o_tx_sb_done_expected  = 1;
-        o_tx_encoding_expected = 'h190;
+        o_tx_encoding_expected = 'h18D;
 
         @(negedge i_clk);
         assert (o_tx_encoding_expected == o_tx_encoding)
@@ -443,7 +443,7 @@ task do_eye_sweep_happy_pass();
 
         i_sb_tx_done   = 1;
         i_sb_tx_req = 0;
-        i_tx_decoding  = 'h190;
+        i_tx_decoding  = 'h18D;
 
         @(negedge i_clk);
 
@@ -540,7 +540,7 @@ initial begin
     o_tx_sb_done_expected = 1;
 
     i_sb_tx_req    = 1;
-    i_tx_decoding  = 'h185;
+    i_tx_decoding  = 'h188;
 
     @(negedge i_clk);
     assert (o_tx_sb_done_expected == o_tx_sb_done)
@@ -644,11 +644,7 @@ initial begin
     $display("=== TEST 9: RXCLKCAL (0x90 → eye_sweep[init=1] → 0x92) ===");
 
     do_req_hs('h98);
-
-    // Eye sweep sub-sequence — same externally observable handshakes
-    // (init=1 changes internal eye-sweep FSM start, but TB handshaking is identical)
-    do_eye_sweep_happy_pass();
-
+    
     do_req_hs('h9A);
     do_state_exit_hs('h9A);
 

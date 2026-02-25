@@ -199,7 +199,7 @@ always @(*) begin
         case (CS)
             // State 0: Respond to initial test request
             REQ_HANDSHAKE: begin
-                o_xx_encoding = 'h185;  // Response encoding
+                o_xx_encoding = 'h188;  // Response encoding
                 done = 0;
                 count_reg = 0;  // Reset retry count
                 train_error = 0;
@@ -210,7 +210,7 @@ always @(*) begin
 
                 // Wait for done signal
                 if (i_sb_xx_done) begin
-                    o_xx_encoding = 'h186;  // LFSR setup encoding
+                    o_xx_encoding = 'h189;  // LFSR setup encoding
                     NS = LFSR_HANDSHAKE;
                     o_xx_sb_req = 0;
                     o_xx_sb_rsp = 0;
@@ -220,14 +220,14 @@ always @(*) begin
     
             // State 1: Setup LFSR for pattern generation
             LFSR_HANDSHAKE: begin
-                o_xx_encoding = 'h186;  // LFSR setup encoding
+                o_xx_encoding = 'h189;  // LFSR setup encoding
                 done = 0;
             
                 if (done_ack) o_xx_sb_req = 0;
                 else o_xx_sb_req = 1;
 
-                if (i_sb_xx_rsp && i_xx_decoding == 'h186) begin
-                    o_xx_encoding = 'h187;  // Data generation encoding
+                if (i_sb_xx_rsp && i_xx_decoding == 'h189) begin
+                    o_xx_encoding = 'h18A;  // Data generation encoding
                     count_reg = count + 1;  // Increment count for retries
                     NS = DATA_GENERATE;
                     o_xx_sb_req = 0;
@@ -238,11 +238,11 @@ always @(*) begin
     
             // State 2: Generate test data patterns
             DATA_GENERATE: begin
-                o_xx_encoding = 'h187;  // Data generation encoding
+                o_xx_encoding = 'h18A;  // Data generation encoding
                 done = 0;
 
                 if (i_xx_done) begin
-                    o_xx_encoding = 'h188;  // Result collection encoding
+                    o_xx_encoding = 'h18B;  // Result collection encoding
                     o_xx_sb_req = 0;
                     o_xx_sb_rsp = 0;
                     NS = RESULT_HANDSHAKE;
@@ -252,28 +252,28 @@ always @(*) begin
     
             // State 3: Collect test results
             RESULT_HANDSHAKE: begin
-                o_xx_encoding = 'h188;  // Result collection encoding
+                o_xx_encoding = 'h18B;  // Result collection encoding
                 done = 0;
 
                 if (done_ack) o_xx_sb_req = 0;
                 else o_xx_sb_req = 1;
 
                 // Check result and decide on retry
-                if (i_sb_xx_rsp && i_xx_decoding == 'h188) begin
+                if (i_sb_xx_rsp && i_xx_decoding == 'h18B) begin
                     failed_test = !(&i_xx_data);  // Test fails if any bit is 0
                     // Retry if failed and retries allowed, otherwise get sweep result
                     if (failed_test && !no_retry) 
                         if (count == MAXIMUM_ITERATIONS-1) begin
                             train_error = 1;  // Mark training error if max retries reached
                         end else begin
-                            o_xx_encoding = 'h186;  // LFSR setup encoding
+                            o_xx_encoding = 'h189;  // LFSR setup encoding
                             NS = LFSR_HANDSHAKE;
                             o_xx_sb_req = 0;
                             o_xx_sb_rsp = 0;
                             train_error = 0;  // Clear training error for retry
                         end
                     else begin
-                        o_xx_encoding = 'h189;  // Sweep result encoding
+                        o_xx_encoding = 'h18C;  // Sweep result encoding
                         o_xx_sb_req = 0;
                         o_xx_sb_rsp = 0;
                         NS = SWEEP_RESULT_HANDSHAKE;
@@ -283,7 +283,7 @@ always @(*) begin
 
             // State 4: Send sweep parameter results
             SWEEP_RESULT_HANDSHAKE: begin
-                o_xx_encoding = 'h189;  // Sweep result encoding
+                o_xx_encoding = 'h18C;  // Sweep result encoding
                 done = 0;
                 o_xx_data = i_xx_sweep_result;  // Send sweep measurement data
 
@@ -291,8 +291,8 @@ always @(*) begin
                 else o_xx_sb_req = 1;
 
                 // Wait for acknowledgement
-                if (i_sb_xx_req && i_xx_decoding == 'h190) begin
-                    o_xx_encoding = 'h190;  // End encoding
+                if (i_sb_xx_req && i_xx_decoding == 'h18D) begin
+                    o_xx_encoding = 'h18D;  // End encoding
                     NS = END_HANDSHAKE;
                     o_xx_sb_req = 0;
                     o_xx_sb_rsp = 0;
@@ -302,7 +302,7 @@ always @(*) begin
     
             // State 5: Final handshake to complete test
             END_HANDSHAKE: begin
-                o_xx_encoding = 'h190;  // End encoding
+                o_xx_encoding = 'h18D;  // End encoding
                 o_xx_data = 0;          // Clear data
     
                 // Response handshake

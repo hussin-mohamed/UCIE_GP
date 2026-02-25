@@ -370,7 +370,7 @@ task do_eye_sweep_happy_pass_rx ();
         // REQ_HANDSHAKE (0x185) — DUT sends req, TB done_ack clears it,
         //                         TB req+dec=0x186 triggers REQ→LFSR
         // ================================================================
-        o_rx_encoding_expected = 'h185;
+        o_rx_encoding_expected = 'h188;
         o_rx_sb_req_expected   = 1;
 
         @(negedge i_clk);
@@ -396,8 +396,8 @@ task do_eye_sweep_happy_pass_rx ();
 
         // TB req + dec=0x186 → REQ→LFSR transition
         i_sb_rx_req            = 1;
-        i_rx_decoding          = 'h186;
-        o_rx_encoding_expected = 'h186;
+        i_rx_decoding          = 'h189;
+        o_rx_encoding_expected = 'h189;
 
         @(negedge i_clk);
         i_sb_rx_req   = 0;
@@ -441,7 +441,7 @@ task do_eye_sweep_happy_pass_rx ();
         // DATA_DETECTION (0x187) — TB req+dec=0x188 → DATA→RESULT
         //                          (i_rx_done no longer used in init=1 mode)
         // ================================================================
-        o_rx_encoding_expected = 'h187;
+        o_rx_encoding_expected = 'h18A;
 
         @(negedge i_clk);
         assert (o_rx_encoding_expected == o_rx_encoding)
@@ -450,8 +450,8 @@ task do_eye_sweep_happy_pass_rx ();
 
         // TB req+dec=0x188 → DATA→RESULT_HANDSHAKE transition
         i_sb_rx_req            = 1;
-        i_rx_decoding          = 'h188;
-        o_rx_encoding_expected = 'h188;
+        i_rx_decoding          = 'h18B;
+        o_rx_encoding_expected = 'h18B;
 
         @(negedge i_clk);
         i_sb_rx_req   = 0;
@@ -487,8 +487,8 @@ task do_eye_sweep_happy_pass_rx ();
         // TB req+dec=0x189 → RESULT→SWEEP_RESULT_HANDSHAKE (pass path)
         repeat (2) @(negedge i_clk);
         i_sb_rx_req            = 1;
-        i_rx_decoding          = 'h189;
-        o_rx_encoding_expected = 'h189;
+        i_rx_decoding          = 'h18C;
+        o_rx_encoding_expected = 'h18C;
 
         @(negedge i_clk);
         i_sb_rx_req   = 0;
@@ -505,7 +505,7 @@ task do_eye_sweep_happy_pass_rx ();
         // ================================================================
         // (encoding 0x189 was already checked above immediately after transition)
         // Just wait one cycle for SWEEP_RESULT to pass through, then END starts
-        o_rx_encoding_expected = 'h190;
+        o_rx_encoding_expected = 'h18D;
 
         @(negedge i_clk);
         assert (o_rx_encoding_expected == o_rx_encoding)
@@ -538,7 +538,7 @@ task do_eye_sweep_happy_pass_rx ();
 
         // TB rsp+dec=0x190 → done=1 → clock_to_test_done → LTSM exits sub1
         i_sb_rx_rsp   = 1;
-        i_rx_decoding = 'h190;
+        i_rx_decoding = 'h18D;
 
         @(negedge i_clk);
         i_sb_rx_rsp   = 0;
