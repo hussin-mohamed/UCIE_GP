@@ -29,6 +29,8 @@
     logic [8:0] o_tx_encoding_exp;
     logic o_pl_inband_pres_exp;
     logic o_pl_wake_ack_exp;
+    logic o_sb_tx_req_expected;
+    bit match;
     
     local static linkinit_state_tx inst = null; 
  
@@ -41,32 +43,56 @@
     endfunction 
      
     virtual function bit doSpecificCombAction(FSMContext cntxt, LTSM_controllers_seq_item ctrl_item , ltsm_rdi_sequence_item rdi_item ,rx_fsm_sb_sequence_item  rx_sb_item ,tx_fsm_sb_sequence_item tx_sb_item); 
-      if(/*previous state done sequence*/)
+      if(ctrl_item.i_tx_decoding == MBTRAIN_LINKSPEED_TX_LinkSpeed_Done_Hnd && tx_sb_item.i_sb_tx_rsp && cntxt.currentstate_tx == linkspeed_state_tx::instance())
       begin
         o_tx_encoding_exp = ACTIVE_LINKINIT_TX_PL_Clk_Req_Handshake ;
         o_pl_inband_pres_exp = 1'b1;
-        if(o_tx_encoding_exp == ctrl_item.o_tx_encoding && o_pl_inband_pres_exp == ctrl_item.o_pl_inband_pres)
-          return 1'b1;
+          if(o_tx_encoding_exp == ctrl_item.o_tx_encoding && o_pl_inband_pres_exp == ctrl_item.o_pl_inband_pres)
+            match = 1'b1;
+          else
+          begin
+            `uvm_info("linkinit_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_pl_inband_pres: %b, Actual o_pl_inband_pres: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding, o_pl_inband_pres_exp, ctrl_item.o_pl_inband_pres), UVM_LOW);
+            match = 1'b0;
+          end
       end
-      else if(ctrl_item.o_tx_encoding == ACTIVE_LINKINIT_TX_PL_Clk_Req_Handshake && rdi_item.i_lp_clk_ack  )
+      else if(o_tx_encoding_exp == ACTIVE_LINKINIT_TX_PL_Clk_Req_Handshake && rdi_item.i_lp_clk_ack && cntxt.currentstate_tx == linkinit_state_tx::instance())
       begin
         o_tx_encoding_exp = ACTIVE_LINKINIT_TX_LP_Wake_Req_Handshake ;
         o_pl_wake_ack_exp = 1'b1;
-        if(o_tx_encoding_exp == ctrl_item.o_tx_encoding && o_pl_wake_ack_exp == ctrl_item.o_pl_wake_ack)
-          return 1'b1;
+          if(o_tx_encoding_exp == ctrl_item.o_tx_encoding && o_pl_wake_ack_exp == ctrl_item.o_pl_wake_ack)
+            match = 1'b1;
+          else
+          begin
+            `uvm_info("linkinit_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_pl_wake_ack: %b, Actual o_pl_wake_ack: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding, o_pl_wake_ack_exp, ctrl_item.o_pl_wake_ack), UVM_LOW);
+            match = 1'b0;
+          end
       end
-      else if(ctrl_item.o_tx_encoding == ACTIVE_LINKINIT_TX_LP_Wake_Req_Handshake && (rdi_item.i_lp_state_req == 4'b0001))
+      else if(o_tx_encoding_exp == ACTIVE_LINKINIT_TX_LP_Wake_Req_Handshake && (rdi_item.i_lp_state_req == 4'b0001))
       begin
         o_tx_encoding_exp = ACTIVE_LINKINIT_TX_State_Req_Handshake  ;
-        if(o_tx_encoding_exp == ctrl_item.tx_encoding)
-          return 1'b1;
+        o_sb_tx_req_expected = 1'b1;
+          if(o_tx_encoding_exp == ctrl_item.o_tx_encoding && o_sb_tx_req_expected == tx_sb_item.o_sb_tx_req)
+            match = 1'b1;
+            else
+          begin
+            `uvm_info("linkinit_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_sb_tx_req: %b, Actual o_sb_tx_req: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding, o_sb_tx_req_expected, tx_sb_item.o_sb_tx_req), UVM_LOW);
+            match = 1'b0;
+          end
       end 
-      else if(ctrl_item.o_tx_encoding == ACTIVE_LINKINIT_TX_State_Req_Handshake  && tx_sb_item.i_sb_tx_done) 
+      else if(o_tx_encoding_exp == ACTIVE_LINKINIT_TX_State_Req_Handshake  && tx_sb_item.i_sb_tx_rsp) 
       begin
-        o_tx_encoding = /*next state*/ ;
+        o_tx_encoding_exp = ACTIVE_TX_Active ;
+          if(o_tx_encoding_exp == ctrl_item.o_tx_encoding)
+            match = 1'b1;
+          else
+          begin
+            `uvm_info("linkinit_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding), UVM_LOW);
+            match = 1'b0;
+          end
       end  
       else
-        return 1'b0;
+        match = 1'b0;
+        return match;
     endfunction 
  
  
