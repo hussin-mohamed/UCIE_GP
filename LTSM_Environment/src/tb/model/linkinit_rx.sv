@@ -29,6 +29,7 @@
     logic [8:0] o_rx_encoding_exp;
     logic o_pl_inband_pres_exp;
     logic o_pl_wake_ack_exp;
+    bit match;
     
     local static linkinit_state_rx inst = null; 
  
@@ -41,32 +42,56 @@
     endfunction 
      
     virtual function bit doSpecificCombAction(FSMContext cntxt, LTSM_controllers_seq_item ctrl_item , ltsm_rdi_sequence_item rdi_item ,rx_fsm_sb_sequence_item  rx_sb_item ,tx_fsm_sb_sequence_item tx_sb_item); 
-      if(/*previous state done sequence*/)
+      if(ctrl_item.i_rx_decoding == RX_MBTRAIN_LINKSPEED_Send_Done_RESP && rx_sb_item.i_sb_rx_done && cntxt.currentstate_rx == linkspeed_state_rx::instance())
       begin
         o_rx_encoding_exp = RX_ACTIVE_LINKINIT_PL_Clk_Req_Handshake ;
         o_pl_inband_pres_exp = 1'b1;
-        if(o_rx_encoding_exp == ctrl_item.o_rx_encoding && o_pl_inband_pres_exp == ctrl_item.o_pl_inband_pres)
-          return 1'b1;
+            if(o_rx_encoding_exp == ctrl_item.o_rx_encoding && o_pl_inband_pres_exp == ctrl_item.o_pl_inband_pres)
+                match = 1'b1;
+            else 
+            begin
+              `uvm_info("linkinit_state_rx", $sformatf("Expected o_rx_encoding: %b, Actual o_rx_encoding: %b, Expected o_pl_inband_pres: %b, Actual o_pl_inband_pres: %b", o_rx_encoding_exp, ctrl_item.o_rx_encoding, o_pl_inband_pres_exp, ctrl_item.o_pl_inband_pres), UVM_LOW);
+                match = 1'b0;
+            end
+            
       end
-      else if(ctrl_item.o_rx_encoding == RX_ACTIVE_LINKINIT_PL_Clk_Req_Handshake && rdi_item.i_lp_clk_ack)
+      else if(o_rx_encoding_exp == RX_ACTIVE_LINKINIT_PL_Clk_Req_Handshake && rdi_item.i_lp_clk_ack && cntxt.currentstate_tx == linkinit_state_rx::instance())
       begin
         o_rx_encoding_exp = RX_ACTIVE_LINKINIT_LP_Wake_Req_Handshake ;
         o_pl_wake_ack_exp = 1'b1;
-        if(o_rx_encoding_exp == ctrl_item.o_rx_encoding && o_pl_wake_ack_exp == ctrl_item.o_pl_wake_ack)
-          return 1'b1;
+            if(o_rx_encoding_exp == ctrl_item.o_rx_encoding && o_pl_wake_ack_exp == ctrl_item.o_pl_wake_ack)
+                match = 1'b1;
+            else
+            begin
+              `uvm_info("linkinit_state_rx", $sformatf("Expected o_rx_encoding: %b, Actual o_rx_encoding: %b, Expected o_pl_wake_ack: %b, Actual o_pl_wake_ack: %b", o_rx_encoding_exp, ctrl_item.o_rx_encoding, o_pl_wake_ack_exp, ctrl_item.o_pl_wake_ack), UVM_LOW);
+                match = 1'b0;
+            end
       end
-      else if(ctrl_item.o_rx_encoding == RX_ACTIVE_LINKINIT_LP_Wake_Req_Handshake && (rdi_item.i_lp_state_req == 4'b0001))
+      else if(o_rx_encoding_exp == RX_ACTIVE_LINKINIT_LP_Wake_Req_Handshake && (rdi_item.i_lp_state_req == 4'b0001))
       begin
         o_rx_encoding_exp = RX_ACTIVE_LINKINIT_State_Rsp_Handshake ;
-        if(o_rx_encoding_exp == ctrl_item.o_rx_encoding)
-          return 1'b1;
+        o_rx_sb_rsp_exp = 1'b1;
+            if(o_rx_encoding_exp == ctrl_item.o_rx_encoding && o_rx_sb_rsp_exp == rx_sb_item.o_rx_sb_rsp)
+                match = 1'b1;
+            else
+            begin
+              `uvm_info("linkinit_state_rx", $sformatf("Expected o_rx_encoding: %b, Actual o_rx_encoding: %b, Expected o_rx_sb_rsp: %b, Actual o_rx_sb_rsp: %b", o_rx_encoding_exp, ctrl_item.o_rx_encoding, o_rx_sb_rsp_exp, rx_sb_item.o_rx_sb_rsp), UVM_LOW);
+                match = 1'b0;
+            end
       end 
-      else if(o_rx_encoding_exp == RX_ACTIVE_LINKINIT_State_Rsp_Handshake && rx_sb_item.i_sb_rx_done) 
+      else if(ctrl_item.i_rx_decoding == RX_ACTIVE_LINKINIT_State_Rsp_Handshake && rx_sb_item.i_sb_rx_done) 
       begin
-        o_rx_encoding = /*next state*/ ;
+        o_rx_encoding_exp = RX_ACTIVE_Active ;
+            if(o_rx_encoding_exp == ctrl_item.o_rx_encoding)
+                match = 1'b1;
+            else
+            begin
+              `uvm_info("linkinit_state_rx", $sformatf("Expected o_rx_encoding: %b, Actual o_rx_encoding: %b", o_rx_encoding_exp, ctrl_item.o_rx_encoding), UVM_LOW);
+                match = 1'b0;
+            end
       end  
       else
-        return 1'b0;
+        return match;
     endfunction 
  
  
