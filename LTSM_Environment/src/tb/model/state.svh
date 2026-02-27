@@ -15,14 +15,36 @@
 // ****************************************************************************
 
 
-
-virtual class State;
+import shared_ltsm_pkg::*;
+virtual class State extends uvm_object;
+    `uvm_object_utils(State)
     bit match_tx, match_rx, match;
+    int counter;
+    StateTransitionUtil_tx st_trans_tx;
+    StateTransitionUtil_rx st_trans_rx;
+    st_trans_tx = new();
+    st_trans_rx = new();
+    function new(string name = "State" );
+        super.new(name);
+    endfunction
     function bit doAction(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
                           LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
         State nextState_tx, nextState_rx;
-        nextState_tx = StateTransitionUtil::calculate(this, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in,item_controllers_out,item_rdi_out,item_rx_fsm_sb_out,item_tx_fsm_sb_out);
-        nextState_rx = StateTransitionUtil::calculate(this, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in,item_controllers_out,item_rdi_out,item_rx_fsm_sb_out,item_tx_fsm_sb_out);
+        nextState_tx = st_trans_tx.calculate(cntxt, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in);
+        nextState_rx = st_trans_rx.calculate(cntxt, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in);
+        if ((nextstate_rx == cntxt.currentState_rx || nextState_tx == cntxt.currentState_tx) && cntxt.currentState_tx != trainerror_tx::Instance() && 
+        cntxt.currentState_rx != trainerror_rx::Instance() && cntxt.currentState_rx != ResetState_rx::Instance() && cntxt.currentState_tx != ResetState_tx::Instance()
+        && cntxt.currentState_tx != active_tx::Instance() && cntxt.currentState_rx != active_rx::Instance() && cntxt.currentState_tx != l1_state_tx::Instance() && 
+        cntxt.currentState_rx != l1_state_rx::Instance()) begin
+            counter++;  
+        end
+        else begin
+            counter = 0;
+        end
+        if (counter == timeout) begin
+            nextState_tx = trainerror_tx::Instance();
+            nextState_rx = trainerror_rx::Instance();
+        end
         match_tx = nextState_tx.doSpecificCombAction(cntxt, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in,item_controllers_out,item_rdi_out,item_rx_fsm_sb_out,item_tx_fsm_sb_out);
         match_rx = nextState_rx.doSpecificCombAction(cntxt, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in,item_controllers_out,item_rdi_out,item_rx_fsm_sb_out,item_tx_fsm_sb_out);
         match = match_tx & match_rx;
