@@ -67,6 +67,9 @@ class mbtrain_tx_valvref extends state;
             o_tx_encoding_expected = DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE;
             o_tx_info_expected = 16'h0000;
             o_sb_tx_req_expected = 1'b1;
+            if (!item_tx_fsm_sb_in.i_tx_info[4]) begin
+                error_count++;
+            end
             if (o_tx_encoding_expected==item_tx_fsm_sb_out.o_tx_encoding && o_tx_info_expected==item_tx_fsm_sb_out.o_tx_info && o_sb_tx_req_expected == item_tx_fsm_sb_out.o_sb_tx_req) begin
                 match = 1;
             end else begin
