@@ -1,8 +1,31 @@
-class MbInitCalState_rx extends LtsmState_rx;
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
+
+import shared_ltsm_pkg::*;
+class MbInitCalState_rx extends State;
+   `uvm_object_utils(MbInitCalState_rx)
 
    static MbInitCalState_rx inst;
 
-   protected function new(); endfunction
+   logic [8:0] o_rx_encoding_exp;
+   bit match;
+
+   protected function new(string name = "MbInitCalState_rx");
+      super.new(name);
+   endfunction
 
    static function MbInitCalState_rx Instance();
       if(inst == null)
@@ -10,31 +33,23 @@ class MbInitCalState_rx extends LtsmState_rx;
       return inst;
    endfunction
 
-   function void do_seq(UcieLtsmContext_rx ctx,
-                        tx_fsm_sb_sequence_item fsm_tx_items,
-                        rx_fsm_sb_sequence_item fsm_rx_items,
-                        ltsm_rdi_sequence_item rdi_items,
-                        LTSM_controllers_seq_item controllers_items);
-
-
-      // Lane deskew
-      // Equalization
-      // Clock alignment
-
+   virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
+                                              LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
+      // Lane deskew, Equalization, Clock alignment
+      if(cntxt.current_state_rx == MbInitParamState_rx::Instance() && item_rx_fsm_sb_in.i_sb_rx_done && item_controllers_in.rx_decoding == RX_MBINIT_PARAM_Send_RESP) begin
+         o_rx_encoding_exp = 'h18;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+      
+      
+      return match;
    endfunction
 
-   function void do_comb(UcieLtsmContext_rx ctx,
-                        tx_fsm_sb_sequence_item fsm_tx_items,
-                        rx_fsm_sb_sequence_item fsm_rx_items,
-                        ltsm_rdi_sequence_item rdi_items,
-                        LTSM_controllers_seq_item controllers_items);
-
-        controllers_items.o_rx_encoding_exp = 'h18;
-
-   endfunction
-
-   function ltsm_state_e get_id();
-      return LTSM_MBINIT_CAL_RX;
+   function fsm_t getStateId();
+      return fsm_mbinit_rx_cal;
    endfunction
 
 endclass

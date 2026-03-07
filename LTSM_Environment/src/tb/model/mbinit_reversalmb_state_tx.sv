@@ -1,8 +1,31 @@
-class MbInitReversalMbState_tx extends LtsmState_tx;
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
+
+class MbInitReversalMbState_tx extends State;
+   `uvm_object_utils(MbInitReversalMbState_tx)
 
    static MbInitReversalMbState_tx inst;
 
-   protected function new(); endfunction
+   logic [8:0] o_tx_encoding_exp;
+   logic o_tx_sb_req_exp;
+   bit match;
+
+   protected function new(string name = "MbInitReversalMbState_tx");
+      super.new(name);
+   endfunction
 
    static function MbInitReversalMbState_tx Instance();
       if(inst == null)
@@ -10,49 +33,79 @@ class MbInitReversalMbState_tx extends LtsmState_tx;
       return inst;
    endfunction
 
-   function void do_seq(UcieLtsmContext_tx ctx,
-                        tx_fsm_sb_sequence_item fsm_tx_items,
-                        rx_fsm_sb_sequence_item fsm_rx_items,
-                        ltsm_rdi_sequence_item rdi_items,
-                        LTSM_controllers_seq_item controllers_items);
+   virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
+                                              LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
       // Lane reversal negotiation
+
+      if(cntxt.current_state_rx == MbInitRepairValState_tx::Instance() && item_controllers_in.i_tx_decoding == MBINIT_REPAIRVAL_TX_Done_Handshake && item_tx_fsm_sb_in.i_sb_tx_done == 1'b1) begin
+         o_tx_encoding_exp = 'h30;
+         o_tx_sb_req_exp = 1;
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+
+
+      else if(item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1 && item_controllers_in.i_tx_decoding == 'h30) begin
+         o_tx_encoding_exp = 'h31;
+         // clearl log req
+         o_tx_sb_req_exp = 1;
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+
+      else if(item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1 && item_controllers_in.i_tx_decoding == 'h33 && item_tx_fsm_sb_in.i_tx_data == MAJORITY_LANES_SUCCESS) begin
+         o_tx_encoding_exp = 'h35;
+         // done handshake req
+         o_tx_sb_req_exp = 1;
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+      else if(item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1 && item_tx_fsm_sb_in.i_tx_data == NOT_MAJORITY_LANES_SUCCESS && item_controllers_in.i_tx_decoding == 'h33 ) begin
+         o_tx_encoding_exp = 'h34;
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+
+       else if(item_controllers_in.i_tx_done && item_controllers_in.i_tx_decoding == 'h34) begin
+         o_tx_encoding_exp = 'h31;
+         //loop back to clear log req
+         o_tx_sb_req_exp = 1;
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+
+      else if(item_controllers_in.i_tx_done && item_controllers_in.i_tx_decoding == 'h32) begin
+         o_tx_encoding_exp = 'h33;
+         // result req
+         o_tx_sb_req_exp = 1;
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+      else if(item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1 && item_controllers_in.i_tx_decoding == 'h31) begin
+         o_tx_encoding_exp = 'h32;
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+      
+      return match;
    endfunction
 
-   function void do_comb(UcieLtsmContext_tx ctx,
-                        tx_fsm_sb_sequence_item fsm_tx_items,
-                        rx_fsm_sb_sequence_item fsm_rx_items,
-                        ltsm_rdi_sequence_item rdi_items,
-                        LTSM_controllers_seq_item controllers_items);
-
-        if(fsm_tx_items.i_sb_tx_rsp == 1'b1 
-                && controllers_items.i_tx_decoding == REVERSAL_RESULT_RESP 
-                && fsm_tx_items.i_tx_data == MAJORITY_LANES_SUCCESS) begin
-            controllers_items.o_tx_encoding_exp = 'h35;
-        end
-
-        else if(fsm_tx_items.i_sb_tx_rsp == 1'b1 
-                && fsm_tx_items.i_tx_data == MAJORITY_LANES_SUCCESS) begin
-            controllers_items.o_tx_encoding_exp = 'h34;
-        end
-
-        else if(controllers_items.i_tx_done) begin
-            controllers_items.o_tx_encoding_exp = 'h33;
-        end
-
-        else if(fsm_tx_items.i_sb_tx_rsp == 1'b1) begin
-            controllers_items.o_tx_encoding_exp = 'h32;
-        end
-
-        else if(fsm_tx_items.i_sb_tx_rsp == 1'b1) begin
-            controllers_items.o_tx_encoding_exp = 'h31;
-        end
-
-        else
-            controllers_items.o_tx_encoding_exp = 'h30;
-   endfunction
-
-   function ltsm_state_e get_id();
-      return LTSM_MBINIT_REVERSALMB_TX;
+   function fsm_t getStateId();
+      return fsm_mbinit_tx_reversal;
    endfunction
 
 endclass

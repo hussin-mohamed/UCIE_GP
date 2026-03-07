@@ -1,8 +1,32 @@
-class MbInitRepairClkState_rx extends LtsmState_rx;
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
+
+import shared_ltsm_pkg::*;
+class MbInitRepairClkState_rx extends State;
+   `uvm_object_utils(MbInitRepairClkState_rx)
 
    static MbInitRepairClkState_rx inst;
 
-   protected function new(); endfunction
+   logic [8:0] o_rx_encoding_exp;
+   o_rx_sb_rsp_exp;
+   bit match;
+
+   protected function new(string name = "MbInitRepairClkState_rx");
+      super.new(name);
+   endfunction
 
    static function MbInitRepairClkState_rx Instance();
       if(inst == null)
@@ -10,48 +34,63 @@ class MbInitRepairClkState_rx extends LtsmState_rx;
       return inst;
    endfunction
 
-   function void do_seq(UcieLtsmContext_rx ctx,
-                        tx_fsm_sb_sequence_item fsm_tx_items,
-                        rx_fsm_sb_sequence_item fsm_rx_items,
-                        ltsm_rdi_sequence_item rdi_items,
-                        LTSM_controllers_seq_item controllers_items);
+   virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
+                                              LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
       // Clock lane repair negotiation
+      if(cntxt.current_state_rx == MbInitCalState_rx::Instance() && item_controllers_in.i_rx_decoding == MBINIT_CAL_RX_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req == 1'b1) begin
+         o_rx_encoding_exp = 'h20;
+         o_rx_sb_rsp_exp = 1;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+      if(item_rx_fsm_sb_in.i_sb_rx_done == 1'b1 && item_controllers_in.i_rx_decoding == 'h20) begin
+         o_rx_encoding_exp = 'h21;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+      else if(item_controllers_in.i_rx_done && item_controllers_in.i_rx_decoding == 'h21) begin
+         o_rx_encoding_exp = 'h22;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+
+
+      else if(item_rx_fsm_sb_in.i_sb_rx_req == 1'b1 && item_controllers_in.i_rx_decoding == 'h21) begin
+            o_rx_encoding_exp = 'h23;
+            o_rx_sb_rsp_exp = 1;
+            if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
+               match = 1;
+            else
+               match = 0;
+      end
+
+      else if(item_controllers_in.i_rx_decoding == 'h22 && item_rx_fsm_sb_in.i_sb_rx_req == 1'b1 ) begin
+         o_rx_encoding_exp =='h23;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
+               match = 1;
+         else
+               match = 0;
+      end
+
+      else if(item_rx_fsm_sb_in.i_sb_rx_done == 1'b1 && item_controllers_in.i_rx_decoding == 'h23) begin
+         o_rx_encoding_exp = 'h24;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+      
+      return match;
    endfunction
 
-   function void do_comb(UcieLtsmContext_rx ctx,
-                        tx_fsm_sb_sequence_item fsm_tx_items,
-                        rx_fsm_sb_sequence_item fsm_rx_items,
-                        ltsm_rdi_sequence_item rdi_items,
-                        LTSM_controllers_seq_item controllers_items);
-
-        if(fsm_rx_items.i_sb_rx_done == 1'b1) begin
-            controllers_items.o_rx_encoding_exp = 'h21;
-
-        end
-        
-        else if (controllers_items.i_rx_done) begin
-            controllers_items.o_rx_encoding_exp = 'h22;
-
-            if(fsm_rx_items.i_sb_rx_req == 1'b1 && controllers_items.i_rx_decoding == REPAIRCLK_RESULT_RESP)
-                controllers_items.o_rx_encoding_exp = 'h23;
-        end
-
-        else if(fsm_rx_items.i_sb_rx_req == 1'b1 
-                && controllers_items.i_rx_decoding == REPAIRCLK_RESULT_RESP) begin
-            controllers_items.o_rx_encoding_exp = 'h23;
-        end
-
-        else if(fsm_rx_items.i_sb_rx_done == 1'b1) begin
-            controllers_items.o_rx_encoding_exp = 'h24;
-        end
-
-        else
-            controllers_items.o_rx_encoding_exp = 'h20;
-
-   endfunction
-
-   function ltsm_state_e get_id();
-      return LTSM_MBINIT_REPAIRCLK_RX;
+   function fsm_t getStateId();
+      return fsm_mbinit_rx_repairclk;
    endfunction
 
 endclass

@@ -1,8 +1,32 @@
-class MbInitParamState_rx extends LtsmState_rx;
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
 
+import shared_ltsm_pkg::*;
+class MbInitParamState_rx extends State;
+   `uvm_object_utils(MbInitParamState_rx)
    static MbInitParamState_rx inst;
 
-   protected function new(); endfunction
+   logic [8:0] o_rx_encoding_exp;
+   logic [63:0] o_rx_data_exp;
+   logic o_rx_sb_rsp_exp;
+   bit match;
+
+   protected function new(string name = "MbInitParamState_rx");
+      super.new(name);
+   endfunction
 
    static function MbInitParamState_rx Instance();
       if(inst == null)
@@ -10,38 +34,38 @@ class MbInitParamState_rx extends LtsmState_rx;
       return inst;
    endfunction
 
-   function void do_seq(UcieLtsmContext_rx ctx,
-                        tx_fsm_sb_sequence_item fsm_tx_items,
-                        rx_fsm_sb_sequence_item fsm_rx_items,
-                        ltsm_rdi_sequence_item rdi_items,
-                        LTSM_controllers_seq_item controllers_items);
-
-
+   virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
+                                              LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
+      if(cntxt.current_state_rx == SbInitState_rx::Instance() && item_rx_fsm_sb_in.i_sb_rx_req && item_controllers_in.rx_decoding == RX_SBINIT_Done_Handshake) begin
+         o_rx_encoding_exp = 'h10;
+         o_rx_sb_rsp_exp = 1;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+      else if(item_controllers_in.i_rx_decoding == RX_MBINIT_PARAM_Wait_Config_REQ && item_rx_fsm_sb_in.i_sb_rx_req) begin
+         o_rx_encoding_exp = 'h11;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+      else if(item_controllers_in.i_par_check_done && rx_decoding == RX_MBINIT_PARAM_Send_RESP) begin
+         o_rx_encoding_exp = 'h12;
+         o_rx_data_exp = CHECKING_RESULTS;
+         o_rx_sb_rsp_exp = 1;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && o_rx_data_exp ==item_rx_fsm_sb_out.o_rx_data && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
+            match = 1;
+         else
+            match = 0;
+      end
+      
+      return match;
    endfunction
 
-   function void do_comb(UcieLtsmContext_rx ctx,
-                        tx_fsm_sb_sequence_item fsm_tx_items,
-                        rx_fsm_sb_sequence_item fsm_rx_items,
-                        ltsm_rdi_sequence_item rdi_items,
-                        LTSM_controllers_seq_item controllers_items);
-
-    if(controller_items.i_rx_decoding == CONFIG_REQ)
-        controllers_items.o_rx_encoding_exp = 'h11;
-
-    else if(controller_items.i_par_check_done) begin
-        controllers_items.o_rx_encoding_exp = 'h12;
-        fsm_rx_items.o_rx_data_exp = CHECKING_RESULTS;
-    end
-
-    else begin
-        controllers_items.o_rx_encoding_exp = 'h10; 
-    end
-    
-
-   endfunction
-
-   function ltsm_state_e get_id();
-      return LTSM_MBINIT_PARAM_RX;
+   function fsm_t getStateId();
+      return fsm_mbinit_rx_param;
    endfunction
 
 endclass    

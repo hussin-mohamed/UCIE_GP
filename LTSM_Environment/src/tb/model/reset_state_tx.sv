@@ -1,8 +1,30 @@
-class ResetState_tx extends LtsmState_tx;
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
+
+class ResetState_tx extends State;
+   `uvm_object_utils(ResetState_tx)
 
    static ResetState_tx inst;
 
-   protected function new(); endfunction
+   logic [8:0] o_tx_encoding_exp;
+   bit match;
+
+   protected function new(string name = "ResetState_tx");
+      super.new(name);
+   endfunction
 
    static function ResetState_tx Instance();
       if(inst == null)
@@ -10,30 +32,21 @@ class ResetState_tx extends LtsmState_tx;
       return inst;
    endfunction
 
-   function void do_seq(UcieLtsmContext_tx ctx,
-                        tx_fsm_sb_sequence_item fsm_tx_items,
-                        rx_fsm_sb_sequence_item fsm_rx_items,
-                        ltsm_rdi_sequence_item rdi_items,
-                        LTSM_controllers_seq_item controllers_items);
-
-      // Wait for reset deassert
-      // Clear training flags
-   endfunction
-
-   function void do_comb(UcieLtsmContext_tx ctx,
-                         tx_fsm_sb_sequence_item fsm_tx_items,
-                         rx_fsm_sb_sequence_item fsm_rx_items,
-                         ltsm_rdi_sequence_item rdi_items,
-                         LTSM_controllers_seq_item controllers_items);
-
-
+   virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
+                                              LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
       // predict combinational outputs in reset state
-      controllers_items.o_tx_encoding_exp = 0;
-
+      o_tx_encoding_exp = 0;
+      
+      if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp)
+         match = 1;
+      else
+         match = 0;
+      
+      return match;
    endfunction
 
-   function ltsm_state_e get_id();
-      return LTSM_RESET_TX;
+   function fsm_t getStateId();
+      return fsm_tx_reset;
    endfunction
 
 endclass
