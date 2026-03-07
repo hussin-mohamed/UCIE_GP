@@ -15,8 +15,7 @@
 // ****************************************************************************
 
 import shared_ltsm_pkg::*;
-class StateTransitionUtil_tx extends uvm_object;
- `uvm_object_utils(StateTransitionUtil_tx)
+class StateTransitionUtil_tx extends state;
  local static State validStateTransitions[State][$];
  local static CovergroupWrapper cgWrapper;
 
@@ -43,9 +42,9 @@ class StateTransitionUtil_tx extends uvm_object;
     
     validStateTransitions[MbInitRepairMbState_tx::Instance()] = { MbInitRepairMbState_tx::Instance(), mbtrain_tx_valvref::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
     
-    validStateTransitions[mbtrain_tx_valvref::Instance()] = { mbtrain_tx_valvref::Instance(), data_to_clock_sweep::Instance(), mbtrain_tx_datavref::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
+    validStateTransitions[mbtrain_tx_valvref::Instance()] = { mbtrain_tx_valvref::Instance(), mbtrain_tx_datavref::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
     
-    validStateTransitions[mbtrain_tx_datavref::Instance()] = { mbtrain_tx_datavref::Instance(), data_to_clock_sweep::Instance(), mbtrain_tx_speedidle::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
+    validStateTransitions[mbtrain_tx_datavref::Instance()] = { mbtrain_tx_datavref::Instance(), mbtrain_tx_speedidle::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
     
     validStateTransitions[mbtrain_tx_speedidle::Instance()] = { mbtrain_tx_speedidle::Instance(), mbtrain_tx_txselfcal::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
     
@@ -53,19 +52,19 @@ class StateTransitionUtil_tx extends uvm_object;
     
     validStateTransitions[mbtrain_tx_rxclkcal::Instance()] = { mbtrain_tx_rxclkcal::Instance(), mbtrain_tx_valtraincenter::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
     
-    validStateTransitions[mbtrain_tx_valtraincenter::Instance()] = { mbtrain_tx_valtraincenter::Instance(), data_to_clock_sweep::Instance(), mbtrain_tx_valtrainvref::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
+    validStateTransitions[mbtrain_tx_valtraincenter::Instance()] = { mbtrain_tx_valtraincenter::Instance(), mbtrain_tx_valtrainvref::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
 
-    validStateTransitions[mbtrain_tx_valtrainvref::Instance()] = { mbtrain_tx_valtrainvref::Instance(), data_to_clock_sweep::Instance(), mbtrain_tx_dtc1::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
+    validStateTransitions[mbtrain_tx_valtrainvref::Instance()] = { mbtrain_tx_valtrainvref::Instance(), mbtrain_tx_dtc1::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
     
-    validStateTransitions[mbtrain_tx_dtc1::Instance()] = { mbtrain_tx_dtc1::Instance(), data_to_clock_sweep::Instance(), mbtrain_tx_datatrainvref::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
+    validStateTransitions[mbtrain_tx_dtc1::Instance()] = { mbtrain_tx_dtc1::Instance(), mbtrain_tx_datatrainvref::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
     
-    validStateTransitions[mbtrain_tx_datatrainvref::Instance()] = { mbtrain_tx_datatrainvref::Instance(), data_to_clock_sweep::Instance(), mbtrain_tx_rxdeskew::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
+    validStateTransitions[mbtrain_tx_datatrainvref::Instance()] = { mbtrain_tx_datatrainvref::Instance(), mbtrain_tx_rxdeskew::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
     
-    validStateTransitions[mbtrain_tx_rxdeskew::Instance()] = { mbtrain_tx_rxdeskew::Instance(), data_to_clock_sweep::Instance(), mbtrain_tx_dtc2::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
+    validStateTransitions[mbtrain_tx_rxdeskew::Instance()] = { mbtrain_tx_rxdeskew::Instance(), mbtrain_tx_dtc2::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
     
-    validStateTransitions[mbtrain_tx_dtc2::Instance()] = { mbtrain_tx_dtc2::Instance(), data_to_clock_sweep::Instance(), mbtrain_tx_linkspeed::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
+    validStateTransitions[mbtrain_tx_dtc2::Instance()] = { mbtrain_tx_dtc2::Instance(), mbtrain_tx_linkspeed::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
     
-    validStateTransitions[mbtrain_tx_linkspeed::Instance()] = { mbtrain_tx_linkspeed::Instance(), data_to_clock_sweep::Instance(), mbtrain_tx_repair::Instance(), phyretrain_tx::Instance(), linkinit_state_tx::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
+    validStateTransitions[mbtrain_tx_linkspeed::Instance()] = { mbtrain_tx_linkspeed::Instance(), mbtrain_tx_repair::Instance(), phyretrain_tx::Instance(), linkinit_state_tx::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
     
     validStateTransitions[mbtrain_tx_repair::Instance()] = { mbtrain_tx_repair::Instance(), mbtrain_tx_txselfcal::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
     
@@ -150,68 +149,164 @@ class StateTransitionUtil_tx extends uvm_object;
                end
             end
             fsm_tx_trainerror : begin
-               if (item_controllers_in.i_reset)begin
+               if (item_controllers_in.i_reset || item_controllers_in.i_sb_cur_msg_done)begin
                   return ResetState_tx::Instance();
                end
+               else begin
+                  return trainerror_tx::Instance();
+               end 
+
             end
             fsm_mbtrain_tx_valvref : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
+               end
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_VALVREF_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_VALVREF_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return mbtrain_tx_datavref::Instance();
+               end
+               else begin
+                  return mbtrain_tx_valvref::Instance()
                end
             end
             fsm_mbtrain_tx_datavref : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_DATAVREF_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_DATAVREF_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return mbtrain_tx_speedidle::Instance();
+               end
+               else begin
+                  return mbtrain_tx_valvref::Instance()
+               end
             end
             fsm_mbtrain_tx_dtc1 : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
+               end
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_DTC1_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_DTC1_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return mbtrain_tx_datatrainvref::Instance();
+               end
+               else begin
+                  return mbtrain_tx_dtc1::Instance()
                end
             end
             fsm_mbtrain_tx_rxclkcal : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_RXCLKCAL_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_RXCLKCAL_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return mbtrain_tx_valtraincenter::Instance();
+               end
+               else begin
+                  return mbtrain_tx_rxclkcal::Instance()
+               end
             end
             fsm_mbtrain_tx_valtraincenter : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
+               end
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_VALTRAINCENTER_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_VALTRAINCENTER_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return mbtrain_tx_valtrainvref::Instance();
+               end
+               else begin
+                  return mbtrain_tx_valtraincenter::Instance()
+               end
+            end 
+            fsm_mbtrain_tx_valtrainvref : begin
+               if (item_controllers_in.i_reset)begin
+                  return ResetState_tx::Instance();
+               end
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_VALTRAINVREF_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_VALTRAINVREF_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return mbtrain_tx_dtc1::Instance();
+               end
+               else begin
+                  return mbtrain_tx_valtrainvref::Instance()
                end
             end 
             fsm_mbtrain_tx_rxdeskew : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_VALTRAINVREF_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_VALTRAINVREF_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return mbtrain_tx_dtc2::Instance();
+               end
+               else begin
+                  return mbtrain_tx_rxdeskew::Instance()
+               end
             end
             fsm_mbtrain_tx_dtc2 : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
+               end
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_DTC2_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_DTC2_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return mbtrain_tx_linkspeed::Instance();
+               end
+               else begin
+                  return mbtrain_tx_dtc2::Instance()
                end
             end
             fsm_mbtrain_tx_datatrainvref : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_DATATRAINVREF_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_DATATRAINVREF_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return mbtrain_tx_rxdeskew::Instance();
+               end
+               else begin
+                  return mbtrain_tx_datatrainvref::Instance()
+               end
             end
             fsm_mbtrain_tx_linkspeed : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
+               end
+               // speed idle
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_LINKSPEED_TX_Exit_SpeedDegrade_Hnd && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  rerurn mbtrain_tx_speedidle::Instance();
+               end
+               // repair
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_LINKSPEED_TX_Repair_Hnd && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return mbtrain_tx_repair::Instance();
+               end
+               // done
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_LINKSPEED_TX_LinkSpeed_Done_Hnd && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_LINKSPEED_Send_Done_RESP && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return linkinit_state_tx::Instance();
+               end
+               else begin
+                  return mbtrain_tx_linkspeed::Instance();
                end
             end
             fsm_mbtrain_tx_repair : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_REPAIR_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_REPAIR_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return mbtrain_tx_txselfcal::Instance();
+               end
+               else begin
+                  return mbtrain_tx_repair::Instance();
+               end
             end
             fsm_mbtrain_tx_speedidle : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_SPEEDIDLE_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_SPEEDIDLE_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return mbtrain_tx_txselfcal::Instance();
+               end
+               else begin
+                  return mbtrain_tx_speedidle::Instance();
+               end
             end
             fsm_mbtrain_tx_txselfcal : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
+               end
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_TXSELFCAL_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_TXSELFCAL_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+                  return mbtrain_tx_rxclkcal::Instance();
+               end
+               else begin
+                  return mbtrain_tx_txselfcal::Instance()
                end
             end
             fsm_tx_phyretrain : begin
