@@ -30,7 +30,7 @@ class mbtrain_tx_rxdeskew extends state;
 
     virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
                                               LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
-        if(item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_DATATRAINVREF_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_DATATRAINVREF_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && cntxt.currentstate_tx == mbtrain_tx_datatrainvref::instance())begin
+        if(item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_DATATRAINVREF_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_DATATRAINVREF_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && cntxt.currentstate_tx == mbtrain_tx_datatrainvref::Instance())begin
             o_tx_encoding_expected = MBTRAIN_RXDESKEW_TX_Start_Handshake;
             o_tx_info_expected = 16'h0000;
             o_sb_tx_req_expected = 1'b1;
@@ -43,7 +43,7 @@ class mbtrain_tx_rxdeskew extends state;
                 `uvm_info("mbtrain_tx_rxdeskew", $sformatf("o_sb_tx_req mismatch expected value: %0b, got %0b", o_sb_tx_req_expected, item_tx_fsm_sb_out.o_sb_tx_req), UVM_LOW)
             end
         end
-        else if((item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_RXDESKEW_TX_Start_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && cntxt.currentstate_tx == mbtrain_tx_rxdeskew::instance()))begin
+        else if((item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_RXDESKEW_TX_Start_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 ))begin
             o_tx_encoding_expected = MBTRAIN_RXDESKEW_TX_End_Handshake;
             o_tx_info_expected = 16'h0000;
             o_sb_tx_req_expected = 1'b1;

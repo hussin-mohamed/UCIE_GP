@@ -18,7 +18,9 @@ class mbtrain_rx_dtc1 extends state;
     local static mbtrain_rx_dtc1 inst = null;
     logic [8:0] o_rx_encoding_expected;
     logic [15:0] o_rx_info_expected;
+    logic o_sb_rx_req_expected;
     logic o_sb_rx_rsp_expected;
+    logic [63:0] o_rx_data_expected;
     bit match;
     protected function new(); endfunction
 
@@ -30,10 +32,12 @@ class mbtrain_rx_dtc1 extends state;
 
     virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
                                               LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
-        if(item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_DTC1_Start_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1 && cntxt.currentstate_rx == mbtrain_rx_valtrainvref::instance())begin
+        if(item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_DTC1_Start_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1 && cntxt.currentstate_rx == mbtrain_rx_valtrainvref::Instance())begin
             o_rx_encoding_expected = RX_MBTRAIN_DTC1_Start_Handshake;
+            end_sweep=0;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
+            train =1;
             if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected==item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
                 match = 1;
             end else begin
@@ -43,16 +47,78 @@ class mbtrain_rx_dtc1 extends state;
                 `uvm_info("mbtrain_rx_dtc1", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
             end
         end
-        else if((item_rx_fsm_sb_in.i_sb_rx_done == 1 &&  cntxt.currentstate_rx == mbtrain_rx_dtc1::instance()) )begin
-             o_rx_encoding_expected = RX_MBTRAIN_DTC1_Pattern_Detection;
+        else if((item_rx_fsm_sb_in.i_sb_rx_done == 1 && train))begin
+            o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_INIT_HANDSHAKE;
+            o_rx_info_expected = 16'h0000;
+            o_sb_rx_rsp_expected = 1'b1;
+            train =0;
+            if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected==item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
+                match = 1;
+            end else begin
+                match = 0;
+                `uvm_info("mbtrain_rx_dtc1", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
+                `uvm_info("mbtrain_rx_dtc1", $sformatf("o_sb_rx_rsp mismatch expected value: %0b, got %0b", o_sb_rx_rsp_expected, item_rx_fsm_sb_out.o_sb_rx_rsp), UVM_LOW)
+                `uvm_info("mbtrain_rx_dtc1", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
+            end           
+        end
+        else if (item_rx_fsm_sb_in.i_rx_decoding == DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE && item_rx_fsm_sb_in.i_sb_rx_req==1'b1 ) begin
+            o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE;
             if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding) begin
                 match=1;
             end else begin
                 match =0;
                 `uvm_info("mbtrain_rx_dtc1", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
-            end           
+            end 
         end
-        else if (item_controllers_in.i_tx_done && item_controllers_in.i_rx_done && item_rx_fsm_sb_in.i_sb_rx_req && cntxt.currentstate_rx == data_to_clock_sweep::instance()) begin
+        else if (item_rx_fsm_sb_in.i_sb_rx_done == 1 && !train) begin
+            o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_PATTERN_GENERATION;
+            if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding) begin
+                match=1;
+            end else begin
+                match =0;
+                `uvm_info("mbtrain_rx_dtc1", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
+            end 
+        end
+        else if (item_rx_fsm_sb_in.i_rx_decoding == DATA_TO_CLOCK_RX_RX_RESULT_HANDSHAKE && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+            o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_RESULT_HANDSHAKE;
+            o_rx_info_expected[5] = item_controllers_in.i_val_error;
+            o_rx_info_expected[4] = (&item_controllers_in.i_lane_error);
+            o_rx_data_expected = item_controllers_in.i_lane_error;
+            o_sb_rx_rsp_expected = 1'b1;
+            if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected[5:4]==item_rx_fsm_sb_out.o_rx_info[5:4] && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp && o_rx_data_expected == item_rx_fsm_sb_out.o_rx_data) begin
+                match = 1;
+            end else begin
+                match = 0;
+                `uvm_info("mbtrain_rx_dtc1", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
+                `uvm_info("mbtrain_rx_dtc1", $sformatf("o_sb_rx_rsp mismatch expected value: %0b, got %0b", o_sb_rx_rsp_expected, item_rx_fsm_sb_out.o_sb_rx_rsp), UVM_LOW)
+                `uvm_info("mbtrain_rx_dtc1", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
+                `uvm_info("mbtrain_rx_dtc1", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_data_expected, item_rx_fsm_sb_out.o_rx_data), UVM_LOW)
+            end  
+        end
+        else if (item_rx_fsm_sb_in.i_rx_decoding == DATA_TO_CLOCK_RX_RX_SWEEP_RESULT_HANDSHAKE && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+            o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_SWEEP_RESULT_HANDSHAKE;
+            end_sweep=1;
+            if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding) begin
+                match=1;
+            end else begin
+                match =0;
+                `uvm_info("mbtrain_rx_dtc1", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
+            end 
+        end
+        else if (end_sweep) begin 
+            o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_END_INIT_HANDSHAKE;
+            o_rx_info_expected = 16'h0000;
+            o_sb_rx_rsp_expected = 1'b1;
+            if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected == item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
+                match=1;
+            end else begin
+                match =0;
+                `uvm_info("mbtrain_rx_dtc1", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
+                `uvm_info("mbtrain_rx_dtc1", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
+                `uvm_info("mbtrain_rx_dtc1", $sformatf("o_sb_rx_rsp mismatch expected value: %0b, got %0b", o_sb_rx_rsp_expected, item_rx_fsm_sb_out.o_sb_rx_rsp), UVM_LOW)
+            end
+        end
+        else if ( item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_DTC1_End_Handshake ) begin
             o_rx_encoding_expected = RX_MBTRAIN_DTC1_End_Handshake;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;

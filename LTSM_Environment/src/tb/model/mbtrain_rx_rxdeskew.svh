@@ -18,7 +18,7 @@ class mbtrain_rx_rxdeskew extends state;
     local static mbtrain_rx_rxdeskew inst = null;
     logic [8:0] o_rx_encoding_expected;
     logic [15:0] o_rx_info_expected;
-    logic o_sb_rx_req_expected;
+    logic o_sb_rx_rsp_expected;
     bit match;
         protected function new(); endfunction
 
@@ -30,11 +30,11 @@ class mbtrain_rx_rxdeskew extends state;
 
     virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
                                               LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
-        if(item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_RXDESKEW_Start_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1 && cntxt.currentstate_rx == mbtrain_rx_datatrainvref::instance())begin
+        if(item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_RXDESKEW_Start_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1 && cntxt.currentstate_rx == mbtrain_rx_datatrainvref::Instance())begin
             o_rx_encoding_expected = RX_MBTRAIN_RXDESKEW_Start_Handshake;
             o_rx_info_expected = 16'h0000;
-            o_sb_rx_req_expected = 1'b1;
-            if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected==item_rx_fsm_sb_out.o_rx_info && o_sb_rx_req_expected == item_rx_fsm_sb_out.o_sb_rx_req) begin
+            o_sb_rx_rsp_expected = 1'b1;
+            if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected==item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
                 match = 1;
             end else begin
                 match = 0;
@@ -43,18 +43,18 @@ class mbtrain_rx_rxdeskew extends state;
                 `uvm_info("mbtrain_rx_rxdeskew", $sformatf("o_sb_rx_req mismatch expected value: %0b, got %0b", o_sb_rx_req_expected, item_rx_fsm_sb_out.o_sb_rx_req), UVM_LOW)
             end
         end
-        else if (cntxt.currentstate_tx == mbtrain_tx_rxdeskew::instance()) begin
+        else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_RXDESKEW_End_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
             o_tx_encoding_expected = RX_MBTRAIN_RXDESKEW_End_Handshake;
-            o_tx_info_expected = 16'h0000;
-            o_sb_tx_req_expected= 1'b1;
-            if (o_tx_encoding_expected == item_tx_fsm_sb_out.o_tx_encoding && o_tx_info_expected == item_tx_fsm_sb_out.o_tx_info && o_sb_tx_req_expected == item_tx_fsm_sb_out.o_sb_tx_req) begin
-                match=1;
+           o_rx_info_expected = 16'h0000;
+            o_sb_rx_rsp_expected = 1'b1;
+            if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected==item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
+                match = 1;
             end else begin
-                match =0;
-                `uvm_info("mbtrain_tx_rxdeskew", $sformatf("Mismatch in o_tx_encoding: expected %0h, got %0h", o_tx_encoding_expected, item_tx_fsm_sb_out.o_tx_encoding), UVM_LOW)
-                `uvm_info("mbtrain_tx_rxdeskew", $sformatf("o_tx_info mismatch expected value: %0h, got %0h", o_tx_info_expected, item_tx_fsm_sb_out.o_tx_info), UVM_LOW)
-                `uvm_info("mbtrain_tx_rxdeskew", $sformatf("o_sb_tx_req mismatch expected value: %0b, got %0b", o_sb_tx_req_expected, item_tx_fsm_sb_out.o_sb_tx_req), UVM_LOW)
-            end           
+                match = 0;
+                `uvm_info("mbtrain_rx_rxdeskew", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
+                `uvm_info("mbtrain_rx_rxdeskew", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
+                `uvm_info("mbtrain_rx_rxdeskew", $sformatf("o_sb_rx_req mismatch expected value: %0b, got %0b", o_sb_rx_req_expected, item_rx_fsm_sb_out.o_sb_rx_req), UVM_LOW)
+            end        
         end
         return match;
     endfunction
