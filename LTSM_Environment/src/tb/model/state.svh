@@ -20,6 +20,12 @@ virtual class State extends uvm_object;
     `uvm_object_utils(State)
     bit match_tx, match_rx, match;
     int counter;
+    static bit train ;
+    static bit apply;
+    static bit retry;
+    static bit end_sweep;
+    static int error_count;
+    static logic [2:0] lane_map;
     StateTransitionUtil_tx st_trans_tx;
     StateTransitionUtil_rx st_trans_rx;
     st_trans_tx = new();
@@ -32,10 +38,10 @@ virtual class State extends uvm_object;
         State nextState_tx, nextState_rx;
         nextState_tx = st_trans_tx.calculate(cntxt, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in);
         nextState_rx = st_trans_rx.calculate(cntxt, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in);
-        if ((nextstate_rx == cntxt.currentState_rx || nextState_tx == cntxt.currentState_tx) && cntxt.currentState_tx != trainerror_tx::Instance() && 
-        cntxt.currentState_rx != trainerror_rx::Instance() && cntxt.currentState_rx != ResetState_rx::Instance() && cntxt.currentState_tx != ResetState_tx::Instance()
-        && cntxt.currentState_tx != active_tx::Instance() && cntxt.currentState_rx != active_rx::Instance() && cntxt.currentState_tx != l1_state_tx::Instance() && 
-        cntxt.currentState_rx != l1_state_rx::Instance()) begin
+        if ((nextstate_rx == cntxt.currentState_rx || nextState_tx == cntxt.currentState_tx || nextstate_tx == data_to_clock_sweep::Instance() || nextstate_rx == data_to_clock_sweep::Instance() ) 
+        && cntxt.currentState_tx != trainerror_tx::Instance() && cntxt.currentState_rx != trainerror_rx::Instance() && cntxt.currentState_rx != ResetState_rx::Instance()
+        && cntxt.currentState_tx != ResetState_tx::Instance()&& cntxt.currentState_tx != active_tx::Instance() && cntxt.currentState_rx != active_rx::Instance() 
+        && cntxt.currentState_tx != l1_state_tx::Instance() && cntxt.currentState_rx != l1_state_rx::Instance()) begin
             counter++;  
         end
         else begin
@@ -43,6 +49,28 @@ virtual class State extends uvm_object;
         end
         if (counter == timeout) begin
             nextState_tx = trainerror_tx::Instance();
+        end
+        if ((nextState_tx==mbtrain_tx_speedidle::Instance() || nextState_rx==mbtrain_rx_speedidle::Instance()) && 
+        (cntxt.currentState_tx == mbtrain_tx_linkspeed::Instance() || cntxt.currentState_tx == phyretrain_tx::Instance() || cntxt.currentState_rx == mbtrain_rx_linkspeed::Instance() || cntxt.currentState_rx == phyretrain_rx::Instance() ) &&
+        /*speed 2a2al haga*/) begin
+            nextState_tx = trainerror_tx::Instance();
+        end
+        if (error_count == 2 && !item_tx_fsm_sb_in.i_tx_info[4]) begin
+            nextState_tx = trainerror_tx::Instance();
+            error_count  = 0;
+        end
+        if ((cntxt.currentState_tx == mbtrain_tx_linkspeed::Instance() || cntxt.currentState_rx == mbtrain_rx_linkspeed::Instance() ) && nextState_tx!=nextState_rx) begin
+            if (nextState_tx==mbtrain_tx_speedidle::Instance()) begin
+                nextState_rx==mbtrain_rx_speedidle::Instance()
+            end
+            else if (nextState_rx==mbtrain_rx_speedidle::Instance()) begin
+                nextState_tx==mbtrain_tx_speedidle::Instance()
+            end
+        end
+        if (cntxt.currentState_tx == mbtrain_tx_repair::Instance() && apply && lane_map == 3'b000) begin
+            nextState_tx = trainerror_tx::Instance();
+        end
+        if (item_rx_fsm_sb_in.i_rx_decoding == RX_TRAINERROR_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
             nextState_rx = trainerror_rx::Instance();
         end
         match_tx = nextState_tx.doSpecificCombAction(cntxt, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in,item_controllers_out,item_rdi_out,item_rx_fsm_sb_out,item_tx_fsm_sb_out);
