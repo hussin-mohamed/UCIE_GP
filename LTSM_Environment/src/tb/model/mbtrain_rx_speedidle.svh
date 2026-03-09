@@ -62,6 +62,7 @@ class mbtrain_rx_speedidle extends state;
             o_rx_encoding_expected = RX_MBTRAIN_SPEEDIDLE_End_Handshake
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
+            state_done=1'b1;
             if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected == item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
                 match=1;
             end else begin
@@ -75,6 +76,6 @@ class mbtrain_rx_speedidle extends state;
     endfunction
 
     virtual function fsm_t getStateId();
-        return fsm_mbtrain_tx_speedidle;
+        return fsm_mbtrain_rx_speedidle;
     endfunction
 endclass //mbtrain_tx_txselfcal extends state

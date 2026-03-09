@@ -122,7 +122,7 @@ class mbtrain_rx_linkspeed extends state;
         else if (item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_LINKSPEED_TX_Error_Hnd && item_controllers_in.i_rx_error ) begin
             o_rx_encoding_expected = RX_MBTRAIN_LINKSPEED_Send_PhyRetrain_RESP;
             o_rx_info_expected = 16'h0000;
-            o_sb_rx_rsp_expected = 1'b1;
+            o_sb_rx_req_expected = 1'b1;
             if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected == item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
                 match=1;
             end else begin
@@ -150,6 +150,7 @@ class mbtrain_rx_linkspeed extends state;
             o_rx_encoding_expected = RX_MBTRAIN_LINKSPEED_Send_SpeedDegrade_RESP;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
+            state_done=1'b1;
             if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected == item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
                 match=1;
             end else begin
@@ -163,6 +164,7 @@ class mbtrain_rx_linkspeed extends state;
             o_rx_encoding_expected = RX_MBTRAIN_LINKSPEED_Send_Repair_RESP;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
+            state_done=1'b1;
             if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected == item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
                 match=1;
             end else begin
@@ -176,6 +178,7 @@ class mbtrain_rx_linkspeed extends state;
             o_rx_encoding_expected = RX_MBTRAIN_LINKSPEED_Send_Done_RESP;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
+            state_done=1'b1;
             if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected == item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
                 match=1;
             end else begin

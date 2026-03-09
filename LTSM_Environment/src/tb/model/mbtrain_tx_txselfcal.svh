@@ -30,8 +30,9 @@ class mbtrain_tx_txselfcal extends state;
 
     virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
                                               LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
-        if((item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_SPEEDIDLE_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_SPEEDIDLE_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && cntxt.currentstate_tx == mbtrain_tx_speedidle::Instance()) || (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_REPAIR_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_REPAIR_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && cntxt.currentstate_tx ==  mbtrain_tx_repair::Instance() ))begin
+        if((item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_SPEEDIDLE_TX_End_Handshake && state_done && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && cntxt.currentstate_tx == mbtrain_tx_speedidle::Instance()) || (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_REPAIR_TX_End_Handshake && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_REPAIR_End_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && cntxt.currentstate_tx ==  mbtrain_tx_repair::Instance() ))begin
             o_tx_encoding_expected = MBTRAIN_TXSELFCAL_TX_Calibration;
+            state_done=1'b0;
             if (o_tx_encoding_expected==item_tx_fsm_sb_out.o_tx_encoding && o_tx_info_expected==item_tx_fsm_sb_out.o_tx_info) begin
                 match = 1;
             end else begin

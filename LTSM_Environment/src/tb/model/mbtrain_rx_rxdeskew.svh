@@ -47,6 +47,7 @@ class mbtrain_rx_rxdeskew extends state;
             o_tx_encoding_expected = RX_MBTRAIN_RXDESKEW_End_Handshake;
            o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
+            state_done=1'b1;
             if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected==item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
                 match = 1;
             end else begin

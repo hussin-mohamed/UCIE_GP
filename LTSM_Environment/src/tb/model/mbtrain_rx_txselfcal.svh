@@ -30,10 +30,11 @@ class mbtrain_rx_txselfcal extends state;
 
     virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
                                               LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
-        if( item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_TXSELFCAL_End_Handshake && item_rx_fsm_sb_in.i_sb_tx_req==1'b1 && cntxt.currentstate_rx == mbtrain_tx_speedidle::Instance())begin
+        if( item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_TXSELFCAL_TX_End_Handshake && item_rx_fsm_sb_in.i_sb_tx_req==1'b1 && cntxt.currentstate_rx == mbtrain_tx_speedidle::Instance())begin
             o_rx_encoding_expected = RX_MBTRAIN_TXSELFCAL_End_Handshake;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
+            state_done=1'b1;
             if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected==item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
                 match = 1;
             end else begin

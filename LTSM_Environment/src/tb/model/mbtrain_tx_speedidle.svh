@@ -33,6 +33,7 @@ class mbtrain_tx_speedidle extends state;
                                               LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
         if (cntxt.currentstate_tx==mbtrain_tx_datavref::Instance()) begin
             o_pl_speedmode_expected= // highest speed ;
+            state_done=1'b0;
             if (o_pl_speedmode_expected == item_rdi_out.o_pl_speedmode) begin
                 match=1;
             end else begin
@@ -42,6 +43,7 @@ class mbtrain_tx_speedidle extends state;
         end    
         else if (cntxt.currentstate_tx==l1_state_tx::Instance())begin
             o_pl_speedmode_expected = // current speed ;
+            state_done=1'b0;
             if (o_pl_speedmode_expected == item_rdi_out.o_pl_speedmode) begin
                 match=1;
             end else begin
@@ -51,6 +53,7 @@ class mbtrain_tx_speedidle extends state;
         end
         else if (cntxt.currentstate_tx==mbtrain_tx_linkspeed::Instance() || cntxt.currentstate_tx==phyretrain_tx::Instance()) begin
             o_pl_speedmode_expected = // speed 2a2al ;
+            state_done=1'b0;
             if (o_pl_speedmode_expected == item_rdi_out.o_pl_speedmode) begin
                 match=1;
             end else begin
