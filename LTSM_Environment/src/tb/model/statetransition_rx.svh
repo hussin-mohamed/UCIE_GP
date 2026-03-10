@@ -311,14 +311,28 @@ class StateTransitionUtil_rx extends state;
                   return ResetState_rx::Instance();
                end
             end
-            fsm_rx_linkinit : begin
-               if (item_controllers_in.i_reset)begin
+            fsm_rx_l1 : begin
+                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
+               end
+               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_ACTIVE_L1_L1_State && rdi_item.i_lp_state_req == state_req_active)begin
+                  return mbtrain_rx_speedidle::instance();
+               end
+            end
+            fsm_rx_linkinit : begin
+                if (item_controllers_in.i_reset)begin
+                  return ResetState_rx::Instance();
+               end
+               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_ACTIVE_LINKINIT_State_Rsp_Handshake && item_rx_fsm_sb_in.i_sb_rx_done ==1'b1)begin
+                  return active_state_rx::instance();
                end
             end
             fsm_rx_active : begin
-               if (item_controllers_in.i_reset)begin
+                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
+               end
+               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_ACTIVE_Active && rdi_item.i_lp_state_req == state_req_l1)begin
+                  return l1_state_rx::Instance();
                end
             end
             default: 
