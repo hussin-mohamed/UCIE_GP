@@ -318,15 +318,26 @@ class StateTransitionUtil_tx extends state;
                   return ResetState_tx::Instance();
                end
             end
+            fsm_tx_l1 : begin
+               if (item_controllers_in.i_reset)begin
+                  return ResetState_tx::Instance();
+               end
+            end
             fsm_tx_linkinit : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
+               end
+               else if (item_tx_fsm_sb_in.i_tx_decoding == ACTIVE_LINKINIT_TX_State_Req_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1) begin
+                  return active_tx::Instance();
                end
             end
             fsm_tx_active : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
+                else if (item_rx_fsm_sb_in.i_rx_decoding == TX_ACTIVE_Active && rdi_item.i_lp_state_req == state_req_l1) begin
+                    return l1_state_tx::Instance();
+                end
             end
             default: 
         endcase
