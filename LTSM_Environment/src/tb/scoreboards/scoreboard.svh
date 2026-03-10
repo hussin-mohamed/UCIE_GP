@@ -158,7 +158,7 @@ function void scoreboard_base::build_phase(uvm_phase phase);
     fifo_rx_fsm_sb_out = new("fifo_rx_fsm_sb_out", this);
     ap_tx_fsm_sb_out = new("ap_tx_fsm_sb_out", this);
     fifo_tx_fsm_sb_out = new("fifo_tx_fsm_sb_out", this);
-    cntxt = new(reset::instance());
+    cntxt = new(reset::instance(), "FSMContext");
 endfunction : build_phase
 
 // connect_phase
@@ -234,7 +234,6 @@ function void scoreboard_base::run_phase();
         fifo_rdi_out.get(item_rdi_out);
         fifo_rx_fsm_sb_out.get(item_rx_fsm_sb_out);
         fifo_tx_fsm_sb_out.get(item_tx_fsm_sb_out);
-        goldenmodel();
 
         match = cntxt.doAction(item_controllers_in, item_rdi_in, item_rx_fsm_sb_in, item_tx_fsm_sb_in, item_controllers_out, item_rdi_out, item_rx_fsm_sb_out, item_tx_fsm_sb_out);
         if (match) begin
