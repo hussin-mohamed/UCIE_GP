@@ -95,7 +95,7 @@ endtask
 // body
 // ----
 
-task mbtrain_tx_datasweep_success::body();
+task mbtrain_datasweep_fail_4_15::body();
     super.body();
     fork
         // tx thread
