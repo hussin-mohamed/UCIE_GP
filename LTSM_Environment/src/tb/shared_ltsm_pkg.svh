@@ -380,12 +380,13 @@ typedef enum logic [5:0] {
  } fsm_t;
   typedef enum logic[3:0]{
     state_req_NOP       =     4'b0000  ,
-    state_req_Active    =     4'b0001  ,
-    state_req_L1        =     4'b0100  ,
-    state_req_LinkReset =     4'b1001  ,
-    state_req_Retrain   =     4'b1011  ,
-    state_req_Disabled  =     4'b1100  ,
+    state_req_active    =     4'b0001  ,
+    state_req_l1        =     4'b0100  ,
+    state_req_linkReset =     4'b1001  ,
+    state_req_retrain   =     4'b1011  ,
+    state_req_disabled  =     4'b1100  ,
   } lp_state_req_t
 
 endpackage : shared_ltsm_pkg
+
 
