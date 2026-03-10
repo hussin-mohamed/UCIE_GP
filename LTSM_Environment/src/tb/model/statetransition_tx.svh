@@ -19,7 +19,7 @@ class StateTransitionUtil_tx extends state;
  local static State validStateTransitions[State][$];
  local static CovergroupWrapper cgWrapper;
 
-   function new(string name = "StateTransitionUtil_rx" );
+ function new(string name = "StateTransitionUtil_tx" );
         super.new(name);
         init();
  endfunction
@@ -343,3 +343,4 @@ class StateTransitionUtil_tx extends state;
         endcase
   endfunction
  endclass
+
