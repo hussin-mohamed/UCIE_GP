@@ -262,11 +262,11 @@ class StateTransitionUtil_rx extends state;
                   return mbtrain_rx_repair::Instance();
                end
                // done 
-               else if (state_done && item_rx_fsm_sb_in.i_rx_decoding == PHYRETRAIN_TX_Start_Req_Handshake) begin
+               else if (state_done && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_LINKSPEED_Send_Done_RESP) begin
                   return linkinit_state_rx::Instance();
                end
                // phyretrain
-               else if (item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_LINKSPEED_Send_Done_RESP) begin
+               else if (item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == PHYRETRAIN_TX_Start_Req_Handshake) begin
                   return phyretrain_rx::Instance();
                end
                else begin
@@ -339,3 +339,4 @@ class StateTransitionUtil_rx extends state;
         endcase
   endfunction
  endclass
+
