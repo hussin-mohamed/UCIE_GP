@@ -1,0 +1,24 @@
+QuestaSim-64 vlog 2021.2_1 Compiler 2021.05 May 15 2021
+Start time: 07:32:55 on Mar 03,2026
+vlog -l compile.log -f .svunit.f "+define+RUN_SVUNIT_WITH_UVM" 
+-- Compiling package junit_xml
+-- Compiling package svunit_pkg
+-- Importing package junit_xml
+-- Compiling package svunit_uvm_mock_pkg
+-- Importing package mtiUvm.uvm_pkg (uvm-1.2 Built-in)
+-- Importing package svunit_pkg
+** Note: (vlog-2286) /mnt/hgfs/VLSI/svunit-master/svunit_base/uvm-mock/svunit_uvm_mock_pkg.sv(26): Using implicit +incdir+/home/amrelbatarny/QuestaSim/questasim/uvm-1.2/../verilog_src/uvm-1.2/src from import uvm_pkg
+-- Compiling package svunit_uvm_mock_pkg
+** Warning: /mnt/hgfs/VLSI/svunit-master/svunit_base/uvm-mock/svunit_uvm_mock_pkg.sv(22): (vlog-2275) Existing package 'svunit_uvm_mock_pkg' at line 22 will be overwritten.
+-- Compiling package shared_pkg
+-- Compiling package sb_scoreboard_unit_test_sv_unit
+-- Importing package shared_pkg
+-- Importing package svunit_uvm_mock_pkg
+-- Compiling module sb_scoreboard_unit_test
+-- Compiling module __testsuite
+-- Compiling module testrunner
+
+Top level modules:
+	testrunner
+End time: 07:32:56 on Mar 03,2026, Elapsed time: 0:00:01
+Errors: 0, Warnings: 1

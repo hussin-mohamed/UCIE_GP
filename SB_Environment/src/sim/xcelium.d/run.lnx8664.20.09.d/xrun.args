@@ -1,0 +1,18 @@
+//
+// File created by:  xrun
+// Do not modify this file
+//
+-f
+src_files.f
++incdir+../tb
+-uvm
+-timescale
+1ns/1ns
++UVM_TESTNAME=sb_test_base
++UVM_VERBOSITY=UVM_MEDIUM
+-svseed
+random
+-l
+log/2026-03-04_14-19-01_xcelium_sb_test_base.log
+-access
++rwc

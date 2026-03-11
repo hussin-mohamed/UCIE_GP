@@ -1,0 +1,12 @@
+<testsuites>
+  <testsuite name="__ts">
+    <testcase classname="sb_scoreboard_ut" name="ltsm2link_path_match_test">
+    </testcase>
+    <testcase classname="sb_scoreboard_ut" name="link2ltsm_rx_path_match_test">
+    </testcase>
+    <testcase classname="sb_scoreboard_ut" name="ltsm2link_path_mismatch_test">
+    </testcase>
+    <testcase classname="sb_scoreboard_ut" name="link2ltsm_tx_path_mismatch_test">
+    </testcase>
+  </testsuite>
+</testsuites>

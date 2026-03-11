@@ -16,55 +16,41 @@
 
 // Interface: sb_ltsm_ctrl_bfm
 // Description: Control and status interface between Sideband and Link Training
-//              State Machine (LTSM). This interface also generates the reset
-//              signal used by all other interfaces.
-// Author: Amr El-Batarny; Verification Team
+//              State Machine (LTSM).
 //******************************************************************************
 
 interface sb_ltsm_ctrl_bfm(
-  input logic clk
+   input  logic clk
+  ,input  logic reset
+  ,output logic o_sb_ready // SBINIT initialization complete
 );
-
-  //============================================================================
-  // Reset Control (Driven by LTSM agent)
-  //============================================================================
-  logic reset;  // LTSM agent drives this signal
 
   //============================================================================
   // LTSM → SB Control Signals
   //============================================================================
-  logic i_sb_init_start;   // Trigger SBINIT sequence
-  logic i_timer_1ms;           // 1ms timer tick for timeout logic
+  logic i_sb_init_start;  // Trigger SBINIT sequence
+  logic i_timer_1ms;      // 1ms timer tick for timeout logic
 
   //============================================================================
-  // SB → LTSM Status Signals
-  //============================================================================
-  logic o_sb_ready;              // SBINIT initialization complete
-
-  //============================================================================
-  // Clocking Blocks
-  //============================================================================
-  
-  // Driver clocking block - LTSM controls reset and sends commands
-  clocking driver_cb @(posedge clk);
-    default input #1step output #1ns;
-    output reset;            // LTSM controls reset timing
-    output i_sb_init_start;
-    output i_timer_1ms;
-    input  o_sb_ready;
-  endclocking
-
-  // Monitor clocking block - for sampling all signals
-  clocking monitor_cb @(posedge clk);
-    default input #1step;
-    input reset;
-    input i_sb_init_start;
-    input i_timer_1ms;
-    input o_sb_ready;
-  endclocking
-
-  //============================================================================
-  // Assertions
+  // Methods
   //============================================================================
 
+  task start();
+    @(negedge clk);
+    i_sb_init_start = 1'b1;
+    @(negedge clk);
+    i_sb_init_start = 1'b0;
+  endtask : start
+
+  task t1ms();
+    @(negedge clk);
+    i_timer_1ms = 1'b1;
+    @(negedge clk);
+    i_timer_1ms = 1'b0;
+  endtask : t1ms
+
+  task wait_for_ready();
+    @(negedge o_sb_ready);
+    repeat(2) @(negedge clk);
+  endtask : wait_for_ready
 endinterface : sb_ltsm_ctrl_bfm

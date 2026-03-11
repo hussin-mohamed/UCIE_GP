@@ -17,12 +17,12 @@
 // Interface: sb_rdi_bfm
 // Description: Register access and configuration interface between Sideband 
 //              and D2D Adapter Layer (RDI - Raw Die Interface)
-// Author: Amr El-Batarny; Verification Team
 //******************************************************************************
 
 interface sb_rdi_bfm(
   input logic clk
  ,input logic reset
+ ,input logic o_sb_ready
 );
 
   //============================================================================
@@ -45,24 +45,24 @@ interface sb_rdi_bfm(
   
   // Driver clocking block - for driving Adapter→SB signals
   clocking driver_cb @(posedge clk);
-    default input #1step output #1ns;
-    output i_lp_cfg_vld;
-    output i_lp_cfg_crd;
-    output i_lp_cfg;
-    input  o_pl_cfg_vld;
-    input  o_pl_cfg_crd;
-    input  o_pl_cfg;
+  default input #1step output #1ns;
+  output i_lp_cfg_vld;
+  output i_lp_cfg_crd;
+  output i_lp_cfg;
+  input  o_pl_cfg_vld;
+  input  o_pl_cfg_crd;
+  input  o_pl_cfg;
   endclocking
 
   // Monitor clocking block - for sampling all signals
   clocking monitor_cb @(posedge clk);
-    default input #1step;
-    input i_lp_cfg_vld;
-    input i_lp_cfg_crd;
-    input i_lp_cfg;
-    input o_pl_cfg_vld;
-    input o_pl_cfg_crd;
-    input o_pl_cfg;
+  default input #1step;
+  input i_lp_cfg_vld;
+  input i_lp_cfg_crd;
+  input i_lp_cfg;
+  input o_pl_cfg_vld;
+  input o_pl_cfg_crd;
+  input o_pl_cfg;
   endclocking
 
   //============================================================================

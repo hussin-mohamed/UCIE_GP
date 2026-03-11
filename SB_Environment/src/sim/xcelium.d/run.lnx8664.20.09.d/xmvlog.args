@@ -1,0 +1,37 @@
+//
+// File created by:  xrun
+// Do not modify this file
+//
+-XLMODE
+./xcelium.d/run.lnx8664.20.09.d
+-RUNMODE
+-UVMNOSINGLESTEP
+-define
+UVM_PLI
+../tb/shared_pkg.sv
+../bfms/sb_ltsm_ctrl_bfm.sv
+../bfms/sb_rdi_bfm.sv
+../bfms/sb_rx_bfm.sv
+../bfms/sb_phylink_bfm.sv
+../bfms/sb_reset_intf.sv
+../bfms/sb_tx_bfm.sv
+../tb/sb_pkg.sv
+../tb/top.sv
+-INCDIR
+../tb
+-CDSLIB
+./xcelium.d/run.lnx8664.20.09.d/cdsrun.lib
+-HDLVAR
+./xcelium.d/run.lnx8664.20.09.d/hdlrun.var
+-I_INCDIR
+/opt/rh/XCELIUM2009/tools/methodology/UVM/CDNS-1.1d/sv/src
+-DEFINE
+USE_PARAMETERIZED_WRAPPER
+-I_INCDIR
+/opt/rh/XCELIUM2009/tools/methodology/UVM/CDNS-1.1d/additions/sv
+-MESSAGES
+-UPDATE
+-XLLIBSTORE
+./xcelium.d/run.lnx8664.20.09.d/xllibs
+-ALLOWUNBOUND
+-ENABLEOIGW

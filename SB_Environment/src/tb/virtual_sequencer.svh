@@ -14,7 +14,7 @@
 // *                                                                          *
 // ****************************************************************************
 
-//------------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 //
 // CLASS: virtual_sequencer
 //
@@ -22,7 +22,7 @@
 // handles to multiple child sequencers, enabling parent sequences to
 // coordinate execution across multiple agents.
 //
-//------------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 class virtual_sequencer extends uvm_sequencer;
   `uvm_component_utils(virtual_sequencer)
@@ -32,28 +32,31 @@ class virtual_sequencer extends uvm_sequencer;
   //
   // Creates a new virtual_sequencer instance with the given name and parent.
 
-  extern function new(string name="virtual_sequencer", uvm_component parent=null);
+  extern function new(string name, uvm_component parent);
 
-  APB_sequencer #(APB_sequence_item_1) apb_seqr_1;
-  APB_sequencer #(APB_sequence_item_2) apb_seqr_2;
+  ltsm_ctrl_sequencer ltsm_ctrl_seqr;
+  tx_sequencer        tx_seqr;
+  rx_sequencer        rx_seqr;
+  rdi_sequencer       rdi_seqr;
+  phylink_sequencer   phylink_seqr;
 
 endclass : virtual_sequencer
 
 
-//------------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 // IMPLEMENTATION
-//------------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 //
 // CLASS- virtual_sequencer
 //
-//------------------------------------------------------------------------------
+//---------------------------------------------------------------------------
 
 
 // new
 // ---
 
-function virtual_sequencer::new(string name="virtual_sequencer", uvm_component parent=null);
+function virtual_sequencer::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
