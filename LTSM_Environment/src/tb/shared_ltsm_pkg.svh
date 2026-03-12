@@ -1,6 +1,8 @@
 package shared_ltsm_pkg
-  typedef state state_t;  
-typedef enum logic {
+  typedef class State ;
+    
+  parameter timeout = 1000; // number of cycles to wait for a response before declaring a timeout will be provided by design team in the future
+  typedef enum logic {
         req,
         rsp,
         done
@@ -105,19 +107,17 @@ typedef enum logic [8:0] {
   // 8. MBTRAIN LINKSPEED
   RX_MBTRAIN_LINKSPEED_Start_Handshake        = 9'b01_0111_000,
   RX_MBTRAIN_LINKSPEED_Data_Clock_Test_Det    = 9'b01_0111_001,
-  RX_MBTRAIN_LINKSPEED_Wait_REQ               = 9'b01_0111_010,
   RX_MBTRAIN_LINKSPEED_Send_SpeedDegrade_RESP = 9'b01_0111_011,
   RX_MBTRAIN_LINKSPEED_Send_PhyRetrain_RESP   = 9'b01_0111_100,
   RX_MBTRAIN_LINKSPEED_Send_Repair_RESP       = 9'b01_0111_101,
-  RX_MBTRAIN_LINKSPEED_Send_Done_RESP         = 9'b01_0111_110,
+  RX_MBTRAIN_LINKSPEED_Send_Done_RESP         = 9'b01_0111_010,
   RX_MBTRAIN_LINKSPEED_Send_Error_RESP        = 9'b01_0111_111,
 
   // 9. MBTRAIN REPAIR
   RX_MBTRAIN_REPAIR_Start_Handshake           = 9'b01_1000_000,
-  RX_MBTRAIN_REPAIR_Wait_Apply_Degrade_REQ    = 9'b01_1000_001,
-  RX_MBTRAIN_REPAIR_Apply_Degrade             = 9'b01_1000_010,
-  RX_MBTRAIN_REPAIR_Send_Apply_Degrade_RESP   = 9'b01_1000_011,
-  RX_MBTRAIN_REPAIR_End_Handshake             = 9'b01_1000_100,
+  RX_MBTRAIN_REPAIR_Send_Apply_Degrade_RESP    = 9'b01_1000_001,
+  RX_MBTRAIN_REPAIR_Wait_Trainerror_REQ   = 9'b01_1000_011,
+  RX_MBTRAIN_REPAIR_End_Handshake             = 9'b01_1000_010,
 
   // 10. MBTRAIN SPEEDIDLE
   RX_MBTRAIN_SPEEDIDLE_Speed_Transition       = 9'b01_1001_000,
@@ -163,11 +163,19 @@ typedef enum logic [8:0] {
   // =========================================================
   // 11: DATA_SWEEP PHASE
   // =========================================================	
-  Data_To_Clock_sweep_RX_INIT_Handshake	    = 9'b11_0000_000,
-  Data_To_Clock_sweep_RX_LFSR_Clear_Handshake	= 9'b11_0000_001,
-  Data_To_Clock_sweep_RX_Pattern_Generation	= 9'b11_0000_010,
-  Data_To_Clock_sweep_RX_Result_Handshake	= 9'b11_0000_011,
-  Data_To_Clock_sweep_RX_End_Init_Handshake	= 9'b11_0000_100
+  DATA_TO_CLOCK_TX_RX_INIT_HANDSHAKE         = 9'b110000000,  // 11 0000 000
+  DATA_TO_CLOCK_TX_RX_LFSR_CLEAR_HANDSHAKE   = 9'b110000001,  // 11 0000 001
+  DATA_TO_CLOCK_TX_RX_PATTERN_GENERATION     = 9'b110000010,  // 11 0000 010
+  DATA_TO_CLOCK_TX_RX_RESULT_HANDSHAKE       = 9'b110000011,  // 11 0000 011
+  DATA_TO_CLOCK_TX_RX_END_INIT_HANDSHAKE     = 9'b110000100,  // 11 0000 100
+
+    // RX Initiated
+  DATA_TO_CLOCK_RX_RX_INIT_HANDSHAKE         = 9'b110001000,  // 11 0001 000
+  DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE   = 9'b110001001,  // 11 0001 001
+  DATA_TO_CLOCK_RX_RX_PATTERN_GENERATION     = 9'b110001010,  // 11 0001 010
+  DATA_TO_CLOCK_RX_RX_RESULT_HANDSHAKE       = 9'b110001011,  // 11 0001 011
+  DATA_TO_CLOCK_RX_RX_SWEEP_RESULT_HANDSHAKE = 9'b110001100,  // 11 0001 100
+  DATA_TO_CLOCK_RX_RX_END_INIT_HANDSHAKE     = 9'b110001101
     } encoding_rx_t;
 
     typedef enum logic [8:0] {
@@ -320,11 +328,19 @@ typedef enum logic [8:0] {
   // =========================================================
   // 11: DATA_SWEEP PHASE
   // =========================================================	
-  Data_To_Clock_sweep_TX_INIT_Handshake	    = 9'b11_0000_000,
-  Data_To_Clock_sweep_TX_LFSR_Clear_Handshake	= 9'b11_0000_001,
-  Data_To_Clock_sweep_TX_Pattern_Generation	= 9'b11_0000_010,
-  Data_To_Clock_sweep_TX_Result_Handshake	= 9'b11_0000_011,
-  Data_To_Clock_sweep_TX_End_Init_Handshake	= 9'b11_0000_100
+  DATA_TO_CLOCK_TX_RX_INIT_HANDSHAKE         = 9'b110000000,  // 11 0000 000
+  DATA_TO_CLOCK_TX_RX_LFSR_CLEAR_HANDSHAKE   = 9'b110000001,  // 11 0000 001
+  DATA_TO_CLOCK_TX_RX_PATTERN_GENERATION     = 9'b110000010,  // 11 0000 010
+  DATA_TO_CLOCK_TX_RX_RESULT_HANDSHAKE       = 9'b110000011,  // 11 0000 011
+  DATA_TO_CLOCK_TX_RX_END_INIT_HANDSHAKE     = 9'b110000100,  // 11 0000 100
+
+    // RX Initiated
+  DATA_TO_CLOCK_RX_RX_INIT_HANDSHAKE         = 9'b110001000,  // 11 0001 000
+  DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE   = 9'b110001001,  // 11 0001 001
+  DATA_TO_CLOCK_RX_RX_PATTERN_GENERATION     = 9'b110001010,  // 11 0001 010
+  DATA_TO_CLOCK_RX_RX_RESULT_HANDSHAKE       = 9'b110001011,  // 11 0001 011
+  DATA_TO_CLOCK_RX_RX_SWEEP_RESULT_HANDSHAKE = 9'b110001100,  // 11 0001 100
+  DATA_TO_CLOCK_RX_RX_END_INIT_HANDSHAKE     = 9'b110001101
 } encoding_tx_t;
 typedef enum logic [5:0] { 
   fsm_tx_reset,
@@ -378,7 +394,7 @@ typedef enum logic [5:0] {
   fsm_rx_linkinit,
   fsm_rx_active,
  } fsm_t;
-  typedef enum logic[3:0]{
+ typedef enum logic[3:0]{
     state_req_NOP       =     4'b0000  ,
     state_req_active    =     4'b0001  ,
     state_req_l1        =     4'b0100  ,
@@ -386,7 +402,4 @@ typedef enum logic [5:0] {
     state_req_retrain   =     4'b1011  ,
     state_req_disabled  =     4'b1100  ,
   } lp_state_req_t
-
 endpackage : shared_ltsm_pkg
-
-
