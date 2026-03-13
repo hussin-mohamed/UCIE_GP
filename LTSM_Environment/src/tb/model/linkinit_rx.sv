@@ -42,7 +42,7 @@
     endfunction 
      
     virtual function bit doSpecificCombAction(FSMContext cntxt, LTSM_controllers_seq_item ctrl_item , ltsm_rdi_sequence_item rdi_item ,rx_fsm_sb_sequence_item  rx_sb_item ,tx_fsm_sb_sequence_item tx_sb_item); 
-      if(ctrl_item.i_rx_decoding == RX_MBTRAIN_LINKSPEED_Send_Done_RESP && rx_sb_item.i_sb_rx_done && cntxt.currentstate_rx == linkspeed_state_rx::instance())
+      if(ctrl_item.i_rx_decoding == MBTRAIN_SPEEDIDLE_TX_End_Handshake && rx_sb_item.i_sb_rx_done && cntxt.currentstate_rx == linkspeed_state_rx::instance())
       begin
         o_rx_encoding_exp = RX_ACTIVE_LINKINIT_PL_Clk_Req_Handshake ;
         o_pl_inband_pres_exp = 1'b1;
@@ -55,7 +55,7 @@
             end
             
       end
-      else if(o_rx_encoding_exp == RX_ACTIVE_LINKINIT_PL_Clk_Req_Handshake && rdi_item.i_lp_clk_ack && cntxt.currentstate_tx == linkinit_state_rx::instance())
+      else if(o_rx_encoding_exp == RX_ACTIVE_LINKINIT_PL_Clk_Req_Handshake && rdi_item.i_lp_clk_ack && cntxt.currentstate_rx == linkinit_state_rx::instance())
       begin
         o_rx_encoding_exp = RX_ACTIVE_LINKINIT_LP_Wake_Req_Handshake ;
         o_pl_wake_ack_exp = 1'b1;
@@ -78,19 +78,7 @@
               `uvm_info("linkinit_state_rx", $sformatf("Expected o_rx_encoding: %b, Actual o_rx_encoding: %b, Expected o_rx_sb_rsp: %b, Actual o_rx_sb_rsp: %b", o_rx_encoding_exp, ctrl_item.o_rx_encoding, o_rx_sb_rsp_exp, rx_sb_item.o_rx_sb_rsp), UVM_LOW);
                 match = 1'b0;
             end
-      end 
-      else if(ctrl_item.i_rx_decoding == RX_ACTIVE_LINKINIT_State_Rsp_Handshake && rx_sb_item.i_sb_rx_done) 
-      begin
-        o_rx_encoding_exp = RX_ACTIVE_Active ;
-            if(o_rx_encoding_exp == ctrl_item.o_rx_encoding)
-                match = 1'b1;
-            else
-            begin
-              `uvm_info("linkinit_state_rx", $sformatf("Expected o_rx_encoding: %b, Actual o_rx_encoding: %b", o_rx_encoding_exp, ctrl_item.o_rx_encoding), UVM_LOW);
-                match = 1'b0;
-            end
       end  
-      else
         return match;
     endfunction 
  
