@@ -24,7 +24,7 @@
 
 class ltsm_rdi_sequence_item extends uvm_sequence_item;
 
-    logic							i_lp_state_req;
+	logic [3:0]							i_lp_state_req;
 	logic							i_lp_stallack;
 	logic							i_lp_clk_ack;
 	logic							i_lp_wake_req;
