@@ -13,7 +13,7 @@
 // * (800) 541-7737                                                           *
 // *                                                                          *
 // ****************************************************************************
-
+import ltsm_shared_pkg::*;
 class SbInitState_tx extends State;
    `uvm_object_utils(SbInitState_tx)
 
@@ -22,6 +22,7 @@ class SbInitState_tx extends State;
    logic [8:0] o_tx_encoding_exp;
    logic o_sbinit_start_exp;
    logic o_tx_sb_req_exp;
+   logic [15:0] o_tx_info_exp;
    bit match;
 
    protected function new(string name = "SbInitState_tx");
@@ -57,7 +58,9 @@ class SbInitState_tx extends State;
          o_tx_encoding_exp = 'hA;
          o_sbinit_start_exp = 0;
          o_tx_sb_req_exp = 1;
-         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_sbinit_start == o_sbinit_start_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp)
+         o_tx_info_exp = 0;
+
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_sbinit_start == o_sbinit_start_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp && item_tx_fsm_sb_out.o_tx_info == o_tx_info_exp)
             match = 1;
          else
             match = 0;
