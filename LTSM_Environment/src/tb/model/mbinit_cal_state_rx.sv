@@ -21,6 +21,7 @@ class MbInitCalState_rx extends State;
    static MbInitCalState_rx inst;
 
    logic [8:0] o_rx_encoding_exp;
+   logic [15:0] o_rx_info_exp;
    bit match;
 
    protected function new(string name = "MbInitCalState_rx");
@@ -38,6 +39,7 @@ class MbInitCalState_rx extends State;
       // Lane deskew, Equalization, Clock alignment
       if(cntxt.current_state_rx == MbInitParamState_rx::Instance() && item_rx_fsm_sb_in.i_sb_rx_done && item_controllers_in.rx_decoding == RX_MBINIT_PARAM_Send_RESP) begin
          o_rx_encoding_exp = 'h18;
+         o_rx_info_exp = 0;
          if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
             match = 1;
          else
