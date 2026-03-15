@@ -335,7 +335,7 @@ class StateTransitionUtil_tx extends state;
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
-                else if (item_rx_fsm_sb_in.i_rx_decoding == TX_ACTIVE_Active && rdi_item.i_lp_state_req == state_req_l1) begin
+             else if (item_rx_fsm_sb_in.i_tx_decoding == TX_ACTIVE_Active && rdi_item.i_lp_state_req == state_req_l1) begin
                     return l1_state_tx::Instance();
                 end
             end
