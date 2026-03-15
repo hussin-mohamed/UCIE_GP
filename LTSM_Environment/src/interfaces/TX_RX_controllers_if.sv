@@ -26,6 +26,9 @@ interface LTSM_controllers_if(input logic clk);
   logic i_sb_ready;
   logic o_t1_ms;
   logic [63:0] i_lane_error;
+  logic [2:0] i_clk_error; //i_clk_result
+  logic i_par_check_done;
+
   logic [8:0] o_tx_encoding;
   logic [8:0] o_rx_encoding;
     
