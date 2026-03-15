@@ -7,6 +7,9 @@ package shared_ltsm_pkg
         rsp,
         done
         } msgtype_t;
+
+`define RESULT_THRESHOLD 16'b0000000011111111
+`define LANE_MAP_CODE 3'b011 // all lanes are functional    
         
 typedef enum logic [8:0] {
  // =========================================================
