@@ -17,12 +17,14 @@
 import shared_ltsm_pkg::*;
 class MbInitRepairValState_rx extends State;
    `uvm_object_utils(MbInitRepairValState_rx)
+  
 
    static MbInitRepairValState_rx inst;
 
    logic [8:0] o_rx_encoding_exp;
    logic [63:0] o_rx_data_exp;
    logic o_rx_sb_rsp_exp;
+   logic [15:0] o_rx_info_exp;
    bit match;
 
    protected function new(string name = "MbInitRepairValState_rx");
@@ -42,7 +44,8 @@ class MbInitRepairValState_rx extends State;
        if(cntxt.current_state_rx == MbInitRepairClkState_rx::Instance() && item_controllers_in.i_rx_decoding == MBINIT_REPAIRCLK_RX_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req == 1'b1) begin
          o_rx_encoding_exp = 'h28;
          o_rx_sb_rsp_exp = 1;
-         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
+         o_rx_info_exp = 0;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp)
             match = 1;
          else
             match = 0;
@@ -50,16 +53,18 @@ class MbInitRepairValState_rx extends State;
 
       else if(item_rx_fsm_sb_in.i_sb_rx_done == 1'b1 && item_controllers_in.i_rx_decoding == 'h2B) begin
          o_rx_encoding_exp = 'h2C;
-         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
+         o_rx_sb_rsp_exp = 1;
+         o_rx_info_exp = 0;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp)
             match = 1;
          else
             match = 0;
       end
       else if(item_rx_fsm_sb_in.i_sb_rx_req == 1'b1 && item_controllers_in.i_rx_decoding == 'h29) begin
          o_rx_encoding_exp = 'h2B;
-         o_rx_data_exp = RESULTS;
+         o_rx_info_exp[0] = 1; // no errors
          o_rx_sb_rsp_exp = 1;
-         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_data == o_rx_data_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
             match = 1;
          else
             match = 0;
@@ -67,9 +72,10 @@ class MbInitRepairValState_rx extends State;
 
       else if(item_rx_fsm_sb_in.i_sb_rx_req == 1'b1 && item_controllers_in.i_rx_decoding == 'h2A) begin
          o_rx_encoding_exp = 'h2B;
-         o_rx_data_exp = RESULTS;
+         // send result resp msg
          o_rx_sb_rsp_exp = 1;
-         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_data == o_rx_data_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
+         o_rx_info_exp[0] = item_controllers_in.i_val_error;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
             match = 1;
          else
             match = 0;
