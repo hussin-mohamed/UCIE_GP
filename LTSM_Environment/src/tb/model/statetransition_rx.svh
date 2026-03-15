@@ -72,7 +72,7 @@ class StateTransitionUtil_rx extends state;
     
     validStateTransitions[linkinit_state_rx::Instance()] = { linkinit_state_rx::Instance(), active_rx::Instance(), trainerror_rx::Instance(), ResetState_rx::Instance()};
     
-    validStateTransitions[active_rx::Instance()] = { active_rx::Instance(), trainerror_rx::Instance(), ResetState_rx::Instance()};
+  validStateTransitions[active_rx::Instance()] = { active_rx::Instance(), trainerror_rx::Instance(), ResetState_rx::Instance(),l1_state_rx::Instance()};
 
     validStateTransitions[l1_state_rx::Instance()] = { l1_state_rx::Instance(), mbtrain_rx_speedidle::Instance(), ResetState_rx::Instance()};
 
