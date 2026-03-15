@@ -111,35 +111,84 @@ class StateTransitionUtil_rx extends state;
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
+               else if(item_controllers_in.i_rx_decoding == RX_SBINIT_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1)begin
+                  return MbInitParamState_rx::Instance();
+               end
+
+               else begin
+                  return SbInitState_rx::Instance();
+               end
             end
             fsm_mbinit_rx_param : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
+               end
+               else if (item_controllers_in.i_rx_decoding == RX_MBINIT_PARAM_Send_RESP && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+                  return MbInitCalState_rx::Instance();
+               end
+
+               else begin
+                  return MbInitParamState_rx::Instance();
                end
             end
             fsm_mbinit_rx_cal : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
+               else if (item_controllers_in.i_rx_decoding == RX_MBINIT_CAL_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+                  return MbInitRepairClkState_rx::Instance();
+               end
+
+               else begin
+                  return MbInitCalState_rx::Instance();
+               end
             end
             fsm_mbinit_rx_repairclk : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
+               else if (item_controllers_in.i_rx_decoding == RX_MBINIT_REPAIRCLK_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+                  return MbInitRepairValState_rx::Instance();
+               end
+
+               else begin
+                  return MbInitRepairClkState_rx::Instance();
+               end
             end
             fsm_mbinit_rx_repairval : begin
-               if (item_controllers_in.i_reset)begin
+              if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
+               end
+               else if (item_controllers_in.i_rx_decoding == RX_MBINIT_REPAIRVAL_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+                  return MbInitReversalMbState_rx::Instance();
+               end
+
+               else begin
+                  return MbInitRepairValState_rx::Instance();
                end
             end
             fsm_mbinit_rx_reversal : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
+               else if (item_controllers_in.i_rx_decoding == RX_MBINIT_REVERSAL_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+                  return MbInitRepairMbState_rx::Instance();
+               end
+
+               else begin
+                  return MbInitReversalMbState_rx::Instance();
+               end
             end
             fsm_mbinit_rx_repairmb : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
+               end
+               else if (item_controllers_in.i_rx_decoding == RX_MBINIT_REPAIRMB_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+                  return mbtrain_rx_valvref::Instance();
+               end
+
+               else begin
+                  return MbInitRepairMbState_rx::Instance();
                end
             end
             fsm_rx_trainerror : begin
