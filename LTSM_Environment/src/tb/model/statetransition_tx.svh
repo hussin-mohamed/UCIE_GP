@@ -72,7 +72,7 @@ class StateTransitionUtil_tx extends state;
     
     validStateTransitions[linkinit_state_tx::Instance()] = { linkinit_state_tx::Instance(), active_tx::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
     
-    validStateTransitions[active_tx::Instance()] = { active_tx::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance()};
+  validStateTransitions[active_tx::Instance()] = { active_tx::Instance(), trainerror_tx::Instance(), ResetState_tx::Instance(),l1_state_tx::Instance()};
 
     validStateTransitions[l1_state_tx::Instance()] = { l1_state_tx::Instance(), mbtrain_tx_speedidle::Instance(), ResetState_tx::Instance()};
 
