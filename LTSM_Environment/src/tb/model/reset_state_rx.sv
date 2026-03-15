@@ -14,9 +14,10 @@
 // *                                                                          *
 // ****************************************************************************
 
+import shared_ltsm_pkg::*;
+
 class ResetState_rx extends State;
    `uvm_object_utils(ResetState_rx)
-
    static ResetState_rx inst;
 
    logic [8:0] o_rx_encoding_exp;
