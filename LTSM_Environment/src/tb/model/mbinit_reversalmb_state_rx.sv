@@ -14,13 +14,19 @@
 // *                                                                          *
 // ****************************************************************************
 
+import shared_ltsm_pkg::*;
+
 class MbInitReversalMbState_rx extends State;
+   
    `uvm_object_utils(MbInitReversalMbState_rx)
 
    static MbInitReversalMbState_rx inst;
 
    logic [8:0] o_rx_encoding_exp;
    logic o_rx_sb_rsp_exp;
+   logic [15:0] o_rx_info_exp;
+   logic [63:0] o_rx_data_exp;
+
    bit match;
 
    protected function new(string name = "MbInitReversalMbState_rx");
@@ -40,12 +46,13 @@ class MbInitReversalMbState_rx extends State;
       if(cntxt.current_state_tx == MbInitRepairValState_rx::Instance() && item_controllers_in.i_rx_decoding == 'h2C && item_rx_fsm_sb_in.i_sb_rx_req == 1'b1) begin
          o_rx_encoding_exp = 'h30;
          o_rx_sb_rsp_exp = 1;
-         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
+         o_rx_info_exp = 0;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp)
             match = 1;
          else
             match = 0;
       end
-      else if(item_rx_fsm_sb_in.i_sb_rx_done == 1'b1 && item_rx_fsm_sb_in.o_rx_data == MAJORITY_LANES_SUCCESS && item_controllers_in.i_rx_decoding == 'h33) begin
+      else if(item_rx_fsm_sb_in.i_sb_rx_done == 1'b1 && item_rx_fsm_sb_in.i_lane_error[15:0] > `RESULT_THRESHOLD && item_controllers_in.i_rx_decoding == 'h33) begin
          o_rx_encoding_exp = 'h34;
          if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
             match = 1;
@@ -54,11 +61,12 @@ class MbInitReversalMbState_rx extends State;
       end
 
       // result fail - > return back to the clear log 
-      else if(item_rx_fsm_sb_in.i_sb_rx_done == 1'b1 && item_rx_fsm_sb_in.o_rx_data == MAJORITY_LANES_FAIL && item_controllers_in.i_rx_decoding == 'h33) begin
+      else if(item_rx_fsm_sb_in.i_sb_rx_done == 1'b1 && item_controllers_in.i_lane_error[15:0] <= `RESULT_THRESHOLD  && item_controllers_in.i_rx_decoding == 'h33) begin
          o_rx_encoding_exp = 'h31;
-         // clear log rsp
+         // clear log hs
          o_rx_sb_rsp_exp = 1;
-         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
+         o_rx_info_exp = 0;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp)
             match = 1;
          else
             match = 0;
@@ -67,8 +75,10 @@ class MbInitReversalMbState_rx extends State;
 
       else if(item_controllers_in.i_rx_done && item_controllers_in.i_rx_decoding == 'h32) begin
          o_rx_encoding_exp = 'h33;
+         // sending the result rsp message with the prev. evaluated data and info field
          o_rx_sb_rsp_exp = 1;
-         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp   )
+         o_rx_data_exp = item_controllers_in.i_lane_error; 
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp&& item_rx_fsm_sb_out.o_rx_data == o_rx_data_exp)
             match = 1;
          else
             match = 0;
@@ -79,7 +89,8 @@ class MbInitReversalMbState_rx extends State;
          o_rx_encoding_exp = 'h31;
          //clear log rsp
          o_rx_sb_rsp_exp = 1;
-         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
+         o_rx_info_exp = 0;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp)
             match = 1;
          else
             match = 0;
@@ -88,7 +99,8 @@ class MbInitReversalMbState_rx extends State;
       // per-lane detection
       else if(item_rx_fsm_sb_in.i_sb_rx_done == 1'b1 && item_controllers_in.i_rx_decoding == 'h31) begin
          o_rx_encoding_exp = 'h32;
-         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
+         o_rx_info_exp = 0;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_data == o_rx_data_exp)
             match = 1;
          else
             match = 0;
