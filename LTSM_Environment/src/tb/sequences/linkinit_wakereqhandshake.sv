@@ -31,6 +31,7 @@ class linkinit_wake_req_handshake extends uvm_sequence#(ltsm_rdi_sequence_item);
 	    item.i_lp_clk_ack       = 1'b1;
 	    item.i_lp_wake_req      = 1'b1;
 	    item.i_lp_linkerror     = 1'b0;
+		finish_item(item);
     endtask 
 endclass //className extends superClass
 
