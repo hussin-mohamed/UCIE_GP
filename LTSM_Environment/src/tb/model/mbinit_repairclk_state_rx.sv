@@ -17,11 +17,12 @@
 import shared_ltsm_pkg::*;
 class MbInitRepairClkState_rx extends State;
    `uvm_object_utils(MbInitRepairClkState_rx)
-
+   
    static MbInitRepairClkState_rx inst;
 
    logic [8:0] o_rx_encoding_exp;
-   o_rx_sb_rsp_exp;
+   logic o_rx_sb_rsp_exp;
+   logic [15:0] o_rx_info_exp;
    bit match;
 
    protected function new(string name = "MbInitRepairClkState_rx");
@@ -40,7 +41,8 @@ class MbInitRepairClkState_rx extends State;
       if(cntxt.current_state_rx == MbInitCalState_rx::Instance() && item_controllers_in.i_rx_decoding == MBINIT_CAL_RX_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req == 1'b1) begin
          o_rx_encoding_exp = 'h20;
          o_rx_sb_rsp_exp = 1;
-         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
+         o_rx_info_exp = 0;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp)
             match = 1;
          else
             match = 0;
@@ -64,7 +66,9 @@ class MbInitRepairClkState_rx extends State;
       else if(item_rx_fsm_sb_in.i_sb_rx_req == 1'b1 && item_controllers_in.i_rx_decoding == 'h21) begin
             o_rx_encoding_exp = 'h23;
             o_rx_sb_rsp_exp = 1;
-            if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
+
+            o_rx_info_exp = 0;
+            if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp)
                match = 1;
             else
                match = 0;
@@ -80,7 +84,9 @@ class MbInitRepairClkState_rx extends State;
 
       else if(item_rx_fsm_sb_in.i_sb_rx_done == 1'b1 && item_controllers_in.i_rx_decoding == 'h23) begin
          o_rx_encoding_exp = 'h24;
-         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
+         o_rx_sb_rsp_exp = 1;
+         o_rx_info_exp = item_controllers_in.i_clk_error;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp)
             match = 1;
          else
             match = 0;
