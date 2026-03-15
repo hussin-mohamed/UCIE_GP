@@ -14,6 +14,8 @@
 // *                                                                          *
 // ****************************************************************************
 
+import shared_ltsm_pkg::*;
+
 class MbInitReversalMbState_tx extends State;
    `uvm_object_utils(MbInitReversalMbState_tx)
 
@@ -21,6 +23,7 @@ class MbInitReversalMbState_tx extends State;
 
    logic [8:0] o_tx_encoding_exp;
    logic o_tx_sb_req_exp;
+   logic[15:0] o_tx_info_exp;
    bit match;
 
    protected function new(string name = "MbInitReversalMbState_tx");
@@ -37,10 +40,11 @@ class MbInitReversalMbState_tx extends State;
                                               LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
       // Lane reversal negotiation
 
-      if(cntxt.current_state_rx == MbInitRepairValState_tx::Instance() && item_controllers_in.i_tx_decoding == MBINIT_REPAIRVAL_TX_Done_Handshake && item_tx_fsm_sb_in.i_sb_tx_done == 1'b1) begin
+      if(cntxt.current_state_rx == MbInitRepairValState_tx::Instance() && item_controllers_in.i_tx_decoding == MBINIT_REPAIRVAL_TX_Done_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1) begin
          o_tx_encoding_exp = 'h30;
          o_tx_sb_req_exp = 1;
-         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp)
+         o_tx_info_exp = 0;
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp && item_tx_fsm_sb_out.o_tx_info == o_tx_info_exp)
             match = 1;
          else
             match = 0;
@@ -51,24 +55,29 @@ class MbInitReversalMbState_tx extends State;
          o_tx_encoding_exp = 'h31;
          // clearl log req
          o_tx_sb_req_exp = 1;
-         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp)
+         o_tx_info_exp = 0;
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp && item_tx_fsm_sb_out.o_tx_info == o_tx_info_exp)
             match = 1;
          else
             match = 0;
       end
 
-      else if(item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1 && item_controllers_in.i_tx_decoding == 'h33 && item_tx_fsm_sb_in.i_tx_data == MAJORITY_LANES_SUCCESS) begin
+      else if(item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1 && item_controllers_in.i_tx_decoding == 'h33 && item_tx_fsm_sb_in.i_tx_data > `RESULT_THRESHOLD) begin
          o_tx_encoding_exp = 'h35;
          // done handshake req
          o_tx_sb_req_exp = 1;
-         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp)
+         o_tx_info_exp = 0;
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_info == o_tx_info_exp)
             match = 1;
          else
             match = 0;
       end
-      else if(item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1 && item_tx_fsm_sb_in.i_tx_data == NOT_MAJORITY_LANES_SUCCESS && item_controllers_in.i_tx_decoding == 'h33 ) begin
+      // apply the reversal request
+      else if(item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1 && item_tx_fsm_sb_in.i_tx_data <= `RESULT_THRESHOLD && item_controllers_in.i_tx_decoding == 'h33 ) begin
          o_tx_encoding_exp = 'h34;
-         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp)
+         o_tx_sb_req_exp = 1;
+         o_tx_info_exp = 0;
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp && item_tx_fsm_sb_out.o_tx_info == o_tx_info_exp)
             match = 1;
          else
             match = 0;
@@ -78,7 +87,8 @@ class MbInitReversalMbState_tx extends State;
          o_tx_encoding_exp = 'h31;
          //loop back to clear log req
          o_tx_sb_req_exp = 1;
-         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp)
+         o_tx_info_exp = 0;
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp && item_tx_fsm_sb_out.o_tx_info == o_tx_info_exp)
             match = 1;
          else
             match = 0;
@@ -88,7 +98,8 @@ class MbInitReversalMbState_tx extends State;
          o_tx_encoding_exp = 'h33;
          // result req
          o_tx_sb_req_exp = 1;
-         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp)
+         o_tx_info_exp = 0;
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp && item_tx_fsm_sb_out.o_tx_info == o_tx_info_exp)
             match = 1;
          else
             match = 0;
