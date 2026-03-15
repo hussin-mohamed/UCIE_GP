@@ -27,9 +27,8 @@
  class l1_state_tx extends State;
     //output signals
     logic [8:0] o_tx_encoding_exp;
-    logic [15:0] o_tx_info_expected;
     logic o_tx_sb_req_expected;
-    logic rx_handshake_done;
+    static logic tx_handshake_done;
     bit match;
 
     
@@ -44,7 +43,7 @@
     endfunction 
      
     virtual function bit doSpecificCombAction(FSMContext cntxt, LTSM_controllers_seq_item ctrl_item , ltsm_rdi_sequence_item rdi_item ,rx_fsm_sb_sequence_item  rx_sb_item ,tx_fsm_sb_sequence_item tx_sb_item); 
-        if(rdi_item.i_lp_state_req == 4'b0100 && rx_handshake_done == 1'b0 && cntxt.currentstate_tx == active_state_tx::instance())
+        if(rdi_item.i_lp_state_req == state_req_l1 && cntxt.currentstate_tx == active_state_tx::instance())
         begin
             o_tx_encoding_exp = ACTIVE_L1_TX_handshake ;
             o_tx_sb_req_expected = 1'b1;
@@ -57,7 +56,11 @@
                     match = 1'b0;
                 end
         end
-        else if(tx_sb_item.i_tx_decoding == ACTIVE_L1_TX_handshake && rx_sb_item.i_sb_rx_done && rx_handshake_done == 1'b1 && cntxt.currentstate_tx == l1_state_tx::instance())      
+         else if(tx_sb_item.i_tx_decoding == RX_ACTIVE_L1_L1_State  && rx_sb_item.i_sb_rx_rsp && rx_handshake_done == 1'b0)      
+        begin
+            tx_handshake_done = 1'b1;
+        end   
+        else if(tx_sb_item.i_tx_decoding == RX_ACTIVE_L1_L1_State  && rx_sb_item.i_sb_rx_done && rx_handshake_done == 1'b0)      
         begin
             o_tx_encoding_exp = ACTIVE_L1_TX_L1_State;
                 if(o_tx_encoding_exp == ctrl_item.o_tx_encoding)
@@ -68,7 +71,18 @@
                     match = 1'b0;
                 end
         end
-        else if( tx_sb_item.i_tx_decoding == ACTIVE_L1_TX_handshake &&  cntxt.currentstate_tx == l1_state_tx::instance())
+        else if(tx_sb_item.i_tx_decoding == RX_ACTIVE_L1_L1_State  && rx_sb_item.i_sb_tx_rsp && rx_handshake_done == 1'b1)      
+        begin
+            o_tx_encoding_exp = ACTIVE_L1_TX_L1_State;
+                if(o_tx_encoding_exp == ctrl_item.o_tx_encoding)
+                    match = 1'b1;
+                else
+                begin
+                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding), UVM_LOW);
+                    match = 1'b0;
+                end
+        end
+        else if( tx_sb_item.i_tx_decoding == RX_ACTIVE_L1_Refuse && tx_sb_item.i_sb_tx_rsp )
         begin
             o_tx_encoding_exp =  ACTIVE_TX_Active ;
                 if(o_tx_encoding_exp == ctrl_item.o_tx_encoding)
@@ -78,36 +92,12 @@
                   `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding), UVM_LOW);
                     match = 1'b0;
                 end
-        end
-        else if(rdi_item.i_lp_state_req == 4'b0100 && rx_handshake_done == 1'b1 && cntxt.currentstate_tx == active_state_tx::instance())
-        begin
-            o_tx_encoding_exp = ACTIVE_L1_TX_handshake ;
-            o_tx_sb_req_expected = 1'b1;
-                if(o_tx_encoding_exp == ctrl_item.o_tx_encoding && o_tx_sb_req_expected == tx_sb_item.o_tx_sb_req)
-                    match = 1'b1;
-                else
-                begin
-                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_tx_sb_req: %b, Actual o_tx_sb_req: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding, o_tx_sb_req_expected, tx_sb_item.o_tx_sb_req), UVM_LOW);
-                    match = 1'b0;
-                end
-        end
-        else if(tx_sb_item.i_tx_decoding == ACTIVE_L1_TX_handshake && tx_sb_item.i_sb_tx_rsp && rx_handshake_done == 1'b1 && cntxt.currentstate_tx == l1_state_tx::instance())      
-        begin
-            o_tx_encoding_exp = ACTIVE_L1_TX_L1_State;
-            o_tx_sb_done_exp = 1'b1;
-                if(o_tx_encoding_exp == ctrl_item.o_tx_encoding)
-                    match = 1'b1;
-                else
-                begin
-                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding), UVM_LOW);
-                    match = 1'b0;
-                end
-        end
-        else if(rdi_item.i_lp_state_req == 4'b0001 && cntxt.currentstate_tx == l1_state_tx::instance())
+        end  
+        else if(rdi_item.i_lp_state_req == state_req_active && cntxt.currentstate_tx == l1_state_tx::instance())
         begin
             o_tx_encoding_exp = ACTIVE_EXIT_HS_TX_Exit_Handshake;
-            o_tx_sb_done_exp = 1'b1;
-                if(o_tx_encoding_exp == ctrl_item.o_tx_encoding && o_tx_sb_done_exp == tx_sb_item.o_tx_sb_done)
+            o_tx_sb_req_expected = 1'b1;
+                if(o_tx_encoding_exp == ctrl_item.o_tx_encoding )
                     match = 1'b1;
                 else
                 begin
@@ -115,7 +105,7 @@
                     match = 1'b0;
                 end
         end
-        else if(tx_sb_item.i_tx_decoding == ACTIVE_EXIT_HS_TX_Exit_Handshake && tx_sb_item.i_sb_tx_rsp && cntxt.currentstate_tx == l1_state_tx::instance())
+        else if(tx_sb_item.i_tx_decoding == ACTIVE_EXIT_HS_TX_Exit_Handshake && tx_sb_item.i_sb_rx_done && rx_handshake_done == 1'b1)
         begin
             o_tx_encoding_exp = ACTIVE_TX_Active ;
                 if(o_tx_encoding_exp == ctrl_item.o_tx_encoding)
