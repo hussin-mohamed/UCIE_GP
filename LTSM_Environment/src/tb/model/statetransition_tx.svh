@@ -100,7 +100,7 @@ class StateTransitionUtil_tx extends state;
  static function State calculateNextState(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in);
         case (cntxt.currentState_tx.getStateId())
             fsm_tx_reset: begin
-               if (item_controllers_in.i_power && item_controllers_in.i_pll_stable && !item_controllers_in.i_reset) begin
+              if (item_controllers_in.i_power && item_controllers_in.i_pll_stable && !item_controllers_in.i_reset) begin
                   return SbInitState_tx::Instance();
                end
                else begin
@@ -108,10 +108,10 @@ class StateTransitionUtil_tx extends state;
                end
             end
             fsm_rx_sbinit: begin
-               if (item_controllers_in.i_reset)begin
+              if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
-               else if (item_controllers_in.o_rx_encoding == 'h9 && item_rx_fsm_sb_in.i_sb_rx_done == 1'b1) begin
+               else if (item_controllers_in.i_tx_decoding == SBINIT_TX_Done_Handshake  && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1) begin
                   return MbInitParamState_tx::Instance();
                end
                else begin
@@ -122,30 +122,66 @@ class StateTransitionUtil_tx extends state;
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
+               else if (item_controllers_in.i_tx_decoding == MBINIT_PARAM_TX_Config_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1) begin
+                  return MbInitCalState_tx::Instance();
+               end
+               else begin
+                  return MbInitParamState_tx::Instance();
+               end
             end
             fsm_mbinit_tx_cal : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
+               end
+               else if (item_controllers_in.i_tx_decoding == MBINIT_CAL_TX_Done_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1) begin
+                  return MbInitRepairClkState_tx::Instance();
+               end
+               else begin
+                  return MbInitCalState_tx::Instance();
                end
             end
             fsm_mbinit_tx_repairclk : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
+               else if (item_controllers_in.i_tx_decoding == MBINIT_REPAIRCLK_TX_Done_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1) begin
+                  return MbInitRepairValState_tx::Instance();
+               end
+               else begin
+                  return MbInitRepairClkState_tx::Instance();
+               end
             end
             fsm_mbinit_tx_repairval : begin
-               if (item_controllers_in.i_reset)begin
+              if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
+               end
+               else if (item_controllers_in.i_tx_decoding == MBINIT_REPAIRVAL_TX_Done_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1) begin
+                  return MbInitReversalMbState_tx::Instance();
+               end
+               else begin
+                  return MbInitRepairValState_tx::Instance();
                end
             end
             fsm_mbinit_tx_reversal : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
+               else if (item_controllers_in.i_tx_decoding == MBINIT_REVERSAL_TX_Done_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1) begin
+                  return MbInitRepairMbState_tx::Instance();
+               end
+               else begin
+                  return MbInitReversalMbState_tx::Instance();
+               end
             end
             fsm_mbinit_tx_repairmb : begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
+               end
+               else if (item_controllers_in.i_tx_decoding == MBINIT_REPAIRMB_TX_Done_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1) begin
+                  return mbtrain_tx_valvref::Instance();
+               end
+               else begin
+                  return MbInitRepairMbState_tx::Instance();
                end
             end
             fsm_tx_trainerror : begin
