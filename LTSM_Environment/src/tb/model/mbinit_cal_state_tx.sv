@@ -22,6 +22,7 @@ class MbInitCalState_tx extends State;
 
    logic [8:0] o_tx_encoding_exp;
    logic o_tx_sb_req_exp;
+   logic [15:0] o_tx_info_exp;
    bit match;
 
    protected function new(string name = "MbInitCalState_tx");
@@ -38,11 +39,12 @@ class MbInitCalState_tx extends State;
                                               LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
       // Lane deskew, Equalization, Clock alignment
 
-      if(cntxt.current_state_tx == MbInitParamState_tx::Instance() && item_tx_fsm_sb_in.i_sb_tx_done && item_controllers_in.tx_decoding == MBINIT_CAL_TX_Done_Handshake) begin
+      if(cntxt.current_state_tx == MbInitParamState_tx::Instance() && item_tx_fsm_sb_in.i_sb_tx_rsp && item_controllers_in.tx_decoding == MBINIT_CAL_TX_Done_Handshake) begin
          o_tx_encoding_exp = 'h18;
          o_tx_sb_req_exp = 1;
+         o_tx_info_exp = 0;
       
-         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp)
+         if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp && item_tx_fsm_sb_out.o_tx_info == o_tx_info_exp)
             match = 1;
          else
             match = 0;
