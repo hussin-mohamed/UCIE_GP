@@ -20,6 +20,8 @@ class SbInitState_rx extends State;
    static SbInitState_rx inst;
 
    logic [8:0] o_rx_encoding_exp;
+   logic [15:0] o_rx_info_exp;
+   logic o_rx_sb_rsp_exp;
    bit match;
 
    protected function new(string name = "SbInitState_rx");
@@ -44,7 +46,9 @@ class SbInitState_rx extends State;
       end
       else if(item_rx_fsm_sb_in.i_rx_decoding == SBINIT_TX_Out_Of_Reset_MSG ) begin
          o_rx_encoding_exp = 'h9;
-         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
+         o_rx_info_exp = 0;
+         o_rx_sb_rsp_exp = 1;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
             match = 1;
          else
             match = 0;
