@@ -22,6 +22,7 @@ class MbInitParamState_rx extends State;
    logic [8:0] o_rx_encoding_exp;
    logic [63:0] o_rx_data_exp;
    logic o_rx_sb_rsp_exp;
+   logic [15:0] o_rx_info_exp;
    bit match;
 
    protected function new(string name = "MbInitParamState_rx");
@@ -46,6 +47,7 @@ class MbInitParamState_rx extends State;
       end
       else if(item_controllers_in.i_rx_decoding == RX_MBINIT_PARAM_Wait_Config_REQ && item_rx_fsm_sb_in.i_sb_rx_req) begin
          o_rx_encoding_exp = 'h11;
+         // assign the parameter values in the module register file
          if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
             match = 1;
          else
@@ -55,7 +57,8 @@ class MbInitParamState_rx extends State;
          o_rx_encoding_exp = 'h12;
          o_rx_data_exp = CHECKING_RESULTS;
          o_rx_sb_rsp_exp = 1;
-         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && o_rx_data_exp ==item_rx_fsm_sb_out.o_rx_data && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp)
+         o_rx_info_exp = 0;
+         if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && o_rx_data_exp ==item_rx_fsm_sb_out.o_rx_data && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp)
             match = 1;
          else
             match = 0;
