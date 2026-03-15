@@ -38,6 +38,8 @@ class LTSM_controllers_seq_item extends uvm_sequence_item;
   logic i_sb_ready;
   logic o_t1_ms;
   logic [63:0] i_lane_error;
+  logic i_par_check_done;
+  logic [2:0] i_clk_error; //i_clk_result
   encoding_tx_t o_tx_encoding;
   encoding_rx_t o_rx_encoding;
 
