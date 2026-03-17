@@ -309,7 +309,7 @@ class StateTransitionUtil_tx extends state;
                   return linkinit_state_tx::Instance();
                end
                // phyretrian
-               else if (item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_LINKSPEED_TX_Phy_Retrain_Hnd && state_done) begin
+               else if (item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_LINKSPEED_TX_Phy_Retrain_Hnd && item_rx_fsm_sb_in.i_sb_rx_rsp==1'b1 && state_done) begin
                   return phyretrain_tx::Instance();
                end
                else begin
