@@ -24,15 +24,15 @@
 //
 //------------------------------------------------------------------------------
 
-class mbtrain_rxinit_datasweep_fail_8_15 extends virtual_sequence_base;
-    `uvm_object_utils(mbtrain_rxinit_datasweep_fail_8_15)
+class mbtrain_linkspeed_repair_trainerror extends virtual_sequence_base;
+    `uvm_object_utils(mbtrain_linkspeed_repair_trainerror)
 
 
     // Function: new
     //
     // Creates a new virtual_sequence instance with the given name.
 
-    extern function new(string name = "mbtrain_rxinit_datasweep_fail_8_15");
+    extern function new(string name = "mbtrain_linkspeed_repair_trainerror");
 
 
     // Task: pre_body
@@ -49,7 +49,7 @@ class mbtrain_rxinit_datasweep_fail_8_15 extends virtual_sequence_base;
 
     extern task body();
 
-endclass : mbtrain_rxinit_datasweep_fail_8_15
+endclass : mbtrain_linkspeed_repair_trainerror
 
 
 //------------------------------------------------------------------------------
@@ -66,69 +66,83 @@ endclass : mbtrain_rxinit_datasweep_fail_8_15
 // new
 // ---
 
-function mbtrain_rxinit_datasweep_fail_8_15::new(string name = "mbtrain_rxinit_datasweep_fail_8_15");
+function mbtrain_linkspeed_repair_trainerror::new(string name = "mbtrain_linkspeed_repair_trainerror");
     super.new(name);
 endfunction : new
 
 // pre_body
 // --------
 
-task mbtrain_rxinit_datasweep_fail_8_15::pre_body();
+task mbtrain_linkspeed_repair_trainerror::pre_body();
     // tx sequences
-    start_tx=mbtrain_rxinit_datasweep_tx_starthandshake::type_id::create("start_tx");
-    lfsr_clear_tx = mbtrain_rxinit_datasweep_tx_lfsrclear::type_id::create("lfsr_clear_tx");
-    pattern_tx=mbtrain_rxinit_datasweep_tx_pattern::type_id::create("pattern_tx");
-    result_tx=mbtrain_rxinit_datasweep_tx_result::type_id::create("result_tx"); // controller sequencer
-    sweep_tx=mbtrain_rxinit_datasweep_tx_result_rsp_fai_8_15::type_id::create("sweep_tx");
-    end_handshake_tx=mbtrain_rxinit_datasweep_tx_end::type_id::create("end_handshake_tx");
+    start_tx=mbtrain_linkspeed_tx_starthandshake::type_id::create("start_tx");
+    error_rsp=mbtrain_linkspeed_tx_error_rsp::type_id::create("error_rsp");
+    end_linkspeed_tx=mbtrain_repair_tx_starthandshake::type_id::create("end_linkspeed_tx");
+    apply_tx=mbtrain_repair_tx_applydegrade::type_id::create("apply_tx");
+    error_tx_rsp=trainerror_tx_rsp::type_id::create("error_tx_rsp");
     // rx sequences
-    start_rx=mbtrain_rxinit_datasweep_rx_starthandshake::type_id::create("start_rx");
-    lfsr_clear_rx = mbtrain_rxinit_datasweep_rx_lfsrclear::type_id::create("lfsr_clear_rx");
-    pattern_rx=mbtrain_rxinit_datasweep_rx_pattern::type_id::create("pattern_rx");
-    result_rx=result_fail_8_15::type_id::create("result_rx"); // controller sequencer
-    clean_error=result_success::type_id::create("clean_error"); // controller sequencer
-    result_req=mbtrain_rxinit_datasweep_rx_result::type_id::create("result_req");
-    sweep_rx=mbtrain_rxinit_datasweep_rx_sweep::type_id::create("sweep_rx");
-    end_handshake_rx=nothing_rx::type_id::create("end_handshake_rx");
+    start_rx=mbtrain_linkspeed_rx_starthandshake::type_id::create("start_rx");
+    error_req=mbtrain_linkspeed_rx_error_req::type_id::create("error_req");
+    repair_req=mbtrain_linkspeed_rx_repair::type_id::create("repair_req");
+    end_linkspeed_rx=mbtrain_repair_rx_starthandshake::type_id::create("repair_req");
+    apply_rx=mbtrain_repair_rx_degrade_0::type_id::create("apply_rx");
+    error_rx=trainerror_rx_starthandshake::type_id::create("start_rx");
+    error_rx_rsp=trainerror_rx_rsp::type_id::create("error_tx_rsp");
+    // datasweep sequence  
+    data_sweep=mbtrain_txinit_datasweep_fail_8_15::type_id::create("data_sweep");
+    exit_to_reset=trainerror_exitreset::type_id::create("exit_to_reset"); // controller
 endtask
 
 // body
 // ----
 
-task mbtrain_rxinit_datasweep_fail_8_15::body();
+task mbtrain_linkspeed_repair_trainerror::body();
     super.body();
     fork
         // tx thread
         begin
             start_tx.start(tx_fsm_sb_seqr);
-            lfsr_clear_tx.start(tx_fsm_sb_seqr);
-            pattern_tx.start(tx_fsm_sb_seqr);
-            result_tx.start(LTSM_ctrl_seqr);
-            sweep_tx.start(tx_fsm_sb_seqr);
-            end_handshake_tx.start(tx_fsm_sb_seqr);        
+                  
         end
         // rx thread
         begin
             start_rx.start(rx_fsm_sb_seqr);
-            lfsr_clear_rx.start(rx_fsm_sb_seqr);
-            fork
-                begin
-                    pattern_rx.start(rx_fsm_sb_seqr);
-                end
-                begin
-                    clean_error.start(LTSM_ctrl_seqr);
-                end
-            join
-            fork
-                begin
-                    result_rx.start(LTSM_ctrl_seqr);
-                end
-                begin
-                    result_req.start(rx_fsm_sb_seqr)
-                end
-            join
-            sweep_rx.start(rx_fsm_sb_seqr);
-            end_handshake_rx.start(rx_fsm_sb_seqr); 
         end
     join
+    data_sweep.start(v_seqr);
+    fork
+        // tx thread
+        begin
+            error_rsp.start(tx_fsm_sb_seqr);
+        end
+        // rx thread
+        begin
+            error_req.start(rx_fsm_sb_seqr);
+        end
+    join
+    repair_req.start(rx_fsm_sb_seqr);
+    fork
+        // tx thread
+        begin
+            end_linkspeed_tx.start(tx_fsm_sb_seqr);
+            apply_tx.start(tx_fsm_sb_seqr);
+        end
+        // rx thread
+        begin
+            end_linkspeed_rx.start(rx_fsm_sb_seqr);
+            apply_rx.start(rx_fsm_sb_seqr);
+        end
+    join
+    error_rx.start(rx_fsm_sb_seqr);
+    fork
+        // tx thread
+        begin
+            error_tx_rsp.start(tx_fsm_sb_seqr);
+        end
+        // rx thread
+        begin
+            error_rx_rsp.start(rx_fsm_sb_seqr);
+        end
+    join
+    exit_to_reset.start(LTSM_ctrl_seqr);
 endtask : body

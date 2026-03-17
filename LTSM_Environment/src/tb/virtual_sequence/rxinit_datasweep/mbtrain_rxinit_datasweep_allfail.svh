@@ -24,15 +24,15 @@
 //
 //------------------------------------------------------------------------------
 
-class mbtrain_rxinit_datasweep_fail_8_15 extends virtual_sequence_base;
-    `uvm_object_utils(mbtrain_rxinit_datasweep_fail_8_15)
+class mbtrain_rxinit_datasweep_allfail extends virtual_sequence_base;
+    `uvm_object_utils(mbtrain_rxinit_datasweep_allfail)
 
 
     // Function: new
     //
     // Creates a new virtual_sequence instance with the given name.
 
-    extern function new(string name = "mbtrain_rxinit_datasweep_fail_8_15");
+    extern function new(string name = "mbtrain_rxinit_datasweep_allfail");
 
 
     // Task: pre_body
@@ -49,7 +49,7 @@ class mbtrain_rxinit_datasweep_fail_8_15 extends virtual_sequence_base;
 
     extern task body();
 
-endclass : mbtrain_rxinit_datasweep_fail_8_15
+endclass : mbtrain_rxinit_datasweep_allfail
 
 
 //------------------------------------------------------------------------------
@@ -66,26 +66,26 @@ endclass : mbtrain_rxinit_datasweep_fail_8_15
 // new
 // ---
 
-function mbtrain_rxinit_datasweep_fail_8_15::new(string name = "mbtrain_rxinit_datasweep_fail_8_15");
+function mbtrain_rxinit_datasweep_allfail::new(string name = "mbtrain_rxinit_datasweep_allfail");
     super.new(name);
 endfunction : new
 
 // pre_body
 // --------
 
-task mbtrain_rxinit_datasweep_fail_8_15::pre_body();
+task mbtrain_rxinit_datasweep_allfail::pre_body();
     // tx sequences
     start_tx=mbtrain_rxinit_datasweep_tx_starthandshake::type_id::create("start_tx");
     lfsr_clear_tx = mbtrain_rxinit_datasweep_tx_lfsrclear::type_id::create("lfsr_clear_tx");
     pattern_tx=mbtrain_rxinit_datasweep_tx_pattern::type_id::create("pattern_tx");
     result_tx=mbtrain_rxinit_datasweep_tx_result::type_id::create("result_tx"); // controller sequencer
-    sweep_tx=mbtrain_rxinit_datasweep_tx_result_rsp_fai_8_15::type_id::create("sweep_tx");
+    sweep_tx=mbtrain_rxinit_datasweep_tx_result_rsp_allfail::type_id::create("sweep_tx");
     end_handshake_tx=mbtrain_rxinit_datasweep_tx_end::type_id::create("end_handshake_tx");
     // rx sequences
     start_rx=mbtrain_rxinit_datasweep_rx_starthandshake::type_id::create("start_rx");
     lfsr_clear_rx = mbtrain_rxinit_datasweep_rx_lfsrclear::type_id::create("lfsr_clear_rx");
     pattern_rx=mbtrain_rxinit_datasweep_rx_pattern::type_id::create("pattern_rx");
-    result_rx=result_fail_8_15::type_id::create("result_rx"); // controller sequencer
+    result_rx=result_all_fail::type_id::create("result_rx"); // controller sequencer
     clean_error=result_success::type_id::create("clean_error"); // controller sequencer
     result_req=mbtrain_rxinit_datasweep_rx_result::type_id::create("result_req");
     sweep_rx=mbtrain_rxinit_datasweep_rx_sweep::type_id::create("sweep_rx");
@@ -95,7 +95,7 @@ endtask
 // body
 // ----
 
-task mbtrain_rxinit_datasweep_fail_8_15::body();
+task mbtrain_rxinit_datasweep_allfail::body();
     super.body();
     fork
         // tx thread

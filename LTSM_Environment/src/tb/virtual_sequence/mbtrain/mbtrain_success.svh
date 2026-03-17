@@ -24,15 +24,15 @@
 //
 //------------------------------------------------------------------------------
 
-class mbtrain_rxinit_datasweep_fail_8_15 extends virtual_sequence_base;
-    `uvm_object_utils(mbtrain_rxinit_datasweep_fail_8_15)
+class mbtrain_success extends virtual_sequence_base;
+    `uvm_object_utils(mbtrain_success)
 
 
     // Function: new
     //
     // Creates a new virtual_sequence instance with the given name.
 
-    extern function new(string name = "mbtrain_rxinit_datasweep_fail_8_15");
+    extern function new(string name = "mbtrain_success");
 
 
     // Task: pre_body
@@ -49,7 +49,7 @@ class mbtrain_rxinit_datasweep_fail_8_15 extends virtual_sequence_base;
 
     extern task body();
 
-endclass : mbtrain_rxinit_datasweep_fail_8_15
+endclass : mbtrain_success
 
 
 //------------------------------------------------------------------------------
@@ -66,69 +66,73 @@ endclass : mbtrain_rxinit_datasweep_fail_8_15
 // new
 // ---
 
-function mbtrain_rxinit_datasweep_fail_8_15::new(string name = "mbtrain_rxinit_datasweep_fail_8_15");
+function mbtrain_success::new(string name = "mbtrain_success");
     super.new(name);
 endfunction : new
 
 // pre_body
 // --------
 
-task mbtrain_rxinit_datasweep_fail_8_15::pre_body();
+task mbtrain_success::pre_body();
     // tx sequences
-    start_tx=mbtrain_rxinit_datasweep_tx_starthandshake::type_id::create("start_tx");
-    lfsr_clear_tx = mbtrain_rxinit_datasweep_tx_lfsrclear::type_id::create("lfsr_clear_tx");
-    pattern_tx=mbtrain_rxinit_datasweep_tx_pattern::type_id::create("pattern_tx");
-    result_tx=mbtrain_rxinit_datasweep_tx_result::type_id::create("result_tx"); // controller sequencer
-    sweep_tx=mbtrain_rxinit_datasweep_tx_result_rsp_fai_8_15::type_id::create("sweep_tx");
-    end_handshake_tx=mbtrain_rxinit_datasweep_tx_end::type_id::create("end_handshake_tx");
-    // rx sequences
-    start_rx=mbtrain_rxinit_datasweep_rx_starthandshake::type_id::create("start_rx");
-    lfsr_clear_rx = mbtrain_rxinit_datasweep_rx_lfsrclear::type_id::create("lfsr_clear_rx");
-    pattern_rx=mbtrain_rxinit_datasweep_rx_pattern::type_id::create("pattern_rx");
-    result_rx=result_fail_8_15::type_id::create("result_rx"); // controller sequencer
-    clean_error=result_success::type_id::create("clean_error"); // controller sequencer
-    result_req=mbtrain_rxinit_datasweep_rx_result::type_id::create("result_req");
-    sweep_rx=mbtrain_rxinit_datasweep_rx_sweep::type_id::create("sweep_rx");
-    end_handshake_rx=nothing_rx::type_id::create("end_handshake_rx");
+    valvref=mbtrain_valvref_success::type_id::create("valvref");
+    datavref=mbtrain_datavref_success::type_id::create("datavref");
+    speedidle_start=mbtrain_datavref_speedidle_tx::type_id::create("speedidle_start");// tx sequencer
+    speedidle_tx_end=mbtrain_speedidle_tx_endhandshake::type_id::create("speedidle_tx_end");// tx sequencer
+    speedidle_rx_end=mbtrain_speedidle_rx_endhandshake::type_id::create("speedidle_rx_end");// rx sequencer
+    txselfcal_start_tx=mbtrain_txselfcal_calibration_tx::type_id::create("txselfcal_start_tx");// tx sequencer
+    txselfcal_end_tx=mbtrain_txselfcal_tx_endhandshake::type_id::create("txselfcal_end_tx");// tx sequencer
+    txselfcal_rx_end=mbtrain_txselfcal_rx_endhandshake::type_id::create("txselfcal_rx_end");// rx sequencer
+    rxclkcal=mbtrain_rxclkcal_success::type_id::create("rxclkcal");
+    valtraincenter=mbtrain_valtraincenter_success::type_id::create("valtraincenter");
+    valtrainvref=mbtrain_valtrainvref_success::type_id::create("valtrainvref");
+    dtc1=mbtrain_dtc1_success::type_id::create("dtc1");
+    datatrainvref=mbtrain_datatrainvref_success::type_id::create("datatrainvref");
+    dtc2=mbtrain_dtc2_success::type_id::create("dtc2");
+    rxdeskew=mbtrain_rxdeskew_success::type_id::create("rxdeskew");
+    linkspeed=mbtrain_linkspeed_success::type_id::create("linkspeed");
 endtask
 
 // body
 // ----
 
-task mbtrain_rxinit_datasweep_fail_8_15::body();
+task mbtrain_success::body();
     super.body();
+    valvref.start(v_seqr);
+    datavref.start(v_seqr);
+    speedidle_start.start(tx_fsm_sb_seqr);
     fork
         // tx thread
         begin
-            start_tx.start(tx_fsm_sb_seqr);
-            lfsr_clear_tx.start(tx_fsm_sb_seqr);
-            pattern_tx.start(tx_fsm_sb_seqr);
-            result_tx.start(LTSM_ctrl_seqr);
-            sweep_tx.start(tx_fsm_sb_seqr);
-            end_handshake_tx.start(tx_fsm_sb_seqr);        
+            speedidle_tx_end.start(tx_fsm_sb_seqr);
+                  
         end
         // rx thread
         begin
-            start_rx.start(rx_fsm_sb_seqr);
-            lfsr_clear_rx.start(rx_fsm_sb_seqr);
-            fork
-                begin
-                    pattern_rx.start(rx_fsm_sb_seqr);
-                end
-                begin
-                    clean_error.start(LTSM_ctrl_seqr);
-                end
-            join
-            fork
-                begin
-                    result_rx.start(LTSM_ctrl_seqr);
-                end
-                begin
-                    result_req.start(rx_fsm_sb_seqr)
-                end
-            join
-            sweep_rx.start(rx_fsm_sb_seqr);
-            end_handshake_rx.start(rx_fsm_sb_seqr); 
+            speedidle_rx_end.start(rx_fsm_sb_seqr);
         end
     join
+
+    txselfcal_start_tx.start(tx_fsm_sb_seqr);
+
+    fork
+        // tx thread
+        begin
+            txselfcal_end_tx.start(tx_fsm_sb_seqr);
+                  
+        end
+        // rx thread
+        begin
+            txselfcal_rx_end.start(rx_fsm_sb_seqr);
+        end
+    join
+
+    rxclkcal.start(v_seqr);
+    valtraincenter.start(v_seqr);
+    valtrainvref.start(v_seqr);
+    dtc1.start(v_seqr);
+    datatrainvref.start(v_seqr);
+    rxdeskew.start(v_seqr);
+    dtc2.start(v_seqr);
+    linkspeed.start(v_seqr);
 endtask : body

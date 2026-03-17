@@ -24,15 +24,15 @@
 //
 //------------------------------------------------------------------------------
 
-class mbtrain_txinit_datasweep_fail_0_7 extends virtual_sequence_base;
-    `uvm_object_utils(mbtrain_txinit_datasweep_fail_0_7)
+class mbtrain_txinit_datasweep_fail_8_15 extends virtual_sequence_base;
+    `uvm_object_utils(mbtrain_txinit_datasweep_fail_8_15)
 
 
     // Function: new
     //
     // Creates a new virtual_sequence instance with the given name.
 
-    extern function new(string name = "mbtrain_txinit_datasweep_fail_0_7");
+    extern function new(string name = "mbtrain_txinit_datasweep_fail_8_15");
 
 
     // Task: pre_body
@@ -49,7 +49,7 @@ class mbtrain_txinit_datasweep_fail_0_7 extends virtual_sequence_base;
 
     extern task body();
 
-endclass : mbtrain_txinit_datasweep_fail_0_7
+endclass : mbtrain_txinit_datasweep_fail_8_15
 
 
 //------------------------------------------------------------------------------
@@ -66,14 +66,14 @@ endclass : mbtrain_txinit_datasweep_fail_0_7
 // new
 // ---
 
-function mbtrain_txinit_datasweep_fail_0_7::new(string name = "mbtrain_txinit_datasweep_fail_0_7");
+function mbtrain_txinit_datasweep_fail_8_15::new(string name = "mbtrain_txinit_datasweep_fail_8_15");
     super.new(name);
 endfunction : new
 
 // pre_body
 // --------
 
-task mbtrain_txinit_datasweep_fail_0_7::pre_body();
+task mbtrain_txinit_datasweep_fail_8_15::pre_body();
     // tx sequences
     lfsr_clear_tx = mbtrain_txinit_datasweep_tx_lfsrclear::type_id::create("lfsr_clear_tx");
     pattern_tx=mbtrain_txinit_datasweep_tx_pattern::type_id::create("pattern_tx");
@@ -93,7 +93,7 @@ endtask
 // body
 // ----
 
-task mbtrain_txinit_datasweep_fail_0_7::body();
+task mbtrain_txinit_datasweep_fail_8_15::body();
     super.body();
     fork
         // tx thread
