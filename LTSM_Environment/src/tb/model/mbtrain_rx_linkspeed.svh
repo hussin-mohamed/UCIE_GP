@@ -47,8 +47,8 @@ class mbtrain_rx_linkspeed extends state;
                 `uvm_info("mbtrain_rx_linkspeed", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
             end
         end
-        else if((item_rx_fsm_sb_in.i_sb_rx_done == 1 && train))begin
-            o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_INIT_HANDSHAKE;
+        else if(item_rx_fsm_sb_in.i_rx_decoding == DATA_TO_CLOCK_TX_RX_INIT_HANDSHAKE && item_rx_fsm_sb_in.i_sb_rx_req==1'b1)begin
+            o_rx_encoding_expected = DATA_TO_CLOCK_TX_RX_INIT_HANDSHAKE;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
             train =0;
@@ -61,17 +61,22 @@ class mbtrain_rx_linkspeed extends state;
                 `uvm_info("mbtrain_rx_linkspeed", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
             end           
         end
-        else if (item_rx_fsm_sb_in.i_rx_decoding == DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE && item_rx_fsm_sb_in.i_sb_rx_req==1'b1 ) begin
-            o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE;
-            if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding) begin
-                match=1;
+        else if (item_rx_fsm_sb_in.i_rx_decoding == DATA_TO_CLOCK_TX_RX_LFSR_CLEAR_HANDSHAKE && item_rx_fsm_sb_in.i_sb_rx_req==1'b1 ) begin
+            o_rx_encoding_expected = DATA_TO_CLOCK_TX_RX_LFSR_CLEAR_HANDSHAKE;
+            o_rx_info_expected = 16'h0000;
+            o_sb_rx_rsp_expected = 1'b1;
+            train =0;
+            if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected==item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
+                match = 1;
             end else begin
-                match =0;
+                match = 0;
                 `uvm_info("mbtrain_rx_linkspeed", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
+                `uvm_info("mbtrain_rx_linkspeed", $sformatf("o_sb_rx_rsp mismatch expected value: %0b, got %0b", o_sb_rx_rsp_expected, item_rx_fsm_sb_out.o_sb_rx_rsp), UVM_LOW)
+                `uvm_info("mbtrain_rx_linkspeed", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
             end 
         end
         else if (item_rx_fsm_sb_in.i_sb_rx_done == 1 && !train) begin
-            o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_PATTERN_GENERATION;
+            o_rx_encoding_expected = DATA_TO_CLOCK_TX_RX_PATTERN_GENERATION;
             if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding) begin
                 match=1;
             end else begin
@@ -79,8 +84,8 @@ class mbtrain_rx_linkspeed extends state;
                 `uvm_info("mbtrain_rx_linkspeed", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
             end 
         end
-        else if (item_rx_fsm_sb_in.i_rx_decoding == DATA_TO_CLOCK_RX_RX_RESULT_HANDSHAKE && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
-            o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_RESULT_HANDSHAKE;
+        else if (item_rx_fsm_sb_in.i_rx_decoding == DATA_TO_CLOCK_TX_RX_RESULT_HANDSHAKE && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+            o_rx_encoding_expected = DATA_TO_CLOCK_TX_RX_RESULT_HANDSHAKE;
             o_rx_info_expected[5] = item_controllers_in.i_val_error;
             o_rx_info_expected[4] = (&item_controllers_in.i_lane_error);
             o_rx_data_expected = item_controllers_in.i_lane_error;
@@ -95,18 +100,8 @@ class mbtrain_rx_linkspeed extends state;
                 `uvm_info("mbtrain_rx_linkspeed", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_data_expected, item_rx_fsm_sb_out.o_rx_data), UVM_LOW)
             end  
         end
-        else if (item_rx_fsm_sb_in.i_rx_decoding == DATA_TO_CLOCK_RX_RX_SWEEP_RESULT_HANDSHAKE && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
-            o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_SWEEP_RESULT_HANDSHAKE;
-            end_sweep=1;
-            if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding) begin
-                match=1;
-            end else begin
-                match =0;
-                `uvm_info("mbtrain_rx_linkspeed", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
-            end 
-        end
-        else if (end_sweep) begin 
-            o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_END_INIT_HANDSHAKE;
+        else if (item_rx_fsm_sb_in.i_rx_decoding == DATA_TO_CLOCK_TX_RX_END_INIT_HANDSHAKE && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin 
+            o_rx_encoding_expected = DATA_TO_CLOCK_TX_RX_END_INIT_HANDSHAKE;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
             if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected == item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
@@ -119,7 +114,7 @@ class mbtrain_rx_linkspeed extends state;
             end
         end
         // no error
-        else if (item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_LINKSPEED_TX_Error_Hnd && item_controllers_in.i_rx_error ) begin
+        else if ((item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_LINKSPEED_TX_Error_Hnd && error_count==0)||(item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding != MBTRAIN_LINKSPEED_TX_Error_Hnd && error_count!=0) ) begin
             o_rx_encoding_expected = RX_MBTRAIN_LINKSPEED_Send_PhyRetrain_RESP;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_req_expected = 1'b1;
@@ -133,7 +128,7 @@ class mbtrain_rx_linkspeed extends state;
             end
         end
         // error
-        else if (item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_LINKSPEED_TX_Error_Hnd && !item_controllers_in.i_rx_error ) begin
+        else if (item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_LINKSPEED_TX_Error_Hnd && error_count!=0) begin
             o_rx_encoding_expected = RX_MBTRAIN_LINKSPEED_Send_Error_RESP;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
@@ -146,8 +141,9 @@ class mbtrain_rx_linkspeed extends state;
                 `uvm_info("mbtrain_rx_linkspeed", $sformatf("o_sb_rx_rsp mismatch expected value: %0b, got %0b", o_sb_rx_rsp_expected, item_rx_fsm_sb_out.o_sb_rx_rsp), UVM_LOW)
             end
         end
-        else if (item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_LINKSPEED_TX_Exit_SpeedDegrade_Hnd) begin
+        else if (item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_LINKSPEED_TX_Exit_SpeedDegrade_Hnd ) begin
             o_rx_encoding_expected = RX_MBTRAIN_LINKSPEED_Send_SpeedDegrade_RESP;
+            enter_speeddegrade=1'b1;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
             state_done=1'b1;
@@ -160,7 +156,7 @@ class mbtrain_rx_linkspeed extends state;
                 `uvm_info("mbtrain_rx_linkspeed", $sformatf("o_sb_rx_rsp mismatch expected value: %0b, got %0b", o_sb_rx_rsp_expected, item_rx_fsm_sb_out.o_sb_rx_rsp), UVM_LOW)
             end
         end
-        else if (item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_LINKSPEED_TX_Repair_Hnd) begin
+        else if (item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_LINKSPEED_TX_Repair_Hnd && lane_map!=3'b000) begin
             o_rx_encoding_expected = RX_MBTRAIN_LINKSPEED_Send_Repair_RESP;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
@@ -174,7 +170,7 @@ class mbtrain_rx_linkspeed extends state;
                 `uvm_info("mbtrain_rx_linkspeed", $sformatf("o_sb_rx_rsp mismatch expected value: %0b, got %0b", o_sb_rx_rsp_expected, item_rx_fsm_sb_out.o_sb_rx_rsp), UVM_LOW)
             end
         end
-        else if ( item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_LINKSPEED_Send_Done_RESP ) begin
+        else if ( item_rx_fsm_sb_in.i_sb_rx_req && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_LINKSPEED_Send_Done_RESP && && error_count!=0 ) begin
             o_rx_encoding_expected = RX_MBTRAIN_LINKSPEED_Send_Done_RESP;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
