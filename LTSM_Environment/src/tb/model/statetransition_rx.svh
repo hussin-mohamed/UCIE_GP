@@ -311,7 +311,7 @@ class StateTransitionUtil_rx extends state;
                   return mbtrain_rx_repair::Instance();
                end
                // done 
-               else if (state_done && item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_LINKSPEED_Send_Done_RESP) begin
+               else if (state_done && item_rx_fsm_sb_in.i_tx_decoding == RX_MBTRAIN_LINKSPEED_Send_Done_RESP && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
                   return linkinit_state_rx::Instance();
                end
                // phyretrain
