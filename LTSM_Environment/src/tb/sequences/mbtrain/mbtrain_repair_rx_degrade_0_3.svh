@@ -25,7 +25,7 @@ class mbtrain_repair_rx_degrade_0_3 extends uvm_sequence#(rx_fsm_sb_sequence_ite
         item = seq_item::type_id::create("item");
         start_item(item);
         item.i_rx_decoding=RX_MBTRAIN_REPAIR_Send_Apply_Degrade_RESP;
-        item.i_rx_info=3'b100;
+        item.i_rx_info[2:0]=3'b100;
         item.i_sb_rx_done=1'b0;
         item.i_sb_rx_req=1'b1;
         item.i_sb_rx_rsp=1'b0;

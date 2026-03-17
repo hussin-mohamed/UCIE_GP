@@ -15,20 +15,22 @@
 // ****************************************************************************
 
 import shared_ltsm_pkg::*;
-class mbtrain_repair_rx_degrade_4_7 extends uvm_sequence#(rx_fsm_sb_sequence_item);
-    `uvm_object_utils(mbtrain_repair_rx_degrade_4_7)
+class mbtrain_txinit_datasweep_tx_result_rsp_allfail extends uvm_sequence#(tx_fsm_sb_sequence_item);
+    `uvm_object_utils(mbtrain_txinit_datasweep_tx_result_rsp_allfail)
     tx_fsm_sb_sequence_item item;
-    function new(string name = "mbtrain_repair_rx_degrade_4_7");
+    function new(string name = "mbtrain_txinit_datasweep_tx_result_rsp_allfail");
         super.new(name);
     endfunction //new()
     task body();
         item = seq_item::type_id::create("item");
         start_item(item);
-        item.i_rx_decoding=RX_MBTRAIN_REPAIR_Send_Apply_Degrade_RESP;
-        item.i_rx_info[2:0]=3'b101;
-        item.i_sb_rx_done=1'b0;
-        item.i_sb_rx_req=1'b1;
-        item.i_sb_rx_rsp=1'b0;
+        item.i_tx_decoding=DATA_TO_CLOCK_TX_RX_RESULT_HANDSHAKE;
+        item.i_tx_info[4]=1'b0;
+        item.i_tx_info[5]=1'b1;
+        item.i_tx_data=64'hFFFF_FFFF_FFFF_0000;
+        item.i_sb_tx_rsp=1'b1;
+        item.i_sb_tx_req=1'b0;
+        item.i_sb_tx_done=1'b0;
         finish_item(item);
     endtask 
 endclass //className extends superClass
