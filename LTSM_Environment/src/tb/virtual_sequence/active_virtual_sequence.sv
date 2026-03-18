@@ -69,6 +69,7 @@ task active_virtual_sequence::pre_body();
     start_handshake_seq = active_tx_handshake::type_id::create("start_handshake_seq");
     // rx sequences
     start_handshake_rx_seq = active_rx_handshake::type_id::create("start_handshake_rx_seq");
+    start_handshake_rx_done_seq = active_rx_done_handshake::type_id::create("start_handshake_rx_done_seq");
 endtask
 
 // body
@@ -83,7 +84,8 @@ task active_virtual_sequence::body();
         end
         // rx thread
         begin
-            start_handshake_rx_seq.start(rx_fsm_sb_seqr); 
+            start_handshake_rx_seq.start(rx_fsm_sb_seqr);
+            start_handshake_rx_done_seq.start(rx_fsm_sb_seqr); 
         end
     join
 endtask : body
