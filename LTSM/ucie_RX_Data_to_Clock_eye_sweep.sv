@@ -30,7 +30,7 @@ module ucie_RX_Data_to_Clock_eye_sweep #(
     input done_ack,        // Acknowledgement of done signal
     input init,            // Initialize mode flag
     input no_retry,        // Disable retry on test failure
-    input result,          // Test result from pattern detector
+    input [DATA_WIDTH-1 : 0]result,          // Test result from pattern detector
     
     // Interface outputs - to remote TX
     output logic [DECODING_WIDTH-1:0] o_xx_encoding,  // Encoded command to send
@@ -186,7 +186,7 @@ always @(*) begin
 
             // State 4: Receive sweep parameter results from TX
             SWEEP_RESULT_HANDSHAKE: begin
-                o_xx_encoding = 'h18C;  // Sweep result encoding
+                o_xx_encoding = 'h18D;  // Sweep result encoding
                 done = 0;
                 o_xx_sweep_result = i_xx_data[7:0];  // Extract sweep measurement data
                 NS = END_HANDSHAKE;
@@ -242,7 +242,7 @@ always @(*) begin
                 else o_xx_sb_rsp = 1;
 
                 // Wait for done signal
-                if (i_sb_xx_req && i_xx_decoding == 'h182) begin
+                if (i_sb_xx_done) begin
                     count_reg = count + 1;  // Increment count for retries
                     NS = DATA_DETECTION;
                     o_xx_sb_req = 0;
@@ -307,5 +307,450 @@ always @(*) begin
         endcase
     end
 end
+
+`ifdef ASSERT_ON
+
+    property reset_state_property;
+        @(posedge i_clk)
+        i_reset |=> (CS == REQ_HANDSHAKE);
+    endproperty
+
+    property reset_count_property;
+        @(posedge i_clk)
+        i_reset |=> (count == 0);
+    endproperty
+
+    property valid_state_init_property;
+        @(posedge i_clk) disable iff (i_reset)
+        init |-> (CS == REQ_HANDSHAKE) || (CS == LFSR_HANDSHAKE) || (CS == DATA_DETECTION) || (CS == RESULT_HANDSHAKE) || (CS == SWEEP_RESULT_HANDSHAKE) || (CS == END_HANDSHAKE);
+    endproperty
+
+    property state_transition_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (CS != NS) |=> (CS == $past(NS));
+    endproperty
+
+    property pass_test_combinational_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (&result) |-> !failed_test;
+    endproperty
+
+    property init_req_to_lfsr_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == REQ_HANDSHAKE && i_sb_xx_req && i_xx_decoding == 'h189) |=> (CS == LFSR_HANDSHAKE);
+    endproperty
+
+    property init_lfsr_to_data_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == LFSR_HANDSHAKE && i_sb_xx_done) |=> (CS == DATA_DETECTION);
+    endproperty
+
+    property init_data_to_result_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == DATA_DETECTION && i_sb_xx_req && i_xx_decoding == 'h18B) |=> (CS == RESULT_HANDSHAKE);
+    endproperty
+
+    property init_result_to_lfsr_retry_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == RESULT_HANDSHAKE && i_sb_xx_req && i_xx_decoding == 'h189) |=> (CS == LFSR_HANDSHAKE);
+    endproperty
+
+    property init_result_to_sweep_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == RESULT_HANDSHAKE && i_sb_xx_req && i_xx_decoding == 'h18C) |=> (CS == SWEEP_RESULT_HANDSHAKE);
+    endproperty
+
+    property init_sweep_to_end_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == SWEEP_RESULT_HANDSHAKE) |=> (CS == END_HANDSHAKE);
+    endproperty
+
+    property init_done_at_end_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == END_HANDSHAKE && i_sb_xx_rsp && i_xx_decoding == 'h18D) |-> done;
+    endproperty
+
+    property init_done_low_not_end_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS != END_HANDSHAKE) |-> !done;
+    endproperty
+
+    property init_count_reset_at_req_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == REQ_HANDSHAKE) |-> (count_reg == 0);
+    endproperty
+
+    property init_count_increment_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == LFSR_HANDSHAKE && i_sb_xx_done) |=> (count == $past(count) + 1);
+    endproperty
+
+    property init_train_error_low_at_req_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == REQ_HANDSHAKE) |-> !train_error;
+    endproperty
+
+    property init_train_error_clear_on_retry_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == RESULT_HANDSHAKE && i_sb_xx_req && i_xx_decoding == 'h189) |-> !train_error;
+    endproperty
+
+    property init_encoding_req_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == REQ_HANDSHAKE && !(i_sb_xx_req && i_xx_decoding == 'h189)) |-> (o_xx_encoding == 'h188);
+    endproperty
+
+    property init_encoding_lfsr_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == LFSR_HANDSHAKE && !i_sb_xx_done) |-> (o_xx_encoding == 'h189);
+    endproperty
+
+    property init_encoding_result_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == RESULT_HANDSHAKE && !(i_sb_xx_req && i_xx_decoding == 'h189) && !(i_sb_xx_req && i_xx_decoding == 'h18C)) |-> (o_xx_encoding == 'h18B);
+    endproperty
+
+    property init_encoding_sweep_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == SWEEP_RESULT_HANDSHAKE) |-> (o_xx_encoding == 'h18D);
+    endproperty
+
+    property init_encoding_end_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == END_HANDSHAKE) |-> (o_xx_encoding == 'h18D);
+    endproperty
+
+    property init_req_sb_req_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && NS == REQ_HANDSHAKE && !done_ack) |-> o_xx_sb_req;
+    endproperty
+
+    property init_req_sb_req_deassert_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == REQ_HANDSHAKE && done_ack) |-> !o_xx_sb_req;
+    endproperty
+
+    property init_lfsr_sb_rsp_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == LFSR_HANDSHAKE && !done_ack && !i_sb_xx_done) |-> o_xx_sb_rsp;
+    endproperty
+
+    property init_lfsr_sb_rsp_deassert_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == LFSR_HANDSHAKE && done_ack) |-> !o_xx_sb_rsp;
+    endproperty
+
+    property init_result_sb_rsp_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == RESULT_HANDSHAKE && !done_ack && !(i_sb_xx_req && i_xx_decoding == 'h189) && !(i_sb_xx_req && i_xx_decoding == 'h18C)) |-> o_xx_sb_rsp;
+    endproperty
+
+    property init_result_sb_rsp_deassert_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == RESULT_HANDSHAKE && done_ack) |-> !o_xx_sb_rsp;
+    endproperty
+
+    property init_end_sb_req_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == END_HANDSHAKE && !done_ack) |-> o_xx_sb_req;
+    endproperty
+
+    property init_end_sb_req_deassert_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == END_HANDSHAKE && done_ack) |-> !o_xx_sb_req;
+    endproperty
+
+    property init_info_threshold_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == REQ_HANDSHAKE) |-> (o_xx_info == ERROR_THRESHOLD);
+    endproperty
+
+    property init_result_data_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == RESULT_HANDSHAKE) |-> (o_xx_data == result);
+    endproperty
+
+    property init_sweep_result_data_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == SWEEP_RESULT_HANDSHAKE) |-> (o_xx_sweep_result == i_xx_data[7:0]);
+    endproperty
+
+    property init_sweep_clear_sideband_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == SWEEP_RESULT_HANDSHAKE) |-> (!o_xx_sb_req && !o_xx_sb_rsp);
+    endproperty
+
+    property init_req_transition_clear_sideband_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == REQ_HANDSHAKE && i_sb_xx_req && i_xx_decoding == 'h189) |-> (!o_xx_sb_req && !o_xx_sb_rsp);
+    endproperty
+
+    property init_lfsr_transition_clear_sideband_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == LFSR_HANDSHAKE && i_sb_xx_done) |-> (!o_xx_sb_req && !o_xx_sb_rsp);
+    endproperty
+
+    property init_data_transition_clear_sideband_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == DATA_DETECTION && i_sb_xx_req && i_xx_decoding == 'h18B) |-> (!o_xx_sb_req && !o_xx_sb_rsp);
+    endproperty
+
+    property init_result_retry_clear_sideband_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == RESULT_HANDSHAKE && i_sb_xx_req && i_xx_decoding == 'h189) |-> (!o_xx_sb_req && !o_xx_sb_rsp);
+    endproperty
+
+    property init_result_sweep_clear_sideband_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == RESULT_HANDSHAKE && i_sb_xx_req && i_xx_decoding == 'h18C) |-> (!o_xx_sb_req && !o_xx_sb_rsp);
+    endproperty
+
+    property req_stays_without_match_init_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == REQ_HANDSHAKE && !(i_sb_xx_req && i_xx_decoding == 'h189)) |=> (CS == REQ_HANDSHAKE);
+    endproperty
+
+    property lfsr_stays_without_done_init_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == LFSR_HANDSHAKE && !i_sb_xx_done) |=> (CS == LFSR_HANDSHAKE);
+    endproperty
+
+    property result_stays_without_match_init_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == RESULT_HANDSHAKE && !(i_sb_xx_req && i_xx_decoding == 'h189) && !(i_sb_xx_req && i_xx_decoding == 'h18C)) |=> (CS == RESULT_HANDSHAKE);
+    endproperty
+
+    property count_max_value_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (count <= MAXIMUM_ITERATIONS-1);
+    endproperty
+
+    property init_done_low_at_sweep_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == SWEEP_RESULT_HANDSHAKE) |-> !done;
+    endproperty
+
+    property init_done_low_at_result_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == RESULT_HANDSHAKE) |-> !done;
+    endproperty
+
+    property init_done_low_at_data_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == DATA_DETECTION) |-> !done;
+    endproperty
+
+    property init_done_low_at_lfsr_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == LFSR_HANDSHAKE) |-> !done;
+    endproperty
+
+    property init_done_low_at_req_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == REQ_HANDSHAKE) |-> !done;
+    endproperty
+
+    property init_end_done_low_without_rsp_property;
+        @(posedge i_clk) disable iff (i_reset)
+        (init && CS == END_HANDSHAKE && !(i_sb_xx_rsp && i_xx_decoding == 'h18D)) |-> !done;
+    endproperty
+
+    reset_state_assertion: assert property (reset_state_property)
+        else $error("Assertion failed: CS should be REQ_HANDSHAKE after reset");
+    cover property (reset_state_property);
+
+    reset_count_assertion: assert property (reset_count_property)
+        else $error("Assertion failed: count should be 0 after reset");
+    cover property (reset_count_property);
+
+    valid_state_init_assertion: assert property (valid_state_init_property)
+        else $error("Assertion failed: CS contains an invalid state value in init mode");
+    cover property (valid_state_init_property);
+
+    state_transition_assertion: assert property (state_transition_property)
+        else $error("Assertion failed: state should transition to NS on state change");
+    cover property (state_transition_property);
+
+    pass_test_combinational_assertion: assert property (pass_test_combinational_property)
+        else $error("Assertion failed: failed_test should be low when result is all ones");
+    cover property (pass_test_combinational_property);
+
+    init_req_to_lfsr_assertion: assert property (init_req_to_lfsr_property)
+        else $error("Assertion failed: init mode should transition from REQ_HANDSHAKE to LFSR_HANDSHAKE");
+    cover property (init_req_to_lfsr_property);
+
+    init_lfsr_to_data_assertion: assert property (init_lfsr_to_data_property)
+        else $error("Assertion failed: init mode should transition from LFSR_HANDSHAKE to DATA_DETECTION");
+    cover property (init_lfsr_to_data_property);
+
+    init_data_to_result_assertion: assert property (init_data_to_result_property)
+        else $error("Assertion failed: init mode should transition from DATA_DETECTION to RESULT_HANDSHAKE");
+    cover property (init_data_to_result_property);
+
+    init_result_to_lfsr_retry_assertion: assert property (init_result_to_lfsr_retry_property)
+        else $error("Assertion failed: init mode should transition from RESULT_HANDSHAKE to LFSR_HANDSHAKE on retry");
+    cover property (init_result_to_lfsr_retry_property);
+
+    init_result_to_sweep_assertion: assert property (init_result_to_sweep_property)
+        else $error("Assertion failed: init mode should transition from RESULT_HANDSHAKE to SWEEP_RESULT_HANDSHAKE");
+    cover property (init_result_to_sweep_property);
+
+    init_sweep_to_end_assertion: assert property (init_sweep_to_end_property)
+        else $error("Assertion failed: init mode should transition from SWEEP_RESULT_HANDSHAKE to END_HANDSHAKE");
+    cover property (init_sweep_to_end_property);
+
+    init_done_at_end_assertion: assert property (init_done_at_end_property)
+        else $error("Assertion failed: done should be asserted at END_HANDSHAKE in init mode");
+    cover property (init_done_at_end_property);
+
+    init_done_low_not_end_assertion: assert property (init_done_low_not_end_property)
+        else $error("Assertion failed: done should be low when not in END_HANDSHAKE in init mode");
+    cover property (init_done_low_not_end_property);
+
+    init_count_reset_at_req_assertion: assert property (init_count_reset_at_req_property)
+        else $error("Assertion failed: count_reg should be 0 at REQ_HANDSHAKE in init mode");
+    cover property (init_count_reset_at_req_property);
+
+    init_count_increment_assertion: assert property (init_count_increment_property)
+        else $error("Assertion failed: count should increment after LFSR_HANDSHAKE in init mode");
+    cover property (init_count_increment_property);
+
+    init_train_error_low_at_req_assertion: assert property (init_train_error_low_at_req_property)
+        else $error("Assertion failed: train_error should be low at REQ_HANDSHAKE in init mode");
+    cover property (init_train_error_low_at_req_property);
+
+    init_train_error_clear_on_retry_assertion: assert property (init_train_error_clear_on_retry_property)
+        else $error("Assertion failed: train_error should be cleared on retry in init mode");
+    cover property (init_train_error_clear_on_retry_property);
+
+    init_encoding_req_assertion: assert property (init_encoding_req_property)
+        else $error("Assertion failed: o_xx_encoding should be 'h188 at REQ_HANDSHAKE in init mode");
+    cover property (init_encoding_req_property);
+
+    init_encoding_lfsr_assertion: assert property (init_encoding_lfsr_property)
+        else $error("Assertion failed: o_xx_encoding should be 'h189 at LFSR_HANDSHAKE in init mode");
+    cover property (init_encoding_lfsr_property);
+
+    init_encoding_result_assertion: assert property (init_encoding_result_property)
+        else $error("Assertion failed: o_xx_encoding should be 'h18B at RESULT_HANDSHAKE in init mode");
+    cover property (init_encoding_result_property);
+
+    init_encoding_sweep_assertion: assert property (init_encoding_sweep_property)
+        else $error("Assertion failed: o_xx_encoding should be 'h18D at SWEEP_RESULT_HANDSHAKE in init mode");
+    cover property (init_encoding_sweep_property);
+
+    init_encoding_end_assertion: assert property (init_encoding_end_property)
+        else $error("Assertion failed: o_xx_encoding should be 'h18D at END_HANDSHAKE in init mode");
+    cover property (init_encoding_end_property);
+
+    init_req_sb_req_assertion: assert property (init_req_sb_req_property)
+        else $error("Assertion failed: o_xx_sb_req should be asserted at REQ_HANDSHAKE when done_ack is low in init mode");
+    cover property (init_req_sb_req_property);
+
+    init_req_sb_req_deassert_assertion: assert property (init_req_sb_req_deassert_property)
+        else $error("Assertion failed: o_xx_sb_req should be deasserted at REQ_HANDSHAKE when done_ack is high in init mode");
+    cover property (init_req_sb_req_deassert_property);
+
+    init_lfsr_sb_rsp_assertion: assert property (init_lfsr_sb_rsp_property)
+        else $error("Assertion failed: o_xx_sb_rsp should be asserted at LFSR_HANDSHAKE when done_ack is low in init mode");
+    cover property (init_lfsr_sb_rsp_property);
+
+    init_lfsr_sb_rsp_deassert_assertion: assert property (init_lfsr_sb_rsp_deassert_property)
+        else $error("Assertion failed: o_xx_sb_rsp should be deasserted at LFSR_HANDSHAKE when done_ack is high in init mode");
+    cover property (init_lfsr_sb_rsp_deassert_property);
+
+    init_result_sb_rsp_assertion: assert property (init_result_sb_rsp_property)
+        else $error("Assertion failed: o_xx_sb_rsp should be asserted at RESULT_HANDSHAKE when done_ack is low in init mode");
+    cover property (init_result_sb_rsp_property);
+
+    init_result_sb_rsp_deassert_assertion: assert property (init_result_sb_rsp_deassert_property)
+        else $error("Assertion failed: o_xx_sb_rsp should be deasserted at RESULT_HANDSHAKE when done_ack is high in init mode");
+    cover property (init_result_sb_rsp_deassert_property);
+
+    init_end_sb_req_assertion: assert property (init_end_sb_req_property)
+        else $error("Assertion failed: o_xx_sb_req should be asserted at END_HANDSHAKE when done_ack is low in init mode");
+    cover property (init_end_sb_req_property);
+
+    init_end_sb_req_deassert_assertion: assert property (init_end_sb_req_deassert_property)
+        else $error("Assertion failed: o_xx_sb_req should be deasserted at END_HANDSHAKE when done_ack is high in init mode");
+    cover property (init_end_sb_req_deassert_property);
+
+    init_info_threshold_assertion: assert property (init_info_threshold_property)
+        else $error("Assertion failed: o_xx_info should be ERROR_THRESHOLD at REQ_HANDSHAKE in init mode");
+    cover property (init_info_threshold_property);
+
+    init_result_data_assertion: assert property (init_result_data_property)
+        else $error("Assertion failed: o_xx_data should be result at RESULT_HANDSHAKE in init mode");
+    cover property (init_result_data_property);
+
+    init_sweep_result_data_assertion: assert property (init_sweep_result_data_property)
+        else $error("Assertion failed: o_xx_sweep_result should be i_xx_data[7:0] at SWEEP_RESULT_HANDSHAKE in init mode");
+    cover property (init_sweep_result_data_property);
+
+    init_sweep_clear_sideband_assertion: assert property (init_sweep_clear_sideband_property)
+        else $error("Assertion failed: o_xx_sb_req and o_xx_sb_rsp should be low at SWEEP_RESULT_HANDSHAKE in init mode");
+    cover property (init_sweep_clear_sideband_property);
+
+    init_req_transition_clear_sideband_assertion: assert property (init_req_transition_clear_sideband_property)
+        else $error("Assertion failed: sideband signals should be cleared on REQ_HANDSHAKE transition in init mode");
+    cover property (init_req_transition_clear_sideband_property);
+
+    init_lfsr_transition_clear_sideband_assertion: assert property (init_lfsr_transition_clear_sideband_property)
+        else $error("Assertion failed: sideband signals should be cleared on LFSR_HANDSHAKE transition in init mode");
+    cover property (init_lfsr_transition_clear_sideband_property);
+
+    init_data_transition_clear_sideband_assertion: assert property (init_data_transition_clear_sideband_property)
+        else $error("Assertion failed: sideband signals should be cleared on DATA_DETECTION transition in init mode");
+    cover property (init_data_transition_clear_sideband_property);
+
+    init_result_retry_clear_sideband_assertion: assert property (init_result_retry_clear_sideband_property)
+        else $error("Assertion failed: sideband signals should be cleared on RESULT_HANDSHAKE retry transition in init mode");
+    cover property (init_result_retry_clear_sideband_property);
+
+    init_result_sweep_clear_sideband_assertion: assert property (init_result_sweep_clear_sideband_property)
+        else $error("Assertion failed: sideband signals should be cleared on RESULT_HANDSHAKE to SWEEP transition in init mode");
+    cover property (init_result_sweep_clear_sideband_property);
+
+    req_stays_without_match_init_assertion: assert property (req_stays_without_match_init_property)
+        else $error("Assertion failed: REQ_HANDSHAKE should stay without matching request in init mode");
+    cover property (req_stays_without_match_init_property);
+
+    lfsr_stays_without_done_init_assertion: assert property (lfsr_stays_without_done_init_property)
+        else $error("Assertion failed: LFSR_HANDSHAKE should stay without done in init mode");
+    cover property (lfsr_stays_without_done_init_property);
+
+    result_stays_without_match_init_assertion: assert property (result_stays_without_match_init_property)
+        else $error("Assertion failed: RESULT_HANDSHAKE should stay without matching request in init mode");
+    cover property (result_stays_without_match_init_property);
+
+    count_max_value_assertion: assert property (count_max_value_property)
+        else $error("Assertion failed: count should not exceed MAXIMUM_ITERATIONS-1");
+    cover property (count_max_value_property);
+
+    init_done_low_at_sweep_assertion: assert property (init_done_low_at_sweep_property)
+        else $error("Assertion failed: done should be low at SWEEP_RESULT_HANDSHAKE in init mode");
+    cover property (init_done_low_at_sweep_property);
+
+    init_done_low_at_result_assertion: assert property (init_done_low_at_result_property)
+        else $error("Assertion failed: done should be low at RESULT_HANDSHAKE in init mode");
+    cover property (init_done_low_at_result_property);
+
+    init_done_low_at_data_assertion: assert property (init_done_low_at_data_property)
+        else $error("Assertion failed: done should be low at DATA_DETECTION in init mode");
+    cover property (init_done_low_at_data_property);
+
+    init_done_low_at_lfsr_assertion: assert property (init_done_low_at_lfsr_property)
+        else $error("Assertion failed: done should be low at LFSR_HANDSHAKE in init mode");
+    cover property (init_done_low_at_lfsr_property);
+
+    init_done_low_at_req_assertion: assert property (init_done_low_at_req_property)
+        else $error("Assertion failed: done should be low at REQ_HANDSHAKE in init mode");
+    cover property (init_done_low_at_req_property);
+
+    init_end_done_low_without_rsp_assertion: assert property (init_end_done_low_without_rsp_property)
+        else $error("Assertion failed: done should be low at END_HANDSHAKE without matching response in init mode");
+    cover property (init_end_done_low_without_rsp_property);
+
+`endif
     
 endmodule
