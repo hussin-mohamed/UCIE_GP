@@ -83,7 +83,8 @@ logic                       i_reset;
 logic [DECODING_WIDTH-1:0]  i_rx_decoding;
 logic [DATA_WIDTH-1:0]      i_rx_data;
 logic [INFO_WIDTH-1:0]      i_rx_info;
-logic [7:0]                 i_rx_sweep_result;
+logic [DATA_WIDTH-1:0]      i_rx_data_results;
+logic                       i_rx_valid_results;
 
 // Sideband inputs (driven by TB, simulating remote TX sideband)
 logic i_sb_rx_req;
@@ -139,7 +140,8 @@ ucie_LTSM_RX_MBTRAIN #(
     .i_rx_decoding         (i_rx_decoding),
     .i_rx_data             (i_rx_data),
     .i_rx_info             (i_rx_info),
-    .i_rx_sweep_result     (i_rx_sweep_result),
+    .i_rx_data_results     (i_rx_data_results),
+    .i_rx_valid_results    (i_rx_valid_results),
     .i_sb_rx_req           (i_sb_rx_req),
     .i_sb_rx_rsp           (i_sb_rx_rsp),
     .i_sb_rx_done          (i_sb_rx_done),
@@ -177,7 +179,7 @@ end
 //  states with no_retry=0)
 // -----------------------------------------------------------------------
 initial begin
-    force DUT.result = 1'b1;
+    force DUT.i_rx_data_results = 1'b1;
 end
 
 // =======================================================================
@@ -560,7 +562,6 @@ task automatic init_signals;
         i_rx_decoding         = 0;
         i_rx_data             = 0;
         i_rx_info             = 0;
-        i_rx_sweep_result     = 0;
         i_sb_rx_req           = 0;
         i_sb_rx_rsp           = 0;
         i_sb_rx_done          = 0;
@@ -765,7 +766,6 @@ initial begin
     $display("=== TEST 7: RXCLKCAL (0x98 → eye_sweep → 0x9A) ===");
 
     do_imm_rsp_done_hs('h98);
-    do_eye_sweep_happy_pass_rx();
 
     // Trigger sub2 entry: clock_to_test_done && req+decoding 0x9A
     i_sb_rx_req   = 1;
