@@ -15,9 +15,9 @@
 // ****************************************************************************
 
 import shared_ltsm_pkg::*;
-class active_rx_handshake extends uvm_sequence#(tx_fsm_sb_sequence_item);
+class active_rx_handshake extends uvm_sequence#(rx_fsm_sb_sequence_item);
     `uvm_object_utils(active_rx_handshake)
-    tx_fsm_sb_sequence_item item;
+    rx_fsm_sb_sequence_item item;
     
     function new(string name = "active_rx_handshake");
         super.new(name);
@@ -28,11 +28,11 @@ class active_rx_handshake extends uvm_sequence#(tx_fsm_sb_sequence_item);
         start_item(item);
         item.i_rx_decoding      = ACTIVE_LINKINIT_TX_State_Req_Handshake ;
         item.i_sb_rx_rsp        = 1'b0;
-        item.i_sb_rx_req        = 1'b0;
-        item.i_sb_rx_done       = 1'b1;
+        item.i_sb_rx_req        = 1'b1;
+        item.i_sb_rx_done       = 1'b0;
         finish_item(item);
     endtask 
-endclass //className extends superClass
+endclass 
 
 
 
