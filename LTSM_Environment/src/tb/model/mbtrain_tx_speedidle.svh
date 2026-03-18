@@ -18,10 +18,10 @@ class mbtrain_tx_speedidle extends state;
     local static mbtrain_tx_speedidle inst = null;
     logic [8:0] o_tx_encoding_expected;
     logic [15:0] o_tx_info_expected;
-    logic o_sb_tx_req_expected;
-    logic [2:0] o_pl_speedmode_expected;
+    logic o_sb_tx_req_expected;    
     bit match;
-        protected function new(); endfunction
+    
+    protected function new(); endfunction
 
     static function mbtrain_tx_speedidle Instance();
         if (inst == null)
@@ -32,7 +32,7 @@ class mbtrain_tx_speedidle extends state;
     virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
                                               LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
         if (cntxt.currentstate_tx==mbtrain_tx_datavref::Instance()) begin
-            o_pl_speedmode_expected= // highest speed ;
+            o_pl_speedmode_expected= 3'b101 ;
             state_done=1'b0;
             if (o_pl_speedmode_expected == item_rdi_out.o_pl_speedmode) begin
                 match=1;
@@ -42,7 +42,6 @@ class mbtrain_tx_speedidle extends state;
             end   
         end    
         else if (cntxt.currentstate_tx==l1_state_tx::Instance())begin
-            o_pl_speedmode_expected = // current speed ;
             state_done=1'b0;
             if (o_pl_speedmode_expected == item_rdi_out.o_pl_speedmode) begin
                 match=1;
@@ -52,7 +51,7 @@ class mbtrain_tx_speedidle extends state;
             end 
         end
         else if (cntxt.currentstate_tx==mbtrain_tx_linkspeed::Instance() || cntxt.currentstate_tx==phyretrain_tx::Instance()) begin
-            o_pl_speedmode_expected = // speed 2a2al ;
+            o_pl_speedmode_expected = o_pl_speedmode_expected-1 ;
             state_done=1'b0;
             if (o_pl_speedmode_expected == item_rdi_out.o_pl_speedmode) begin
                 match=1;
