@@ -297,7 +297,7 @@ class StateTransitionUtil_tx extends state;
                   return ResetState_tx::Instance();
                end
                // speed idle
-               else if (item_tx_fsm_sb_in.i_tx_decoding == RX_MBTRAIN_LINKSPEED_Send_SpeedDegrade_RESP && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && state_done) begin
+               else if ((item_tx_fsm_sb_in.i_tx_decoding == RX_MBTRAIN_LINKSPEED_Send_SpeedDegrade_RESP && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && state_done)||enter_speeddegrade) begin
                   rerurn mbtrain_tx_speedidle::Instance();
                end
                // repair
