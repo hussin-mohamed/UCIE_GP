@@ -52,7 +52,7 @@ virtual class State extends uvm_object;
         end
         if ((nextState_tx==mbtrain_tx_speedidle::Instance() || nextState_rx==mbtrain_rx_speedidle::Instance()) && 
         (cntxt.currentState_tx == mbtrain_tx_linkspeed::Instance() || cntxt.currentState_tx == phyretrain_tx::Instance() || cntxt.currentState_rx == mbtrain_rx_linkspeed::Instance() || cntxt.currentState_rx == phyretrain_rx::Instance() ) &&
-        /*speed 2a2al haga*/) begin
+        o_pl_speedmode_expected==3'b000) begin
             nextState_tx = trainerror_tx::Instance();
         end
         if (error_count == 2 && !item_tx_fsm_sb_in.i_tx_info[4]) begin
