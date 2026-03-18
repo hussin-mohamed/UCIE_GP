@@ -25,7 +25,7 @@
 import shared_ltsm_pkg::*;
 class rx_fsm_sb_sequence_item extends uvm_sequence_item;
   
-        encoding_rx_t i_rx_decoding,o_rx_encoding;
+        logic [8:0] i_rx_decoding,o_rx_encoding;
         logic [63:0] i_rx_data,o_rx_data;
         logic [15:0] i_rx_info,o_rx_info;
         msgtype_t i_msgtype,o_msgtype;
