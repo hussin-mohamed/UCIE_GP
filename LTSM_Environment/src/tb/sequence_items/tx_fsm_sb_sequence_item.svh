@@ -25,7 +25,7 @@
 import shared_ltsm_pkg::*;
 class tx_fsm_sb_sequence_item extends uvm_sequence_item;
   
-        encoding_tx_t i_tx_decoding,o_tx_encoding;
+        logic [8:0] i_tx_decoding,o_tx_encoding;
         logic [63:0] i_tx_data,o_tx_data;
         logic [15:0] i_tx_info,o_tx_info;
         msgtype_t i_msgtype,o_msgtype;
