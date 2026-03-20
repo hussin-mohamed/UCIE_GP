@@ -82,12 +82,14 @@ module ucie_ltsm_rx_mbinit_repairmb #(
     logic [2:0] lane_map;
     logic [2:0] extracted_lane_map;
 
+        logic r_eye_sweep_reset;
+
     // -------------------------------------------------------------------------
     // RX Eye Sweep Submodule (init=0: RX responds to TX-initiated test)
     // -------------------------------------------------------------------------
     ucie_RX_Data_to_Clock_eye_sweep ucie_RX_Data_to_Clock_eye_sweep_inst (
         .i_clk          (i_clk),
-        .i_reset        (i_reset || !clock_to_test_enable),
+        .i_reset        (r_eye_sweep_reset),
         .i_xx_decoding  (i_rx_decoding),
         .i_xx_data      (i_rx_data),
         .i_sb_xx_req    (i_sb_rx_req),
@@ -108,6 +110,13 @@ module ucie_ltsm_rx_mbinit_repairmb #(
         .failed_test    (failed_test_sweep),
         .done           (clock_to_test_done)
     );
+
+
+
+always_ff @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) r_eye_sweep_reset <= 1'b1;
+    else         r_eye_sweep_reset <= !clock_to_test_enable;
+end
 
     // -------------------------------------------------------------------------
     // State memory

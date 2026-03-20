@@ -29,6 +29,7 @@ module ucie_LTSM #(
     input  logic                        i_rx_error,         // RX detected an error
     input  logic                        i_tx_done,          // TX has finished
     input  logic                        i_rx_done,          // RX has finished
+    input  logic [2:0]                  i_Lane_map_code, 
  
     // -------------------------------------------------------------------------
     // Pattern detection results
@@ -62,6 +63,11 @@ module ucie_LTSM #(
     // -------------------------------------------------------------------------
     input  logic                        i_stop,             // Stop-respond in SBINIT pattern detection
  
+    input [15:0]                        r_local_cap,
+    input [2:0]                         i_speedreg,
+    input [36:0]                        i_Runtime_Link_Test_Control_register,
+    input                               i_Runtime_Link_Test_status_register,
+
     // -------------------------------------------------------------------------
     // RDI – PHY → Adapter
     // -------------------------------------------------------------------------
@@ -102,12 +108,18 @@ module ucie_LTSM #(
     // -------------------------------------------------------------------------
     // SBINIT start trigger
     // -------------------------------------------------------------------------
-    output logic                        o_sb_init_start     // Initialise SBINIT state
+    output logic                        o_sb_init_start,    // Initialise SBINIT state
+   
+    output logic [2:0]                  o_speedreg,
+    output logic [36:0]                 o_Runtime_Link_Test_Control_register,
+    output logic                        o_Runtime_Link_Test_status_register
 );
 
 logic w_timer_1ms;
 logic w_timer_4ms;
 logic w_timer_8ms;
+logic w_timer_1us;
+logic w_timer_2us;
 
 logic w_init_train_en;
 logic w_tx_train_link_init_en;
@@ -165,6 +177,17 @@ logic w_active_rx_sb_req;
 logic w_active_rx_sb_rsp;
 logic w_active_rx_sb_done;
 
+logic w_repair_state_enable;
+logic w_active_error;
+logic w_train_tx_error;
+logic w_train_rx_error;
+logic w_tx_self_cal_state_enable;
+logic w_speed_idle_state_enable;
+
+logic w_wait_1us_en;
+
+logic [3:0] w_timer_rx_encoding;
+
 always @(*) begin
     if (i_reset) begin
         w_rsp_sent = 0;
@@ -186,7 +209,6 @@ end
 always @(*) begin
     if (i_reset) begin
         o_tx_encoding = w_init_tx_encoding;
-        o_rx_encoding = w_init_rx_encoding;
         o_tx_data = w_init_tx_data;
         o_rx_data = w_init_rx_data;
         o_tx_info = w_init_tx_info;
@@ -198,9 +220,8 @@ always @(*) begin
         o_rx_sb_rsp = w_init_rx_sb_rsp;
         o_tx_sb_done = w_init_tx_sb_done;
         o_rx_sb_done = w_init_rx_sb_done;
-    end else if ((w_tx_train_link_init_en || w_tx_train_phyretrain_en) && (w_rx_train_link_init_en || w_rx_train_phyretrain_en)) begin
+    end else if (w_rx_train_link_init_en || w_rx_train_phyretrain_en) begin
         o_tx_encoding = w_active_tx_encoding;
-        o_rx_encoding = w_active_rx_encoding;
         o_tx_data = w_active_tx_data;
         o_rx_data = w_active_rx_data;
         o_tx_info = w_active_tx_info;
@@ -212,9 +233,8 @@ always @(*) begin
         o_rx_sb_rsp = w_active_rx_sb_rsp;
         o_tx_sb_done = w_active_tx_sb_done;
         o_rx_sb_done = w_active_rx_sb_done;
-    end else if (w_init_train_en) begin
+    end else if (w_init_train_en || w_speed_idle_state_enable || w_tx_self_cal_state_enable || w_repair_state_enable) begin
         o_tx_encoding = w_train_tx_encoding;
-        o_rx_encoding = w_train_rx_encoding;
         o_tx_data = w_train_tx_data;
         o_rx_data = w_train_rx_data;
         o_tx_info = w_train_tx_info;
@@ -228,7 +248,6 @@ always @(*) begin
         o_rx_sb_done = w_train_rx_sb_done;
     end else begin
         o_tx_encoding = w_init_tx_encoding;
-        o_rx_encoding = w_init_rx_encoding;
         o_tx_data = w_init_tx_data;
         o_rx_data = w_init_rx_data;
         o_tx_info = w_init_tx_info;
@@ -243,6 +262,18 @@ always @(*) begin
     end
 end
 
+always @(*) begin
+    if (i_reset) begin
+        o_rx_encoding = w_init_rx_encoding;
+    end else if (w_rx_train_link_init_en || w_rx_train_phyretrain_en) begin
+        o_rx_encoding = w_active_rx_encoding;
+    end else if (w_init_train_en || w_speed_idle_state_enable || w_tx_self_cal_state_enable || w_repair_state_enable) begin
+        o_rx_encoding = w_train_rx_encoding;
+    end else begin
+        o_rx_encoding = w_init_rx_encoding;
+    end
+end
+
 ucie_timeout_timer #(
     .SIM_8MS_CYCLES(SIM_8MS_CYCLES),
     .DECODING_WIDTH(DECODING_WIDTH),
@@ -251,10 +282,13 @@ ucie_timeout_timer #(
     .i_clk(i_clk),
     .i_reset(i_reset),
     .i_sim(1),
+    .wait_1us(w_wait_1us_en),
     .o_rx_encoding(o_rx_encoding), 
     .o_timer_1ms(w_timer_1ms),
     .o_timer_4ms(w_timer_4ms),
-    .o_timer_8ms(w_timer_8ms)   
+    .o_timer_8ms(w_timer_8ms),  
+    .o_timer_1us(w_timer_1us), 
+    .o_timer_2us(w_timer_2us)   
 );
 
 ucie_ltsm_init_fsm # (
@@ -278,6 +312,7 @@ ucie_ltsm_init_fsm # (
     .i_sb_tx_rsp                    (i_sb_tx_rsp),
     .i_sb_tx_done                   (i_sb_tx_done),
     .i_tx_done                      (i_tx_done),
+    .r_local_cap                    (r_local_cap),
 
     // -------------------------------------------------------------------------
     // RX-side inputs
@@ -323,7 +358,7 @@ ucie_ltsm_init_fsm # (
     // -------------------------------------------------------------------------
     // Active-training error
     // -------------------------------------------------------------------------
-    .i_train_active_error           (w_train_active_error),
+    .i_train_active_error           (w_active_error || w_train_tx_error || w_train_rx_error),
 
     // -------------------------------------------------------------------------
     // TX output bus
@@ -368,6 +403,7 @@ ucie_LTSM_TX_MBTRAIN #(
     .i_tx_data                      (i_tx_data),            // Data from RX
     .i_tx_info                      (i_tx_info),            // Info/control from RX
     .i_tx_sweep_result              (i_tx_sweep_result),    // Eye sweep test results
+    .Lane_map_code                  (i_Lane_map_code),
     
     // Sideband control inputs
     .i_sb_tx_req                    (i_sb_tx_req),      // Sideband request from RX
@@ -377,8 +413,13 @@ ucie_LTSM_TX_MBTRAIN #(
     
     // Training control inputs
     .init_train_en                  (w_init_train_en),          // Enable training initialization
+    .speed_idle_state_enable        (w_speed_idle_state_enable),          // Enable training initialization
+    .repair_state_enable            (w_repair_state_enable),          // Enable training initialization
+    .tx_self_cal_state_enable       (w_tx_self_cal_state_enable),          // Enable training initialization
     .timeout                        (w_timer_8ms),              // Training timeout error
     .o_pl_speedmode                 (o_pl_speedmode),           // Physical layer speed mode
+    .i_speedreg                 (i_speedreg),           // Physical layer speed mode
+    .o_speedreg                 (o_speedreg),           // Physical layer speed mode
 
     .encoding_rsp_sent              (w_encoding_rsp_sent),          // Encoding value when response sent
     .encoding_rsp_received          (w_encoding_rsp_received),      // Encoding value when response received
@@ -397,7 +438,7 @@ ucie_LTSM_TX_MBTRAIN #(
     .o_tx_sb_done                   (w_train_tx_sb_done),   // Sideband done to RX
     
     // Status outputs
-    .train_error                    (w_train_active_error),     // Training error occurred
+    .train_error                    (w_train_tx_error),     // Training error occurred
     .train_link_init_en                (w_tx_train_link_init_en),        // Training is active
     .train_phyretrain_en                (w_tx_train_phyretrain_en)         // Training is active
 );
@@ -418,6 +459,7 @@ ucie_LTSM_RX_MBTRAIN #(
     .i_rx_info                      (i_rx_info),            // Info/control from TX
     .i_rx_data_results              (i_rx_data_results),    // Results from eye sweep tests (could be multiple signals or a bus of results)
     .i_rx_valid_results             (i_rx_valid_results),    // Results from eye sweep tests (could be multiple signals or a bus of results)
+    .Lane_map_code                  (i_Lane_map_code),
     
     // Sideband control inputs
     .i_sb_rx_req                    (i_sb_rx_req),     // Sideband request from TX
@@ -429,6 +471,8 @@ ucie_LTSM_RX_MBTRAIN #(
     
     // Training control inputs
     .init_train_en                  (w_init_train_en),      // Enable training initialization
+    .speed_idle_state_enable        (w_speed_idle_state_enable),      // Enable training initialization
+    .tx_self_cal_state_enable       (w_tx_self_cal_state_enable),      // Enable training initialization
     .timeout                        (w_timer_8ms),          // Training timeout error
     .o_pl_speedmode                 (o_pl_speedmode),       // Physical layer speed mode
 
@@ -448,7 +492,7 @@ ucie_LTSM_RX_MBTRAIN #(
     .o_rx_sb_done                   (w_train_rx_sb_done),  // Sideband done to TX
     
     // Status outputs
-    .train_error                    (w_train_active_error),     // Training error occurred
+    .train_error                    (w_train_rx_error),     // Training error occurred
     .train_link_init_en                (w_rx_train_link_init_en),         // Training is active
     .train_phyretrain_en                (w_rx_train_phyretrain_en)         // Training is active
 );
@@ -458,28 +502,45 @@ ucie_ltsm_active_fsm ucie_ltsm_active_fsm_inst (
     .i_reset(i_reset),
 
     // Entry trigger from ucie_ltsm_init_fsm
-    .i_train_active_en((w_tx_train_link_init_en || w_tx_train_phyretrain_en) && (w_rx_train_link_init_en || w_rx_train_phyretrain_en)),
+    .i_train_active_en(w_rx_train_link_init_en),
+    .phyretrain_linkspeed_transition(w_rx_train_phyretrain_en),
+
+    .i_tx_info(i_tx_info),
+    .i_rx_info(i_rx_info),
+
+    .valid_error(!(&i_rx_valid_results)),
 
     // RDI interface — from Adapter
     .i_lp_clk_ack(i_lp_clk_ack),
     .i_lp_wake_req(i_lp_wake_req),
     .i_lp_state_req(i_lp_state_req),
     .i_lp_linkerror(i_lp_linkerror),
+    .i_lp_stallack(i_lp_stallack),
 
     // TX sideband inputs
     .i_tx_decoding(i_tx_decoding),
     .i_sb_tx_req(i_sb_tx_req),
     .i_sb_tx_rsp(i_sb_tx_rsp),
     .i_sb_tx_done(i_sb_tx_done),
+    .Lane_map_code(i_Lane_map_code),
 
     // RX sideband inputs
     .i_rx_decoding(i_rx_decoding),
     .i_sb_rx_req(i_sb_rx_req),
     .i_sb_rx_rsp(i_sb_rx_rsp),
     .i_sb_rx_done(i_sb_rx_done),
+    .rsp_sent(w_rsp_sent),
+    .rsp_received(w_rsp_received),
+    .encoding_rsp_received(w_encoding_rsp_received),
+    .encoding_rsp_sent(w_encoding_rsp_sent),
 
     // Shared 8ms timeout
     .o_timer_8ms(w_timer_8ms),
+    .i_timer_1us(w_timer_1us),
+    .i_timer_2us(w_timer_2us),
+
+    .i_Runtime_Link_Test_Control_register(i_Runtime_Link_Test_Control_register),
+    .i_Runtime_Link_Test_status_register(i_Runtime_Link_Test_status_register),
 
     // TX sideband outputs (muxed)
     .o_tx_encoding(w_active_tx_encoding),
@@ -493,21 +554,30 @@ ucie_ltsm_active_fsm ucie_ltsm_active_fsm_inst (
     .o_rx_sb_rsp(w_active_rx_sb_rsp),
     .o_rx_sb_done(w_active_rx_sb_done),
 
+    .o_tx_info(w_active_tx_info),
+    .o_rx_info(w_active_rx_info),
+
     // RDI outputs — to Adapter
     .o_pl_clk_req(o_pl_clk_req),
     .o_pl_inband_pres(o_pl_inband_pres),
     .o_pl_wake_ack(o_pl_wake_ack),
     .o_pl_state_sts(o_pl_state_sts),
+    .o_pl_stallreq(o_pl_stallreq),
+
+    .speed_idle_state_enable(w_speed_idle_state_enable),
+    .repair_state_enable(w_repair_state_enable),
+    .tx_self_cal_state_enable(w_tx_self_cal_state_enable),
 
     // Transition done flags (forwarded from ucie_ltsm_active for external use)
     .o_done_active_linkreset(w_reset),
-    .o_done_active_linkerror(w_train_active_error),
+    .o_done_active_linkerror(w_active_error),
 
     // Debug
-    .o_current_state(w_active_current_state)
+    .o_current_state(w_active_current_state),
+    .wait_1us_en(w_wait_1us_en),
+
+    .o_Runtime_Link_Test_Control_register(o_Runtime_Link_Test_Control_register),
+    .o_Runtime_Link_Test_status_register(o_Runtime_Link_Test_status_register)
 );
-
-assign o_pl_speedmode = 2;
-
     
 endmodule

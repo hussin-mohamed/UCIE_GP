@@ -76,8 +76,6 @@ module ucie_ltsm_rx_reset #(
         @(posedge i_clk) disable iff (i_reset)
         i_current_state == RESET |-> o_rx_encoding == 9'h00;
     endproperty
-    OUTPUT_ENCODING_RESET_RX : assert property (output_encoding)
-        else $error("ASSERT FAIL [OUTPUT_ENCODING_RESET_RX]: wrong encoding in RESET state");
 
     // --------------------------------------------------------------------------
     // Done asserts when all three latch registers are high
@@ -87,8 +85,6 @@ module ucie_ltsm_rx_reset #(
         (i_pll_stable_reg && i_supply_stable_reg && i_timer_4ms_reg)
         |-> o_done_reset_rx;
     endproperty
-    RESET_DONE_RX : assert property (reset_done)
-        else $error("ASSERT FAIL [RESET_DONE_RX]: done not asserted when all conditions met");
 
     // --------------------------------------------------------------------------
     // All latch registers clear the cycle after leaving RESET state

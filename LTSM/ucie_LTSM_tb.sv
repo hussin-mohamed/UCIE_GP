@@ -101,6 +101,10 @@ module ucie_LTSM_tb;
     logic        o_pl_clk_req;
     logic        o_pl_wake_ack;
 
+    logic [2:0] i_speedreg;  // Physical layer speed mode
+    logic [2:0] o_speedreg;  // Physical layer speed mode
+
+
     // Encoding outputs (muxed by top-level from init or train FSMs)
     logic [8:0]  o_tx_encoding;
     logic [63:0] o_tx_data;
@@ -108,6 +112,7 @@ module ucie_LTSM_tb;
     logic [8:0]  o_rx_encoding;
     logic [63:0] o_rx_data;
     logic [15:0] o_rx_info;
+    logic [2:0]                  i_Lane_map_code;
 
     // Handshake outputs
     logic        o_tx_sb_req;
@@ -120,13 +125,21 @@ module ucie_LTSM_tb;
     // SBINIT start trigger
     logic        o_sb_init_start;
 
+    logic [15:0]                        r_local_cap;
+    logic [36:0] i_Runtime_Link_Test_Control_register;
+    logic i_Runtime_Link_Test_status_register;
+
+    logic [36:0] o_Runtime_Link_Test_Control_register;
+    logic o_Runtime_Link_Test_status_register;
+
+
     // -------------------------------------------------------------------------
     // DUT instantiation
     //   SIM_8MS_CYCLES=4  → internal timer expires after 4 clock cycles,
     //   removing the need to manually pulse i_timer_4ms.
     // -------------------------------------------------------------------------
     ucie_LTSM #(
-        .SIM_8MS_CYCLES  (40),
+        .SIM_8MS_CYCLES  (8000),
         .CLK_PERIOD_NS   (10.0)
     ) dut (
         // Clock & Reset
@@ -146,6 +159,7 @@ module ucie_LTSM_tb;
         .i_rx_error         (i_rx_error),
         .i_tx_done          (i_tx_done),
         .i_rx_done          (i_rx_done),
+        .i_Lane_map_code    (i_Lane_map_code),
 
         // Pattern results
         .i_rx_data_results  (i_rx_data_results),
@@ -185,6 +199,8 @@ module ucie_LTSM_tb;
         .o_pl_lnk_cfg       (o_pl_lnk_cfg),
         .o_pl_clk_req       (o_pl_clk_req),
         .o_pl_wake_ack      (o_pl_wake_ack),
+        .i_speedreg      (i_speedreg),
+        .o_speedreg      (o_speedreg),
 
         // SB encoding
         .o_tx_encoding      (o_tx_encoding),
@@ -203,7 +219,15 @@ module ucie_LTSM_tb;
         .o_rx_sb_done       (o_rx_sb_done),
 
         // SBINIT start
-        .o_sb_init_start    (o_sb_init_start)
+        .o_sb_init_start    (o_sb_init_start),
+
+        .o_Runtime_Link_Test_Control_register(o_Runtime_Link_Test_Control_register),
+        .o_Runtime_Link_Test_status_register(o_Runtime_Link_Test_status_register),
+
+        .r_local_cap(r_local_cap),
+        .i_Runtime_Link_Test_Control_register(i_Runtime_Link_Test_Control_register),
+        .i_Runtime_Link_Test_status_register(i_Runtime_Link_Test_status_register)
+
     );
 
     // -------------------------------------------------------------------------
@@ -262,6 +286,7 @@ module ucie_LTSM_tb;
 
         // ---- Reset all inputs to safe defaults ----
         i_reset             = 1;
+        r_local_cap         = 16'h0035;
 
         i_lp_state_req      = '0;
         i_lp_linkerror      = 0;
@@ -829,6 +854,7 @@ module ucie_LTSM_tb;
         //        exit req(0xD0)
         // =====================================================================
         $display("\n--- T12: SPEEDIDLE ---");
+        i_speedreg = 3;
         @(negedge i_clk);
         check("T12: TX enc=0xC8 (SPEEDIDLE sub0)", o_tx_encoding === 9'hC8);
         @(negedge i_clk);
@@ -849,7 +875,13 @@ module ucie_LTSM_tb;
         // State exits → TXSELFCAL
         do_tx_state_exit(9'hCA);
         do_rx_state_exit_req(9'hD0);
+        check("T12: o_pl_speedmode = 2", o_pl_speedmode == 2);
+        check("T12: o_speedreg = 2", o_speedreg == 2);
+
+        i_speedreg = o_speedreg;
+
         check("T12: SPEEDIDLE complete", 1'b1);
+
         repeat (3) @(negedge i_clk);
 
         // =====================================================================
@@ -1115,21 +1147,296 @@ module ucie_LTSM_tb;
         i_sb_rx_req   = 0;
         i_rx_decoding = '0;
 
-        check($sformatf("RX sub2 'hBA: o_rx_sb_rsp=1"),
-              o_rx_sb_rsp   === 1'b1);
-        check($sformatf("RX sub2 'hBA: o_rx_encoding"),
-              o_rx_encoding === 'hBF);
+        do_rx_imm_rsp_done(9'hBF);
+
+        i_sb_tx_rsp   = 1;
+        i_tx_decoding = 9'hBF;
+        i_Lane_map_code = 1;
+        @(negedge i_clk);
+        i_sb_tx_rsp   = 0;
+        i_tx_decoding = '0;
+
+        do_tx_req_hs(9'hBD);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hBD;
+        @(negedge i_clk);
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        do_rx_imm_rsp_done(9'hBD);
+
+        do_tx_state_exit(9'hBD);
+        do_rx_state_exit_req(9'hC0);
+        check("T19: LINKSPEED complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T22 — Repair  (no_retry=1)
+        // =====================================================================
+        $display("\n--- T21: Repair ---");
+        do_tx_req_hs(9'hC0);
+        do_rx_imm_rsp_done(9'hC0);
+        
+        do_tx_state_exit(9'hC0);
+        i_rx_info[2:0] = 1;
+        do_rx_state_exit_req(9'hC1);
+        i_rx_info[2:0] = 0;
+        
+
+        do_tx_req_hs(9'hC1);
+        do_rx_imm_rsp_done(9'hC1);
+
+        do_tx_state_exit(9'hC1);
+        do_rx_state_exit_req(9'hC2);
+
+        do_tx_req_hs(9'hC2);
+        do_rx_imm_rsp_done(9'hC2);
+
+        do_tx_state_exit(9'hC2);
+        do_rx_state_exit_req(9'hD0);
+
+        check("T19: Repair complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T13 — TXSELFCAL
+        //   TX : sub0(0xD0) waits for i_tx_done → sub1 req(0xD1) → exit(0xD1)
+        //   RX : sub0(0xD0) waits for i_tx_done+i_rx_done (txrx) → rsp →
+        //        done_ack → exit req(0x98)
+        //   Drive i_tx_done+i_rx_done together: TX advances sub0→sub1,
+        //   RX triggers sub0 completion rsp.
+        // =====================================================================
+        $display("\n--- T13: TXSELFCAL ---");
+        @(negedge i_clk);
+        check("T13: TX enc=0xD0 (TXSELFCAL)", o_tx_encoding === 9'hD0);
+        @(negedge i_clk);
+        check("T13: RX enc=0xD0 (TXSELFCAL)", o_rx_encoding === 9'hD0);
+        // Assert both done signals: TX advances, RX asserts rsp
+        i_tx_done = 1;
+        i_rx_done = 1;
+        @(negedge i_clk);
+        check("T13: RX o_rx_sb_rsp=1 after done", o_rx_sb_rsp === 1'b1);
+        i_tx_done = 0;
+        i_rx_done = 0;
+        // RX done_ack → substates_done
         i_sb_rx_done = 1;
         @(negedge i_clk);
         i_sb_rx_done = 0;
-        check($sformatf("RX sub2 'hBA: rsp cleared"),
-              o_rx_sb_rsp === 1'b0);
+        check("T13: RX rsp cleared after done_ack", o_rx_sb_rsp === 1'b0);
         repeat (2) @(negedge i_clk);
-
-        /*do_tx_state_exit(9'hBA);
+        // TX sub1
+        do_tx_req_hs(9'hD1);
+        // State exits → RXCLKCAL
+        do_tx_state_exit(9'hD1);
+        do_rx_state_exit_req(9'h98);
+        check("T13: TXSELFCAL complete", 1'b1);
+        repeat (3) @(negedge i_clk);
 
         // =====================================================================
-        // T22 — Linkspeed  (no_retry=1)
+        // T14 — RXCLKCAL
+        //   TX : sub0 req(0x98) → sub2 req(0x9A) → exit(0x9A)
+        //        [TX has no eye-sweep for RXCLKCAL — RX-only calibration]
+        //   RX : sub0 imm-rsp(0x98) → eye-sweep → sub2 txrx(0x9A) → exit(0xA0)
+        //   TX drives 0x98 then immediately jumps to 0x9A; RX eye-sweep runs
+        //   in the meantime. After both FSMs reach 0x9A, the sub2 handshake
+        //   is completed for RX and the TX req_hs is performed.
+        // =====================================================================
+        $display("\n--- T14: RXCLKCAL ---");
+        // TX sub0 — only one req_hs, no sweep
+        do_tx_req_hs(9'h98);
+        // RX sub0
+        do_rx_imm_rsp_done(9'h98);
+        // TX sub2 — at this point TX should be at 0x9A
+        do_tx_req_hs(9'h9A);
+        // RX sub2 entry + handshake
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'h9A;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'h9A);
+        // State exits → VALTRAINCENTER
+        do_tx_state_exit(9'h9A);
+        do_rx_state_exit_req(9'hA0);
+        check("T14: RXCLKCAL complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T15 — VALTRAINCENTER
+        //   TX : sub0 req(0xA0) → eye-sweep → sub2 req(0xA2) → exit(0xA2)
+        //   RX : sub0 imm-rsp(0xA0) → eye-sweep → sub2 txrx(0xA2) → exit(0xE8)
+        // =====================================================================
+        $display("\n--- T15: VALTRAINCENTER ---");
+        do_tx_req_hs(9'hA0);
+        do_rx_imm_rsp_done(9'hA0);
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        do_tx_req_hs(9'hA2);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hA2;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'hA2);
+        do_tx_state_exit(9'hA2);
+        do_rx_state_exit_req(9'hE8);
+        check("T15: VALTRAINCENTER complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T16 — VALTRAINVREF
+        //   TX : sub0 req(0xE8) → eye-sweep → sub2 req(0xEA) → exit(0xEA)
+        //   RX : sub0 imm-rsp(0xE8) → eye-sweep → sub2 txrx(0xEA) → exit(0x90)
+        // =====================================================================
+        $display("\n--- T16: VALTRAINVREF ---");
+        do_tx_req_hs(9'hE8);
+        do_rx_imm_rsp_done(9'hE8);
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        do_tx_req_hs(9'hEA);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hEA;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'hEA);
+        do_tx_state_exit(9'hEA);
+        do_rx_state_exit_req(9'h90);
+        check("T16: VALTRAINVREF complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T17 — DATATRAINCENTER1  (no_retry=1)
+        //   TX : sub0 req(0x90) → eye-sweep[no_retry] → sub2 req(0x92) → exit(0x92)
+        //   RX : sub0 imm-rsp(0x90) → eye-sweep[no_retry] → sub2 txrx(0x92) → exit(0xF0)
+        // =====================================================================
+        $display("\n--- T17: DATATRAINCENTER1 ---");
+        do_tx_req_hs(9'h90);
+        do_rx_imm_rsp_done(9'h90);
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        do_tx_req_hs(9'h92);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'h92;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'h92);
+        do_tx_state_exit(9'h92);
+        do_rx_state_exit_req(9'hF0);
+        check("T17: DATATRAINCENTER1 complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T18 — DATATRAINVREF
+        //   TX : sub0 req(0xF0) → eye-sweep → sub2 req(0xF2) → exit(0xF2)
+        //   RX : sub0 imm-rsp(0xF0) advances via i_sb_rx_done+dec=0xF0 →
+        //        eye-sweep → sub2 txrx(0xF2) → exit req(0xA8)
+        //   RX sub0 uses the DATATRAINVREF variant: must also drive
+        //   i_rx_decoding=0xF0 alongside i_sb_rx_done to advance.
+        // =====================================================================
+        $display("\n--- T18: DATATRAINVREF ---");
+        // TX sub0
+        do_tx_req_hs(9'hF0);
+        // RX sub0 — DATATRAINVREF variant: done+decoding=0xF0 required
+        @(negedge i_clk);
+        check("T18: RX enc=0xF0 (DATATRAINVREF sub0)", o_rx_encoding === 9'hF0);
+        check("T18: RX o_rx_sb_rsp=1",                 o_rx_sb_rsp   === 1'b1);
+        i_sb_rx_done  = 1;
+        i_rx_decoding = 9'hF0;
+        @(negedge i_clk);
+        i_sb_rx_done  = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        // Eye sweeps in parallel
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        // TX sub2
+        do_tx_req_hs(9'hF2);
+        // RX sub2 entry + handshake
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hF2;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'hF2);
+        // State exits → RXDESKEW
+        do_tx_state_exit(9'hF2);
+        do_rx_state_exit_req(9'hA8);
+        check("T18: DATATRAINVREF complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T19 — RXDESKEW  (no eye-sweep)
+        //   TX : sub0 req(0xA8) → sub1 req(0xAC) → exit(0xAC)
+        //   RX : sub0 imm-rsp(0xA8) advances via req+0xAC →
+        //        sub1 txrx(0xAC) → exit req(0xB0)
+        // =====================================================================
+        $display("\n--- T19: RXDESKEW ---");
+        // TX sub0
+        do_tx_req_hs(9'hA8);
+        // RX sub0 — imm-rsp; advances via i_sb_rx_req+dec=0xAC
+        @(negedge i_clk);
+        check("T19: RX enc=0xA8 (RXDESKEW sub0)", o_rx_encoding === 9'hA8);
+        check("T19: RX o_rx_sb_rsp=1",             o_rx_sb_rsp   === 1'b1);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hAC;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        // TX sub1
+        do_tx_req_hs(9'hAC);
+        // RX sub1 txrx(0xAC)
+        do_rx_sub2(9'hAC);
+        // State exits → DATATRAINCENTER2
+        do_tx_state_exit(9'hAC);
+        do_rx_state_exit_req(9'hB0);
+        check("T19: RXDESKEW complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T20 — DATATRAINCENTER2  (no_retry=1, final state)
+        //   TX : sub0 req(0xB0) → eye-sweep[no_retry] → sub2 req(0xB2) →
+        //        exit(0xB2) → train_active_en=1 → NS=VALVREF
+        //   RX : sub0 imm-rsp(0xB0) → eye-sweep[no_retry] → sub2 txrx(0xB2)
+        //        → train_active_en=1 → NS=VALVREF
+        // =====================================================================
+        $display("\n--- T20: DATATRAINCENTER2 ---");
+        do_tx_req_hs(9'hB0);
+        do_rx_imm_rsp_done(9'hB0);
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        do_tx_req_hs(9'hB2);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hB2;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'hB2);
+        do_tx_state_exit(9'hB2);
+        do_rx_state_exit_req(9'hB8);
+        check("T19: DATATRAINCENTER2 complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T21 — Linkspeed  (no_retry=1)
         // =====================================================================
         $display("\n--- T21: Linkspeed ---");
         do_tx_req_hs(9'hB8);
@@ -1146,7 +1453,21 @@ module ucie_LTSM_tb;
             do_tx_eye_sweep_tx_init(1);
             do_rx_eye_sweep_tx_init();
         join
-        do_tx_req_hs(9'hBA);
+
+        @(negedge i_clk);
+        check($sformatf("TX req_hs 'hBA: o_tx_encoding"),
+              o_tx_encoding === 'hBA);
+        @(negedge i_clk);
+        check($sformatf("TX req_hs 'hBA: o_tx_sb_req=1"),
+              o_tx_sb_req === 1'b1);
+        // done_ack
+        i_sb_tx_done = 1;
+        @(negedge i_clk);
+        i_sb_tx_done = 0;
+        check($sformatf("TX req_hs 'hBA: req cleared"),
+              o_tx_sb_req === 1'b0);
+        repeat (2) @(negedge i_clk);
+
         i_sb_rx_req   = 1;
         i_rx_decoding = 9'hBA;
         @(negedge i_clk);
@@ -1154,21 +1475,20 @@ module ucie_LTSM_tb;
         i_sb_rx_req   = 0;
         i_rx_decoding = '0;
 
-        check($sformatf("RX sub2 'hBA: o_rx_sb_rsp=1"),
-              o_rx_sb_rsp   === 1'b1);
-        check($sformatf("RX sub2 'hBA: o_rx_encoding"),
-              o_rx_encoding === 'hBA);
-        i_sb_rx_done = 1;
+        do_rx_imm_rsp_done(9'hBA);
+
+        do_tx_state_exit(9'hBA);
+
         @(negedge i_clk);
-        i_sb_rx_done = 0;
-        check($sformatf("RX sub2 'hBA: rsp cleared"),
-              o_rx_sb_rsp === 1'b0);
-        repeat (2) @(negedge i_clk);
 
-        do_tx_state_exit(9'hBA);*/
+        check("T19: RX enc=0xA8 w_tx_train_link_init_en", dut.w_tx_train_link_init_en === 1);
+        check("T19: RX enc=0xA8 w_rx_train_link_init_en", dut.w_rx_train_link_init_en === 1);
+
+        check("T19: LINKSPEED complete", 1'b1);
+        repeat (3) @(negedge i_clk);
 
 
-        /*// =====================================================================
+        // =====================================================================
         // T2 — Assert i_train_active_en → state=LINKINIT
         //   FSM moves from IDLE to LINKINIT on the next posedge.
         //   TX sub-FSM enters CLK_REQ_HS: asserts pl_clk_req and pl_inband_pres,
@@ -1302,10 +1622,1112 @@ module ucie_LTSM_tb;
         check("T6: TX encoding=0x000 (idle)",   o_tx_encoding    === 9'h108);
         check("T6: RX encoding=0x000 (idle)",   o_rx_encoding    === 9'h108);
 
+        i_lp_state_req = 4'b1011;
+
+        i_sb_rx_req = 1;
+        i_rx_decoding = 'hD8;
 
         // Hold a few more cycles — confirm ACTIVE is stable
-        repeat (3) @(negedge i_clk);*/
+        repeat (2) @(negedge i_clk);
 
+        // =====================================================================
+        // T20 — phyretarin  (no_retry=1, final state)
+        //   TX : sub0 req(0xB0) → eye-sweep[no_retry] → sub2 req(0xB2) →
+        //        exit(0xB2) → train_active_en=1 → NS=VALVREF
+        //   RX : sub0 imm-rsp(0xB0) → eye-sweep[no_retry] → sub2 txrx(0xB2)
+        //        → train_active_en=1 → NS=VALVREF
+        // =====================================================================
+        $display("\n--- T20: phyretarin ---");
+
+        check("T20: o_tx_encoding='hD8",           o_tx_encoding === 'hD8);
+        check("T20: o_pl_stallreq=1",              o_pl_stallreq === 1);
+        check("T20: o_tx_sb_req = 0",              o_tx_sb_req === 0);
+        check("T20: o_tx_sb_rsp = 0",              o_tx_sb_rsp === 0);
+        check("T20: o_rx_sb_req=0",              o_rx_sb_req === 0);
+        check("T20: o_rx_sb_rsp=0",              o_rx_sb_rsp === 0);
+
+        i_lp_stallack = 1;
+        do_rx_state_exit_req(9'hD9);
+
+        @(negedge i_clk);
+
+        check("T21: o_tx_encoding='hD9",           o_tx_encoding === 'hD9);
+        check("T21: o_pl_stallreq=0",              o_pl_stallreq === 0);
+        check("T21: o_tx_sb_req = 1",              o_tx_sb_req === 1);
+        check("T21: o_tx_sb_rsp = 0",              o_tx_sb_rsp === 0);
+        check("T21: o_rx_sb_req=0",              o_rx_sb_req === 0);
+        check("T21: o_rx_sb_rsp=1",              o_rx_sb_rsp === 1);
+
+        @(negedge i_clk);
+        
+        do_tx_req_hs(9'hD9);
+        do_rx_imm_rsp_done(9'hD9);
+
+        i_Runtime_Link_Test_status_register = 1;
+        i_Runtime_Link_Test_Control_register[2] = 1;
+        i_Lane_map_code = 1;
+        i_rx_info = 3'b010;
+
+        do_tx_state_exit(9'hD9);
+        do_rx_state_exit_req(9'hDA);
+
+        check("T22: o_tx_info=3'b100",              o_tx_info[2:0] === 3'b100);
+        check("T22: o_rx_info=3'b010",              o_rx_info[2:0] === 3'b010);
+
+        i_tx_info = o_rx_info;
+
+        do_tx_req_hs(9'hDA);
+        
+        check("T19: phyretarin complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T12 — SPEEDIDLE
+        //   TX : sub0(0xC8) speed-mode check (o_pl_speedmode != 0) →
+        //        auto-advances → sub1 req(0xCA) → exit(0xCA)
+        //   RX : sub0(0xC8) req+0xCA to match speed → sub1 txrx(0xCA) →
+        //        exit req(0xD0)
+        // =====================================================================
+        $display("\n--- T12: SPEEDIDLE ---");
+        @(negedge i_clk);
+        check("T12: TX enc=0xC8 (SPEEDIDLE sub0)", o_tx_encoding === 9'hC8);
+        @(negedge i_clk);
+        check("T12: RX enc=0xC8 (SPEEDIDLE sub0)", o_rx_encoding === 9'hC8);
+        // RX: req+0xCA → speed-match check passes → RX sub0 → sub1
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hCA;
+        i_tx_done = 1;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        i_tx_done = 0;
+        repeat (2) @(negedge i_clk);
+        // TX sub1 req(0xCA)
+        do_tx_req_hs(9'hCA);
+        // RX sub1 txrx(0xCA)
+        do_rx_sub2(9'hCA);
+        // State exits → TXSELFCAL
+        do_tx_state_exit(9'hCA);
+        do_rx_state_exit_req(9'hD0);
+        check("T12: o_pl_speedmode = 1", o_pl_speedmode == 1);
+        check("T12: o_speedreg = 1", o_speedreg == 1);
+
+        i_speedreg = o_speedreg;
+        check("T12: SPEEDIDLE complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T13 — TXSELFCAL
+        //   TX : sub0(0xD0) waits for i_tx_done → sub1 req(0xD1) → exit(0xD1)
+        //   RX : sub0(0xD0) waits for i_tx_done+i_rx_done (txrx) → rsp →
+        //        done_ack → exit req(0x98)
+        //   Drive i_tx_done+i_rx_done together: TX advances sub0→sub1,
+        //   RX triggers sub0 completion rsp.
+        // =====================================================================
+        $display("\n--- T13: TXSELFCAL ---");
+        @(negedge i_clk);
+        check("T13: TX enc=0xD0 (TXSELFCAL)", o_tx_encoding === 9'hD0);
+        @(negedge i_clk);
+        check("T13: RX enc=0xD0 (TXSELFCAL)", o_rx_encoding === 9'hD0);
+        // Assert both done signals: TX advances, RX asserts rsp
+        i_tx_done = 1;
+        i_rx_done = 1;
+        @(negedge i_clk);
+        check("T13: RX o_rx_sb_rsp=1 after done", o_rx_sb_rsp === 1'b1);
+        i_tx_done = 0;
+        i_rx_done = 0;
+        // RX done_ack → substates_done
+        i_sb_rx_done = 1;
+        @(negedge i_clk);
+        i_sb_rx_done = 0;
+        check("T13: RX rsp cleared after done_ack", o_rx_sb_rsp === 1'b0);
+        repeat (2) @(negedge i_clk);
+        // TX sub1
+        do_tx_req_hs(9'hD1);
+        // State exits → RXCLKCAL
+        do_tx_state_exit(9'hD1);
+        do_rx_state_exit_req(9'h98);
+        check("T13: TXSELFCAL complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T14 — RXCLKCAL
+        //   TX : sub0 req(0x98) → sub2 req(0x9A) → exit(0x9A)
+        //        [TX has no eye-sweep for RXCLKCAL — RX-only calibration]
+        //   RX : sub0 imm-rsp(0x98) → eye-sweep → sub2 txrx(0x9A) → exit(0xA0)
+        //   TX drives 0x98 then immediately jumps to 0x9A; RX eye-sweep runs
+        //   in the meantime. After both FSMs reach 0x9A, the sub2 handshake
+        //   is completed for RX and the TX req_hs is performed.
+        // =====================================================================
+        $display("\n--- T14: RXCLKCAL ---");
+        // TX sub0 — only one req_hs, no sweep
+        do_tx_req_hs(9'h98);
+        // RX sub0
+        do_rx_imm_rsp_done(9'h98);
+        // TX sub2 — at this point TX should be at 0x9A
+        do_tx_req_hs(9'h9A);
+        // RX sub2 entry + handshake
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'h9A;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'h9A);
+        // State exits → VALTRAINCENTER
+        do_tx_state_exit(9'h9A);
+        do_rx_state_exit_req(9'hA0);
+        check("T14: RXCLKCAL complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T15 — VALTRAINCENTER
+        //   TX : sub0 req(0xA0) → eye-sweep → sub2 req(0xA2) → exit(0xA2)
+        //   RX : sub0 imm-rsp(0xA0) → eye-sweep → sub2 txrx(0xA2) → exit(0xE8)
+        // =====================================================================
+        $display("\n--- T15: VALTRAINCENTER ---");
+        do_tx_req_hs(9'hA0);
+        do_rx_imm_rsp_done(9'hA0);
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        do_tx_req_hs(9'hA2);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hA2;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'hA2);
+        do_tx_state_exit(9'hA2);
+        do_rx_state_exit_req(9'hE8);
+        check("T15: VALTRAINCENTER complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T16 — VALTRAINVREF
+        //   TX : sub0 req(0xE8) → eye-sweep → sub2 req(0xEA) → exit(0xEA)
+        //   RX : sub0 imm-rsp(0xE8) → eye-sweep → sub2 txrx(0xEA) → exit(0x90)
+        // =====================================================================
+        $display("\n--- T16: VALTRAINVREF ---");
+        do_tx_req_hs(9'hE8);
+        do_rx_imm_rsp_done(9'hE8);
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        do_tx_req_hs(9'hEA);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hEA;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'hEA);
+        do_tx_state_exit(9'hEA);
+        do_rx_state_exit_req(9'h90);
+        check("T16: VALTRAINVREF complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T17 — DATATRAINCENTER1  (no_retry=1)
+        //   TX : sub0 req(0x90) → eye-sweep[no_retry] → sub2 req(0x92) → exit(0x92)
+        //   RX : sub0 imm-rsp(0x90) → eye-sweep[no_retry] → sub2 txrx(0x92) → exit(0xF0)
+        // =====================================================================
+        $display("\n--- T17: DATATRAINCENTER1 ---");
+        do_tx_req_hs(9'h90);
+        do_rx_imm_rsp_done(9'h90);
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        do_tx_req_hs(9'h92);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'h92;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'h92);
+        do_tx_state_exit(9'h92);
+        do_rx_state_exit_req(9'hF0);
+        check("T17: DATATRAINCENTER1 complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T18 — DATATRAINVREF
+        //   TX : sub0 req(0xF0) → eye-sweep → sub2 req(0xF2) → exit(0xF2)
+        //   RX : sub0 imm-rsp(0xF0) advances via i_sb_rx_done+dec=0xF0 →
+        //        eye-sweep → sub2 txrx(0xF2) → exit req(0xA8)
+        //   RX sub0 uses the DATATRAINVREF variant: must also drive
+        //   i_rx_decoding=0xF0 alongside i_sb_rx_done to advance.
+        // =====================================================================
+        $display("\n--- T18: DATATRAINVREF ---");
+        // TX sub0
+        do_tx_req_hs(9'hF0);
+        // RX sub0 — DATATRAINVREF variant: done+decoding=0xF0 required
+        @(negedge i_clk);
+        check("T18: RX enc=0xF0 (DATATRAINVREF sub0)", o_rx_encoding === 9'hF0);
+        check("T18: RX o_rx_sb_rsp=1",                 o_rx_sb_rsp   === 1'b1);
+        i_sb_rx_done  = 1;
+        i_rx_decoding = 9'hF0;
+        @(negedge i_clk);
+        i_sb_rx_done  = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        // Eye sweeps in parallel
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        // TX sub2
+        do_tx_req_hs(9'hF2);
+        // RX sub2 entry + handshake
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hF2;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'hF2);
+        // State exits → RXDESKEW
+        do_tx_state_exit(9'hF2);
+        do_rx_state_exit_req(9'hA8);
+        check("T18: DATATRAINVREF complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T19 — RXDESKEW  (no eye-sweep)
+        //   TX : sub0 req(0xA8) → sub1 req(0xAC) → exit(0xAC)
+        //   RX : sub0 imm-rsp(0xA8) advances via req+0xAC →
+        //        sub1 txrx(0xAC) → exit req(0xB0)
+        // =====================================================================
+        $display("\n--- T19: RXDESKEW ---");
+        // TX sub0
+        do_tx_req_hs(9'hA8);
+        // RX sub0 — imm-rsp; advances via i_sb_rx_req+dec=0xAC
+        @(negedge i_clk);
+        check("T19: RX enc=0xA8 (RXDESKEW sub0)", o_rx_encoding === 9'hA8);
+        check("T19: RX o_rx_sb_rsp=1",             o_rx_sb_rsp   === 1'b1);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hAC;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        // TX sub1
+        do_tx_req_hs(9'hAC);
+        // RX sub1 txrx(0xAC)
+        do_rx_sub2(9'hAC);
+        // State exits → DATATRAINCENTER2
+        do_tx_state_exit(9'hAC);
+        do_rx_state_exit_req(9'hB0);
+        check("T19: RXDESKEW complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T20 — DATATRAINCENTER2  (no_retry=1, final state)
+        //   TX : sub0 req(0xB0) → eye-sweep[no_retry] → sub2 req(0xB2) →
+        //        exit(0xB2) → train_active_en=1 → NS=VALVREF
+        //   RX : sub0 imm-rsp(0xB0) → eye-sweep[no_retry] → sub2 txrx(0xB2)
+        //        → train_active_en=1 → NS=VALVREF
+        // =====================================================================
+        $display("\n--- T20: DATATRAINCENTER2 ---");
+        do_tx_req_hs(9'hB0);
+        do_rx_imm_rsp_done(9'hB0);
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        do_tx_req_hs(9'hB2);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hB2;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'hB2);
+        do_tx_state_exit(9'hB2);
+        do_rx_state_exit_req(9'hB8);
+        check("T19: DATATRAINCENTER2 complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T21 — Linkspeed  (no_retry=1)
+        // =====================================================================
+        $display("\n--- T21: Linkspeed ---");
+        do_tx_req_hs(9'hB8);
+        do_rx_imm_rsp_done(9'hB8);
+        i_sb_rx_req = 1;
+        i_rx_decoding = 'h180;
+
+        i_sb_tx_rsp   = 1;
+        i_tx_decoding = 9'hB8;
+        @(negedge i_clk);
+        i_sb_tx_rsp   = 0;
+        i_tx_decoding = '0;
+        fork
+            do_tx_eye_sweep_tx_init(1);
+            do_rx_eye_sweep_tx_init();
+        join
+
+        @(negedge i_clk);
+        check($sformatf("TX req_hs 'hBA: o_tx_encoding"),
+              o_tx_encoding === 'hBA);
+        @(negedge i_clk);
+        check($sformatf("TX req_hs 'hBA: o_tx_sb_req=1"),
+              o_tx_sb_req === 1'b1);
+        // done_ack
+        i_sb_tx_done = 1;
+        @(negedge i_clk);
+        i_sb_tx_done = 0;
+        check($sformatf("TX req_hs 'hBA: req cleared"),
+              o_tx_sb_req === 1'b0);
+        repeat (2) @(negedge i_clk);
+
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hBA;
+        @(negedge i_clk);
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+
+        do_rx_imm_rsp_done(9'hBA);
+
+        do_tx_state_exit(9'hBA);
+
+        @(negedge i_clk);
+
+        check("T19: RX enc=0xA8 w_tx_train_link_init_en", dut.w_tx_train_link_init_en === 1);
+        check("T19: RX enc=0xA8 w_rx_train_link_init_en", dut.w_rx_train_link_init_en === 1);
+
+        check("T19: LINKSPEED complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+
+        // =====================================================================
+        // T2 — Assert i_train_active_en → state=LINKINIT
+        //   FSM moves from IDLE to LINKINIT on the next posedge.
+        //   TX sub-FSM enters CLK_REQ_HS: asserts pl_clk_req and pl_inband_pres,
+        //   output encoding=0x100.
+        // =====================================================================
+        $display("\n--- T2: i_train_active_en -> LINKINIT ---");
+
+        @(negedge i_clk);
+        @(negedge i_clk);
+
+        wait_state(ST_LINKINIT, 5);
+        check("T2: TX encoding=0x100 (CLK_HS)", o_tx_encoding    === 9'h100);
+        check("T2: RX encoding=0x100 (CLK_HS)", o_rx_encoding    === 9'h100);
+        check("T2: o_pl_clk_req=1",             o_pl_clk_req     === 1);
+        check("T2: o_pl_inband_pres=1",         o_pl_inband_pres === 1);
+
+        // =====================================================================
+        // T3 — CLK_REQ_HS: Adapter asserts lp_clk_ack then de-asserts
+        //   Spec rule: at least one clock cycle bubble between pl_clk_req assert
+        //   and lp_clk_ack assert (already satisfied by sequential state entry).
+        //   pl_clk_req must de-assert BEFORE lp_clk_ack de-asserts.
+        //
+        //   Sequence:
+        //     1. Drive i_lp_clk_ack=1  → DUT latches clk_ack_seen=1,
+        //                                 de-asserts o_pl_clk_req (combinational)
+        //     2. Drive i_lp_clk_ack=0  → DUT sees clk_ack_seen && !lp_clk_ack
+        //                                 → next_substate = WAKE_REQ_HS
+        //   Both TX and RX track the same i_lp_clk_ack wire so both advance
+        //   to WAKE_REQ_HS together.
+        // =====================================================================
+        $display("\n--- T3: CLK_REQ_HS -> WAKE_REQ_HS ---");
+
+        // Adapter asserts lp_clk_ack (at least 1 cycle bubble already passed)
+        @(negedge i_clk);
+        i_lp_clk_ack = 1;
+        @(negedge i_clk); // DUT latches clk_ack_seen=1 here; pl_clk_req drops
+        check("T3: o_pl_clk_req de-asserted after lp_clk_ack rises", o_pl_clk_req === 0);
+
+        // Adapter de-asserts lp_clk_ack → DUT advances to WAKE_REQ_HS
+        @(negedge i_clk);
+        i_lp_clk_ack = 0;
+        @(negedge i_clk); // substate transition clocked in
+        check("T3: TX encoding=0x101 (WAKE_HS)", o_tx_encoding === 9'h101);
+        check("T3: RX encoding=0x101 (WAKE_HS)", o_rx_encoding === 9'h101);
+        check("T3: o_pl_clk_req still 0",        o_pl_clk_req  === 0);
+        check("T3: o_pl_inband_pres still 1",     o_pl_inband_pres === 1);
+
+        // =====================================================================
+        // T4 — WAKE_REQ_HS: Adapter asserts lp_wake_req then requests Active
+        //   Spec rule: lp_wake_req de-asserts before pl_wake_ack de-asserts.
+        //   DUT mirrors lp_wake_req → pl_wake_ack combinationally, so this is
+        //   automatically satisfied.
+        //
+        //   Sequence:
+        //     1. Drive i_lp_wake_req=1  → DUT mirrors → o_pl_wake_ack=1
+        //     2. Drive i_lp_state_req=Active (4'b0001)
+        //        → DUT sees LP_STATE_ACTIVE → next_substate = STATE_REQ_HS
+        //     3. Drive i_lp_wake_req=0  (req de-asserts; wake ack follows)
+        // =====================================================================
+        $display("\n--- T4: WAKE_REQ_HS -> STATE_REQ/RSP_HS ---");
+
+        // Adapter asserts wake request
+        @(negedge i_clk);
+        i_lp_wake_req = 1;
+        @(negedge i_clk);
+        check("T4: o_pl_wake_ack=1 (mirrors lp_wake_req)", o_pl_wake_ack === 1);
+
+        // Adapter requests Active state
+        @(negedge i_clk);
+        i_lp_state_req = 4'b0001; // LP_STATE_ACTIVE
+        @(negedge i_clk); // substate advances to STATE_REQ_HS
+        check("T4: TX encoding=0x102 (STATE_REQ_HS)", o_tx_encoding === 9'h102);
+        check("T4: RX encoding=0x102 (STATE_RSP_HS)", o_rx_encoding === 9'h102);
+        check("T4: o_tx_sb_req=1 (TX waiting for done_ack)", o_tx_sb_req === 1);
+        check("T4: o_rx_sb_rsp=1 (RX sending RSP)",          o_rx_sb_rsp === 1);
+
+        // Adapter de-asserts wake request (wake_ack mirrors and drops automatically)
+        @(negedge i_clk);
+        i_lp_wake_req = 0;
+        @(negedge i_clk);
+        check("T4: o_pl_wake_ack=0 after wake_req de-asserts", o_pl_wake_ack === 0);
+
+        // =====================================================================
+        // T5 — STATE_REQ_HS (TX) + STATE_RSP_HS (RX) → both done → ACTIVE
+        //
+        //   TX (same pattern as all prior STATE_REQ states):
+        //     Step 1: i_sb_tx_done=1  → done_ack latches → o_tx_sb_req drops
+        //     Step 2: i_sb_tx_rsp=1 + i_tx_decoding=0x102 → o_done_linkinit_tx
+        //
+        //   RX (RX sends RSP; done fires on i_sb_rx_done):
+        //     i_sb_rx_done=1 → o_done_linkinit_rx
+        //
+        //   TX and RX are driven independently; both done latches must be set
+        //   before the top-level FSM advances to ACTIVE.
+        // =====================================================================
+        $display("\n--- T5: STATE_REQ/RSP_HS -> ACTIVE ---");
+
+        // TX: done_ack latch (sideband layer confirms it received the REQ)
+        @(negedge i_clk); i_sb_tx_done = 1;
+        @(negedge i_clk); i_sb_tx_done = 0;
+        check("T5: TX o_tx_sb_req dropped after done_ack", o_tx_sb_req === 0);
+
+        // TX: RSP+0x102 → TX done fires
+        @(negedge i_clk);
+        i_sb_tx_rsp   = 1;
+        i_tx_decoding = 9'h102;
+        @(negedge i_clk);
+
+        // RX: sb_rx_done → RX done fires (sideband confirms RSP was sent)
+        @(negedge i_clk); i_sb_rx_done = 1;
+        @(negedge i_clk); i_sb_rx_done = 0;
+        i_sb_tx_rsp   = 0;
+        i_tx_decoding = '0;
+
+        // Both done latches set → FSM advances to ACTIVE
+        wait_state(ST_ACTIVE, 5);
+
+        // =====================================================================
+        // T6 — Verify ACTIVE outputs
+        //   pl_state_sts must be 0001 (Active)
+        //   pl_inband_pres must stay 1 (asserted for lifetime of link operation)
+        //   No sideband traffic expected in normal Active operation
+        // =====================================================================
+        $display("\n--- T6: Verify ACTIVE outputs ---");
+
+        @(negedge i_clk);
+        check("T6: pl_state_sts=Active (0001)", o_pl_state_sts   === PL_STS_ACTIVE);
+        check("T6: pl_inband_pres=1",           o_pl_inband_pres === 1);
+        check("T6: pl_clk_req=0 (HS done)",     o_pl_clk_req     === 0);
+        check("T6: pl_wake_ack=0 (HS done)",    o_pl_wake_ack    === 0);
+        check("T6: TX encoding=0x000 (idle)",   o_tx_encoding    === 9'h108);
+        check("T6: RX encoding=0x000 (idle)",   o_rx_encoding    === 9'h108);
+
+        // Hold a few more cycles — confirm ACTIVE is stable
+        repeat (2) @(negedge i_clk);
+
+        // Clear leftover stimulus from the last T6 check
+        i_lp_state_req = '0;
+        i_sb_rx_req    = 0;
+        i_rx_decoding  = '0;
+        @(negedge i_clk);
+ 
+        // =====================================================================
+        // T_L1 — ACTIVE → L1 entry handshake
+        //
+        //   Trigger : i_lp_state_req = 4'b0100 (LP_REQ_L1) while in ACTIVE.
+        //   Main FSM: ACTIVE → L1.
+        //   state_enable for both L1 sub-modules = (current_state == L1).
+        //
+        //   TX (combinational outputs, immediate):
+        //     Entry       : encoding=0x110, sb_req=1
+        //     done_ack    : req clears (i_sb_tx_done pulse)
+        //     rsp+0x111   : cycle N  → L1_rsp_received=1 in comb block
+        //                             (first if-branch; else-if cannot fire yet)
+        //                   cycle N+1 → rsp deasserted; comb re-evaluates:
+        //                             L1_rsp_received retained (comb latch),
+        //                             L1_rx_rsp_sent=1 (= l1_rx_sb_rsp which is
+        //                             the mux-selected o_rx_sb_rsp when L1)
+        //                             → else-if branch: NS=L1, encoding=0x111
+        //
+        //   RX (registered outputs, +1 cycle lag):
+        //     WAIT_1US idle=1: lp_state_req=0x4 → NS=START_HANDSHAKE, idle_reg=0
+        //     After posedge  : CS=START_HANDSHAKE, o_rx_encoding=0x110 latched
+        //     Next comb eval : sb_rsp_reg=1
+        //     After posedge  : o_rx_sb_rsp=1 latched (now l1_rx_sb_rsp=1)
+        //     sb_rx_done     : NS=L1, encoding_reg=0x111
+        //     After posedge  : o_rx_encoding=0x111 latched
+        //
+        //   Timing summary from i_lp_state_req assertion (negedge 0):
+        //     negedge 0 : lp_state_req=0x4 set
+        //     posedge 1 : current_state → L1; state_enable=1
+        //     negedge 2 : lp_state_req=0 (deasserted after 2 cycles)
+        //     negedge 3 : TX stable at 0x110/req=1 (combinational, cycle 2+)
+        //                 RX: CS=START_HANDSHAKE, o_rx_encoding=0x110 latched
+        //     negedge 4 : RX: o_rx_sb_rsp=1 latched
+        //     negedge 5 : check all outputs
+        // =====================================================================
+        $display("\n--- T_L1: ACTIVE -> L1 entry handshake ---");
+ 
+        // Assert for 2 cycles so RX WAIT_1US(idle=1) sees lp_state_req=0x4
+        // and evaluates NS=START_HANDSHAKE before deassert.
+        i_lp_state_req = 4'b0100;
+        i_sb_rx_req = 1;
+        i_rx_decoding = 'h110;
+        repeat(2) @(negedge i_clk);
+        i_lp_state_req = 0;
+        i_sb_rx_req = 0;
+        i_rx_decoding = 0;
+
+        // Allow 2 more cycles for registered RX outputs to settle:
+        repeat(2) @(negedge i_clk);
+ 
+        // Check both modules stable
+        check("L1: TX encoding=0x110 (START_HANDSHAKE)", o_tx_encoding  === 9'h110);
+        check("L1: TX o_tx_sb_req=1",                    o_tx_sb_req    === 1'b1);
+        check("L1: RX encoding=0x110 (START_HANDSHAKE)", o_rx_encoding  === 9'h110);
+        check("L1: RX o_rx_sb_rsp=1",                    o_rx_sb_rsp    === 1'b1);
+ 
+        // TX done_ack — sideband confirms req received; req drops
+        @(negedge i_clk); i_sb_tx_done = 1;
+        @(negedge i_clk); i_sb_tx_done = 0;
+        check("L1: TX req cleared after done_ack", o_tx_sb_req === 1'b0);
+        repeat(2) @(negedge i_clk);
+ 
+        // Confirm RX rsp still asserted (l1_rx_sb_rsp=1 for TX to see)
+        check("L1: RX o_rx_sb_rsp=1 still asserted", o_rx_sb_rsp === 1'b1);
+ 
+        // Drive rsp+0x111 while o_rx_sb_rsp=1 => L1_rx_rsp_sent=1 in TX.
+        // Cycle N  : if (i_sb_tx_rsp && dec==0x111) → L1_rsp_received=1
+        //            (first branch fires, else-if does NOT execute)
+        // Cycle N+1: inputs deasserted; comb re-evals: first branch false,
+        //            else-if: L1_rsp_received=1 (comb latch), L1_rx_rsp_sent=1
+        //            → NS=L1, encoding_reg=0x111, pl_state_sts=0x4
+        @(negedge i_clk);
+        i_sb_tx_rsp   = 1;
+        i_tx_decoding = 9'h110;
+        @(negedge i_clk);
+        i_sb_tx_rsp   = 0;
+        i_tx_decoding = '0;
+ 
+        repeat(2) @(negedge i_clk);
+        check("L1: TX encoding=0x111 (L1 state)",   o_tx_encoding  === 9'h111);
+        check("L1: pl_state_sts=0x4 (TX in L1)",    o_pl_state_sts === 4'b0100);
+ 
+        // RX: sb_rx_done transitions START_HANDSHAKE → L1
+        // done_ack clears rsp; encoding_reg=0x111 assigned in L1 state
+        @(negedge i_clk); i_sb_rx_done = 1;
+        @(negedge i_clk); i_sb_rx_done = 0;
+ 
+        // Wait for registered RX output to update (comb in L1 evaluates
+        // encoding_reg=0x111; latched on next posedge; one extra cycle for safety)
+        repeat(3) @(negedge i_clk);
+        check("L1: RX encoding=0x111 (L1 state)",    o_rx_encoding  === 9'h111);
+ 
+        // =====================================================================
+        // T_L1_EXIT — L1 → Speed Idle
+        //
+        //   Both TX and RX L1 modules are in their L1 substates.
+        //   Exit trigger : i_lp_state_req = 4'b0001 (LP_REQ_ACTIVE / return).
+        //   TX L1 state  : i_lp_state_req==0x1 → encoding=0xC8,
+        //                  speed_idle_state_enable=1 (combinational)
+        //   RX L1 state  : same condition → encoding_reg=0xC8, registered +1 cycle
+        //   active_fsm   : L1 → IDLE when l1_tx_speed_idle_en | l1_rx_speed_idle_en
+        // =====================================================================
+        $display("\n--- T_L1_EXIT: L1 -> Speed Idle ---");
+ 
+        i_lp_state_req = 4'b0001;
+ 
+        // TX updates combinationally; RX needs one extra posedge for registered path.
+        // Wait 3 cycles to cover both safely.
+        repeat(3) @(negedge i_clk);
+ 
+        check("L1_EXIT: TX encoding=0xC8 (Speed Idle)", o_tx_encoding === 9'hC8);
+        check("L1_EXIT: RX encoding=0xC8 (Speed Idle)", o_rx_encoding === 9'hC8);
+ 
+        repeat(3) @(negedge i_clk);
+        $display("  L1 sequence complete — stopped at Speed Idle.");
+
+        // =====================================================================
+        // T12 — SPEEDIDLE
+        //   TX : sub0(0xC8) speed-mode check (o_pl_speedmode != 0) →
+        //        auto-advances → sub1 req(0xCA) → exit(0xCA)
+        //   RX : sub0(0xC8) req+0xCA to match speed → sub1 txrx(0xCA) →
+        //        exit req(0xD0)
+        // =====================================================================
+        $display("\n--- T12: SPEEDIDLE ---");
+        @(negedge i_clk);
+        check("T12: TX enc=0xC8 (SPEEDIDLE sub0)", o_tx_encoding === 9'hC8);
+        @(negedge i_clk);
+        check("T12: RX enc=0xC8 (SPEEDIDLE sub0)", o_rx_encoding === 9'hC8);
+        // RX: req+0xCA → speed-match check passes → RX sub0 → sub1
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hCA;
+        i_tx_done = 1;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        i_tx_done = 0;
+        repeat (2) @(negedge i_clk);
+        // TX sub1 req(0xCA)
+        do_tx_req_hs(9'hCA);
+        // RX sub1 txrx(0xCA)
+        do_rx_sub2(9'hCA);
+        // State exits → TXSELFCAL
+        do_tx_state_exit(9'hCA);
+        do_rx_state_exit_req(9'hD0);
+
+        check("T12: o_pl_speedmode = 0", o_pl_speedmode == 0);
+        check("T12: o_speedreg = 0", o_speedreg == 0);
+
+        i_speedreg = o_speedreg;
+
+        check("T12: SPEEDIDLE complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T13 — TXSELFCAL
+        //   TX : sub0(0xD0) waits for i_tx_done → sub1 req(0xD1) → exit(0xD1)
+        //   RX : sub0(0xD0) waits for i_tx_done+i_rx_done (txrx) → rsp →
+        //        done_ack → exit req(0x98)
+        //   Drive i_tx_done+i_rx_done together: TX advances sub0→sub1,
+        //   RX triggers sub0 completion rsp.
+        // =====================================================================
+        $display("\n--- T13: TXSELFCAL ---");
+        @(negedge i_clk);
+        check("T13: TX enc=0xD0 (TXSELFCAL)", o_tx_encoding === 9'hD0);
+        @(negedge i_clk);
+        check("T13: RX enc=0xD0 (TXSELFCAL)", o_rx_encoding === 9'hD0);
+        // Assert both done signals: TX advances, RX asserts rsp
+        i_tx_done = 1;
+        i_rx_done = 1;
+        @(negedge i_clk);
+        check("T13: RX o_rx_sb_rsp=1 after done", o_rx_sb_rsp === 1'b1);
+        i_tx_done = 0;
+        i_rx_done = 0;
+        // RX done_ack → substates_done
+        i_sb_rx_done = 1;
+        @(negedge i_clk);
+        i_sb_rx_done = 0;
+        check("T13: RX rsp cleared after done_ack", o_rx_sb_rsp === 1'b0);
+        repeat (2) @(negedge i_clk);
+        // TX sub1
+        do_tx_req_hs(9'hD1);
+        // State exits → RXCLKCAL
+        do_tx_state_exit(9'hD1);
+        do_rx_state_exit_req(9'h98);
+        check("T13: TXSELFCAL complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T14 — RXCLKCAL
+        //   TX : sub0 req(0x98) → sub2 req(0x9A) → exit(0x9A)
+        //        [TX has no eye-sweep for RXCLKCAL — RX-only calibration]
+        //   RX : sub0 imm-rsp(0x98) → eye-sweep → sub2 txrx(0x9A) → exit(0xA0)
+        //   TX drives 0x98 then immediately jumps to 0x9A; RX eye-sweep runs
+        //   in the meantime. After both FSMs reach 0x9A, the sub2 handshake
+        //   is completed for RX and the TX req_hs is performed.
+        // =====================================================================
+        $display("\n--- T14: RXCLKCAL ---");
+        // TX sub0 — only one req_hs, no sweep
+        do_tx_req_hs(9'h98);
+        // RX sub0
+        do_rx_imm_rsp_done(9'h98);
+        // TX sub2 — at this point TX should be at 0x9A
+        do_tx_req_hs(9'h9A);
+        // RX sub2 entry + handshake
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'h9A;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'h9A);
+        // State exits → VALTRAINCENTER
+        do_tx_state_exit(9'h9A);
+        do_rx_state_exit_req(9'hA0);
+        check("T14: RXCLKCAL complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T15 — VALTRAINCENTER
+        //   TX : sub0 req(0xA0) → eye-sweep → sub2 req(0xA2) → exit(0xA2)
+        //   RX : sub0 imm-rsp(0xA0) → eye-sweep → sub2 txrx(0xA2) → exit(0xE8)
+        // =====================================================================
+        $display("\n--- T15: VALTRAINCENTER ---");
+        do_tx_req_hs(9'hA0);
+        do_rx_imm_rsp_done(9'hA0);
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        do_tx_req_hs(9'hA2);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hA2;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'hA2);
+        do_tx_state_exit(9'hA2);
+        do_rx_state_exit_req(9'hE8);
+        check("T15: VALTRAINCENTER complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T16 — VALTRAINVREF
+        //   TX : sub0 req(0xE8) → eye-sweep → sub2 req(0xEA) → exit(0xEA)
+        //   RX : sub0 imm-rsp(0xE8) → eye-sweep → sub2 txrx(0xEA) → exit(0x90)
+        // =====================================================================
+        $display("\n--- T16: VALTRAINVREF ---");
+        do_tx_req_hs(9'hE8);
+        do_rx_imm_rsp_done(9'hE8);
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        do_tx_req_hs(9'hEA);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hEA;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'hEA);
+        do_tx_state_exit(9'hEA);
+        do_rx_state_exit_req(9'h90);
+        check("T16: VALTRAINVREF complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T17 — DATATRAINCENTER1  (no_retry=1)
+        //   TX : sub0 req(0x90) → eye-sweep[no_retry] → sub2 req(0x92) → exit(0x92)
+        //   RX : sub0 imm-rsp(0x90) → eye-sweep[no_retry] → sub2 txrx(0x92) → exit(0xF0)
+        // =====================================================================
+        $display("\n--- T17: DATATRAINCENTER1 ---");
+        do_tx_req_hs(9'h90);
+        do_rx_imm_rsp_done(9'h90);
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        do_tx_req_hs(9'h92);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'h92;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'h92);
+        do_tx_state_exit(9'h92);
+        do_rx_state_exit_req(9'hF0);
+        check("T17: DATATRAINCENTER1 complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T18 — DATATRAINVREF
+        //   TX : sub0 req(0xF0) → eye-sweep → sub2 req(0xF2) → exit(0xF2)
+        //   RX : sub0 imm-rsp(0xF0) advances via i_sb_rx_done+dec=0xF0 →
+        //        eye-sweep → sub2 txrx(0xF2) → exit req(0xA8)
+        //   RX sub0 uses the DATATRAINVREF variant: must also drive
+        //   i_rx_decoding=0xF0 alongside i_sb_rx_done to advance.
+        // =====================================================================
+        $display("\n--- T18: DATATRAINVREF ---");
+        // TX sub0
+        do_tx_req_hs(9'hF0);
+        // RX sub0 — DATATRAINVREF variant: done+decoding=0xF0 required
+        @(negedge i_clk);
+        check("T18: RX enc=0xF0 (DATATRAINVREF sub0)", o_rx_encoding === 9'hF0);
+        check("T18: RX o_rx_sb_rsp=1",                 o_rx_sb_rsp   === 1'b1);
+        i_sb_rx_done  = 1;
+        i_rx_decoding = 9'hF0;
+        @(negedge i_clk);
+        i_sb_rx_done  = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        // Eye sweeps in parallel
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        // TX sub2
+        do_tx_req_hs(9'hF2);
+        // RX sub2 entry + handshake
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hF2;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'hF2);
+        // State exits → RXDESKEW
+        do_tx_state_exit(9'hF2);
+        do_rx_state_exit_req(9'hA8);
+        check("T18: DATATRAINVREF complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T19 — RXDESKEW  (no eye-sweep)
+        //   TX : sub0 req(0xA8) → sub1 req(0xAC) → exit(0xAC)
+        //   RX : sub0 imm-rsp(0xA8) advances via req+0xAC →
+        //        sub1 txrx(0xAC) → exit req(0xB0)
+        // =====================================================================
+        $display("\n--- T19: RXDESKEW ---");
+        // TX sub0
+        do_tx_req_hs(9'hA8);
+        // RX sub0 — imm-rsp; advances via i_sb_rx_req+dec=0xAC
+        @(negedge i_clk);
+        check("T19: RX enc=0xA8 (RXDESKEW sub0)", o_rx_encoding === 9'hA8);
+        check("T19: RX o_rx_sb_rsp=1",             o_rx_sb_rsp   === 1'b1);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hAC;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        // TX sub1
+        do_tx_req_hs(9'hAC);
+        // RX sub1 txrx(0xAC)
+        do_rx_sub2(9'hAC);
+        // State exits → DATATRAINCENTER2
+        do_tx_state_exit(9'hAC);
+        do_rx_state_exit_req(9'hB0);
+        check("T19: RXDESKEW complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T20 — DATATRAINCENTER2  (no_retry=1, final state)
+        //   TX : sub0 req(0xB0) → eye-sweep[no_retry] → sub2 req(0xB2) →
+        //        exit(0xB2) → train_active_en=1 → NS=VALVREF
+        //   RX : sub0 imm-rsp(0xB0) → eye-sweep[no_retry] → sub2 txrx(0xB2)
+        //        → train_active_en=1 → NS=VALVREF
+        // =====================================================================
+        $display("\n--- T20: DATATRAINCENTER2 ---");
+        do_tx_req_hs(9'hB0);
+        do_rx_imm_rsp_done(9'hB0);
+        fork
+            do_tx_eye_sweep();
+            do_rx_eye_sweep();
+        join
+        do_tx_req_hs(9'hB2);
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hB2;
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+        repeat (2) @(negedge i_clk);
+        do_rx_sub2(9'hB2);
+        do_tx_state_exit(9'hB2);
+        do_rx_state_exit_req(9'hB8);
+        check("T19: DATATRAINCENTER2 complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+        // =====================================================================
+        // T21 — Linkspeed  (no_retry=1)
+        // =====================================================================
+        $display("\n--- T21: Linkspeed ---");
+        do_tx_req_hs(9'hB8);
+        do_rx_imm_rsp_done(9'hB8);
+        i_sb_rx_req = 1;
+        i_rx_decoding = 'h180;
+
+        i_sb_tx_rsp   = 1;
+        i_tx_decoding = 9'hB8;
+        @(negedge i_clk);
+        i_sb_tx_rsp   = 0;
+        i_tx_decoding = '0;
+        fork
+            do_tx_eye_sweep_tx_init(1);
+            do_rx_eye_sweep_tx_init();
+        join
+
+        @(negedge i_clk);
+        check($sformatf("TX req_hs 'hBA: o_tx_encoding"),
+              o_tx_encoding === 'hBA);
+        @(negedge i_clk);
+        check($sformatf("TX req_hs 'hBA: o_tx_sb_req=1"),
+              o_tx_sb_req === 1'b1);
+        // done_ack
+        i_sb_tx_done = 1;
+        @(negedge i_clk);
+        i_sb_tx_done = 0;
+        check($sformatf("TX req_hs 'hBA: req cleared"),
+              o_tx_sb_req === 1'b0);
+        repeat (2) @(negedge i_clk);
+
+        i_sb_rx_req   = 1;
+        i_rx_decoding = 9'hBA;
+        @(negedge i_clk);
+        @(negedge i_clk);
+        i_sb_rx_req   = 0;
+        i_rx_decoding = '0;
+
+        do_rx_imm_rsp_done(9'hBA);
+
+        do_tx_state_exit(9'hBA);
+
+        @(negedge i_clk);
+
+        check("T19: RX enc=0xA8 w_tx_train_link_init_en", dut.w_tx_train_link_init_en === 1);
+        check("T19: RX enc=0xA8 w_rx_train_link_init_en", dut.w_rx_train_link_init_en === 1);
+
+        check("T19: LINKSPEED complete", 1'b1);
+        repeat (3) @(negedge i_clk);
+
+
+        // =====================================================================
+        // T2 — Assert i_train_active_en → state=LINKINIT
+        //   FSM moves from IDLE to LINKINIT on the next posedge.
+        //   TX sub-FSM enters CLK_REQ_HS: asserts pl_clk_req and pl_inband_pres,
+        //   output encoding=0x100.
+        // =====================================================================
+        $display("\n--- T2: i_train_active_en -> LINKINIT ---");
+
+        @(negedge i_clk);
+        @(negedge i_clk);
+
+        wait_state(ST_LINKINIT, 5);
+        check("T2: TX encoding=0x100 (CLK_HS)", o_tx_encoding    === 9'h100);
+        check("T2: RX encoding=0x100 (CLK_HS)", o_rx_encoding    === 9'h100);
+        check("T2: o_pl_clk_req=1",             o_pl_clk_req     === 1);
+        check("T2: o_pl_inband_pres=1",         o_pl_inband_pres === 1);
+
+        // =====================================================================
+        // T3 — CLK_REQ_HS: Adapter asserts lp_clk_ack then de-asserts
+        //   Spec rule: at least one clock cycle bubble between pl_clk_req assert
+        //   and lp_clk_ack assert (already satisfied by sequential state entry).
+        //   pl_clk_req must de-assert BEFORE lp_clk_ack de-asserts.
+        //
+        //   Sequence:
+        //     1. Drive i_lp_clk_ack=1  → DUT latches clk_ack_seen=1,
+        //                                 de-asserts o_pl_clk_req (combinational)
+        //     2. Drive i_lp_clk_ack=0  → DUT sees clk_ack_seen && !lp_clk_ack
+        //                                 → next_substate = WAKE_REQ_HS
+        //   Both TX and RX track the same i_lp_clk_ack wire so both advance
+        //   to WAKE_REQ_HS together.
+        // =====================================================================
+        $display("\n--- T3: CLK_REQ_HS -> WAKE_REQ_HS ---");
+
+        // Adapter asserts lp_clk_ack (at least 1 cycle bubble already passed)
+        @(negedge i_clk);
+        i_lp_clk_ack = 1;
+        @(negedge i_clk); // DUT latches clk_ack_seen=1 here; pl_clk_req drops
+        check("T3: o_pl_clk_req de-asserted after lp_clk_ack rises", o_pl_clk_req === 0);
+
+        // Adapter de-asserts lp_clk_ack → DUT advances to WAKE_REQ_HS
+        @(negedge i_clk);
+        i_lp_clk_ack = 0;
+        @(negedge i_clk); // substate transition clocked in
+        check("T3: TX encoding=0x101 (WAKE_HS)", o_tx_encoding === 9'h101);
+        check("T3: RX encoding=0x101 (WAKE_HS)", o_rx_encoding === 9'h101);
+        check("T3: o_pl_clk_req still 0",        o_pl_clk_req  === 0);
+        check("T3: o_pl_inband_pres still 1",     o_pl_inband_pres === 1);
+
+        // =====================================================================
+        // T4 — WAKE_REQ_HS: Adapter asserts lp_wake_req then requests Active
+        //   Spec rule: lp_wake_req de-asserts before pl_wake_ack de-asserts.
+        //   DUT mirrors lp_wake_req → pl_wake_ack combinationally, so this is
+        //   automatically satisfied.
+        //
+        //   Sequence:
+        //     1. Drive i_lp_wake_req=1  → DUT mirrors → o_pl_wake_ack=1
+        //     2. Drive i_lp_state_req=Active (4'b0001)
+        //        → DUT sees LP_STATE_ACTIVE → next_substate = STATE_REQ_HS
+        //     3. Drive i_lp_wake_req=0  (req de-asserts; wake ack follows)
+        // =====================================================================
+        $display("\n--- T4: WAKE_REQ_HS -> STATE_REQ/RSP_HS ---");
+
+        // Adapter asserts wake request
+        @(negedge i_clk);
+        i_lp_wake_req = 1;
+        @(negedge i_clk);
+        check("T4: o_pl_wake_ack=1 (mirrors lp_wake_req)", o_pl_wake_ack === 1);
+
+        // Adapter requests Active state
+        @(negedge i_clk);
+        i_lp_state_req = 4'b0001; // LP_STATE_ACTIVE
+        @(negedge i_clk); // substate advances to STATE_REQ_HS
+        check("T4: TX encoding=0x102 (STATE_REQ_HS)", o_tx_encoding === 9'h102);
+        check("T4: RX encoding=0x102 (STATE_RSP_HS)", o_rx_encoding === 9'h102);
+        check("T4: o_tx_sb_req=1 (TX waiting for done_ack)", o_tx_sb_req === 1);
+        check("T4: o_rx_sb_rsp=1 (RX sending RSP)",          o_rx_sb_rsp === 1);
+
+        // Adapter de-asserts wake request (wake_ack mirrors and drops automatically)
+        @(negedge i_clk);
+        i_lp_wake_req = 0;
+        @(negedge i_clk);
+        check("T4: o_pl_wake_ack=0 after wake_req de-asserts", o_pl_wake_ack === 0);
+
+        // =====================================================================
+        // T5 — STATE_REQ_HS (TX) + STATE_RSP_HS (RX) → both done → ACTIVE
+        //
+        //   TX (same pattern as all prior STATE_REQ states):
+        //     Step 1: i_sb_tx_done=1  → done_ack latches → o_tx_sb_req drops
+        //     Step 2: i_sb_tx_rsp=1 + i_tx_decoding=0x102 → o_done_linkinit_tx
+        //
+        //   RX (RX sends RSP; done fires on i_sb_rx_done):
+        //     i_sb_rx_done=1 → o_done_linkinit_rx
+        //
+        //   TX and RX are driven independently; both done latches must be set
+        //   before the top-level FSM advances to ACTIVE.
+        // =====================================================================
+        $display("\n--- T5: STATE_REQ/RSP_HS -> ACTIVE ---");
+
+        // TX: done_ack latch (sideband layer confirms it received the REQ)
+        @(negedge i_clk); i_sb_tx_done = 1;
+        @(negedge i_clk); i_sb_tx_done = 0;
+        check("T5: TX o_tx_sb_req dropped after done_ack", o_tx_sb_req === 0);
+
+        // TX: RSP+0x102 → TX done fires
+        @(negedge i_clk);
+        i_sb_tx_rsp   = 1;
+        i_tx_decoding = 9'h102;
+        @(negedge i_clk);
+
+        // RX: sb_rx_done → RX done fires (sideband confirms RSP was sent)
+        @(negedge i_clk); i_sb_rx_done = 1;
+        @(negedge i_clk); i_sb_rx_done = 0;
+        i_sb_tx_rsp   = 0;
+        i_tx_decoding = '0;
+
+        // Both done latches set → FSM advances to ACTIVE
+        wait_state(ST_ACTIVE, 5);
+
+        // =====================================================================
+        // T6 — Verify ACTIVE outputs
+        //   pl_state_sts must be 0001 (Active)
+        //   pl_inband_pres must stay 1 (asserted for lifetime of link operation)
+        //   No sideband traffic expected in normal Active operation
+        // =====================================================================
+        $display("\n--- T6: Verify ACTIVE outputs ---");
+
+        @(negedge i_clk);
+        check("T6: pl_state_sts=Active (0001)", o_pl_state_sts   === PL_STS_ACTIVE);
+        check("T6: pl_inband_pres=1",           o_pl_inband_pres === 1);
+        check("T6: pl_clk_req=0 (HS done)",     o_pl_clk_req     === 0);
+        check("T6: pl_wake_ack=0 (HS done)",    o_pl_wake_ack    === 0);
+        check("T6: TX encoding=0x000 (idle)",   o_tx_encoding    === 9'h108);
+        check("T6: RX encoding=0x000 (idle)",   o_rx_encoding    === 9'h108);
+
+        // Hold a few more cycles — confirm ACTIVE is stable
+        repeat (2) @(negedge i_clk);
 
         // =====================================================================
         // Summary

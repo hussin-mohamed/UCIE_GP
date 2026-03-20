@@ -70,12 +70,14 @@ module ucie_ltsm_tx_mbinit_repairmb #(
     logic                      failed_test;
     logic                      clock_to_test_done;
 
+    logic r_eye_sweep_reset;
+
     // -------------------------------------------------------------------------
     // Eye sweep submodule
     // -------------------------------------------------------------------------
     ucie_TX_Data_to_Clock_eye_sweep ucie_TX_Data_to_Clock_eye_sweep_inst (
         .i_clk              (i_clk),
-        .i_reset            (i_reset || !clock_to_test_enable),
+        .i_reset            (r_eye_sweep_reset),
         .i_xx_decoding      (i_tx_decoding),
         .i_xx_data          (i_tx_data),
         .i_xx_sweep_result  (i_tx_sweep_result),   
@@ -95,6 +97,13 @@ module ucie_ltsm_tx_mbinit_repairmb #(
         .failed_test        (failed_test),
         .done               (clock_to_test_done)
     );
+
+
+
+always_ff @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) r_eye_sweep_reset <= 1'b1;
+    else         r_eye_sweep_reset <= !clock_to_test_enable;
+end
 
     // -------------------------------------------------------------------------
     // State memory

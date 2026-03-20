@@ -30,12 +30,18 @@ module ucie_LTSM_TX_MBTRAIN #(
     
     // Training control inputs
     input init_train_en,   // Enable training initialization
+    input speed_idle_state_enable,   // Enable SPEEDIDLE state
+    input repair_state_enable,   // Enable REPAIR state
+    input tx_self_cal_state_enable,   // Enable TX self-calibration state
     input timeout,         // Training timeout error
-    input [2:0] o_pl_speedmode,  // Physical layer speed mode
+    output logic [2:0] o_pl_speedmode,  // Physical layer speed mode
+
+    input [2:0] i_speedreg,  // Physical layer speed mode
+    output logic [2:0] o_speedreg,  // Physical layer speed mode
 
     input [DECODING_WIDTH-1:0] encoding_rsp_sent,      // Encoding value when response sent
     input [DECODING_WIDTH-1:0] encoding_rsp_received,  // Encoding value when response received
-    input rsp_received,               // Response sent flag
+    input rsp_received,               // Response received flag
     input rsp_sent,                   // Response sent flag
     
     // TX interface outputs - data going to remote RX
@@ -93,7 +99,7 @@ logic o_tx_sb_done_reg;
 logic train_error_reg;
 logic train_link_init_en_reg;
 logic train_phyretrain_en_reg;
-logic [DATA_WIDTH-1:0] per_lane_result;  // Indicates if current test failed
+logic [DATA_WIDTH-1:0] per_lane_result;  // Per-lane eye sweep results captured from RX
 
 // Signals from eye sweep test module
 logic [DECODING_WIDTH-1:0] o_tx_encoding_data_to_clock_test;
@@ -110,7 +116,6 @@ logic [2:0] next_substate;     // Next substate
 
 // Handshake control signals
 logic trainerror;       // Indicates speed error in SPEEDIDLE state
-logic state_enb;                  // Enable signal for current state operations
 logic done_ack;                   // Acknowledge that done was received
 logic substates_done;             // All substates completed
 logic previous_state_done;        // Previous state handshake complete
@@ -122,13 +127,16 @@ logic clock_to_test_done;         // Eye sweep test complete
 logic phyretrain_linkspeed_transition;
 
 
+logic r_eye_sweep_reset;
+
+
 //================================================================================
 // Eye Sweep Test Module Instantiation
 //================================================================================
 // This module performs data-to-clock eye diagram sweeping for signal integrity
 ucie_TX_Data_to_Clock_eye_sweep ucie_TX_Data_to_Clock_eye_sweep_inst (
     .i_clk(i_clk),
-    .i_reset(i_reset || !clock_to_test_enable),  // Reset when disabled
+    .i_reset(r_eye_sweep_reset),  // Reset when disabled
     .i_xx_decoding(i_tx_decoding),
     .i_xx_data(i_tx_data),
     .i_xx_sweep_result(i_tx_sweep_result),
@@ -178,7 +186,7 @@ always @(posedge i_clk or posedge i_reset) begin
         train_link_init_en <= 0; 
         train_phyretrain_en <= 0; 
     end else begin
-        if (!state_enb) begin
+        if (!(init_train_en || speed_idle_state_enable || repair_state_enable || tx_self_cal_state_enable)) begin
             CS <= VALVREF;           // Reset to initial training state
             current_substate <= 0;   // Reset substate
             o_tx_encoding <= 0;
@@ -204,13 +212,21 @@ always @(posedge i_clk or posedge i_reset) begin
     end 
 end
 
+
+always_ff @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) r_eye_sweep_reset <= 1'b1;
+    else         r_eye_sweep_reset <= !clock_to_test_enable;
+end
+
 //================================================================================
 // Done Acknowledgement Logic
 //================================================================================
-// Tracks when done signal has been acknowledged in handshake protocol
+// Tracks when done signal has been acknowledged in handshake protocol.
+// done_ack is cleared whenever the encoding changes (new state/substate),
+// ensuring the handshake re-arms for each distinct transaction.
 always @(*) begin
     if (i_reset) done_ack = 0;
-    else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;
+    else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;  // New encoding → reset ack
     else if (i_sb_tx_done) begin
         done_ack = 1;  // Set when done received
     end else if (i_sb_tx_rsp) begin
@@ -220,19 +236,6 @@ end
 
 always @(posedge i_clk) begin
     o_tx_encoding_old <= o_tx_encoding;  // Register to track previous encoding for done_ack logic
-end
-
-
-//================================================================================
-// State Enable Logic
-//================================================================================
-always @(posedge i_clk or posedge i_reset) begin
-    if (i_reset) begin
-        state_enb <= 0; // Disable state operations until training is initialized
-    end else if (init_train_en) begin
-        if (train_phyretrain_en_reg || train_link_init_en_reg) state_enb <= 0;  // If training is active, keep state operations disabled to prevent interference
-        else state_enb <= 1;  // Enable state operations when training is initialized
-    end else if (train_phyretrain_en_reg || train_link_init_en_reg) state_enb <= 0;
 end
 
 //================================================================================
@@ -254,13 +257,22 @@ end
 //================================================================================
 // Main State Machine Combinational Logic
 //================================================================================
+// Each MBTRAIN state follows the same 3-substate pattern:
+//   Substate 0 — Initial handshake: assert sideband request / wait for peer response.
+//   Substate 1 — Eye sweep: enable clock_to_test module; pipe its outputs to TX outputs.
+//   Substate 2 — Completion handshake: de-assert eye sweep; confirm with peer before
+//                advancing to the next major state via previous_state_done.
+// States without an embedded eye sweep (e.g. RXCLKCAL, RXDESKEW) skip substate 1.
+//================================================================================
 always @(*) begin
     if (i_reset) begin
         substates_done = 0;
         train_link_init_en_reg= 0;
-train_phyretrain_en_reg= 0;
+        train_phyretrain_en_reg= 0;
+        o_speedreg = 'h5;
     end else begin
-        // On training error, return to initial state
+        // On training error (timeout, eye sweep failure, or speed negotiation error),
+        // abort immediately back to VALVREF so the full calibration sequence restarts.
     if (train_error_reg) begin
         NS = VALVREF;
         substates_done = 0;
@@ -274,9 +286,10 @@ train_phyretrain_en_reg= 0;
                         case (current_substate)
                             // Substate 0: Send initial handshake request
                             0: begin
-                                o_tx_encoding_reg = 'h80;  // VALVREF request encoding
                                 NS = VALVREF;
+                                o_tx_encoding_reg = 'h80;  // VALVREF request encoding
                                 next_substate = 0;
+
                                 substates_done = 0;
                                 clock_to_test_enable = 0;
                                 o_tx_sb_rsp_reg = 0;
@@ -436,11 +449,15 @@ train_phyretrain_en_reg= 0;
                                 substates_done = 0;
 
                                 if (i_tx_done) begin
-                                    if (o_pl_speedmode) begin
+                                    if (i_speedreg) begin
+                                        // Decrement speed register by 1 (step down to next lower rate)
+                                        // and broadcast the agreed speed mode to the PL interface.
                                         o_tx_encoding_reg = 'hCA;
                                         next_substate = 1;
                                         o_tx_sb_req_reg = 0;
                                         o_tx_sb_rsp_reg = 0;
+                                        o_pl_speedmode = i_speedreg - 1;
+                                        o_speedreg = i_speedreg - 1;
                                     end else begin
                                         // Speed mismatch error
                                         trainerror = 1;
@@ -751,7 +768,8 @@ train_phyretrain_en_reg= 0;
                                 o_tx_sb_rsp_reg = o_tx_sb_rsp_data_to_clock_test;
                                 
                                 init = 0;
-                                no_retry = 1;    // No retries for this phase
+                                no_retry = 1;    // No retries for DATATRAINCENTER1: a single measurement pass
+                                                 // is sufficient; the result feeds the Vref tuning stage next.
                                 substates_done = 0;
 
                                 if (clock_to_test_done) begin
@@ -926,7 +944,7 @@ train_phyretrain_en_reg= 0;
                                 o_tx_encoding_reg = 'hB0;
                                 NS = DATATRAINCENTER2;
                                 substates_done = 0;
-                                o_tx_info = ERROR_THRESHOLD;  // Set error threshold
+                                o_tx_info_reg = ERROR_THRESHOLD;  // Set error threshold
 
                                 if (done_ack) o_tx_sb_req_reg = 0;
                                 else o_tx_sb_req_reg = 1;
@@ -1071,14 +1089,14 @@ train_phyretrain_en_reg= 0;
                                 if (done_ack) o_tx_sb_req_reg = 0;
                                 else o_tx_sb_req_reg = 1;   // send err req
 
-                                if (i_sb_tx_rsp && i_tx_decoding == 'hBB && !Lane_map_code) begin
+                                if (i_sb_tx_rsp && i_tx_decoding == 'hBF && !Lane_map_code) begin
                                     substates_done = 0;
                                     next_substate = 4; // SPEEDIDLE
                                 end else if(i_sb_tx_req && i_tx_decoding == 'hBC) begin 
                                     substates_done = 0;
                                     next_substate = 5; // PHYRETRAIN
                                 end 
-                                else if(i_sb_tx_rsp && i_tx_decoding == 'hBB && Lane_map_code) begin 
+                                else if(i_sb_tx_rsp && i_tx_decoding == 'hBF && Lane_map_code) begin 
                                     substates_done = 0;
                                     next_substate = 6; // REPAIR
                                 end else begin
@@ -1143,7 +1161,37 @@ train_phyretrain_en_reg= 0;
                                 end 
                             end
                         endcase
-                    end 
+                    end else begin
+                        if (speed_idle_state_enable) begin
+                            NS = SPEEDIDLE;
+                            o_tx_encoding_reg = 'hC8;  // VALVREF request encoding
+                            train_link_init_en_reg = 0;
+                            train_phyretrain_en_reg = 0;
+                            o_tx_sb_req_reg = 0;
+                            o_tx_sb_rsp_reg = 0;
+                            substates_done = 0;
+                        end else if (repair_state_enable) begin
+                            NS = REPAIR;
+                            o_tx_encoding_reg = 'hC0;  // VALVREF request encoding
+                            train_link_init_en_reg = 0;
+                            train_phyretrain_en_reg = 0;
+                            o_tx_sb_req_reg = 0;
+                            o_tx_sb_rsp_reg = 0;
+                            substates_done = 0;
+                        end else if (tx_self_cal_state_enable) begin
+                            NS = TXSELFCAL;
+                            o_tx_encoding_reg = 'hD0;  // VALVREF request encoding
+                            train_link_init_en_reg = 0;
+                            train_phyretrain_en_reg = 0;
+                            o_tx_sb_req_reg = 0;
+                            o_tx_sb_rsp_reg = 0;
+                            substates_done = 0;
+                        end else begin
+                            o_tx_sb_req_reg = 0;
+                            o_tx_sb_rsp_reg = 0;
+                            substates_done = 1;
+                        end
+                    end
 
                     // need to add the priority flag for speed idle
                     if ((previous_state_done && encoding_rsp_sent == 'hBE && encoding_rsp_received == 'hBE) || (o_tx_encoding == 'hBD && encoding_rsp_sent == 'hBE)) begin
@@ -1157,7 +1205,7 @@ train_phyretrain_en_reg= 0;
                         phyretrain_linkspeed_transition = 0;
                         o_tx_sb_req_reg = 0;
                         o_tx_sb_rsp_reg = 0;
-                        substates_done = 0;
+                        substates_done = 1;
                     end else if (previous_state_done && encoding_rsp_sent == 'hBD && encoding_rsp_received == 'hBD) begin
                         NS = REPAIR;
                         o_tx_encoding_reg = 'hC0;
@@ -1168,9 +1216,7 @@ train_phyretrain_en_reg= 0;
                         train_link_init_en_reg = 1;
                         o_tx_sb_req_reg = 0;
                         o_tx_sb_rsp_reg = 0;
-                        substates_done = 0;
-                    end else begin  
-                        NS = LINKSPEED;
+                        substates_done = 1;
                     end
                 end
 
@@ -1192,6 +1238,7 @@ train_phyretrain_en_reg= 0;
                                     next_substate = 1;
                                     o_tx_sb_req_reg = 0;
                                     o_tx_sb_rsp_reg = 0;
+                                    o_tx_encoding_reg = 'hC1; 
                                 end else next_substate = 0;
                             end  
 
@@ -1210,12 +1257,14 @@ train_phyretrain_en_reg= 0;
                                     trainerror = 1;
                                     substates_done = 1;
                                     next_substate = 0;
+                                    o_tx_encoding_reg = 'h40;
                                 end else if (i_sb_tx_rsp && i_tx_decoding == 'hC1) begin
-                                    substates_done = 1;
-                                    next_substate = 0;
-                                end else begin
                                     substates_done = 0;
                                     next_substate = 2;
+                                    o_tx_encoding_reg = 'hC2;
+                                end else begin
+                                    substates_done = 0;
+                                    next_substate = 1;
                                 end 
                             end  
 
@@ -1243,6 +1292,7 @@ train_phyretrain_en_reg= 0;
                         NS = TXSELFCAL;
                         o_tx_sb_req_reg = 0;
                         o_tx_sb_rsp_reg = 0;
+                        o_tx_encoding_reg = 'hD0;
                         substates_done = 0;
                     end else begin  
                         NS = REPAIR;
@@ -1253,11 +1303,11 @@ train_phyretrain_en_reg= 0;
     end
 end
 
-/*`ifdef ASSERT_ON
+`ifdef ASSERT_ON
 
     property done_ack_assert_property;
         @(posedge i_clk) disable iff (i_reset)
-        i_sb_tx_done |-> done_ack;
+        ((i_sb_tx_done) && (o_tx_encoding[2:0] == o_tx_encoding_old[2:0])) |-> done_ack;
     endproperty
 
     property done_ack_deassert_property;
@@ -1305,19 +1355,9 @@ end
         i_reset |=> (o_tx_sb_rsp == 0);
     endproperty
 
-    property reset_train_active_property;
-        @(posedge i_clk)
-        i_reset |=> (train_active_en == 0);
-    endproperty
-
     property reset_sb_done_property;
         @(posedge i_clk)
         i_reset |=> (o_tx_sb_done == 0);
-    endproperty
-
-    property reset_state_enb_property;
-        @(posedge i_clk)
-        i_reset |=> (state_enb == 0);
     endproperty
 
     property sb_done_self_clearing_property;
@@ -1335,74 +1375,64 @@ end
         (i_sb_tx_rsp && !o_tx_sb_done) |=> o_tx_sb_done;
     endproperty
 
-    property state_enb_on_init_train_property;
-        @(posedge i_clk) disable iff (i_reset)
-        (init_train_en && !train_active_en_reg) |=> state_enb;
-    endproperty
-
-    property state_enb_disabled_when_active_property;
-        @(posedge i_clk) disable iff (i_reset)
-        (train_phyretrain_en_reg || train_link_init_en_reg) |=> (!state_enb);
-    endproperty
-
     property not_state_enb_resets_to_valvref_property;
         @(posedge i_clk) disable iff (i_reset)
-        (!state_enb) |=> (CS == VALVREF);
+        (!init_train_en) |=> (CS == VALVREF);
     endproperty
 
     property not_state_enb_resets_substate_property;
         @(posedge i_clk) disable iff (i_reset)
-        (!state_enb) |=> (current_substate == 0);
+        (!init_train_en) |=> (current_substate == 0);
     endproperty
 
     property valvref_to_datavref_property;
         @(posedge i_clk) disable iff (i_reset || train_error_reg)
-        (CS == VALVREF && previous_state_done && encoding_rsp_sent == 'h82 && encoding_rsp_received == 'h82 && state_enb) |=> (CS == DATAVREF);
+        (CS == VALVREF && previous_state_done && encoding_rsp_sent == 'h82 && encoding_rsp_received == 'h82 && init_train_en) |=> (CS == DATAVREF);
     endproperty
 
     property datavref_to_speedidle_property;
         @(posedge i_clk) disable iff (i_reset || train_error_reg)
-        (CS == DATAVREF && previous_state_done && encoding_rsp_sent == 'h8A && encoding_rsp_received == 'h8A && state_enb) |=> (CS == SPEEDIDLE);
+        (CS == DATAVREF && previous_state_done && encoding_rsp_sent == 'h8A && encoding_rsp_received == 'h8A && init_train_en) |=> (CS == SPEEDIDLE);
     endproperty
 
     property speedidle_to_txselfcal_property;
         @(posedge i_clk) disable iff (i_reset || train_error_reg)
-        (CS == SPEEDIDLE && previous_state_done && encoding_rsp_sent == 'hCA && encoding_rsp_received == 'hCA && state_enb) |=> (CS == TXSELFCAL);
+        (CS == SPEEDIDLE && previous_state_done && encoding_rsp_sent == 'hCA && encoding_rsp_received == 'hCA && init_train_en) |=> (CS == TXSELFCAL);
     endproperty
 
     property txselfcal_to_rxclkcal_property;
         @(posedge i_clk) disable iff (i_reset || train_error_reg)
-        (CS == TXSELFCAL && previous_state_done && encoding_rsp_sent == 'hD1 && encoding_rsp_received == 'hD1 && state_enb) |=> (CS == RXCLKCAL);
+        (CS == TXSELFCAL && previous_state_done && encoding_rsp_sent == 'hD1 && encoding_rsp_received == 'hD1 && init_train_en) |=> (CS == RXCLKCAL);
     endproperty
 
     property rxclkcal_to_valtraincenter_property;
         @(posedge i_clk) disable iff (i_reset || train_error_reg)
-        (CS == RXCLKCAL && previous_state_done && encoding_rsp_sent == 'h9A && encoding_rsp_received == 'h9A && state_enb) |=> (CS == VALTRAINCENTER);
+        (CS == RXCLKCAL && previous_state_done && encoding_rsp_sent == 'h9A && encoding_rsp_received == 'h9A && init_train_en) |=> (CS == VALTRAINCENTER);
     endproperty
 
     property valtraincenter_to_valtrainvref_property;
         @(posedge i_clk) disable iff (i_reset || train_error_reg)
-        (CS == VALTRAINCENTER && previous_state_done && encoding_rsp_sent == 'hA2 && encoding_rsp_received == 'hA2 && state_enb) |=> (CS == VALTRAINVREF);
+        (CS == VALTRAINCENTER && previous_state_done && encoding_rsp_sent == 'hA2 && encoding_rsp_received == 'hA2 && init_train_en) |=> (CS == VALTRAINVREF);
     endproperty
 
     property valtrainvref_to_datatraincenter1_property;
         @(posedge i_clk) disable iff (i_reset || train_error_reg)
-        (CS == VALTRAINVREF && previous_state_done && encoding_rsp_sent == 'hEA && encoding_rsp_received == 'hEA && state_enb) |=> (CS == DATATRAINCENTER1);
+        (CS == VALTRAINVREF && previous_state_done && encoding_rsp_sent == 'hEA && encoding_rsp_received == 'hEA && init_train_en) |=> (CS == DATATRAINCENTER1);
     endproperty
 
     property datatraincenter1_to_datatrainvref_property;
         @(posedge i_clk) disable iff (i_reset || train_error_reg)
-        (CS == DATATRAINCENTER1 && previous_state_done && encoding_rsp_sent == 'h92 && encoding_rsp_received == 'h92 && state_enb) |=> (CS == DATATRAINVREF);
+        (CS == DATATRAINCENTER1 && previous_state_done && encoding_rsp_sent == 'h92 && encoding_rsp_received == 'h92 && init_train_en) |=> (CS == DATATRAINVREF);
     endproperty
 
     property datatrainvref_to_rxdeskew_property;
         @(posedge i_clk) disable iff (i_reset || train_error_reg)
-        (CS == DATATRAINVREF && previous_state_done && encoding_rsp_sent == 'hF2 && encoding_rsp_received == 'hF2 && state_enb) |=> (CS == RXDESKEW);
+        (CS == DATATRAINVREF && previous_state_done && encoding_rsp_sent == 'hF2 && encoding_rsp_received == 'hF2 && init_train_en) |=> (CS == RXDESKEW);
     endproperty
 
     property rxdeskew_to_datatraincenter2_property;
         @(posedge i_clk) disable iff (i_reset || train_error_reg)
-        (CS == RXDESKEW && previous_state_done && encoding_rsp_sent == 'hAC && encoding_rsp_received == 'hAC && state_enb) |=> (CS == DATATRAINCENTER2);
+        (CS == RXDESKEW && previous_state_done && encoding_rsp_sent == 'hAC && encoding_rsp_received == 'hAC && init_train_en) |=> (CS == DATATRAINCENTER2);
     endproperty
 
     property datatraincenter2_completes_training_property;
@@ -1435,11 +1465,6 @@ end
         (CS == VALVREF) || (CS == DATAVREF) || (CS == SPEEDIDLE) || (CS == TXSELFCAL) ||
         (CS == RXCLKCAL) || (CS == VALTRAINCENTER) || (CS == VALTRAINVREF) || (CS == DATATRAINCENTER1) ||
         (CS == DATATRAINVREF) || (CS == RXDESKEW) || (CS == DATATRAINCENTER2) || (CS == LINKSPEED) || (CS == REPAIR);
-    endproperty
-
-    property valid_substate_property;
-        @(posedge i_clk) disable iff (i_reset)
-        (current_substate <= 2);
     endproperty
 
     property substates_done_clears_on_transition_property;
@@ -1497,17 +1522,9 @@ end
         else $error("Assertion failed: o_tx_sb_rsp should be 0 after reset");
     cover property (reset_sb_rsp_property);
 
-    reset_train_active_assertion: assert property (reset_train_active_property)
-        else $error("Assertion failed: train_active_en should be 0 after reset");
-    cover property (reset_train_active_property);
-
     reset_sb_done_assertion: assert property (reset_sb_done_property)
         else $error("Assertion failed: o_tx_sb_done should be 0 after reset");
     cover property (reset_sb_done_property);
-
-    reset_state_enb_assertion: assert property (reset_state_enb_property)
-        else $error("Assertion failed: state_enb should be 0 after reset");
-    cover property (reset_state_enb_property);
 
     sb_done_self_clearing_assertion: assert property (sb_done_self_clearing_property)
         else $error("Assertion failed: o_tx_sb_done should self-clear when no request or response is active");
@@ -1521,20 +1538,12 @@ end
         else $error("Assertion failed: o_tx_sb_done should assert on sideband response");
     cover property (sb_done_assert_on_rsp_property);
 
-    state_enb_on_init_train_assertion: assert property (state_enb_on_init_train_property)
-        else $error("Assertion failed: state_enb should be set when init_train_en is asserted and training is not active");
-    cover property (state_enb_on_init_train_property);
-
-    state_enb_disabled_when_active_assertion: assert property (state_enb_disabled_when_active_property)
-        else $error("Assertion failed: state_enb should be disabled when training is active");
-    cover property (state_enb_disabled_when_active_property);
-
     not_state_enb_resets_to_valvref_assertion: assert property (not_state_enb_resets_to_valvref_property)
-        else $error("Assertion failed: CS should reset to VALVREF when state_enb is low");
+        else $error("Assertion failed: CS should reset to VALVREF when init_train_en is low");
     cover property (not_state_enb_resets_to_valvref_property);
 
     not_state_enb_resets_substate_assertion: assert property (not_state_enb_resets_substate_property)
-        else $error("Assertion failed: current_substate should reset to 0 when state_enb is low");
+        else $error("Assertion failed: current_substate should reset to 0 when init_train_en is low");
     cover property (not_state_enb_resets_substate_property);
 
     valvref_to_datavref_assertion: assert property (valvref_to_datavref_property)
@@ -1601,10 +1610,6 @@ end
         else $error("Assertion failed: CS contains an invalid state value");
     cover property (valid_state_property);
 
-    valid_substate_assertion: assert property (valid_substate_property)
-        else $error("Assertion failed: current_substate should not exceed 2");
-    cover property (valid_substate_property);
-
     substates_done_clears_on_transition_assertion: assert property (substates_done_clears_on_transition_property)
         else $error("Assertion failed: substates_done should be cleared on state transition");
     cover property (substates_done_clears_on_transition_property);
@@ -1617,7 +1622,7 @@ end
         else $error("Assertion failed: state should transition to NS on state change");
     cover property (state_transition_property);
 
-`endif*/
+`endif
 
 
 endmodule

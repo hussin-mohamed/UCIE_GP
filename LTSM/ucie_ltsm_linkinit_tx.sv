@@ -188,7 +188,7 @@ module ucie_ltsm_linkinit_tx (
                         o_tx_encoding    = 9'h101;
                         o_pl_inband_pres = 1'b1;
                         o_pl_wake_ack    = i_lp_wake_req_reg; // mirrors req; deasserts after req
-                        if (i_lp_state_req == LP_STATE_ACTIVE)
+                        if (i_lp_state_req == LP_STATE_ACTIVE && i_lp_wake_req_reg)
                             next_substate = STATE_REQ_HS;
                     end
 

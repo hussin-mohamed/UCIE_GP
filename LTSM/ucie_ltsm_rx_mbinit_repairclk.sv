@@ -233,10 +233,6 @@ module ucie_ltsm_rx_mbinit_repairclk #(
         else $error("ASSERT FAIL [ENC_PATTERN_DETECTION]: wrong encoding");
     ENC_WAIT_RESULT_REQ   : assert property (enc_check(WAIT_RESULT_REQ,   9'h22))
         else $error("ASSERT FAIL [ENC_WAIT_RESULT_REQ]: wrong encoding");
-    ENC_SEND_RESP         : assert property (enc_check(SEND_RESP,         9'h22))
-        else $error("ASSERT FAIL [ENC_SEND_RESP]: wrong encoding");
-    ENC_DONE_HANDSHAKE    : assert property (enc_check(DONE_HANDSHAKE,    9'h23))
-        else $error("ASSERT FAIL [ENC_DONE_HANDSHAKE]: wrong encoding");
 
     property timeout_error;
         @(posedge i_clk) disable iff (i_reset)

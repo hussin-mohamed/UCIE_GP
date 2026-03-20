@@ -82,6 +82,7 @@ module ucie_ltsm_init_fsm #(
     // 8ms timeout (generated externally, fed into every sub-FSM that needs it)
     // -------------------------------------------------------------------------
     input  logic                        o_timer_8ms,
+    input [15:0]                        r_local_cap,
 
     // -------------------------------------------------------------------------
     // Active-training error (post-init): forces TRAINERROR when asserted
@@ -337,8 +338,6 @@ module ucie_ltsm_init_fsm #(
     //   5. Stay
     // =========================================================================
     always_comb begin
-        next_state = current_state; // default: stay
-
         // ---- Global error overrides ----
         if (any_sbinit_error && current_state == SBINIT) begin
             next_state = RESET;
@@ -597,6 +596,7 @@ module ucie_ltsm_init_fsm #(
         .i_reset               (i_reset),
         .i_tx_decoding         (i_tx_decoding),
         .i_tx_data             (i_tx_data),
+        .r_local_cap           (r_local_cap),
         .i_tx_info             (i_tx_info),
         .i_sb_tx_req           (i_sb_tx_req),
         .i_sb_tx_rsp           (i_sb_tx_rsp),

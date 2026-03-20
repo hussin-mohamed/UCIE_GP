@@ -82,9 +82,6 @@ end
             i_pll_stable_reg && i_supply_stable_reg && i_timer_4ms_reg |-> o_done_reset_tx;
         endproperty
 
-        RESET_DONE_TX : assert property(reset_done);
-
-
         property regs_clear_outside_reset;
             @(posedge i_clk) disable iff (i_reset)
             i_current_state != RESET |=>

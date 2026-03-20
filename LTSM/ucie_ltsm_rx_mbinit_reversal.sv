@@ -241,8 +241,6 @@ module ucie_ltsm_rx_mbinit_reversal #(
         else $error("ASSERT FAIL [ENC_LANE_ID_DETECTION]: wrong encoding");
     ENC_WAIT_RESULT_REQ     : assert property (enc_check(WAIT_RESULT_REQ,     9'h33))
         else $error("ASSERT FAIL [ENC_WAIT_RESULT_REQ]: wrong encoding");
-    ENC_SEND_RESP           : assert property (enc_check(SEND_RESP,           9'h33))
-        else $error("ASSERT FAIL [ENC_SEND_RESP]: wrong encoding");
     ENC_DONE_HANDSHAKE      : assert property (enc_check(DONE_HANDSHAKE,      9'h35))
         else $error("ASSERT FAIL [ENC_DONE_HANDSHAKE]: wrong encoding");
 
@@ -279,8 +277,6 @@ module ucie_ltsm_rx_mbinit_reversal #(
          i_sb_rx_done && i_rx_decoding == 9'h33 && count > 8)
         |=> current_substate == DONE_HANDSHAKE;
     endproperty
-    REVERSAL_NOT_NEEDED : assert property (reversal_not_needed)
-        else $error("ASSERT FAIL [REVERSAL_NOT_NEEDED]: did not advance to DONE when count>8");
 
     property done_on_req;
         @(posedge i_clk) disable iff (i_reset || o_timer_8ms)

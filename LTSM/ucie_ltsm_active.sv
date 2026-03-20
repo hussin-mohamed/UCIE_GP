@@ -1,5 +1,4 @@
 `ifdef SIM
-`timescale 1ns/1ps
 `endif
  
 // =============================================================================
@@ -36,6 +35,11 @@ module ucie_ltsm_active (
     // RDI interface — inputs from Adapter
     input  logic [3:0]  i_lp_state_req, // Adapter state change request
     input  logic        i_lp_linkerror, // Adapter link error indication
+    input  logic        valid_error, // Adapter link error indication
+
+    input  logic        i_sb_rx_req, // Adapter link error indication
+    input  logic [8:0]  i_rx_decoding, // Adapter link error indication
+    input  logic        o_timer_2us,
 
     // Control
     input  logic [3:0]  i_current_state, // from ucie_ltsm_active_fsm
@@ -73,23 +77,44 @@ module ucie_ltsm_active (
     localparam logic [3:0] PL_STS_ACTIVE = 4'b0001;
     localparam logic [3:0] PL_STS_PMNAK  = 4'b0011;
 
+    logic o_done_active_retrain_rdi;
+
+    logic i_timer_2us_reg;
+
+    // Logic for latching the 2us timer signal pulse
+    always @(posedge i_clk or posedge i_reset) begin
+        if(i_reset || i_current_state != ACTIVE_PMNAK) begin 
+            i_timer_2us_reg <= 0;
+        end 
+        else if(i_current_state == ACTIVE_PMNAK) begin 
+            // latch the timer when reaching 2us
+            if(o_timer_2us == 1)
+                i_timer_2us_reg <= 1;
+
+        end 
+    end
+
+
     // -------------------------------------------------------------------------
     // Purely combinational output logic
     // -------------------------------------------------------------------------
     always_comb begin
-        o_pl_state_sts          = PL_STS_RESET;
-        o_pl_inband_pres        = 1'b0;
-        o_done_active_retrain   = 1'b0;
-        o_done_active_l1        = 1'b0;
-        o_done_active_linkreset = 1'b0;
-        o_done_active_linkerror = 1'b0;
-
-        if (i_current_state == ACTIVE || i_current_state == ACTIVE_PMNAK) begin
+        if (i_reset) begin
+            o_pl_state_sts          = PL_STS_RESET;
+            o_pl_inband_pres        = 1'b0;
+            o_done_active_retrain   = 1'b0;
+            o_done_active_l1        = 1'b0;
+            o_done_active_linkreset = 1'b0;
+            o_done_active_linkerror = 1'b0;
+            o_done_active_retrain_rdi = 1'b0;
+        end else begin
+            if (i_current_state == ACTIVE || i_current_state == ACTIVE_PMNAK) begin
 
             // pl_inband_pres stays 1 for the entire lifetime of link operation
             o_pl_inband_pres = 1'b1;
             o_tx_sb_encoding      = 9'h108;
             o_rx_sb_encoding      = 9'h108;
+            o_done_active_retrain = o_done_active_retrain_rdi || valid_error || (i_sb_rx_req && i_rx_decoding == 'hD8);
 
             // Reflect current state to Adapter via pl_state_sts
             o_pl_state_sts = (i_current_state == ACTIVE_PMNAK) ? PL_STS_PMNAK
@@ -104,7 +129,7 @@ module ucie_ltsm_active (
 
                     LP_REQ_RETRAIN: begin
                         // Retrain is valid from both ACTIVE and ACTIVE_PMNAK
-                        o_done_active_retrain = 1'b1;
+                        o_done_active_retrain_rdi = 1'b1;
                     end
 
                     LP_REQ_LINKRESET: begin
@@ -116,17 +141,23 @@ module ucie_ltsm_active (
                         // L1 is only valid from ACTIVE.
                         // In ACTIVE_PMNAK the request is silently ignored
                         // (spec §10.3.3.2: no PMNAK → L1 transition allowed).
-                        if (i_current_state == ACTIVE)
+                        if (i_current_state == ACTIVE || (i_current_state == ACTIVE_PMNAK && i_timer_2us_reg))
                             o_done_active_l1 = 1'b1;
                     end
 
-                    // LP_REQ_L2: not supported; ignore
-                    // LP_REQ_NOP / LP_REQ_ACTIVE: no action needed
-                    default: ;
-
                 endcase
             end
-        end
+            end else if (i_current_state == 4'b1111) begin
+                o_pl_state_sts          = PL_STS_RESET;
+                o_pl_inband_pres        = 1'b0;
+                o_done_active_retrain   = 1'b0;
+                o_done_active_l1        = 1'b0;
+                o_done_active_linkreset = 1'b0;
+                o_done_active_linkerror = 1'b0;
+                o_done_active_retrain_rdi = 1'b0;
+            end 
     end
+end
+
 
 endmodule

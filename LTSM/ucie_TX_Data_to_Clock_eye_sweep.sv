@@ -89,6 +89,10 @@ always @(*) begin
     if (i_reset) begin
         o_xx_sb_req = 0;
         o_xx_sb_rsp = 0;
+        done = 0;
+        count_reg = 0;  // Reset retry count
+        train_error = 0;
+        o_xx_sb_rsp = 0;
     end else begin
         // Two different sequences based on init flag
         if (init) begin
@@ -102,6 +106,7 @@ always @(*) begin
                     done = 0;
                     count_reg = 0;  // Reset retry count
                     train_error = 0;
+                    o_xx_sb_rsp = 0;
 
                     // Request handshake with acknowledge
                     if (done_ack) o_xx_sb_req = 0;
@@ -428,7 +433,7 @@ end
 
     property init_encoding_req_property;
         @(posedge i_clk) disable iff (i_reset)
-        (init && CS == REQ_HANDSHAKE && !(i_sb_xx_rsp && i_xx_decoding == 'h180)) |-> (o_xx_encoding == 'h180);
+        (init && CS == REQ_HANDSHAKE && !(i_sb_xx_rsp && i_xx_decoding == 'h180)) && !i_reset |-> (o_xx_encoding == 'h180);
     endproperty
 
     property init_encoding_lfsr_property;

@@ -1,3 +1,9 @@
+//================================================================================
+// Module: ucie_LTSM_TX_L1
+// Description: UCIe TX Link Training State Machine for the L1 low-power state.
+//              Manages entry into and exit from the L1 power state, handling
+//              PL_STATE_REQ handshakes and enabling SPEEDIDLE on exit.
+//================================================================================
 module ucie_LTSM_TX_L1 #(
     parameter DECODING_WIDTH = 9    // Width of encoding/decoding signals
 ) (
@@ -9,7 +15,10 @@ module ucie_LTSM_TX_L1 #(
     input i_sb_tx_rsp,
     input i_sb_tx_done,
     input state_enable,
-    input L1_rx_rsp_sent,
+    input i_rsp_sent,
+    input i_rsp_received,
+    input [DECODING_WIDTH-1 : 0] i_encoding_rsp_sent,
+    input [DECODING_WIDTH-1 : 0] i_encoding_rsp_received,
 
     output logic [DECODING_WIDTH-1:0] o_tx_encoding,
     output logic [3:0] o_pl_state_sts,
@@ -17,12 +26,11 @@ module ucie_LTSM_TX_L1 #(
     output logic o_tx_sb_rsp,
     output logic o_tx_sb_done,
     output logic speed_idle_state_enable,
-    output logic active_state_enable
+    output logic pmnak_enable
 );
 
 localparam START_HANDSHAKE = 2'b00;
 localparam L1 = 2'b01;
-localparam PMNAK = 2'b10;
 
 logic [DECODING_WIDTH-1:0] o_tx_encoding_reg;
 logic o_tx_sb_req_reg;
@@ -37,11 +45,20 @@ logic [1:0] CS, NS;  // Current State, Next State
 always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
         CS <= START_HANDSHAKE;
+        o_tx_sb_rsp <= 0;
+        o_tx_sb_req <= 0;
+        o_tx_encoding <= 0;
     end else begin
         if (state_enable) begin
             CS <= NS;
+            o_tx_sb_rsp <= o_tx_sb_rsp_reg;
+            o_tx_sb_req <= o_tx_sb_req_reg;
+            o_tx_encoding <= o_tx_encoding_reg;
         end else begin
-            CS <= START_HANDSHAKE;  
+            CS <= START_HANDSHAKE; 
+            o_tx_sb_rsp <= 0;
+            o_tx_sb_req <= 0;
+            o_tx_encoding <= 0;
         end
     end
 end
@@ -86,63 +103,61 @@ always_comb begin
         o_tx_sb_req_reg = 0;
         o_tx_sb_rsp_reg = 0;
         L1_rsp_recieved = 0;
-    end else case (CS)
-        START_HANDSHAKE: begin
-            o_tx_encoding_reg = 'h110;
-            NS =  START_HANDSHAKE;
-
-            if (done_ack) o_tx_sb_req_reg = 0;
-            else o_tx_sb_req_reg = 1;
-
-            if (i_sb_tx_rsp && i_tx_decoding == 'h111) begin
-                L1_rsp_recieved = 1;
-            end else if (L1_rsp_recieved && L1_rx_rsp_sent) begin
-                NS = L1;
-                o_tx_encoding_reg = 'h111;
-                o_tx_sb_req_reg = 0;
-                o_tx_sb_rsp_reg = 0;
-                L1_rsp_recieved = 0;
-                o_pl_state_sts = 'b0100;
-            end else if (i_sb_tx_rsp && i_tx_decoding == 'h113) begin
-                NS = PMNAK;
-                o_tx_encoding_reg = 'h113;
-                active_state_enable = 1;
-                o_tx_sb_req_reg = 0;
-                o_tx_sb_rsp_reg = 0;
-                o_pl_state_sts = 'b0011;
-            end else begin
+        speed_idle_state_enable = 0;
+    end else if (!state_enable) begin
+        o_tx_encoding_reg = START_HANDSHAKE;
+        o_tx_sb_req_reg = 0;
+        o_tx_sb_rsp_reg = 0;
+        L1_rsp_recieved = 0;
+        speed_idle_state_enable = 0;
+    end else begin
+        case (CS)
+            // START_HANDSHAKE: TX initiates the L1 entry by asserting 'h110.
+            // If RX responds with 'h113 (PM NAK) the request was rejected;
+            // pmnak_enable is asserted so the upper layer can retry or abort.
+            START_HANDSHAKE: begin
                 o_tx_encoding_reg = 'h110;
                 NS =  START_HANDSHAKE;
+    
+                if (done_ack) o_tx_sb_req_reg = 0;
+                else o_tx_sb_req_reg = 1;
+    
+                if (i_rsp_sent && i_rsp_received && i_encoding_rsp_sent == 'h110 && i_encoding_rsp_received == 'h110) begin
+                    NS = L1;
+                    o_tx_encoding_reg = 'h111;
+                    o_tx_sb_req_reg = 0;
+                    o_tx_sb_rsp_reg = 0;
+                    L1_rsp_recieved = 0;
+                    o_pl_state_sts = 'b0100;
+                end else if (i_sb_tx_rsp && i_tx_decoding == 'h113) begin
+                    pmnak_enable = 1;
+                    o_tx_sb_req_reg = 0;
+                    o_tx_sb_rsp_reg = 0;
+                    o_pl_state_sts = 'b0011;
+                end else begin
+                    o_tx_encoding_reg = 'h110;
+                    NS =  START_HANDSHAKE;
+                end
+            end 
+    
+            // L1: link is in low-power state. Exit is triggered either by a
+            // local wake request (i_lp_state_req == 0001) or by an RX-driven
+            // ACTIVE request ('h108). Either path enables SPEEDIDLE.
+            L1: begin
+                o_tx_encoding_reg = 'h111;
+                NS = L1;
+                o_pl_state_sts = 'b0100;
+    
+                if (i_lp_state_req == 'b0001 || (i_sb_tx_req && i_tx_decoding == 'h108)) begin
+                    o_tx_encoding_reg = 'hC8;
+                    speed_idle_state_enable = 1;
+                    o_tx_sb_req_reg = 0;
+                    o_tx_sb_rsp_reg = 0;
+                    o_pl_state_sts = 'b0000;
+                end
             end
-        end 
-
-        L1: begin
-            o_tx_encoding_reg = 'h111;
-            NS = L1;
-            o_pl_state_sts = 'b0100;
-
-            if (i_lp_state_req == 'b0001) begin
-                o_tx_encoding_reg = 'hC8;
-                speed_idle_state_enable = 1;
-                o_tx_sb_req_reg = 0;
-                o_tx_sb_rsp_reg = 0;
-                o_pl_state_sts = 'b0000;
-            end
-        end
-
-        PMNAK: begin
-            o_tx_encoding_reg = 'h113;
-            NS = PMNAK;
-            o_pl_state_sts = 'b0011;
-
-            if (i_lp_state_req == 'b0001) begin
-                o_tx_encoding_reg = 'h108;
-                o_tx_sb_req_reg = 0;
-                o_tx_sb_rsp_reg = 0;
-                o_pl_state_sts = 'b0001;
-            end
-end
-    endcase
+        endcase
+    end 
 end
     
 endmodule

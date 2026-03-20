@@ -15,7 +15,8 @@ module ucie_ltsm_tx_mbinit_param #(
     input                           i_sb_tx_done,
     input                           i_tx_done,
     input   [3:0]                   i_current_state,
-    input   logic                   o_timer_8ms,
+    input                           o_timer_8ms,
+    input   [15:0]                  r_local_cap, // capibility register data
 
     output  logic [DECODING_WIDTH-1:0]  o_tx_encoding,
     output  logic [DATA_WIDTH-1:0]      o_tx_data,
@@ -34,6 +35,29 @@ logic [2:0] next_substate;                      // next substate
 
 logic done_ack;
 logic substates_done;
+
+// -------------------------------------------------------------------------
+// Local capability register [15:0]
+//   Bit layout (from UCIe spec MBINIT.PARAM configuration req Data[15:0]):
+//     [15]    : TARR supported             = 0 (not supported)
+//     [14]    : Sideband feature extensions = 0 (not supported)
+//     [13]    : UCIe-A x32 / UCIe-S x8    = 0
+//     [12:11] : Module ID                  = 0
+//     [10]    : Clock Phase                = 0 (Differential)
+//     [9]     : Clock Mode                 = 0 (Strobe mode)
+//     [8:4]   : Voltage Swing              = 5'b00011 (3 = 0.5 V)
+//     [3:0]   : Max IO Link Speed          = 4'b0101  (5 = 32 GT/s)
+//   => 16'h0035
+// -------------------------------------------------------------------------
+// localparam logic [15:0] LOCAL_CAP = 16'h0035;
+
+// logic [15:0] r_local_cap;   // latched at reset; holds fixed capability word
+
+// always_ff @(posedge i_clk or posedge i_reset) begin
+//     if (i_reset)
+//         r_local_cap <= LOCAL_CAP;
+//     // Capability register is read-only; value never changes after reset
+// end
 
 
 // Local Parameters for states names
@@ -68,6 +92,7 @@ end
 
 always_comb begin 
     o_tx_encoding = 9'h10;
+    o_tx_data     = '0;
     o_tx_sb_req = 0;
     o_tx_sb_rsp = 0;
     o_tx_sb_done = 0;
@@ -82,11 +107,13 @@ always_comb begin
     end 
 
     else if(i_current_state == MBINIT_PARAM && substates_done == 0) begin
-        // u need to form the message 
         case(current_substate)
             CONFIG_HANDSHAKE: begin 
                 // Output State Encoding
                 o_tx_encoding = 9'h10;
+
+                // Capability word sits in bits [15:0]; bits [63:16] are reserved (0)
+                o_tx_data = {{(DATA_WIDTH-16){1'b0}}, r_local_cap};
                 
                 // TX Sending REQ Handshake
                 if (done_ack) begin 
@@ -120,6 +147,18 @@ end
     endproperty
     ENC_CONFIG_HANDSHAKE : assert property (encoding_config_handshake)
         else $error("ASSERT FAIL [ENC_CONFIG_HANDSHAKE]: wrong encoding in CONFIG_HANDSHAKE");
+
+    // --------------------------------------------------------------------------
+    // Capability word is driven correctly during CONFIG_HANDSHAKE
+    // --------------------------------------------------------------------------
+    // property cap_word_driven;
+    //     @(posedge i_clk) disable iff (i_reset || o_timer_8ms)
+    //     (i_current_state == MBINIT_PARAM && current_substate == CONFIG_HANDSHAKE
+    //      && !substates_done)
+    //     |-> (o_tx_data[15:0] == LOCAL_CAP && o_tx_data[63:16] == '0);
+    // endproperty
+    // CAP_WORD_DRIVEN : assert property (cap_word_driven)
+    //     else $error("ASSERT FAIL [CAP_WORD_DRIVEN]: o_tx_data capability word incorrect");
 
     // --------------------------------------------------------------------------
     // Train error asserted on 8ms timeout
