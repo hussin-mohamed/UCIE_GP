@@ -30,7 +30,7 @@ class sb_test_base extends uvm_test;
 
   sb_env           env;
   env_config       env_cfg;
-  // virtual_sequence v_seq;
+  sbinit_sanity_vseq vseq;
   uvm_factory      factory = uvm_factory::get();
 
 
@@ -61,14 +61,6 @@ class sb_test_base extends uvm_test;
   // Prints test start banner message.
 
   extern function void start_of_simulation_phase(uvm_phase phase);
-
-
-  // Task: run_phase
-  //
-  // Raises objection, starts virtual sequence on environment sequencer,
-  // and drops objection upon completion.
-
-  extern task run_phase(uvm_phase phase);
 
 
   // Function: final_phase
@@ -134,7 +126,7 @@ endfunction : build_phase
 function void sb_test_base::end_of_elaboration_phase(uvm_phase phase);
   super.end_of_elaboration_phase(phase);
   
-  // v_seq = virtual_sequence::type_id::create("v_seq", this);
+  vseq = sbinit_sanity_vseq::type_id::create("vseq", this);
   uvm_top.print_topology(); // Prints entire testbench hierarchy 
 endfunction : end_of_elaboration_phase
 
@@ -146,21 +138,6 @@ function void sb_test_base::start_of_simulation_phase(uvm_phase phase);
   
   `uvm_info("start_of_simulation_phase", $sformatf("=============== Start of %s ===============", this.get_type_name()), UVM_MEDIUM)
 endfunction : start_of_simulation_phase
-
-// run_phase
-// ---------
-
-task sb_test_base::run_phase(uvm_phase phase);
-  super.run_phase(phase);
-
-  phase.raise_objection(this);
-  
-  // `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", v_seq.get_type_name()), UVM_MEDIUM)
-  // v_seq.start(env.v_seqr); ///////////////// **************
-  // `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", v_seq.get_type_name()), UVM_MEDIUM)
-
-  phase.drop_objection(this);
-endtask : run_phase
 
 // final_phase
 // -----------

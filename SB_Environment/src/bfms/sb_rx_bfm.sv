@@ -46,7 +46,15 @@ interface sb_rx_bfm(
   logic        o_rx_valid;       // SB indicates to RX that the message has no parity errors
 
   //============================================================================
-  // Assertions
+  // Methods
   //============================================================================
+  task clear();
+    i_rx_sb_req   <= 0;
+    i_rx_sb_rsp   <= 0;
+    i_rx_sb_done  <= 0;
+    i_rx_encoding <= 0;
+    i_rx_data     <= 0;
+    i_rx_info     <= 0;
+  endtask : clear
 
 endinterface : sb_rx_bfm

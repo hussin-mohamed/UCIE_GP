@@ -27,16 +27,21 @@ class phylink_seq_item extends uvm_sequence_item;
   operation_t op_mode;
 
   // Randomizable fields
-  rand logic [63:0]  pattern;     // SBINIT Pattern
-  rand int           idle_ui_cnt; // Low Gap Unit Intervals Count (Used for driving)
-  rand fullcode_t    fullcode;    // Concatenated {MsgCode, MsgSubcode} for Link Training State Machine commands
-  rand opcode_t      opcode;      // Opcode
-  rand srcid_t       srcid;       // Source ID
-  rand dstid_t       dstid;       // Destination ID
-  rand logic [15:0]  info;        // Message Information
-  rand logic [63:0]  data;        // Message Data
-  rand logic         cp;          // Control Parity
-  rand logic         dp;          // Data Parity
+  rand logic [63:0]  pattern;           // SBINIT Pattern
+  rand int           idle_ui_cnt;       // Low Gap Unit Intervals Count (Used for driving)
+  rand int           out_of_rst_ui_cnt; // The delay between the SBINIT starting points of the local and remote dies
+  rand fullcode_t    fullcode;          // Concatenated {MsgCode, MsgSubcode} for Link Training State Machine commands
+  rand opcode_t      opcode;            // Opcode
+  rand srcid_t       srcid;             // Source ID
+  rand dstid_t       dstid;             // Destination ID
+  rand logic [15:0]  info;              // Message Information
+  rand logic [63:0]  data;              // Message Data
+  rand logic         cp;                // Control Parity
+  rand logic         dp;                // Data Parity
+
+  // Flag used for response items to inform the sequence that the pattern is detected
+  bit pat_detected;
+  bit timeout_detected;
 
   `uvm_object_utils_begin(phylink_seq_item)
     `uvm_field_enum (operation_t, op_mode,  UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)

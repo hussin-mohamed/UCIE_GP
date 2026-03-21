@@ -1,9 +1,0 @@
-1772592940 /mnt/hgfs/VLSI/GP/UCIE_GP/SB_Environment/src/tb/shared_pkg.sv
-1772604712 /mnt/hgfs/VLSI/GP/UCIE_GP/SB_Environment/src/bfms/sb_ltsm_ctrl_bfm.sv
-1772276817 /mnt/hgfs/VLSI/GP/UCIE_GP/SB_Environment/src/bfms/sb_rdi_bfm.sv
-1772500458 /mnt/hgfs/VLSI/GP/UCIE_GP/SB_Environment/src/bfms/sb_rx_bfm.sv
-1772597235 /mnt/hgfs/VLSI/GP/UCIE_GP/SB_Environment/src/bfms/sb_phylink_bfm.sv
-1772473510 /mnt/hgfs/VLSI/GP/UCIE_GP/SB_Environment/src/bfms/sb_reset_intf.sv
-1772500401 /mnt/hgfs/VLSI/GP/UCIE_GP/SB_Environment/src/bfms/sb_tx_bfm.sv
-1772604842 /mnt/hgfs/VLSI/GP/UCIE_GP/SB_Environment/src/tb/sb_pkg.sv
-1772604838 /mnt/hgfs/VLSI/GP/UCIE_GP/SB_Environment/src/tb/top.sv

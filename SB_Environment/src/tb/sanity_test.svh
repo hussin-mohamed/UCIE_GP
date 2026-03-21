@@ -16,23 +16,29 @@
 
 //-----------------------------------------------------------------------------
 //
-// CLASS: rdi_sequencer
+// CLASS: sanity_test
 //
-// ...
+// The sanity_test ...
 //
 //-----------------------------------------------------------------------------
 
-class rdi_sequencer extends uvm_sequencer #(rdi_seq_item);
-  `uvm_component_utils(rdi_sequencer)
-
+class sanity_test extends sb_test_base;
+  `uvm_component_utils(sanity_test)
 
   // Function: new
   //
-  // Creates a new rdi_sequencer instance with the given name and parent.
+  // Creates a new sanity_test instance and retrieves factory singleton handle.
 
   extern function new(string name, uvm_component parent);
 
-endclass : rdi_sequencer
+
+  // Task: main_phase
+  //
+  // Raises objection, starts virtual sequence on environment sequencer,
+  // and drops objection upon completion.
+
+  extern task main_phase(uvm_phase phase);
+endclass : sanity_test
 
 
 //-----------------------------------------------------------------------------
@@ -41,7 +47,7 @@ endclass : rdi_sequencer
 
 //-----------------------------------------------------------------------------
 //
-// CLASS- rdi_sequencer
+// CLASS- sanity_test
 //
 //-----------------------------------------------------------------------------
 
@@ -49,7 +55,21 @@ endclass : rdi_sequencer
 // new
 // ---
 
-function rdi_sequencer::new(string name, uvm_component parent);
+function sanity_test::new(string name, uvm_component parent);
   super.new(name, parent);
-  set_report_severity_id_verbosity(UVM_INFO, "PHASESEQ", UVM_NONE);
 endfunction : new
+
+// main_phase
+// ---------
+
+task sanity_test::main_phase(uvm_phase phase);
+  super.main_phase(phase);
+
+  phase.raise_objection(this);
+  
+  `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vseq.get_type_name()), UVM_MEDIUM)
+  vseq.start(env.vseqr);
+  `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", vseq.get_type_name()), UVM_MEDIUM)
+
+  phase.drop_objection(this);
+endtask : main_phase

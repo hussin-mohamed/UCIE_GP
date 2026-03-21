@@ -37,8 +37,7 @@ class ltsm_ctrl_driver extends sb_driver_base #(ltsm_ctrl_seq_item, virtual sb_l
 
   // Task: drive_item
   //
-  // Drives APB transactions on the bus by setting path selection signals and
-  // executing read or write operations based on the transaction type.
+  // ...
 
   extern virtual task drive_item(inout ltsm_ctrl_seq_item req, output ltsm_ctrl_seq_item rsp);
 
@@ -75,25 +74,24 @@ endfunction : start_of_simulation_phase
 // -----
 
 task ltsm_ctrl_driver::drive_item(inout ltsm_ctrl_seq_item req, output ltsm_ctrl_seq_item rsp);
-  //============================================================================
-  // LTSM → SB Control Signals
-  //============================================================================
-  logic i_sb_init_start;  // Trigger SBINIT sequence
-  logic i_timer_1ms;      // 1ms timer tick for timeout logic
-
-  //============================================================================
-  // SB → LTSM Status Signals
-  //============================================================================
-  logic o_sb_ready;
-
+  `uvm_info(get_type_name(), "Entered ltsm_ctrl_driver drive_item", UVM_DEBUG)
   if (req.sbinit_mode == START) begin
-    bfm.start();
-  end else if (req.sbinit_mode == T1MS) begin
-    bfm.t1ms();
-  end else begin
-    bfm.wait_for_ready();
+    `uvm_info(get_type_name(), "sbinit_mode is START", UVM_DEBUG)
+    fork
+      begin
+        @(posedge bfm.timeout);
+        -> timeout_triggered;
+      end
+
+      begin
+        @(posedge bfm.clk);
+        `uvm_info(get_type_name(), "Starting SBINIT...", UVM_DEBUG)
+        bfm.i_sb_init_start <= 1;
+        @(posedge bfm.o_sb_ready);
+        @(posedge bfm.clk);
+        bfm.i_sb_init_start <= 0;
+      end
+    join_any
+    disable fork;
   end
-
-
-  
 endtask : drive_item

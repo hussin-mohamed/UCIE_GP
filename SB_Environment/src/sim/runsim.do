@@ -6,10 +6,11 @@ set TESTNAME $env(TEST_NAME)
 set VERBOSITY $env(UVM_VERB)
 set SEED $env(SIM_SEED)
 
-vsim -voptargs=+acc work.sb_tb_top -classdebug -uvmcontrol=all -cover \
+vsim -voptargs=+acc -nodpiexports work.sb_tb_top -classdebug -uvmcontrol=all -cover \
     +UVM_VERBOSITY=$VERBOSITY \
     +UVM_NO_RELNOTES \
     +UVM_TESTNAME=$TESTNAME \
+    +UVM_TIMEOUT=100000,YES \
     -sv_seed $SEED
 
 set NoQuitOnFinish 1
@@ -27,24 +28,27 @@ add wave -group Global_Signals -position insertpoint  \
 # 2. LTSM Control BFM
 add wave -group LTSM_CTRL -position insertpoint  \
   sim:/sb_tb_top/ltsm_ctrl_bfm/i_sb_init_start \
-  sim:/sb_tb_top/ltsm_ctrl_bfm/i_timer_1ms \
-  sim:/sb_tb_top/ltsm_ctrl_bfm/o_sb_ready
+  sim:/sb_tb_top/ltsm_ctrl_bfm/i_t1_ms \
+  sim:/sb_tb_top/ltsm_ctrl_bfm/o_sb_ready \
+  sim:/sb_tb_top/ltsm_ctrl_bfm/timeout \
+  sim:/sb_tb_top/ltsm_ctrl_bfm/tms
 
 # 3. PHY Link BFM (Serial MDI)
 add wave -group PHY_LINK_MDI -position insertpoint  \
   sim:/sb_tb_top/phylink_bfm/i_rx_sb_data \
   sim:/sb_tb_top/phylink_bfm/i_rx_sb_clk \
   sim:/sb_tb_top/phylink_bfm/o_tx_sb_data \
-  sim:/sb_tb_top/phylink_bfm/o_tx_sb_clk
+  sim:/sb_tb_top/phylink_bfm/o_tx_sb_clk \
+  sim:/sb_tb_top/phylink_bfm/pat_detected
 
 # 4. RDI BFM (Adapter <-> SB)
-add wave -group RDI_ADAPTER -position insertpoint  \
-  sim:/sb_tb_top/rdi_bfm/i_lp_cfg_vld \
-  sim:/sb_tb_top/rdi_bfm/i_lp_cfg_crd \
-  sim:/sb_tb_top/rdi_bfm/i_lp_cfg \
-  sim:/sb_tb_top/rdi_bfm/o_pl_cfg_vld \
-  sim:/sb_tb_top/rdi_bfm/o_pl_cfg_crd \
-  sim:/sb_tb_top/rdi_bfm/o_pl_cfg
+# add wave -group RDI_ADAPTER -position insertpoint  \
+#   sim:/sb_tb_top/rdi_bfm/i_lp_cfg_vld \
+#   sim:/sb_tb_top/rdi_bfm/i_lp_cfg_crd \
+#   sim:/sb_tb_top/rdi_bfm/i_lp_cfg \
+#   sim:/sb_tb_top/rdi_bfm/o_pl_cfg_vld \
+#   sim:/sb_tb_top/rdi_bfm/o_pl_cfg_crd \
+#   sim:/sb_tb_top/rdi_bfm/o_pl_cfg
 
 # 5. TX Path BFM (TX <-> SB)
 add wave -group TX_PATH -position insertpoint  \

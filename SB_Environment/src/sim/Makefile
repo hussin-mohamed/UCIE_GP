@@ -18,7 +18,7 @@
 SIM       ?= questa
 GUI       ?= 1
 COVERAGE  ?= 1
-TEST      ?= sb_test_base
+TEST      ?= sanity_test
 VERBOSITY ?= UVM_MEDIUM
 SEED      ?= random
 
@@ -26,6 +26,9 @@ SEED      ?= random
 export TEST_NAME = $(TEST)
 export UVM_VERB  = $(VERBOSITY)
 export SIM_SEED  = $(SEED)
+
+# Explicitly share these variables with Windows executables (WSL Fix)
+export WSLENV := $(WSLENV):TEST_NAME/u:UVM_VERB/u:SIM_SEED/u
 
 # Generate date-based filenames
 DATE := $(shell date +%Y-%m-%d)
@@ -77,6 +80,12 @@ ifeq ($(SIM),xcelium)
 	xrun $(XRUN_ARGS)
 else ifeq ($(SIM),questa)
 	@cp $(DO_FILE) $(TEMP_DO_FILE)
+	
+	@echo "→ Injecting variables directly into the script (WSL Fix)..."
+	@sed -i 's/\$$env(TEST_NAME)/$(TEST)/g' $(TEMP_DO_FILE)
+	@sed -i 's/\$$env(UVM_VERB)/$(VERBOSITY)/g' $(TEMP_DO_FILE)
+	@sed -i 's/\$$env(SIM_SEED)/$(SEED)/g' $(TEMP_DO_FILE)
+
 ifeq ($(GUI),0)
 	@echo "→ Disabling GUI commands for Questa..."
 	@sed -i '/^add wave/s/^/# /' $(TEMP_DO_FILE)
@@ -93,9 +102,9 @@ endif
 	@echo "→ Starting Questa simulation..."
 	@echo "=========================================="
 ifeq ($(GUI),0)
-	@vsim -c -do $(TEMP_DO_FILE) 2>&1 | tee $(LOG_FILE)
+	@vsim -c -l $(LOG_FILE) -do $(TEMP_DO_FILE)
 else
-	@vsim -do $(TEMP_DO_FILE) 2>&1 | tee $(LOG_FILE)
+	@vsim -gui -l $(LOG_FILE) -do $(TEMP_DO_FILE)
 endif
 else
 	@echo "ERROR: Invalid simulator chosen ('$(SIM)'). Use SIM=questa or SIM=xcelium."

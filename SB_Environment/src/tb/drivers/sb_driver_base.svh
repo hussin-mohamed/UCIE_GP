@@ -33,6 +33,8 @@ virtual class sb_driver_base #(type ITEM_T = uvm_sequence_item, type INTF_T = vi
 
   extern virtual function void build_phase(uvm_phase phase);
 
+  extern task reset_phase(uvm_phase phase);
+
 
   // Task: run_phase
   //
@@ -93,8 +95,10 @@ task sb_driver_base::run_phase(uvm_phase phase);
 
   forever begin
     @(negedge bfm.reset);
+    `uvm_info(get_type_name(), "Got out of reset", UVM_DEBUG)
     
     if (wait_for_sbinit) begin
+     `uvm_info(get_type_name(), "Waiting for the ready signal...", UVM_DEBUG)
       @(negedge bfm.o_sb_ready);
       repeat(2) @(negedge bfm.clk);
     end
@@ -109,13 +113,28 @@ task sb_driver_base::run_phase(uvm_phase phase);
   end
 endtask : run_phase
 
+// reset_phase
+// -----
+
+task sb_driver_base::reset_phase(uvm_phase phase);
+  super.reset_phase(phase);
+
+  phase.raise_objection(this);
+  bfm.clear();
+  phase.drop_objection(this);
+endtask : reset_phase
+
+
 // drive_items
 // -----------
 
 task sb_driver_base::drive_items();
   forever begin
+    `uvm_info(get_type_name(), "Entered drive_items", UVM_DEBUG)
+
     // Get the next item from the sequencer
     seq_item_port.get_next_item(req);
+    `uvm_info(get_type_name(), "Got a request item", UVM_DEBUG)
 
     // Send the item to the reference model
     ap.write(req);
@@ -125,11 +144,10 @@ task sb_driver_base::drive_items();
     drive_item(req, rsp);
     `uvm_info(get_type_name(), $sformatf("DRIVED %s: \n%s", req.get_type_name(), req.sprint()), UVM_DEBUG)
 
-    // Preserve transaction ID
-    rsp.set_id_info(req);
 
     // Trigger item driving completion for the sequence with/without sending response
     if(is_reactive) begin
+      rsp.set_id_info(req); // Preserve transaction ID
       seq_item_port.item_done(rsp);
     end else begin
       seq_item_port.item_done();

@@ -51,4 +51,5 @@ endclass : rx_sequencer
 
 function rx_sequencer::new(string name, uvm_component parent);
   super.new(name, parent);
+  set_report_severity_id_verbosity(UVM_INFO, "PHASESEQ", UVM_NONE);
 endfunction : new

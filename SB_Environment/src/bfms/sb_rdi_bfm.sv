@@ -40,33 +40,12 @@ interface sb_rdi_bfm(
   logic [31:0] o_pl_cfg;         // Register access data
 
   //============================================================================
-  // Clocking Blocks
+  // Methods
   //============================================================================
-  
-  // Driver clocking block - for driving Adapter→SB signals
-  clocking driver_cb @(posedge clk);
-  default input #1step output #1ns;
-  output i_lp_cfg_vld;
-  output i_lp_cfg_crd;
-  output i_lp_cfg;
-  input  o_pl_cfg_vld;
-  input  o_pl_cfg_crd;
-  input  o_pl_cfg;
-  endclocking
-
-  // Monitor clocking block - for sampling all signals
-  clocking monitor_cb @(posedge clk);
-  default input #1step;
-  input i_lp_cfg_vld;
-  input i_lp_cfg_crd;
-  input i_lp_cfg;
-  input o_pl_cfg_vld;
-  input o_pl_cfg_crd;
-  input o_pl_cfg;
-  endclocking
-
-  //============================================================================
-  // Assertions
-  //============================================================================
+  task clear();
+    i_lp_cfg_vld <= 0;
+    i_lp_cfg_crd <= 0;
+    i_lp_cfg     <= 0;
+  endtask : clear
 
 endinterface : sb_rdi_bfm

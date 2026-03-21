@@ -14,13 +14,13 @@
 // *                                                                          *
 // ****************************************************************************
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //
 // CLASS: phylink_driver
 //
 // ...
 //
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 class phylink_driver extends sb_driver_base #(phylink_seq_item, virtual sb_phylink_bfm);
   `uvm_component_utils(phylink_driver)
@@ -31,6 +31,8 @@ class phylink_driver extends sb_driver_base #(phylink_seq_item, virtual sb_phyli
   // Creates a new phylink_driver instance with the given name and parent.
 
   extern function new(string name, uvm_component parent);
+
+  extern function void start_of_simulation_phase(uvm_phase phase);
 
 
   // Task: drive_item
@@ -43,15 +45,15 @@ class phylink_driver extends sb_driver_base #(phylink_seq_item, virtual sb_phyli
 endclass : phylink_driver
 
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 // IMPLEMENTATION
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //
 // CLASS- phylink_driver
 //
-//------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 
 // new
@@ -61,6 +63,15 @@ function phylink_driver::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
+// start_of_simulation_phase
+// -----------
+
+function void phylink_driver::start_of_simulation_phase(uvm_phase phase);
+  super.start_of_simulation_phase(phase);
+  wait_for_sbinit = 0; // Do NOT wait for SBINIT since this driver is responsible for handling SBINIT sequences
+  is_reactive = 1;
+endfunction : start_of_simulation_phase
+
 // drive_item
 // -----
 
@@ -68,8 +79,21 @@ task phylink_driver::drive_item(inout phylink_seq_item req, output phylink_seq_i
   message_t    msg;
   logic[127:0] msg_raw;
 
+  rsp = new("rsp");
+
   if (req.op_mode == SBINIT) begin
-    bfm.serialize_pattern(req.pattern, req.idle_ui_cnt);
+    fork
+      begin
+        bfm.serialize_pattern(req.pattern, req.idle_ui_cnt, req.out_of_rst_ui_cnt);
+        rsp.pat_detected = bfm.pat_detected;
+      end
+      
+      begin
+        @(timeout_triggered);
+        rsp.timeout_detected = 1;
+      end
+    join_any
+    disable fork;
   end else if (req.op_mode == ACTIVE) begin
     msg.fullcode = req.fullcode;
     msg.opcode   = req.opcode;

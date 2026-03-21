@@ -47,41 +47,15 @@ interface sb_tx_bfm(
   logic        o_tx_valid;       // SB indicates to TX that the message has no parity errors
 
   //============================================================================
-  // Clocking Blocks
+  // Methods
   //============================================================================
-  
-  // Driver clocking block - for driving TX→SB signals
-  clocking driver_cb @(posedge clk);
-  default input #1step output #1ns;
-  output i_tx_sb_req;
-  output i_tx_sb_rsp;
-  output i_tx_sb_done;
-  output i_tx_encoding;
-  output i_tx_data;
-  input  o_sb_tx_req;
-  input  o_sb_tx_rsp;
-  input  o_sb_tx_done;
-  input  o_tx_decoding;
-  input  o_tx_data;
-  endclocking
-
-  // Monitor clocking block - for sampling all signals
-  clocking monitor_cb @(posedge clk);
-  default input #1step;
-  input i_tx_sb_req;
-  input i_tx_sb_rsp;
-  input i_tx_sb_done;
-  input i_tx_encoding;
-  input i_tx_data;
-  input o_sb_tx_req;
-  input o_sb_tx_rsp;
-  input o_sb_tx_done;
-  input o_tx_decoding;
-  input o_tx_data;
-  endclocking
-
-  //============================================================================
-  // Assertions
-  //============================================================================
+  task clear();
+    i_tx_sb_req   <= 0;
+    i_tx_sb_rsp   <= 0;
+    i_tx_sb_done  <= 0;
+    i_tx_encoding <= 0;
+    i_tx_data     <= 0;
+    i_tx_info     <= 0;
+  endtask : clear
 
 endinterface : sb_tx_bfm

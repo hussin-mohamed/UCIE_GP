@@ -16,23 +16,35 @@
 
 //-----------------------------------------------------------------------------
 //
-// CLASS: rdi_sequencer
+// CLASS: sbinit_ctrl_sanity_seq
 //
-// ...
+// The sbinit_ctrl_sanity_seq class implements a two-phase sequence: first
+// writing to all register file locations with full strobe, then switching
+// to AES path and polling for the request signal to indicate readiness.
 //
 //-----------------------------------------------------------------------------
 
-class rdi_sequencer extends uvm_sequencer #(rdi_seq_item);
-  `uvm_component_utils(rdi_sequencer)
+class sbinit_ctrl_sanity_seq extends sb_sequence_base #(ltsm_ctrl_seq_item);
+  `uvm_object_utils(sbinit_ctrl_sanity_seq)
+
+  bit       timeout;
+  bit [2:0] ms_cnt;
 
 
   // Function: new
   //
-  // Creates a new rdi_sequencer instance with the given name and parent.
+  // Creates a new sbinit_ctrl_sanity_seq instance with the given name.
 
-  extern function new(string name, uvm_component parent);
+  extern function new(string name = "sbinit_ctrl_sanity_seq");
 
-endclass : rdi_sequencer
+
+  // Task: body
+  //
+  // ...
+
+  extern task body();
+
+endclass : sbinit_ctrl_sanity_seq
 
 
 //-----------------------------------------------------------------------------
@@ -41,7 +53,7 @@ endclass : rdi_sequencer
 
 //-----------------------------------------------------------------------------
 //
-// CLASS- rdi_sequencer
+// CLASS- sbinit_ctrl_sanity_seq
 //
 //-----------------------------------------------------------------------------
 
@@ -49,7 +61,15 @@ endclass : rdi_sequencer
 // new
 // ---
 
-function rdi_sequencer::new(string name, uvm_component parent);
-  super.new(name, parent);
-  set_report_severity_id_verbosity(UVM_INFO, "PHASESEQ", UVM_NONE);
+function sbinit_ctrl_sanity_seq::new(string name = "sbinit_ctrl_sanity_seq");
+  super.new(name);
 endfunction : new
+
+// body
+// ----
+
+task sbinit_ctrl_sanity_seq::body();
+  start_item(req);
+  req.sbinit_mode = START;
+  finish_item(req);
+endtask : body

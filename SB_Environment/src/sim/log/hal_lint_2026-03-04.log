@@ -1034,7 +1034,7 @@ halcheck: *W,MAXLEN (../bfms/sb_ltsm_ctrl_bfm.sv,30|0): The HDL source line is 8
   logic i_sb_init_start;  // Trigger SBINIT sequence
 |
 halcheck: *W,CTLCHR (../bfms/sb_ltsm_ctrl_bfm.sv,31|0): HDL source line contains one or more control characters.
-  logic i_timer_1ms;      // 1ms timer tick for timeout logic
+  logic i_t1_ms;      // 1ms timer tick for timeout logic
 |
 halcheck: *W,CTLCHR (../bfms/sb_ltsm_ctrl_bfm.sv,32|0): HDL source line contains one or more control characters.
 
@@ -1085,13 +1085,13 @@ halcheck: *W,CTLCHR (../bfms/sb_ltsm_ctrl_bfm.sv,45|0): HDL source line contains
     @(negedge clk);
 |
 halcheck: *W,CTLCHR (../bfms/sb_ltsm_ctrl_bfm.sv,46|0): HDL source line contains one or more control characters.
-    i_timer_1ms = 1;
+    i_t1_ms = 1;
 |
 halcheck: *W,CTLCHR (../bfms/sb_ltsm_ctrl_bfm.sv,47|0): HDL source line contains one or more control characters.
     @(negedge clk);
 |
 halcheck: *W,CTLCHR (../bfms/sb_ltsm_ctrl_bfm.sv,48|0): HDL source line contains one or more control characters.
-    i_timer_1ms = 0;
+    i_t1_ms = 0;
 |
 halcheck: *W,CTLCHR (../bfms/sb_ltsm_ctrl_bfm.sv,49|0): HDL source line contains one or more control characters.
   endtask : t1ms
@@ -1139,22 +1139,22 @@ halcheck: *E,TCLKED (../bfms/sb_ltsm_ctrl_bfm.sv,39|0): Negedge of signal 'clk' 
     @(negedge clk);
 |
 halcheck: *E,TCLKED (../bfms/sb_ltsm_ctrl_bfm.sv,41|0): Negedge of signal 'clk' used in task 'start'.
-    i_timer_1ms = 1;
+    i_t1_ms = 1;
 |
 halcheck: *W,IMPDTC (../bfms/sb_ltsm_ctrl_bfm.sv,47|0): Expression '1' implicitly converted to type 'unsigned' from type 'signed' in module/design-unit ltsm_ctrl_bfm.
-    i_timer_1ms = 1;
+    i_t1_ms = 1;
 |
 halcheck: *W,INTTOB (../bfms/sb_ltsm_ctrl_bfm.sv,47|0): Assigning a 0 or 1 (32 bits) to a single-bit variable in module/design-unit ltsm_ctrl_bfm.
-    i_timer_1ms = 1;
+    i_t1_ms = 1;
 |
 halcheck: *W,TRUNCZ (../bfms/sb_ltsm_ctrl_bfm.sv,47|0): Truncation in constant conversion without a loss of bits in module/design-unit ltsm_ctrl_bfm.
-    i_timer_1ms = 0;
+    i_t1_ms = 0;
 |
 halcheck: *W,IMPDTC (../bfms/sb_ltsm_ctrl_bfm.sv,49|0): Expression '0' implicitly converted to type 'unsigned' from type 'signed' in module/design-unit ltsm_ctrl_bfm.
-    i_timer_1ms = 0;
+    i_t1_ms = 0;
 |
 halcheck: *W,INTTOB (../bfms/sb_ltsm_ctrl_bfm.sv,49|0): Assigning a 0 or 1 (32 bits) to a single-bit variable in module/design-unit ltsm_ctrl_bfm.
-    i_timer_1ms = 0;
+    i_t1_ms = 0;
 |
 halcheck: *W,TRUNCZ (../bfms/sb_ltsm_ctrl_bfm.sv,49|0): Truncation in constant conversion without a loss of bits in module/design-unit ltsm_ctrl_bfm.
     @(negedge clk);

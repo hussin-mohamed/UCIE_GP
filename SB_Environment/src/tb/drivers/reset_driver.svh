@@ -26,12 +26,12 @@ class reset_driver extends uvm_driver;
   // var: intf_name 
   string intf_name = "reset_intf";
 
-  // var: reset_time_ps
+  // var: reset_time_ns
   // The length of time, in ps, that reset will stay active
-  rand int reset_time_ps;
+  rand int reset_time_ns;
 
   // Base constraints
-  constraint rst_cnstr { reset_time_ps inside {[1:1000000]}; }
+  constraint rst_cnstr { reset_time_ns inside {[1:1000000]}; }
 
   // var: rst_vi 
   // Reset virtual interface
@@ -40,7 +40,7 @@ class reset_driver extends uvm_driver;
 
   `uvm_component_utils_begin(reset_driver)
     `uvm_field_string(intf_name,  UVM_ALL_ON)
-    `uvm_field_int(reset_time_ps, UVM_ALL_ON | UVM_DEC)
+    `uvm_field_int(reset_time_ns, UVM_ALL_ON | UVM_DEC)
   `uvm_component_utils_end
 
   // Function: new
@@ -98,8 +98,14 @@ task reset_driver::reset_phase(uvm_phase phase);
   super.reset_phase(phase);
 
   phase.raise_objection(this);
+  
+  if (!std::randomize(reset_time_ns) with { reset_time_ns inside {[1:1000]}; }) begin
+    `uvm_error(get_type_name(), "Failed to randomize reset_time_ns")
+  end
+  
+  `uvm_info("RESET_DRIVER", $sformatf("Resetting DUT with %0dns delay...", reset_time_ns), UVM_LOW)
   rst_vi.reset = 1;
-  #(reset_time_ps * 1ps);
+  #(reset_time_ns);
   rst_vi.reset = 0;
   phase.drop_objection(this);
 endtask : reset_phase

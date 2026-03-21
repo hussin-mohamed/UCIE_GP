@@ -1,0 +1,10 @@
+# Simulator outputs
+xcelium.d/
+work_dir/
+*.wlf
+*.log
+transcript
+*.qdb
+*.qpg
+*.qtl
+*.o

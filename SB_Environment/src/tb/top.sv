@@ -28,15 +28,12 @@ module sb_tb_top;
   // Clock and Reset Generation (Testbench Infrastructure)
   //============================================================================
 
-  logic clk;
+  bit clk;
   logic reset_wire;
   logic sb_ready;
 
-  // Clock generation - 100 MHz (10ns period)
-  initial begin
-    clk = 1'b0;
-    forever #5ns clk = ~clk;
-  end
+  // Clock generation
+  initial forever #16ns clk = ~clk;
 
   //============================================================================
   // Interface Instantiations
@@ -74,6 +71,10 @@ module sb_tb_top;
   .reset(reset_wire),
   .o_sb_ready(sb_ready)
   );
+
+  assign phylink_bfm.tms     = ltsm_ctrl_bfm.tms;
+  assign phylink_bfm.timeout = ltsm_ctrl_bfm.timeout;
+  assign phylink_bfm.start   = ltsm_ctrl_bfm.i_sb_init_start;
 
   //============================================================================
   // DUT Instantiation
@@ -139,5 +140,13 @@ module sb_tb_top;
     // Run UVM test
     run_test();
   end
+
+  // initial begin
+  //   ltsm_ctrl_bfm.o_sb_ready <= 0;
+  //   #7000;
+  //   phylink_bfm.pat_detected <= 1;
+  //   @(posedge clk);
+  //   ltsm_ctrl_bfm.o_sb_ready <= 1;
+  // end
 
 endmodule : sb_tb_top

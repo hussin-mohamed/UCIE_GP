@@ -46,7 +46,7 @@ class sb_env extends uvm_env;
   // rdi_cfg_t        rdi_cfg;
   phylink_cfg_t    phylink_cfg;
 
-  virtual_sequencer v_seqr;
+  virtual_sequencer vseqr;
 
 
   // Function: new
@@ -157,7 +157,7 @@ function void sb_env::build_phase(uvm_phase phase);
   // rdi_cfg       = rdi_cfg_t::type_id::create("rdi_cfg");
   phylink_cfg   = phylink_cfg_t::type_id::create("phylink_cfg");
 
-  v_seqr = virtual_sequencer::type_id::create("v_seqr", this);
+  vseqr = virtual_sequencer::type_id::create("vseqr", this);
 
   if(!uvm_config_db#(env_config)::get(this, "", "ENV_CFG", env_cfg))
     `uvm_fatal("build_phase", "ENV - Unable to environment configuration object from the uvm_config_db")
@@ -187,11 +187,11 @@ function void sb_env::connect_phase(uvm_phase phase);
   // rdi_agt.mntr_ap.connect(sb.axp_out_rdi);
   phylink_agt.mntr_ap.connect(sb.axp_out_phy);
 
-  v_seqr.ltsm_ctrl_seqr = ltsm_ctrl_agt.seqr;
-  v_seqr.tx_seqr        = tx_agt.seqr;
-  v_seqr.rx_seqr        = rx_agt.seqr;
-  // v_seqr.rdi_seqr       = rdi_agt.seqr;
-  v_seqr.phylink_seqr   = phylink_agt.seqr;
+  vseqr.ltsm_ctrl_seqr = ltsm_ctrl_agt.seqr;
+  vseqr.tx_seqr        = tx_agt.seqr;
+  vseqr.rx_seqr        = rx_agt.seqr;
+  // vseqr.rdi_seqr       = rdi_agt.seqr;
+  vseqr.phylink_seqr   = phylink_agt.seqr;
 endfunction : connect_phase
 
 // configure_agents

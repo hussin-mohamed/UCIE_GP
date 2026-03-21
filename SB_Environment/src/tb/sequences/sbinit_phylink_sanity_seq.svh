@@ -16,23 +16,30 @@
 
 //-----------------------------------------------------------------------------
 //
-// CLASS: rdi_sequencer
+// CLASS: sbinit_phylink_sanity_seq
 //
 // ...
 //
 //-----------------------------------------------------------------------------
 
-class rdi_sequencer extends uvm_sequencer #(rdi_seq_item);
-  `uvm_component_utils(rdi_sequencer)
+class sbinit_phylink_sanity_seq extends sb_sequence_base #(phylink_seq_item);
+  `uvm_object_utils(sbinit_phylink_sanity_seq)
 
 
   // Function: new
   //
-  // Creates a new rdi_sequencer instance with the given name and parent.
+  // Creates a new sbinit_phylink_sanity_seq instance with the given name.
 
-  extern function new(string name, uvm_component parent);
+  extern function new(string name = "sbinit_phylink_sanity_seq");
 
-endclass : rdi_sequencer
+
+  // Task: body
+  //
+  // ...
+
+  extern task body();
+
+endclass : sbinit_phylink_sanity_seq
 
 
 //-----------------------------------------------------------------------------
@@ -41,7 +48,7 @@ endclass : rdi_sequencer
 
 //-----------------------------------------------------------------------------
 //
-// CLASS- rdi_sequencer
+// CLASS- sbinit_phylink_sanity_seq
 //
 //-----------------------------------------------------------------------------
 
@@ -49,7 +56,41 @@ endclass : rdi_sequencer
 // new
 // ---
 
-function rdi_sequencer::new(string name, uvm_component parent);
-  super.new(name, parent);
-  set_report_severity_id_verbosity(UVM_INFO, "PHASESEQ", UVM_NONE);
+function sbinit_phylink_sanity_seq::new(string name = "sbinit_phylink_sanity_seq");
+  super.new(name);
 endfunction : new
+
+// body
+// ----
+
+task sbinit_phylink_sanity_seq::body();
+  forever begin
+    start_item(req);
+    req.op_mode           = SBINIT;
+    req.pattern           = `SBINIT_PATTERN;
+    req.idle_ui_cnt       = 32;
+    req.out_of_rst_ui_cnt = 0;
+    finish_item(req);
+
+    // Get response from driver
+    get_response(rsp);
+
+    if (rsp.pat_detected) begin
+      `uvm_info(get_type_name(), "Pattern is DETECTED", UVM_DEBUG)
+      for (int i = 0; i < 4; i++) begin
+        `uvm_info(get_type_name(), "Sending 4 more pattern iterations", UVM_DEBUG)
+        start_item(req);
+        `uvm_info(get_type_name(), $sformatf("ITERATION%0d...", i), UVM_DEBUG)
+        req.op_mode           = SBINIT;
+        req.pattern           = `SBINIT_PATTERN;
+        req.idle_ui_cnt       = 32;
+        req.out_of_rst_ui_cnt = 0;
+        finish_item(req);
+      end
+      break;
+    end else if (rsp.timeout_detected) begin
+      break;
+    end
+  end
+
+endtask : body

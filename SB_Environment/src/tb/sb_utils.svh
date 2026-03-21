@@ -1,3 +1,6 @@
+`define true 1
+`define SBINIT_PATTERN {32{2'b01}}
+
 function logic [127:0] struct2raw(input message_t _msg);
   logic [31:0] phase0, phase1, phase2, phase3;
   logic [7:0]  code, subcode;

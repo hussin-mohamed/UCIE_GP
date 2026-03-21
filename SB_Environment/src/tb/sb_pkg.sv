@@ -21,6 +21,8 @@ package sb_pkg;
   `include "agent_typedefs.svh"
   `include "sb_utils.svh"
 
+  event timeout_triggered;
+
   // Sequence Items
   `include "sequence_items/ltsm_ctrl_seq_item.svh"
   `include "sequence_items/ltsm_seq_item.svh"
@@ -73,16 +75,17 @@ package sb_pkg;
   // Environment
   `include "env.svh"
 
-  // // Base Sequences
-  // `include "virtual_sequence/virtual_sequence_base.svh"
-  // `include "reactive_sequences/APB_sequence_base.svh"
+  // Base Sequences
+  `include "virtual_sequences/virtual_sequence_base.svh"
+  `include "sequences/sb_sequence_base.svh"
 
-  // // Reactive Sequences
-  // `include "reactive_sequences/APB_reactive_sequence_1.svh"
-  // `include "reactive_sequences/APB_reactive_sequence_2.svh"
-  // `include "virtual_sequence/virtual_sequence.svh"
-  
-  // Tests    
+  // Sequences
+  `include "sequences/sbinit_ctrl_sanity_seq.svh"
+  `include "sequences/sbinit_phylink_sanity_seq.svh"
+  `include "virtual_sequences/virtual_sequence.svh"
+
+  // Tests
   `include "sb_test_base.svh"
-  
+  `include "sanity_test.svh"
+
 endpackage : sb_pkg
