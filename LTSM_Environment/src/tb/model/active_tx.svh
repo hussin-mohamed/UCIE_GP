@@ -41,14 +41,14 @@
     endfunction 
      
     virtual function bit doSpecificCombAction(FSMContext cntxt, LTSM_controllers_seq_item ctrl_item , ltsm_rdi_sequence_item rdi_item ,rx_fsm_sb_sequence_item  rx_sb_item ,tx_fsm_sb_sequence_item tx_sb_item); 
-    if(ctrl_item.i_tx_decoding == RX_ACTIVE_LINKINIT_State_Rsp_Handshake && tx_sb_item.i_sb_tx_rsp && cntxt.currentstate_tx == linkinit_state_tx::instance()) 
+    if(ctrl_item.i_tx_decoding == RX_ACTIVE_LINKINIT_State_Rsp_Handshake &&tx_sb_item.i_sb_tx_rsp && state_done && cntxt.currentstate_tx == linkinit_state_tx::instance()) 
       begin
         o_tx_encoding_exp = ACTIVE_TX_Active ;
-          if(o_tx_encoding_exp == ctrl_item.o_tx_encoding)
+          if(o_tx_encoding_exp == tx_sb_item.o_tx_encoding)
             match = 1'b1;
           else
           begin
-            `uvm_info("linkinit_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding), UVM_LOW);
+            `uvm_info("linkinit_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, tx_sb_item.o_tx_encoding), UVM_LOW);
             match = 1'b0;
           end
       end  
