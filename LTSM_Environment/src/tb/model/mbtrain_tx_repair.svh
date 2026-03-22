@@ -47,7 +47,7 @@ class mbtrain_tx_repair extends state;
         end
         else if((item_tx_fsm_sb_in.i_tx_decoding == MBTRAIN_REPAIR_TX_Start_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1))begin
             o_tx_encoding_expected = MBTRAIN_REPAIR_TX_Apply_Degrade_Handshake;
-            o_rx_info_expected[2:0] = lane_map;;
+            o_rx_info_expected[2:0] = lane_map_tx;;
             o_sb_tx_req_expected = 1'b1;
             apply =1;
             if (o_tx_encoding_expected == item_tx_fsm_sb_out.o_tx_encoding && o_tx_info_expected[2:0] == item_tx_fsm_sb_out.o_tx_info[2:0] && o_sb_tx_req_expected == item_tx_fsm_sb_out.o_sb_tx_req) begin

@@ -40,7 +40,7 @@ class mbtrain_rx_rxclkcal extends state;
                 match = 0;
                 `uvm_info("mbtrain_rx_rxclkcal", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
                 `uvm_info("mbtrain_rx_rxclkcal", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
-                `uvm_info("mbtrain_rx_rxclkcal", $sformatf("o_sb_rx_req mismatch expected value: %0b, got %0b", o_sb_rx_req_expected, item_rx_fsm_sb_out.o_sb_rx_req), UVM_LOW)
+                `uvm_info("mbtrain_rx_rxclkcal", $sformatf("o_sb_rx_req mismatch expected value: %0b, got %0b", o_sb_rx_rsp_expected, item_rx_fsm_sb_out.o_sb_rx_rsp), UVM_LOW)
             end
         end
         else if (item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_RXCLKCAL_TX_End_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
@@ -54,7 +54,7 @@ class mbtrain_rx_rxclkcal extends state;
                 match = 0;
                 `uvm_info("mbtrain_rx_rxclkcal", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
                 `uvm_info("mbtrain_rx_rxclkcal", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
-                `uvm_info("mbtrain_rx_rxclkcal", $sformatf("o_sb_rx_req mismatch expected value: %0b, got %0b", o_sb_rx_req_expected, item_rx_fsm_sb_out.o_sb_rx_req), UVM_LOW)
+                `uvm_info("mbtrain_rx_rxclkcal", $sformatf("o_sb_rx_req mismatch expected value: %0b, got %0b", o_sb_rx_rsp_expected, item_rx_fsm_sb_out.o_sb_rx_rsp), UVM_LOW)
             end         
         end
         return match;

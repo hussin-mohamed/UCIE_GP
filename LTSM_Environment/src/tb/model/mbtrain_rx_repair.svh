@@ -40,20 +40,22 @@ class mbtrain_rx_repair extends state;
                 match = 0;
                 `uvm_info("mbtrain_rx_repair", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
                 `uvm_info("mbtrain_rx_repair", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
-                `uvm_info("mbtrain_rx_repair", $sformatf("o_sb_rx_req mismatch expected value: %0b, got %0b", o_sb_rx_req_expected, item_rx_fsm_sb_out.o_sb_rx_req), UVM_LOW)
+                `uvm_info("mbtrain_rx_repair", $sformatf("o_sb_rx_req mismatch expected value: %0b, got %0b", o_sb_rx_rsp_expected, item_rx_fsm_sb_out.o_sb_rx_rsp), UVM_LOW)
             end
         end
         else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_REPAIR_Send_Apply_Degrade_RESP && item_rx_fsm_sb_in.i_sb_rx_req==1'b1 && item_rx_fsm_sb_in.i_rx_info[2:0] != 3'b000) begin 
             o_rx_encoding_expected = RX_MBTRAIN_REPAIR_Send_Apply_Degrade_RESP;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_rsp_expected = 1'b1;
-            if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected==item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp) begin
+            lane_map_rx=item_rx_fsm_sb_in.i_rx_info[2:0];
+            if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected==item_rx_fsm_sb_out.o_rx_info && o_sb_rx_rsp_expected == item_rx_fsm_sb_out.o_sb_rx_rsp && lane_map_rx==item_controllers_out.o_lane_map_rx) begin
                 match = 1;
             end else begin
                 match = 0;
                 `uvm_info("mbtrain_rx_repair", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
                 `uvm_info("mbtrain_rx_repair", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
-                `uvm_info("mbtrain_rx_repair", $sformatf("o_sb_rx_req mismatch expected value: %0b, got %0b", o_sb_rx_req_expected, item_rx_fsm_sb_out.o_sb_rx_req), UVM_LOW)
+                `uvm_info("mbtrain_rx_repair", $sformatf("o_sb_rx_req mismatch expected value: %0b, got %0b", o_sb_rx_rsp_expected, item_rx_fsm_sb_out.o_sb_rx_rsp), UVM_LOW)
+                `uvm_info("mbtrain_rx_repair", $sformatf("lane_map_rx mismatch expected value: %0h, got %0h", lane_map_rx, item_controllers_out.o_lane_map_rx), UVM_LOW)
             end
         end
         else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_REPAIR_End_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
@@ -67,7 +69,7 @@ class mbtrain_rx_repair extends state;
                 match = 0;
                 `uvm_info("mbtrain_rx_repair", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
                 `uvm_info("mbtrain_rx_repair", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
-                `uvm_info("mbtrain_rx_repair", $sformatf("o_sb_rx_req mismatch expected value: %0b, got %0b", o_sb_rx_req_expected, item_rx_fsm_sb_out.o_sb_rx_req), UVM_LOW)
+                `uvm_info("mbtrain_rx_repair", $sformatf("o_sb_rx_req mismatch expected value: %0b, got %0b", o_sb_rx_rsp_expected, item_rx_fsm_sb_out.o_sb_rx_rsp), UVM_LOW)
             end         
         end
         return match;
