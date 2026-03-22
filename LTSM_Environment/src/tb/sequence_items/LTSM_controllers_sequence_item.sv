@@ -37,11 +37,12 @@ class LTSM_controllers_seq_item extends uvm_sequence_item;
   logic o_sbinit_start;
   logic i_sb_ready;
   logic o_t1_ms;
+  logic i_reset;
+  logic i_sb_cur_msg_done;
   logic [63:0] i_lane_error;
-  logic i_par_check_done;
-  logic [2:0] i_clk_error; //i_clk_result
-  encoding_tx_t o_tx_encoding;
-  encoding_rx_t o_rx_encoding;
+  logic [8:0] o_tx_encoding;
+  logic [8:0] o_rx_encoding;
+  logic [3:0] o_lane_map_tx,o_lane_map_rx;
 
     `uvm_object_utils_begin(LTSM_controllers_seq_item)
         `uvm_field_int(i_power,  UVM_NORECORD)
