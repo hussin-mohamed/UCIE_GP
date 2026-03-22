@@ -28,4 +28,32 @@ interface TX_FSM_SB(clk);
         logic o_tx_sb_rsp;
         logic o_tx_sb_done;
         input clk;
+        
+        sequence rsp_out_tx;
+            $rose(o_tx_sb_rsp)
+        endsequence
+
+        sequence req_out_tx;
+            $rose(o_tx_sb_req)
+        endsequence
+
+        sequence req_rsp_in_tx;
+            $rose(i_tx_sb_req) || $rose(i_tx_sb_rsp) 
+        endsequence
+
+        property done_handshake_tx;
+            @(posedge clk) req_rsp_in |=> o_tx_sb_done
+        endproperty
+
+        property rsp_handshake_tx;
+            @(posedge clk) rsp_out |-> (o_tx_sb_rsp throughout i_sb_tx_done[->1])
+        endproperty
+
+        property req_handshake_tx;
+            @(posedge clk) req_out |-> (o_tx_sb_req throughout i_sb_tx_done[->1])
+        endproperty
+        
+        assert property(done_handshake_tx);
+        assert property(rsp_handshake_tx);
+        assert property(req_handshake_tx);
     endinterface //TX_FSM_SB
