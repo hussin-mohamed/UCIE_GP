@@ -19,13 +19,16 @@ import shared_ltsm_pkg::*;
 virtual class State extends uvm_object;
     `uvm_object_utils(State)
     bit match_tx, match_rx, match;
-    int counter;
+    static int counter;
     static bit train ;
     static bit apply;
+    static bit enter_speeddegrade;
     static bit retry;
+    static bit state_done;
     static bit end_sweep;
     static int error_count;
-    static logic [2:0] lane_map;
+    static logic [2:0] o_pl_speedmode_expected;
+    static logic [2:0] lane_map_tx,lane_map_rx;
     StateTransitionUtil_tx st_trans_tx;
     StateTransitionUtil_rx st_trans_rx;
     st_trans_tx = new();
