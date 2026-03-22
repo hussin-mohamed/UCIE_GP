@@ -29,6 +29,8 @@
     logic [8:0] o_rx_encoding_exp;
     logic o_pl_inband_pres_exp;
     logic o_pl_wake_ack_exp;
+    logic o_rx_sb_rsp_exp;
+    logic [3:0] o_pl_state_sts_exp;
     bit match;
     
     local static linkinit_state_rx inst = null; 
@@ -46,6 +48,7 @@
       begin
         o_rx_encoding_exp = RX_ACTIVE_LINKINIT_PL_Clk_Req_Handshake ;
         o_pl_inband_pres_exp = 1'b1;
+        state_done = 1'b0;
             if(o_rx_encoding_exp == ctrl_item.o_rx_encoding && o_pl_inband_pres_exp == ctrl_item.o_pl_inband_pres)
                 match = 1'b1;
             else 
@@ -55,7 +58,7 @@
             end
             
       end
-      else if(o_rx_encoding_exp == RX_ACTIVE_LINKINIT_PL_Clk_Req_Handshake && rdi_item.i_lp_clk_ack && cntxt.currentstate_rx == linkinit_state_rx::instance())
+      else if(o_rx_encoding_exp == RX_ACTIVE_LINKINIT_PL_Clk_Req_Handshake && rdi_item.i_lp_clk_ack /*&& rdi_item.i_lp_wake_req */ )
       begin
         o_rx_encoding_exp = RX_ACTIVE_LINKINIT_LP_Wake_Req_Handshake ;
         o_pl_wake_ack_exp = 1'b1;
@@ -67,10 +70,13 @@
                 match = 1'b0;
             end
       end
-      else if(o_rx_encoding_exp == RX_ACTIVE_LINKINIT_LP_Wake_Req_Handshake && (rdi_item.i_lp_state_req == 4'b0001))
+      else if(rx_sb_item.i_rx_decoding == ACTIVE_LINKINIT_TX_State_Req_Handshake && rx_sb_item.i_sb_rx_req && (rdi_item.i_lp_state_req == state_req_active) && tx_handshake_done == 1'b1)// in this case ,local die initiates the handshake and we should expect the state_req_active to be set 
       begin
         o_rx_encoding_exp = RX_ACTIVE_LINKINIT_State_Rsp_Handshake ;
         o_rx_sb_rsp_exp = 1'b1;
+        rx_handshake_done = 1'b1; 
+        state_done = 1'b1;
+        o_pl_state_sts_exp = state_req_active;
             if(o_rx_encoding_exp == ctrl_item.o_rx_encoding && o_rx_sb_rsp_exp == rx_sb_item.o_rx_sb_rsp)
                 match = 1'b1;
             else
@@ -78,7 +84,20 @@
               `uvm_info("linkinit_state_rx", $sformatf("Expected o_rx_encoding: %b, Actual o_rx_encoding: %b, Expected o_rx_sb_rsp: %b, Actual o_rx_sb_rsp: %b", o_rx_encoding_exp, ctrl_item.o_rx_encoding, o_rx_sb_rsp_exp, rx_sb_item.o_rx_sb_rsp), UVM_LOW);
                 match = 1'b0;
             end
-      end  
+      end
+      else if(rx_sb_item.i_rx_decoding == ACTIVE_LINKINIT_TX_State_Req_Handshake && rx_sb_item.i_sb_rx_req && (rdi_item.i_lp_state_req == state_req_active) && tx_handshake_done == 1'b0) // in this case , remote die initiates the handshake and we should not expect the state_req_active to be set yet
+      begin
+        o_rx_encoding_exp = RX_ACTIVE_LINKINIT_State_Rsp_Handshake ;
+        o_rx_sb_rsp_exp = 1'b1;
+        rx_handshake_done = 1'b1;
+            if(o_rx_encoding_exp == ctrl_item.o_rx_encoding && o_rx_sb_rsp_exp == rx_sb_item.o_rx_sb_rsp)
+                match = 1'b1;
+            else
+            begin
+              `uvm_info("linkinit_state_rx", $sformatf("Expected o_rx_encoding: %b, Actual o_rx_encoding: %b, Expected o_rx_sb_rsp: %b, Actual o_rx_sb_rsp: %b", o_rx_encoding_exp, ctrl_item.o_rx_encoding, o_rx_sb_rsp_exp, rx_sb_item.o_rx_sb_rsp), UVM_LOW);
+                match = 1'b0;
+            end
+      end
         return match;
     endfunction 
  
