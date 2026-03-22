@@ -17,7 +17,7 @@
 import shared_ltsm_pkg::*;
 class StateTransitionUtil_rx extends state;
  local static State validStateTransitions[State][$];
- local static CovergroupWrapper cgWrapper;
+
 
  function new(string name = "StateTransitionUtil_rx" );
         super.new(name);
