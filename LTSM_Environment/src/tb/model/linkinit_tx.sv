@@ -48,11 +48,11 @@
       begin
         o_tx_encoding_exp = ACTIVE_LINKINIT_TX_PL_Clk_Req_Handshake ;
         o_pl_inband_pres_exp = 1'b1;
-          if(o_tx_encoding_exp == ctrl_item.o_tx_encoding && o_pl_inband_pres_exp == ctrl_item.o_pl_inband_pres)
+          if(o_tx_encoding_exp == tx_sb_item.o_tx_encoding && o_pl_inband_pres_exp == rdi_item.o_pl_inband_pres)
             match = 1'b1;
           else
           begin
-            `uvm_info("linkinit_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_pl_inband_pres: %b, Actual o_pl_inband_pres: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding, o_pl_inband_pres_exp, ctrl_item.o_pl_inband_pres), UVM_LOW);
+            `uvm_info("linkinit_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_pl_inband_pres: %b, Actual o_pl_inband_pres: %b", o_tx_encoding_exp, tx_sb_item.o_tx_encoding, o_pl_inband_pres_exp, rdi_item.o_pl_inband_pres), UVM_LOW);
             match = 1'b0;
           end
       end
@@ -60,11 +60,11 @@
       begin
         o_tx_encoding_exp = ACTIVE_LINKINIT_TX_LP_Wake_Req_Handshake ;
         o_pl_wake_ack_exp = 1'b1;
-          if(o_tx_encoding_exp == ctrl_item.o_tx_encoding && o_pl_wake_ack_exp == ctrl_item.o_pl_wake_ack)
+          if(o_tx_encoding_exp == tx_sb_item.o_tx_encoding && o_pl_wake_ack_exp == rdi_item.o_pl_wake_ack)
             match = 1'b1;
           else
           begin
-            `uvm_info("linkinit_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_pl_wake_ack: %b, Actual o_pl_wake_ack: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding, o_pl_wake_ack_exp, ctrl_item.o_pl_wake_ack), UVM_LOW);
+            `uvm_info("linkinit_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_pl_wake_ack: %b, Actual o_pl_wake_ack: %b", o_tx_encoding_exp, tx_sb_item.o_tx_encoding, o_pl_wake_ack_exp, rdi_item.o_pl_wake_ack), UVM_LOW);
             match = 1'b0;
           end
       end
@@ -72,7 +72,7 @@
       begin
         o_tx_encoding_exp = ACTIVE_LINKINIT_TX_State_Req_Handshake  ;
         o_sb_tx_req_expected = 1'b1 ;
-          if(o_tx_encoding_exp == ctrl_item.o_tx_encoding && o_sb_tx_req_expected == tx_sb_item.o_sb_tx_req)
+          if(o_tx_encoding_exp == tx_sb_item.o_tx_encoding && o_sb_tx_req_expected == tx_sb_item.o_sb_tx_req)
             match = 1'b1;
             else
           begin
@@ -89,6 +89,13 @@
         o_pl_state_sts_exp = state_req_active;
         tx_handshake_done = 1'b1;
         state_done = 1'b1; 
+        if(o_tx_encoding_exp == tx_sb_item.o_tx_encoding && o_pl_state_sts_exp == rdi_item.o_pl_state_sts)
+            match = 1'b1;
+          else
+          begin
+            `uvm_info("linkinit_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_pl_state_sts: %b, Actual o_pl_state_sts: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding, o_pl_state_sts_exp, rdi_item.o_pl_state_sts), UVM_LOW);
+            match = 1'b0;
+          end
       end
       else
         match = 1'b0;
