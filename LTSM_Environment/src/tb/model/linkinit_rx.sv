@@ -77,11 +77,11 @@
         rx_handshake_done = 1'b1; 
         state_done = 1'b1;
         o_pl_state_sts_exp = state_req_active;
-            if(o_rx_encoding_exp == ctrl_item.o_rx_encoding && o_rx_sb_rsp_exp == rx_sb_item.o_rx_sb_rsp)
+            if(o_rx_encoding_exp == ctrl_item.o_rx_encoding && o_rx_sb_rsp_exp == rx_sb_item.o_rx_sb_rsp && o_pl_state_sts_exp == rdi_item.o_pl_state_sts)
                 match = 1'b1;
             else
             begin
-              `uvm_info("linkinit_state_rx", $sformatf("Expected o_rx_encoding: %b, Actual o_rx_encoding: %b, Expected o_rx_sb_rsp: %b, Actual o_rx_sb_rsp: %b", o_rx_encoding_exp, ctrl_item.o_rx_encoding, o_rx_sb_rsp_exp, rx_sb_item.o_rx_sb_rsp), UVM_LOW);
+              `uvm_info("linkinit_state_rx", $sformatf("Expected o_rx_encoding: %b, Actual o_rx_encoding: %b, Expected o_rx_sb_rsp: %b, Actual o_rx_sb_rsp: %b , Expected o_pl_state_sts: %b, Actual o_pl_state_sts: %b", o_rx_encoding_exp, ctrl_item.o_rx_encoding, o_rx_sb_rsp_exp, rx_sb_item.o_rx_sb_rsp, o_pl_state_sts_exp, rdi_item.o_pl_state_sts), UVM_LOW);
                 match = 1'b0;
             end
       end
