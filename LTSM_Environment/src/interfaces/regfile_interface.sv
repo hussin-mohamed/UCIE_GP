@@ -14,22 +14,10 @@
 // *                                                                          *
 // ****************************************************************************
 
-interface LTSM_controllers_if(input logic clk);
-  logic i_clk;
-  logic i_power;
-  logic i_reset;
-  logic i_pll_stable;
-  logic i_rx_error;
-  logic i_rx_done;
-  logic i_tx_done;
-  logic i_val_error;
-  logic i_sb_cur_msg_done;
-  logic o_sbinit_start;
-  logic i_sb_ready;
-  logic o_t1_ms;
-  logic [63:0] i_lane_error;
-  logic [8:0] o_tx_encoding;
-  logic [8:0] o_rx_encoding;
-  logic [3:0] o_lane_map_tx,o_lane_map_rx;
-    
+interface regfile_interface(input logic clk);
+    logic [2:0] i_speedreg,o_speedreg;
+    logic [15:0] i_local_cap;
+    logic i_Runtime_Link_Test_status_register,o_Runtime_Link_Test_status_register;
+    logic [36:0] i_Runtime_Link_Test_Control_register,o_Runtime_Link_Test_Control_register;
+
 endinterface : LTSM_controllers_if
