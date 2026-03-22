@@ -28,7 +28,7 @@
     //output signals
     logic [8:0] o_tx_encoding_exp;
     logic o_tx_sb_req_expected;
-    static logic tx_handshake_done;
+    logic [3:0] o_pl_state_sts_exp;
     bit match;
 
     
@@ -48,71 +48,61 @@
             o_tx_encoding_exp = ACTIVE_L1_TX_handshake ;
             o_tx_sb_req_expected = 1'b1;
 
-                if(o_tx_encoding_exp == ctrl_item.o_tx_encoding && o_tx_sb_req_expected == tx_sb_item.o_tx_sb_req)
+                if(o_tx_encoding_exp == tx_sb_item.o_tx_encoding && o_tx_sb_req_expected == tx_sb_item.o_tx_sb_req)
                     match = 1'b1;
                 else
                 begin
-                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_tx_sb_req: %b, Actual o_tx_sb_req: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding, o_tx_sb_req_expected, tx_sb_item.o_tx_sb_req), UVM_LOW);
+                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_tx_sb_req: %b, Actual o_tx_sb_req: %b", o_tx_encoding_exp, tx_sb_item.o_tx_encoding, o_tx_sb_req_expected, tx_sb_item.o_tx_sb_req), UVM_LOW);
                     match = 1'b0;
                 end
         end
-         else if(tx_sb_item.i_tx_decoding == RX_ACTIVE_L1_L1_State  && rx_sb_item.i_sb_rx_rsp && rx_handshake_done == 1'b0)      
+         else if(tx_sb_item.i_tx_decoding ==  RX_ACTIVE_L1_Start_HS && tx_sb_item.i_sb_tx_rsp &&  rx_handshake_done == 1'b0)  // waiting for rx handshake to be done before accepting the next sequence    
         begin
             tx_handshake_done = 1'b1;
         end   
-        else if(tx_sb_item.i_tx_decoding == RX_ACTIVE_L1_L1_State  && rx_sb_item.i_sb_rx_done && rx_handshake_done == 1'b0)      
+        else if(tx_sb_item.i_tx_decoding ==  RX_ACTIVE_L1_Start_HS && tx_sb_item.i_sb_tx_rsp &&  rx_handshake_done == 1'b1)      
         begin
             o_tx_encoding_exp = ACTIVE_L1_TX_L1_State;
-                if(o_tx_encoding_exp == ctrl_item.o_tx_encoding)
+                if(o_tx_encoding_exp == tx_sb_item.o_tx_encoding)
                     match = 1'b1;
                 else
                 begin
-                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding), UVM_LOW);
-                    match = 1'b0;
-                end
-        end
-        else if(tx_sb_item.i_tx_decoding == RX_ACTIVE_L1_L1_State  && rx_sb_item.i_sb_tx_rsp && rx_handshake_done == 1'b1)      
-        begin
-            o_tx_encoding_exp = ACTIVE_L1_TX_L1_State;
-                if(o_tx_encoding_exp == ctrl_item.o_tx_encoding)
-                    match = 1'b1;
-                else
-                begin
-                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding), UVM_LOW);
+                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, tx_sb_item.o_tx_encoding), UVM_LOW);
                     match = 1'b0;
                 end
         end
         else if( tx_sb_item.i_tx_decoding == RX_ACTIVE_L1_Refuse && tx_sb_item.i_sb_tx_rsp )
         begin
             o_tx_encoding_exp =  ACTIVE_TX_Active ;
-                if(o_tx_encoding_exp == ctrl_item.o_tx_encoding)
+            o_pl_state_sts_exp = 4'b0011; //active.pmnak
+                if(o_tx_encoding_exp == tx_sb_item.o_tx_encoding && o_pl_state_sts_exp == tx_sb_item.o_pl_state_sts)
                     match = 1'b1;
                 else
                 begin
-                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding), UVM_LOW);
+                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_pl_state_sts: %b, Actual o_pl_state_sts: %b", o_tx_encoding_exp, tx_sb_item.o_tx_encoding, o_pl_state_sts_exp, tx_sb_item.o_pl_state_sts), UVM_LOW);
                     match = 1'b0;
                 end
         end  
-        else if(rdi_item.i_lp_state_req == state_req_active && cntxt.currentstate_tx == l1_state_tx::instance())
+        else if(rdi_item.i_lp_state_req == state_req_active || tx_sb_item.i_tx_decoding == ACTIVE_EXIT_HS_TX_Exit_Handshake && tx_sb_item.i_sb_rx_req)
         begin
             o_tx_encoding_exp = ACTIVE_EXIT_HS_TX_Exit_Handshake;
             o_tx_sb_req_expected = 1'b1;
-                if(o_tx_encoding_exp == ctrl_item.o_tx_encoding )
+                if(o_tx_encoding_exp == tx_sb_item.o_tx_encoding )
                     match = 1'b1;
                 else
                 begin
-                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_tx_sb_done: %b, Actual o_tx_sb_done: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding, o_tx_sb_done_exp, tx_sb_item.o_tx_sb_done), UVM_LOW);
+                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_tx_sb_done: %b, Actual o_tx_sb_done: %b", o_tx_encoding_exp, tx_sb_item.o_tx_encoding, o_tx_sb_done_exp, tx_sb_item.o_tx_sb_done), UVM_LOW);
                     match = 1'b0;
                 end
         end
         else if(tx_sb_item.i_tx_decoding == ACTIVE_EXIT_HS_TX_Exit_Handshake && tx_sb_item.i_sb_rx_done && rx_handshake_done == 1'b1)
         begin
             o_tx_encoding_exp = ACTIVE_TX_Active ;
-                if(o_tx_encoding_exp == ctrl_item.o_tx_encoding)
+                if(o_tx_encoding_exp == tx_sb_item.o_tx_encoding)
                     match = 1'b1;
                 else
                 begin
-                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, ctrl_item.o_tx_encoding), UVM_LOW);
+                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, tx_sb_item.o_tx_encoding), UVM_LOW);
                     match = 1'b0;
                 end
         end
