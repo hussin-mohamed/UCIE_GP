@@ -50,22 +50,6 @@ module ucie_sideband_in
     .o_fifo_rd_en(fifo_rd_en)
   );
 
-  // ========== fifo Instance ==========
-  /*ucie_sideband_fifo #(
-    .pFIFO_WIDTH      (pDESER_WIDTH),
-    .pFIFO_DEPTH      (32)
-  )
-  u_rx_deser_fifo (
-    .i_clk_rd         (i_clk),
-    .i_clk_wr         (i_800MHz_clk),
-    .i_reset          (i_reset),
-    .i_wr_en          (fifo_wr_en),
-    .i_rd_en          (fifo_rd_en),
-    .i_data_in        (fifo_msg_in),
-    .o_data_out       (fifo_msg_out),
-    .o_full           (fifo_full),
-    .o_empty          (fifo_empty)
-  );*/
   
   ucie_sideband_fifo_FWFT #(
     .pFIFO_WIDTH      (pDESER_WIDTH),

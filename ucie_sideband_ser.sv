@@ -98,15 +98,31 @@ module ucie_sideband_ser
   assign o_tx_sb_data = transmitting ? shift_reg[0] : 1'b0;
   assign o_tx_sb_clk  = clk_en_latch & i_clk;
   assign o_sb_cur_msg_done = flag_63;
-
+  reg clk_clr;
   always @(*) begin
     if (i_reset)
       clk_en_latch = 1'b0;
     else begin 
     if (!i_enable) 
       clk_en_latch = 1'b0;
-    else if (!i_clk)
+    else if (!clk_clr)
       clk_en_latch = transmitting;
+    else
+      clk_en_latch = 1'b0;
+    end
+  end
+
+
+  always @(negedge i_clk or posedge i_reset) begin
+    if (i_reset)
+      clk_clr <= 1'b0;
+    else begin 
+    if (!i_enable) 
+      clk_clr <= 1'b0;
+    else if (flag_63)
+      clk_clr <= 1'b1;
+    else 
+       clk_clr <= 1'b0;
     end
   end
 
