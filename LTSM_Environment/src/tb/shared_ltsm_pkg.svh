@@ -62,6 +62,23 @@ package shared_ltsm_pkg
 
 `define RESULT_THRESHOLD 16'b0000000011111111
 `define LANE_MAP_CODE 3'b011 // all lanes are functional    
+
+typedef enum logic [2:0] {PASS = 3'b111 , FAIL_RTRK_L = 3'b011 , FAIL_RCKN_L = 3'b101,
+FAIL_RCKP_L = 3'b110} clk_result_t; 
+
+typedef enum logic  {PASS_VAL = 1'b1, FAIL_VAL = 1'b0} val_result_t;
+
+typedef enum logic[15:0] {
+  NO_LANES_FUNCTIONAL    = 16'h0000, // None (Degrade not possible)
+  LANES_0_TO_7           = 16'h00FF, // Logical lanes 0 to 7
+  LANES_8_TO_15          = 16'hFF00, // Logical lanes 8 to 15
+  ALL_LANES_FUNCTIONAL   = 16'hFFFF, // 0 to 15
+  LANES_0_TO_3           = 16'h000F, // Logical lanes 0 to 3
+  LANES_4_TO_7           = 16'h00F0  // Logical lanes 4 to 7
+} lane_results_t;
+
+typedef enum logic [2:0] { NOT_POSSIBLE = 3'b0 , MATCHED = `LANE_MAP_CODE } degrade_t;
+
         
 typedef enum logic [8:0] {
  // =========================================================
