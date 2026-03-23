@@ -364,7 +364,7 @@ class StateTransitionUtil_rx extends state;
                 if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_ACTIVE_L1_L1_State && rdi_item.i_lp_state_req == state_req_active)begin
+               else if (rdi_item.i_lp_state_req == state_req_active || rx_sb_item.i_rx_decoding == ACTIVE_EXIT_HS_TX_Exit_Handshake && rx_sb_item.i_sb_rx_req)begin
                   return mbtrain_rx_speedidle::instance();
                end
             end
