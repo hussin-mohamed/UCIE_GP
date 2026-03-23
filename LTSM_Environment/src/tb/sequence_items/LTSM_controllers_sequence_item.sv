@@ -43,6 +43,10 @@ class LTSM_controllers_seq_item extends uvm_sequence_item;
   logic [8:0] o_tx_encoding;
   logic [8:0] o_rx_encoding;
   logic [3:0] o_lane_map_tx,o_lane_map_rx;
+  logic [2:0] i_speedreg,o_speedreg;
+  logic [15:0] i_local_cap;
+  logic i_Runtime_Link_Test_status_register,o_Runtime_Link_Test_status_register;
+  logic [36:0] i_Runtime_Link_Test_Control_register,o_Runtime_Link_Test_Control_register;
 
     `uvm_object_utils_begin(LTSM_controllers_seq_item)
         `uvm_field_int(i_power,  UVM_NORECORD)
