@@ -170,6 +170,8 @@ endfunction : connect_phase
 function void LTSM_env::configure_agents();
     configure_tx_agent();
     configure_rx_agent();
+    configure_LTSM_controller_agent();
+    configure_rdi_agent();
 endfunction : configure_agents
 
 // configure_tx_agent
