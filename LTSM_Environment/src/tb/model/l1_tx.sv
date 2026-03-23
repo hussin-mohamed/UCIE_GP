@@ -93,7 +93,7 @@
                     match = 1'b1;
                 else
                 begin
-                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_tx_sb_done: %b, Actual o_tx_sb_done: %b", o_tx_encoding_exp, tx_sb_item.o_tx_encoding, o_tx_sb_done_exp, tx_sb_item.o_tx_sb_done), UVM_LOW);
+                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, tx_sb_item.o_tx_encoding), UVM_LOW);
                     match = 1'b0;
                 end
         end
