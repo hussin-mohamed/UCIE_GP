@@ -32,15 +32,20 @@ class env_config extends uvm_object;
     virtual RX_FSM_SB         rx_fsm_sb_if;
     virtual LTSM_controllers_if vif;
     virtual ltsm_rdi_if         ltsm_rdi_vif;
+    virtual regfile_interface     regfile_vif;
 
     uvm_active_passive_enum is_active_rdi             = UVM_ACTIVE;
     uvm_active_passive_enum is_active_LTSM_controllers      = UVM_ACTIVE;
     uvm_active_passive_enum is_active_tx_fsm_sb             = UVM_ACTIVE;
     uvm_active_passive_enum is_active_rx_fsm_sb             = UVM_ACTIVE;
+    uvm_active_passive_enum is_active_regfile        = UVM_ACTIVE;
 
     `uvm_object_utils_begin(env_config)
         `uvm_field_enum(uvm_active_passive_enum, is_active_tx_fsm_sb, UVM_DEFAULT)
         `uvm_field_enum(uvm_active_passive_enum, is_active_rx_fsm_sb, UVM_DEFAULT)
+        `uvm_field_enum(uvm_active_passive_enum, is_active_regfile, UVM_DEFAULT)
+        `uvm_field_enum(uvm_active_passive_enum, is_active_rdi, UVM_DEFAULT)
+        `uvm_field_enum(uvm_active_passive_enum, is_active_ltsm_controllers, UVM_DEFAULT)
     `uvm_object_utils_end
 
 
