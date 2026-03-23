@@ -354,10 +354,12 @@ class StateTransitionUtil_tx extends state;
                   return ResetState_tx::Instance();
                end
             end
-            fsm_tx_l1 : begin
+            fsm_tx_l1 :begin
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
+               else if(rdi_item.i_lp_state_req == state_req_active || rx_sb_item.i_rx_decoding == ACTIVE_EXIT_HS_TX_Exit_Handshake && rx_sb_item.i_sb_rx_req)
+               return mbtrain_tx_speedidle::Instance();
             end
             fsm_tx_linkinit : begin
                if (item_controllers_in.i_reset)begin
