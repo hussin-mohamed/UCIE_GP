@@ -82,11 +82,13 @@
                   `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b, Expected o_pl_state_sts: %b, Actual o_pl_state_sts: %b", o_tx_encoding_exp, tx_sb_item.o_tx_encoding, o_pl_state_sts_exp, tx_sb_item.o_pl_state_sts), UVM_LOW);
                     match = 1'b0;
                 end
-        end  
-        else if(rdi_item.i_lp_state_req == state_req_active || tx_sb_item.i_tx_decoding == ACTIVE_EXIT_HS_TX_Exit_Handshake && tx_sb_item.i_sb_rx_req)
+        end 
+
+        //////////////////Exit L1 state ///////////////////////
+
+        else if(rdi_item.i_lp_state_req == state_req_active || rx_sb_item.i_rx_decoding == ACTIVE_EXIT_HS_TX_Exit_Handshake && rx_sb_item.i_sb_rx_req )
         begin
             o_tx_encoding_exp = ACTIVE_EXIT_HS_TX_Exit_Handshake;
-            o_tx_sb_req_expected = 1'b1;
                 if(o_tx_encoding_exp == tx_sb_item.o_tx_encoding )
                     match = 1'b1;
                 else
@@ -95,17 +97,7 @@
                     match = 1'b0;
                 end
         end
-        else if(tx_sb_item.i_tx_decoding == ACTIVE_EXIT_HS_TX_Exit_Handshake && tx_sb_item.i_sb_rx_done && rx_handshake_done == 1'b1)
-        begin
-            o_tx_encoding_exp = ACTIVE_TX_Active ;
-                if(o_tx_encoding_exp == tx_sb_item.o_tx_encoding)
-                    match = 1'b1;
-                else
-                begin
-                  `uvm_info("l1_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, tx_sb_item.o_tx_encoding), UVM_LOW);
-                    match = 1'b0;
-                end
-        end
+        
             return match;       
     endfunction 
  
