@@ -59,7 +59,7 @@ module ucie_sb_tx_path (
             r_1ms_active <= 1'b1; // Start active
         end else if (current_state == IDLE) begin
             r_1ms_active <= 1'b1;
-        end else if (i_timer_1ms && (current_state == CYCLING)) begin
+        end else if (i_timer_1ms && (current_state == CYCLING || current_state == EXTRA_ITERS)) begin
             r_1ms_active <= ~r_1ms_active; // Toggle every 1ms
         end
     end
@@ -144,7 +144,7 @@ module ucie_sb_tx_path (
                 else
                     ui_counter <= ui_counter + 1;
             end else begin
-                if (current_state_serdes == CYCLING)
+                if (current_state_serdes == IDLE || current_state_serdes == DONE)
                     ui_counter <= 0;
             end
 
@@ -172,7 +172,7 @@ module ucie_sb_tx_path (
             // First 64 UIs: 
             w_gen_data = ~ui_counter[0]; 
             // w_gen_clk  = ~ui_counter[0];
-            w_gen_clk = i_s_clk && r_clk_en_safe; 
+            w_gen_clk = i_s_clk && r_clk_en_safe && r_1ms_active; 
         end else begin
             // Next 32 UIs: Low
             w_gen_data = 1'b0;
