@@ -3,7 +3,7 @@ module ucie_sb_tx_path (
     input  logic i_clk,             // System / Control Clock
     input  logic i_s_clk,           // SerDes Clock  — pattern generation & output
     input  logic i_reset,           // Active-high asynchronous reset
-
+ 
     // Control inputs
     input  logic i_sb_init_start,   // High during sideband initialisation
     input  logic i_timer_1ms,       // Pulse every 1 ms (from Timer module)
@@ -26,7 +26,7 @@ module ucie_sb_tx_path (
     localparam  EXTRA_ITERS = 2'b10;  // Sending final 4 iterations
     localparam  DONE        = 2'b11;  // Initialization complete
 
-    logic [1:0] current_state, next_state;
+    logic [1:0] current_state, next_state, current_state_serdes;
 
     // Pattern Counters
     // Total pattern length = 64 UI (Clk) + 32 UI (Low) = 96 UI
@@ -35,6 +35,7 @@ module ucie_sb_tx_path (
     
     // 1ms Toggle Logic
     logic r_1ms_active;          // 1: Generating, 0: Quiet (swaps every 1ms)
+    logic r_1ms_active_serdes;
 
     // Generated Signals
     logic w_gen_data;
@@ -117,9 +118,18 @@ module ucie_sb_tx_path (
     // --------------------------------------------------------
     // Pattern Generator Logic (64 UI Clock + 32 UI Low)
     // --------------------------------------------------------
+    always_ff @(posedge i_s_clk or posedge i_reset) begin
+        if (i_reset) begin
+            current_state_serdes   <= 0;
+            r_1ms_active_serdes    <= 0;
+        end else begin
+            current_state_serdes <= current_state;
+            r_1ms_active_serdes  <= r_1ms_active;
+        end
+    end 
 
-    assign w_pattern_running = ((current_state == EXTRA_ITERS) && r_1ms_active) || 
-                               ((current_state == CYCLING) && r_1ms_active);
+    assign w_pattern_running = ((current_state_serdes == EXTRA_ITERS) && r_1ms_active_serdes && iter_counter != 4) || 
+                               ((current_state_serdes == CYCLING) && r_1ms_active_serdes);
 
     always_ff @(posedge i_s_clk or posedge i_reset) begin
         if (i_reset) begin
@@ -132,13 +142,13 @@ module ucie_sb_tx_path (
                 else
                     ui_counter <= ui_counter + 1;
             end else begin
-                if (current_state == CYCLING)
+                if (current_state_serdes == CYCLING)
                     ui_counter <= 0;
             end
 
-            if (current_state == IDLE) begin
+            if (current_state_serdes == IDLE) begin
                 iter_counter <= 0;
-            end else if (current_state == EXTRA_ITERS) begin
+            end else if (current_state_serdes == EXTRA_ITERS) begin
                 if (ui_counter == 95)
                     iter_counter <= iter_counter + 1;
             end
@@ -150,7 +160,8 @@ module ucie_sb_tx_path (
         if (ui_counter < 64) begin
             // First 64 UIs: 
             w_gen_data = ~ui_counter[0]; 
-            w_gen_clk  = ~ui_counter[0]; 
+            // w_gen_clk  = ~ui_counter[0];
+            w_gen_clk = i_s_clk; 
         end else begin
             // Next 32 UIs: Low
             w_gen_data = 1'b0;

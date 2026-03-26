@@ -1,5 +1,5 @@
 module ucie_sb_rx_path (
- 
+  
     input  logic i_rx_sb_clk,       
     
     input  logic i_reset,           
@@ -23,7 +23,7 @@ module ucie_sb_rx_path (
     logic       r_prev_data;
     logic       r_detected_flag;
 
-    always_ff @(posedge i_rx_sb_clk or posedge i_reset) begin
+    always_ff @(negedge i_rx_sb_clk or posedge i_reset) begin
         if (i_reset) begin
             pattern_cnt     <= '0;
             r_prev_data     <= '0;
