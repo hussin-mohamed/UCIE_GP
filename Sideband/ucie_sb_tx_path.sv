@@ -42,6 +42,8 @@ module ucie_sb_tx_path (
     logic w_gen_clk;
     logic w_pattern_running;     // High when we are actually shifting bits out
 
+    logic r_clk_en_safe;
+
     // Used to account for the time differences btw the slow clock and fast clock 
     // since when detection is done and ui_counter reaches 95 and rx_done is asserted 
     // we should go to Extra Iter state but we need to wait for the slow clock edge to come
@@ -155,19 +157,29 @@ module ucie_sb_tx_path (
         end
     end
 
+    // Sample it on the NEGEDGE so it is stable during the POSEDGE
+    always_ff @(negedge i_s_clk or posedge i_reset) begin
+        if (i_reset)
+            r_clk_en_safe <= 1'b1;
+        else if(ui_counter >= 63 && ui_counter <= 65)
+            r_clk_en_safe <= 1'b0;
+        else 
+            r_clk_en_safe <= 1'b1;
+    end
 
     always_comb begin
         if (ui_counter < 64) begin
             // First 64 UIs: 
             w_gen_data = ~ui_counter[0]; 
             // w_gen_clk  = ~ui_counter[0];
-            w_gen_clk = i_s_clk; 
+            w_gen_clk = i_s_clk && r_clk_en_safe; 
         end else begin
             // Next 32 UIs: Low
             w_gen_data = 1'b0;
             w_gen_clk  = 1'b0;
         end
     end
+
 
     // --------------------------------------------------------
     // Output Muxing
