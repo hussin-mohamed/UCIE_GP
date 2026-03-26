@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
-// Module: ucie_sb_top
+// Module: ucie_sb_temp_top
 // Description: ...
 //------------------------------------------------------------------------------
-module ucie_sb_top
+module ucie_sb_temp_top
 #(//---- PARAMETER DECLARATIONS ------------------------------------------------
   parameter pMSG_WIDTH            = 128 // Width of messsage bus
   ,parameter pDESER_WIDTH         = 64   // Width of deserialized output

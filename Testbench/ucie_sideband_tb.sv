@@ -51,6 +51,11 @@ module ucie_sb_temp_top_tb;
   reg  [pENCODING_WIDTH-1:0]     tb_rx_encoding;
   reg  [pINFO_WIDTH-1:0]         tb_rx_info;
 
+  
+  reg                            tb_sb_init_start;
+  reg                            tb_timer_1ms;
+
+
   //---- MONITORED OUTPUT SIGNALS ----------------------------------------------
   wire                           mon_sb_tx_req;
   wire                           mon_sb_tx_rsp;
@@ -67,6 +72,9 @@ module ucie_sb_temp_top_tb;
   wire [pDECODING_WIDTH-1:0]     mon_rx_decoding;
   wire [pINFO_WIDTH-1:0]         mon_rx_info;
   wire                           mon_rx_valid;
+
+  wire                           mon_sb_cur_msg_done;
+  wire                           mon_sb_ready;
 
   //---- DUT INSTANTIATION -----------------------------------------------------
   ucie_sb_temp_top #(
@@ -102,6 +110,9 @@ module ucie_sb_temp_top_tb;
     .i_rx_encoding  (tb_rx_encoding),
     .i_rx_info      (tb_rx_info),
 
+    .i_sb_init_start(tb_sb_init_start),
+    .i_timer_1ms    (tb_timer_1ms),
+
     .o_sb_tx_req    (mon_sb_tx_req),
     .o_sb_tx_rsp    (mon_sb_tx_rsp),
     .o_sb_tx_done   (mon_sb_tx_done),
@@ -116,7 +127,10 @@ module ucie_sb_temp_top_tb;
     .o_rx_data      (mon_rx_data),
     .o_rx_decoding  (mon_rx_decoding),
     .o_rx_info      (mon_rx_info),
-    .o_rx_valid     (mon_rx_valid)
+    .o_rx_valid     (mon_rx_valid),
+
+    .o_sb_cur_msg_done (mon_sb_cur_msg_done),
+    .o_sb_ready        (mon_sb_ready)
   );
 
   //---- CLOCK GENERATION ------------------------------------------------------
@@ -153,6 +167,9 @@ module ucie_sb_temp_top_tb;
       tb_rx_data      = {pDATA_WIDTH{1'b0}};
       tb_rx_encoding  = {pENCODING_WIDTH{1'b0}};
       tb_rx_info      = {pINFO_WIDTH{1'b0}};
+
+      tb_sb_init_start = 1'b0;
+      tb_timer_1ms     = 1'b0;
 
       repeat (pRST_CYCLES) @(posedge tb_clk);
       tb_reset = 1'b0;

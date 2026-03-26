@@ -1,0 +1,554 @@
+m255
+K4
+z2
+Z0 !s99 nomlopt
+R0
+R0
+R0
+!s11f vlog 2021.1 2021.01, Jan 19 2021
+13
+!s112 1.1
+!i10d 8192
+!i10e 25
+!i10f 100
+cModel Technology
+Z1 dD:/ASU/Graduation Project/RTL/Sideband/V Files
+T_opt
+!s110 1774506379
+VTOMGGM0fLM81@3bSkCANh2
+04 19 4 work ucie_sb_temp_top_tb fast 0
+=4-88a4c20dbece-69c4d18b-1e-38e8
+!s124 OEM100
+o-quiet -auto_acc_if_foreign -work work +acc
+Z2 tCvgOpt 0
+n@_opt
+OL;O;2021.1;73
+vucie_sb_path_tb
+Z3 DXx6 sv_std 3 std 0 22 9oUSJO;AeEaW`l:M@^WG92
+Z4 !s110 1774506375
+!i10b 1
+!s100 j[f1?;S1MkfY>=>I@=Zo63
+ISEPSV>7a:H28O[o@Uazk62
+S1
+R1
+w1774041320
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/Testbench/ucie_sb_path_tb.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/Testbench/ucie_sb_path_tb.sv
+!i122 108
+L0 41 552
+Z5 VDg1SIo80bB@j0V0VzS_@n1
+Z6 OL;L;2021.1;73
+r1
+!s85 0
+31
+Z7 !s108 1774506375.000000
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/Testbench/ucie_sb_path_tb.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/Testbench/ucie_sb_path_tb.sv|
+!i113 0
+Z8 o-work work -sv -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
+R2
+vucie_sb_rx_path
+R3
+Z9 !s110 1774506373
+!i10b 1
+!s100 G^JOcj`9M3mZ]Z9gY[GKF3
+I4h3gXWf@PY]SajZODE4C@0
+S1
+R1
+w1774041314
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_rx_path.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_rx_path.sv
+!i122 88
+L0 1 57
+R5
+R6
+r1
+!s85 0
+31
+Z10 !s108 1774506373.000000
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_rx_path.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_rx_path.sv|
+!i113 0
+R8
+R2
+vucie_sb_temp_top
+R3
+R9
+!i10b 1
+!s100 1]D]Sa2`a65IBAHjfiegh3
+IU9VS@`eF?d@b`zS0OK]TG3
+S1
+R1
+w1774505362
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_temp_top.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_temp_top.sv
+!i122 89
+L0 5 276
+R5
+R6
+r1
+!s85 0
+31
+R10
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_temp_top.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_temp_top.sv|
+!i113 0
+R8
+R2
+vucie_sb_temp_top_tb
+R3
+R4
+!i10b 1
+!s100 ZBdmZC5J:E66]2DN5aK0k3
+Im8ebBG8ANf0eA8N]<0GMS1
+S1
+R1
+w1774204049
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/Testbench/ucie_sideband_tb.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/Testbench/ucie_sideband_tb.sv
+!i122 109
+L0 9 491
+R5
+R6
+r1
+!s85 0
+31
+R7
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/Testbench/ucie_sideband_tb.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/Testbench/ucie_sideband_tb.sv|
+!i113 0
+R8
+R2
+vucie_sb_top
+R3
+R9
+!i10b 1
+!s100 B1]:K4ASz=VoS=H@e9Bco1
+IQ;zUniN>:U8^N:aM1:ITc1
+S1
+R1
+w1774054659
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_top.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_top.sv
+!i122 90
+L0 5 278
+R5
+R6
+r1
+!s85 0
+31
+R10
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_top.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_top.sv|
+!i113 0
+R8
+R2
+vucie_sb_traffic
+R3
+R9
+!i10b 1
+!s100 ES`O9_CHoLYIUc4mzMa]Y2
+I;<jbkSVI_7`HbO32^id8T3
+S1
+R1
+w1772508241
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_traffic.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_traffic.sv
+!i122 91
+L0 5 165
+R5
+R6
+r1
+!s85 0
+31
+R10
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_traffic.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_traffic.sv|
+!i113 0
+R8
+R2
+vucie_sb_tx_path
+R3
+Z11 !s110 1774506374
+!i10b 1
+!s100 N]K]SWdl[l^f7LU<A1TQ=3
+II9:34HUoWWFK<cHhlHTdU3
+S1
+R1
+w1774041304
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_tx_path.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_tx_path.sv
+!i122 92
+L0 1 180
+R5
+R6
+r1
+!s85 0
+31
+R10
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_tx_path.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_tx_path.sv|
+!i113 0
+R8
+R2
+vucie_sideband_demux
+R3
+R11
+!i10b 1
+!s100 H0>36RaUoNTf]Uz2mm8HJ3
+IYBmQQMcT9CaAZh3RcDbNn0
+S1
+R1
+w1774050587
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_demux.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_demux.sv
+!i122 93
+Z12 L0 5 12
+R5
+R6
+r1
+!s85 0
+31
+Z13 !s108 1774506374.000000
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_demux.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_demux.sv|
+!i113 0
+R8
+R2
+vucie_sideband_deser
+R3
+R11
+!i10b 1
+!s100 zN6MOCHk`Cg@AGoXNZ4A`1
+Io6eZ<WYYfUT4?oJ8fUzKD1
+S1
+R1
+w1774202244
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_deser.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_deser.sv
+!i122 94
+L0 6 62
+R5
+R6
+r1
+!s85 0
+31
+R13
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_deser.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_deser.sv|
+!i113 0
+R8
+R2
+vucie_sideband_fifo
+R3
+R11
+!i10b 1
+!s100 8m;f<eELW]8d0VUlzbe1a1
+I`@>W?IhLHL5I^b<H_@Gnd1
+S1
+R1
+w1772244473
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo.sv
+!i122 95
+Z14 L0 5 95
+R5
+R6
+r1
+!s85 0
+31
+R13
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo.sv|
+!i113 0
+R8
+R2
+vucie_sideband_fifo_FWFT
+R3
+R11
+!i10b 1
+!s100 b]BTT?3gA0`d^5;CbG0P43
+I0nAKCc=UaT@Da2ojWG_[H2
+S1
+R1
+w1772244623
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo_FWFT.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo_FWFT.sv
+!i122 96
+R14
+R5
+R6
+r1
+!s85 0
+31
+R13
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo_FWFT.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo_FWFT.sv|
+!i113 0
+R8
+R2
+nucie_sideband_fifo_@f@w@f@t
+vucie_sideband_fifo_traffic
+R3
+R11
+!i10b 1
+!s100 5FelLTcOUAc4W;;Dob>PU1
+I[A=<LP@V60JaD65TGeM7]2
+S1
+R1
+w1772685972
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo_traffic.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo_traffic.sv
+!i122 97
+L0 4 81
+R5
+R6
+r1
+!s85 0
+31
+R13
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo_traffic.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo_traffic.sv|
+!i113 0
+R8
+R2
+vucie_sideband_in
+R3
+R11
+!i10b 1
+!s100 hCH<U@4OR93IPoOMIL8a]2
+IJ4T<mT@DK;HH;:9MU5cXi0
+S1
+R1
+w1774075469
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_in.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_in.sv
+!i122 98
+L0 5 84
+R5
+R6
+r1
+!s85 0
+31
+R13
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_in.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_in.sv|
+!i113 0
+R8
+R2
+vucie_sideband_mux
+R3
+R11
+!i10b 1
+!s100 V]PEe4Em3lbSLPz2SDhPO2
+I3Z]:7:fdD[=KZWHb^C_SR2
+S1
+R1
+w1774049968
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_mux.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_mux.sv
+!i122 99
+R12
+R5
+R6
+r1
+!s85 0
+31
+R13
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_mux.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_mux.sv|
+!i113 0
+R8
+R2
+vucie_sideband_out
+R3
+R11
+!i10b 1
+!s100 Og4FVQ`PUb7@OdDOf65Q80
+I9=mk<S_<9:;PMEFZ2Q@]70
+S1
+R1
+w1774053364
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_out.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_out.sv
+!i122 100
+L0 5 87
+R5
+R6
+r1
+!s85 0
+31
+R13
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_out.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_out.sv|
+!i113 0
+R8
+R2
+vucie_sideband_rx_msg
+R3
+R11
+!i10b 1
+!s100 I@80Ee_@F[0dlAQnfig]z1
+IoS:=R4ij9e=HoVYQL2IDT0
+S1
+R1
+w1772676330
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_rx_msg.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_rx_msg.sv
+!i122 101
+Z15 L0 5 128
+R5
+R6
+r1
+!s85 0
+31
+R13
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_rx_msg.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_rx_msg.sv|
+!i113 0
+R8
+R2
+vucie_sideband_rx_msg_enc_dec
+R3
+R11
+!i10b 1
+!s100 9oC7lB0;MjEmFX1R4onmT0
+IE]Rk8P?;T]_zZn48bS>9e3
+S1
+R1
+w1773535828
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_rx_msg_enc_dec.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_rx_msg_enc_dec.sv
+!i122 102
+L0 5 1219
+R5
+R6
+r1
+!s85 0
+31
+R13
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_rx_msg_enc_dec.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_rx_msg_enc_dec.sv|
+!i113 0
+R8
+R2
+vucie_sideband_ser
+R3
+R11
+!i10b 1
+!s100 6LQNY6giPVUL>>ZmbX7oU1
+IL5NT3^F<5abUd<nR8b0i:2
+S1
+R1
+w1774506369
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_ser.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_ser.sv
+!i122 103
+L0 6 120
+R5
+R6
+r1
+!s85 0
+31
+R13
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_ser.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_ser.sv|
+!i113 0
+R8
+R2
+vucie_sideband_ser_old
+R3
+R4
+!i10b 1
+!s100 [m6?b5mEe7;cZO4lSYl6_1
+Iz1@7>zn^[69dMGM5<B:Ad2
+S1
+R1
+w1774504080
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_ser_old.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_ser_old.sv
+!i122 104
+L0 5 125
+R5
+R6
+r1
+!s85 0
+31
+R7
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_ser_old.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_ser_old.sv|
+!i113 0
+R8
+R2
+vucie_sideband_traffic_fifo
+R3
+R4
+!i10b 1
+!s100 ]MAU873eiXXRHn3e2MWeS1
+Il8<NJcheMO4<BP@A4nOmc2
+S1
+R1
+w1772331409
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_traffic_fifo.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_traffic_fifo.sv
+!i122 105
+L0 5 111
+R5
+R6
+r1
+!s85 0
+31
+R7
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_traffic_fifo.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_traffic_fifo.sv|
+!i113 0
+R8
+R2
+vucie_sideband_tx_msg
+R3
+R4
+!i10b 1
+!s100 bf9=dPFHMbnJ61XVVX@Q;0
+I=:Ec3gRPzDQjXHh:IIaeo3
+S1
+R1
+w1772676017
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_tx_msg.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_tx_msg.sv
+!i122 106
+R15
+R5
+R6
+r1
+!s85 0
+31
+R7
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_tx_msg.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_tx_msg.sv|
+!i113 0
+R8
+R2
+vucie_sideband_tx_msg_enc_dec
+R3
+R4
+!i10b 1
+!s100 ;QmiIo]jOU<9M8]MH];^V2
+IN>04N;<U@Tk[2eN>1FR500
+S1
+R1
+w1773535840
+8D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_tx_msg_enc_dec.sv
+FD:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_tx_msg_enc_dec.sv
+!i122 107
+L0 5 1202
+R5
+R6
+r1
+!s85 0
+31
+R7
+!s107 D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_tx_msg_enc_dec.sv|
+!s90 -reportprogress|300|-work|work|-vopt|-sv|-stats=none|D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_tx_msg_enc_dec.sv|
+!i113 0
+R8
+R2
