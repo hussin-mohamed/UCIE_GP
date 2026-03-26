@@ -1,0 +1,58 @@
+force -freeze sim:/ucie_sb_top/i_clk 1 0, 0 {5 ns} -r 10
+force -freeze sim:/ucie_sb_top/i_reset 1'h1 0
+force -freeze sim:/ucie_sb_top/i_800MHz_clk 1 0, 0 {0.75 ns} -r 1.25
+force -freeze sim:/ucie_sb_top/i_tx_sb_req 1'h0 0
+force -freeze sim:/ucie_sb_top/i_tx_sb_req 1'h0 0
+force -freeze sim:/ucie_sb_top/i_tx_sb_rsp 1'h0 0
+force -freeze sim:/ucie_sb_top/i_tx_sb_done 1'h0 0
+force -freeze sim:/ucie_sb_top/i_tx_data 64'h0 0
+force -freeze sim:/ucie_sb_top/i_tx_encoding 9'h0 0
+force -freeze sim:/ucie_sb_top/i_tx_info 16'h 0
+force -freeze sim:/ucie_sb_top/i_rx_sb_req 1'h0 0
+force -freeze sim:/ucie_sb_top/i_rx_sb_rsp 1'h0 0
+force -freeze sim:/ucie_sb_top/i_rx_sb_done 1'h0 0
+force -freeze sim:/ucie_sb_top/i_rx_data 64'h0 0
+force -freeze sim:/ucie_sb_top/i_rx_encoding 9'h0 0
+force -freeze sim:/ucie_sb_top/i_rx_info 16'h0 0
+force -freeze sim:/ucie_sb_top/i_sb_init_start 1'h0 0
+force -freeze sim:/ucie_sb_top/i_timer_1ms 1'h0 0
+run
+force -freeze sim:/ucie_sb_top/i_reset 1'h0 0
+run
+force -freeze sim:/ucie_sb_top/i_tx_sb_req 1'h1 0
+force -freeze sim:/ucie_sb_top/i_tx_encoding 9'h10 0
+force -freeze sim:/ucie_sb_top/i_tx_data 64'h01069916334 0
+run
+force -freeze sim:/ucie_sb_top/i_tx_sb_req 1'h0 0
+force -freeze sim:/ucie_sb_top/i_tx_data 64'h0 0
+force -freeze sim:/ucie_sb_top/i_tx_encoding 9'h0 0
+run
+
+
+
+force -freeze sim:/ucie_sb_top/i_clk 1 0, 0 {40 ns} -r 80
+force -freeze sim:/ucie_sb_top/i_reset 1'h1 0
+force -freeze sim:/ucie_sb_top/i_800MHz_clk 1 0, 0 {5 ns} -r 10
+force -freeze sim:/ucie_sb_top/i_tx_sb_req 1'h0 0
+force -freeze sim:/ucie_sb_top/i_tx_sb_rsp 1'h0 0
+force -freeze sim:/ucie_sb_top/i_tx_sb_done 1'h0 0
+force -freeze sim:/ucie_sb_top/i_tx_data 64'h 0
+force -freeze sim:/ucie_sb_top/i_tx_encoding 9'h0 0
+force -freeze sim:/ucie_sb_top/i_tx_info 16'h0 0
+force -freeze sim:/ucie_sb_top/i_rx_sb_req 1'h 0
+force -freeze sim:/ucie_sb_top/i_rx_sb_rsp 1'h0 0
+force -freeze sim:/ucie_sb_top/i_rx_sb_done 1'h0 0
+force -freeze sim:/ucie_sb_top/i_rx_data 64'h0 0
+force -freeze sim:/ucie_sb_top/i_rx_encoding 9'h0 0
+force -freeze sim:/ucie_sb_top/i_rx_info 16'h0 0
+run
+force -freeze sim:/ucie_sb_top/i_reset 1'h0 0
+run
+force -freeze sim:/ucie_sb_top/i_rx_sb_rsp 1'h1 0
+force -freeze sim:/ucie_sb_top/i_rx_encoding 9'h12 0
+force -freeze sim:/ucie_sb_top/i_rx_data 64'h01069916334 0
+run
+force -freeze sim:/ucie_sb_top/i_rx_sb_rsp 1'h0 0
+force -freeze sim:/ucie_sb_top/i_rx_encoding 9'h 0
+force -freeze sim:/ucie_sb_top/i_rx_data 64'h0 0
+run

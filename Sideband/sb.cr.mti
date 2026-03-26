@@ -1,0 +1,148 @@
+{D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_rx_msg_enc_dec.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_rx_msg_enc_dec.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_rx_msg_enc_dec
+
+Top level modules:
+	ucie_sideband_rx_msg_enc_dec
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_out.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_out.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_out
+
+Top level modules:
+	ucie_sideband_out
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_tx_msg_enc_dec.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_tx_msg_enc_dec.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_tx_msg_enc_dec
+
+Top level modules:
+	ucie_sideband_tx_msg_enc_dec
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_traffic.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_traffic.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sb_traffic
+
+Top level modules:
+	ucie_sb_traffic
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_mux.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_mux.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_mux
+
+Top level modules:
+	ucie_sideband_mux
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_temp_top.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_temp_top.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sb_temp_top
+
+Top level modules:
+	ucie_sb_temp_top
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/Testbench/ucie_sb_path_tb.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/Testbench/ucie_sb_path_tb.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sb_path_tb
+
+Top level modules:
+	ucie_sb_path_tb
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_top.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_top.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sb_top
+
+Top level modules:
+	ucie_sb_top
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_ser_old.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_ser_old.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_ser_old
+
+Top level modules:
+	ucie_sideband_ser_old
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_rx_msg.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_rx_msg.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_rx_msg
+
+Top level modules:
+	ucie_sideband_rx_msg
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_rx_path.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_rx_path.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sb_rx_path
+
+Top level modules:
+	ucie_sb_rx_path
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_tx_msg.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_tx_msg.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_tx_msg
+
+Top level modules:
+	ucie_sideband_tx_msg
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_traffic_fifo.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_traffic_fifo.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_traffic_fifo
+
+Top level modules:
+	ucie_sideband_traffic_fifo
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo_FWFT.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo_FWFT.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_fifo_FWFT
+
+Top level modules:
+	ucie_sideband_fifo_FWFT
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo_traffic.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo_traffic.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_fifo_traffic
+
+Top level modules:
+	ucie_sideband_fifo_traffic
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_tx_path.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sb_tx_path.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sb_tx_path
+
+Top level modules:
+	ucie_sb_tx_path
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_demux.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_demux.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_demux
+
+Top level modules:
+	ucie_sideband_demux
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_deser.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_deser.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_deser
+
+Top level modules:
+	ucie_sideband_deser
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_fifo.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_fifo
+
+Top level modules:
+	ucie_sideband_fifo
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/Testbench/ucie_sideband_tb.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/Testbench/ucie_sideband_tb.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sb_temp_top_tb
+
+Top level modules:
+	ucie_sb_temp_top_tb
+
+} {} {}} {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_in.sv} {1 {vlog -work work -vopt -sv -stats=none {D:/ASU/Graduation Project/RTL/Sideband/V Files/ucie_sideband_in.sv}
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+-- Compiling module ucie_sideband_in
+
+Top level modules:
+	ucie_sideband_in
+
+} {} {}}
