@@ -109,8 +109,12 @@ endfunction
 task sb_monitor_base::run_phase(uvm_phase phase);
   super.run_phase(phase);
   
-  forever begin 
-    @(negedge bfm.reset); 
+  forever begin
+    // Wait for reset deassertion
+    @(negedge bfm.reset);
+
+    // Wait for the SBINIT to finish
+    @(negedge bfm.o_sb_ready);
 
     fork 
       monitor_items(); 

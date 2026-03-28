@@ -64,6 +64,12 @@ endfunction : new
 // ----
 
 task sbinit_phylink_sanity_seq::body();
+  start_item(req);
+  req.op_mode           = SBINIT;
+  req.pattern           = `SBINIT_PATTERN;
+  req.idle_ui_cnt       = 32;
+  req.out_of_rst_ui_cnt = 1000;
+  finish_item(req);
   forever begin
     start_item(req);
     req.op_mode           = SBINIT;
@@ -89,6 +95,7 @@ task sbinit_phylink_sanity_seq::body();
       end
       break;
     end else if (rsp.timeout_detected) begin
+      `uvm_info(get_type_name(), "Timeout is DETECTED", UVM_DEBUG)
       break;
     end
   end

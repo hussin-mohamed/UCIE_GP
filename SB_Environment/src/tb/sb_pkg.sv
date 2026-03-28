@@ -82,6 +82,7 @@ package sb_pkg;
   // Sequences
   `include "sequences/sbinit_ctrl_sanity_seq.svh"
   `include "sequences/sbinit_phylink_sanity_seq.svh"
+  `include "sequences/tx_sanity_seq.svh"
   `include "virtual_sequences/virtual_sequence.svh"
 
   // Tests

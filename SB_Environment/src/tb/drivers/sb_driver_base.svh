@@ -94,9 +94,11 @@ task sb_driver_base::run_phase(uvm_phase phase);
   super.run_phase(phase);
 
   forever begin
+    // Wait for reset deassertion
     @(negedge bfm.reset);
     `uvm_info(get_type_name(), "Got out of reset", UVM_DEBUG)
     
+    // Wait for the SBINIT to finish
     if (wait_for_sbinit) begin
      `uvm_info(get_type_name(), "Waiting for the ready signal...", UVM_DEBUG)
       @(negedge bfm.o_sb_ready);
@@ -143,7 +145,6 @@ task sb_driver_base::drive_items();
     `uvm_info(get_type_name(), "Driving...", UVM_DEBUG)
     drive_item(req, rsp);
     `uvm_info(get_type_name(), $sformatf("DRIVED %s: \n%s", req.get_type_name(), req.sprint()), UVM_DEBUG)
-
 
     // Trigger item driving completion for the sequence with/without sending response
     if(is_reactive) begin

@@ -22,14 +22,14 @@
 interface sb_ltsm_ctrl_bfm(
    input  logic clk
   ,input  logic reset
-  ,output logic o_sb_ready // SBINIT initialization complete
+  ,input  logic o_sb_ready // SBINIT initialization complete
 );
 
   //============================================================================
   // LTSM → SB Control Signals
   //============================================================================
   logic i_sb_init_start;  // Trigger SBINIT sequence
-  logic i_t1_ms;          // 1ms timer tick for timeout logic
+  logic i_timer_1ms;          // 1ms timer tick for timeout logic
 
   task clear();
     i_sb_init_start <= 0;
@@ -41,7 +41,7 @@ interface sb_ltsm_ctrl_bfm(
     if (reset) begin
       tms <= 0;
     end else begin
-      if (i_t1_ms) begin
+      if (i_timer_1ms) begin
         tms <= tms + 1;
       end
     end
@@ -50,7 +50,7 @@ interface sb_ltsm_ctrl_bfm(
   // Timout flag generator
   bit timeout;
   always @(posedge clk) begin
-    if (tms == 7 && i_t1_ms) begin
+    if (tms == 7 && i_timer_1ms) begin
       timeout = 1;
     end
   end
@@ -74,14 +74,14 @@ interface sb_ltsm_ctrl_bfm(
     // USE THE LATCHED ENABLE HERE
     if (reset || !timer_en) begin
       ms_counter <= 0;
-      i_t1_ms <= 1'b0;
+      i_timer_1ms <= 1'b0;
     end else begin
       // Count 0 to 83 to create an exact 84-cycle interval
       if (ms_counter == 83) begin
-        i_t1_ms <= 1'b1; // Pulse high for 1 logic cycle
+        i_timer_1ms <= 1'b1; // Pulse high for 1 logic cycle
         ms_counter <= 0;
       end else begin
-        i_t1_ms <= 1'b0;
+        i_timer_1ms <= 1'b0;
         ms_counter <= ms_counter + 1;
       end
     end

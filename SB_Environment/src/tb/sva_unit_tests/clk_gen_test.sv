@@ -33,20 +33,20 @@ class clk_gen_test extends svaunit_test;
     // Wait for the next active clock edge
     @(posedge vif.i_clk);
 
-    // 3. Drive o_tx_sb_clk to match clk_ser for 64 cycles
+    // 3. Drive o_tx_sb_clk to match clk_800MHz for 64 cycles
     for (int i = 0; i < 64; i++) begin
-      @(posedge vif.clk_ser)  vif.o_tx_sb_clk <= 1'b1;
-      @(negedge vif.clk_ser)  vif.o_tx_sb_clk <= 1'b0;
+      @(posedge vif.clk_800MHz)  vif.o_tx_sb_clk <= 1'b1;
+      @(negedge vif.clk_800MHz)  vif.o_tx_sb_clk <= 1'b0;
     end
 
     // 4. Keep o_tx_sb_clk low for 32 cycles
     for (int i = 0; i < 32; i++) begin
-      @(posedge vif.clk_ser);
+      @(posedge vif.clk_800MHz);
       vif.o_tx_sb_clk <= 1'b0;
     end
 
-    // Wait exactly 1 more clk_ser cycle for the final clk_2x SVA sequence step to evaluate and register SUCCESS
-    @(posedge vif.clk_ser);
+    // Wait exactly 1 more clk_800MHz cycle for the final clk_2x SVA sequence step to evaluate and register SUCCESS
+    @(posedge vif.clk_800MHz);
   endtask
 
 endclass

@@ -38,6 +38,13 @@ class sanity_test extends sb_test_base;
   // and drops objection upon completion.
 
   extern task main_phase(uvm_phase phase);
+
+
+  // Function: end_of_elaboration_phase
+  //
+  // ...
+
+  extern function void end_of_elaboration_phase(uvm_phase phase);
 endclass : sanity_test
 
 
@@ -58,6 +65,14 @@ endclass : sanity_test
 function sanity_test::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
+
+// end_of_elaboration_phase
+// ---------
+
+function void sanity_test::end_of_elaboration_phase(uvm_phase phase);
+  super.end_of_elaboration_phase(phase);
+  uvm_top.set_timeout(50us, 0);
+endfunction
 
 // main_phase
 // ---------

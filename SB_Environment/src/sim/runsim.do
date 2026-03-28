@@ -23,12 +23,12 @@ set NoQuitOnFinish 1
 add wave -group Global_Signals -position insertpoint  \
   sim:/sb_tb_top/reset_intf/clk \
   sim:/sb_tb_top/reset_intf/reset \
-  sim:/sb_tb_top/phylink_bfm/clk_ser
+  sim:/sb_tb_top/phylink_bfm/clk_800MHz
 
 # 2. LTSM Control BFM
 add wave -group LTSM_CTRL -position insertpoint  \
   sim:/sb_tb_top/ltsm_ctrl_bfm/i_sb_init_start \
-  sim:/sb_tb_top/ltsm_ctrl_bfm/i_t1_ms \
+  sim:/sb_tb_top/ltsm_ctrl_bfm/i_timer_1ms \
   sim:/sb_tb_top/ltsm_ctrl_bfm/o_sb_ready \
   sim:/sb_tb_top/ltsm_ctrl_bfm/timeout \
   sim:/sb_tb_top/ltsm_ctrl_bfm/tms
@@ -40,6 +40,18 @@ add wave -group PHY_LINK_MDI -position insertpoint  \
   sim:/sb_tb_top/phylink_bfm/o_tx_sb_data \
   sim:/sb_tb_top/phylink_bfm/o_tx_sb_clk \
   sim:/sb_tb_top/phylink_bfm/pat_detected
+
+# 4. SVA Assertions (bound inside DUT)
+add wave -group SVA_Assertions -position insertpoint  \
+  sim:/sb_tb_top/dut/sva_inst/ap_pat_gen \
+  sim:/sb_tb_top/dut/sva_inst/ap_pat_low \
+  sim:/sb_tb_top/dut/sva_inst/ap_clk_gen \
+  sim:/sb_tb_top/dut/sva_inst/ap_clk_low \
+  sim:/sb_tb_top/dut/sva_inst/chk_async_reset \
+  sim:/sb_tb_top/dut/sva_inst/chk_no_clk_glitch \
+  sim:/sb_tb_top/dut/sva_inst/pat_detected \
+  sim:/sb_tb_top/dut/sva_inst/timeout \
+  sim:/sb_tb_top/dut/sva_inst/tms
 
 # 4. RDI BFM (Adapter <-> SB)
 # add wave -group RDI_ADAPTER -position insertpoint  \

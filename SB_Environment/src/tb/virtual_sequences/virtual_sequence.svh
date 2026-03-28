@@ -27,6 +27,7 @@ class sbinit_sanity_vseq extends virtual_sequence_base;
 
   sbinit_ctrl_sanity_seq    ctrl_sanity_seq;
   sbinit_phylink_sanity_seq phylink_sanity_seq;
+  tx_sanity_seq             tx_seq;
 
 
   // Function: new
@@ -77,6 +78,7 @@ endfunction : new
 task sbinit_sanity_vseq::pre_body();
   ctrl_sanity_seq    = sbinit_ctrl_sanity_seq::type_id::create("ctrl_sanity_seq");
   phylink_sanity_seq = sbinit_phylink_sanity_seq::type_id::create("phylink_sanity_seq");
+  tx_seq             = tx_sanity_seq::type_id::create("tx_seq");
 endtask : pre_body
 
 // body
@@ -93,7 +95,7 @@ task sbinit_sanity_vseq::body();
       phylink_sanity_seq.start(phylink_seqr);
     end
   join
+  #100;
 
-  // @(timeout_triggered);
-  // disable fork;
+  tx_seq.start(tx_seqr);
 endtask : body

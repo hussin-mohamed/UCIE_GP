@@ -26,16 +26,15 @@ import uvm_pkg::*;
 
 interface sb_phylink_bfm(
   input logic clk
+ ,input logic clk_800MHz
  ,input logic reset
  ,input logic o_sb_ready
 );
     
-  bit clk_ser, pat_detected;
+  bit pat_detected;
 
   bit [2:0] tms;
   bit timeout;
-
-  initial forever #2 clk_ser = ~clk_ser;
 
   //============================================================================
   // From Partner Die Signals (Inputs to DUT)
@@ -88,33 +87,31 @@ interface sb_phylink_bfm(
 
     if (is_first_iteration) begin
       @(posedge start);
-      if (~clk) begin
-        @(posedge clk);
-      end
+      @(posedge clk);
       is_first_iteration = 0;
     end
 
     if (_delay_ui_cnt != 0) begin
-      repeat(_delay_ui_cnt) @(posedge clk_ser);
+      repeat(_delay_ui_cnt) @(posedge clk_800MHz);
     end
     // 64 UI Pattern Phase
     for (int i = 0; i < 64; i++) begin
-      @(posedge clk_ser iff (tms%2 == 0));
+      @(posedge clk_800MHz iff (tms%2 == 0));
       i_rx_sb_data <= _pattern[i];
       i_rx_sb_clk  <= 1'b1; // Strobe high
 
-      @(negedge clk_ser iff (tms%2 == 0));
+      @(negedge clk_800MHz iff (tms%2 == 0));
       i_rx_sb_clk  <= 1'b0; // Strobe low
     end
 
-    @(posedge clk_ser iff (tms%2 == 0));
+    @(posedge clk_800MHz iff (tms%2 == 0));
 
     // _idle_ui_cnt UI Low Phase
     i_rx_sb_data <= 1'b0;
     i_rx_sb_clk  <= 1'b0;
     
     // Wait for _idle_ui_cnt UI
-    repeat(_idle_ui_cnt) @(posedge clk_ser iff (tms%2 == 0));
+    repeat(_idle_ui_cnt-1) @(posedge clk_800MHz iff (tms%2 == 0));
   endtask : serialize_pattern
 
   task serialize_data(
@@ -140,22 +137,22 @@ interface sb_phylink_bfm(
       for (int i = 0; i < 64; i++) begin
         bit_idx = (pkt * 64) + i; // Offset by 64 bits for the second packet
 
-        @(posedge clk_ser);
+        @(posedge clk_800MHz);
         i_rx_sb_data <= _data[bit_idx];
         i_rx_sb_clk  <= 1'b1; // Strobe high
 
-        @(negedge clk_ser);
+        @(negedge clk_800MHz);
         i_rx_sb_clk  <= 1'b0; // Strobe low
       end
 
-      @(posedge clk_ser);
+      @(posedge clk_800MHz);
 
       // _idle_ui_cnt UI Low Phase
       i_rx_sb_data <= 1'b0;
       i_rx_sb_clk  <= 1'b0;
       
       // Wait for _idle_ui_cnt UI
-      repeat(_idle_ui_cnt) @(posedge clk_ser);
+      repeat(_idle_ui_cnt) @(posedge clk_800MHz);
     end
   endtask : serialize_data
 

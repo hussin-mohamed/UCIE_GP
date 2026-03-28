@@ -88,7 +88,7 @@ class real_pat_gen_test extends svaunit_test;
       // ==================================================================
       begin
         forever @(posedge vif.i_clk) begin
-          if (vif.i_t1_ms) begin
+          if (vif.i_timer_1ms) begin
             ms_count++;
           end
         end

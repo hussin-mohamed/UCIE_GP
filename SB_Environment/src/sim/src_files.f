@@ -1,9 +1,11 @@
 ../tb/shared_pkg.sv
+../../../Sideband/*
 ../bfms/sb_ltsm_ctrl_bfm.sv
 ../bfms/sb_rdi_bfm.sv
 ../bfms/sb_rx_bfm.sv
 ../bfms/sb_phylink_bfm.sv
 ../bfms/sb_reset_intf.sv
 ../bfms/sb_tx_bfm.sv
+../tb/sb_sva.sv
 ../tb/sb_pkg.sv
 ../tb/top.sv

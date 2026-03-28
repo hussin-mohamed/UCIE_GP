@@ -26,22 +26,22 @@ class clk_gen_fail_test extends svaunit_test;
     @(posedge vif.i_clk);
 
     // =========================================================
-    // CORNER CASE 1: The Late Start (Shifted by 1 clk_ser)
+    // CORNER CASE 1: The Late Start (Shifted by 1 clk_800MHz)
     // =========================================================
     `uvm_info("FAIL_TEST", "Injecting Corner Case 1: Late Start...", UVM_LOW)
     vif.i_sb_init_start <= 1'b1;
     @(posedge vif.i_clk);
     vif.i_sb_init_start <= 1'b0; // Drop trigger so we can reuse it later
 
-    // INTENTIONAL BUG: Delay 1 extra clk_ser cycle before starting toggles
-    @(posedge vif.clk_ser);
+    // INTENTIONAL BUG: Delay 1 extra clk_800MHz cycle before starting toggles
+    @(posedge vif.clk_800MHz);
     
     for (int i = 0; i < 64; i++) begin
-      @(posedge vif.clk_ser)  vif.o_tx_sb_clk <= 1'b1;
-      @(negedge vif.clk_ser)  vif.o_tx_sb_clk <= 1'b0;
+      @(posedge vif.clk_800MHz)  vif.o_tx_sb_clk <= 1'b1;
+      @(negedge vif.clk_800MHz)  vif.o_tx_sb_clk <= 1'b0;
     end
     for (int i = 0; i < 32; i++) begin
-      @(posedge vif.clk_ser);
+      @(posedge vif.clk_800MHz);
       vif.o_tx_sb_clk <= 1'b0;
     end
     @(posedge vif.i_clk);
@@ -57,12 +57,12 @@ class clk_gen_fail_test extends svaunit_test;
 
     // INTENTIONAL BUG: Only 63 toggles!
     for (int i = 0; i < 63; i++) begin
-      @(posedge vif.clk_ser)  vif.o_tx_sb_clk <= 1'b1;
-      @(negedge vif.clk_ser)  vif.o_tx_sb_clk <= 1'b0;
+      @(posedge vif.clk_800MHz)  vif.o_tx_sb_clk <= 1'b1;
+      @(negedge vif.clk_800MHz)  vif.o_tx_sb_clk <= 1'b0;
     end
     // 33 low cycles to pad the remaining time
     for (int i = 0; i < 33; i++) begin
-      @(posedge vif.clk_ser);
+      @(posedge vif.clk_800MHz);
       vif.o_tx_sb_clk <= 1'b0;
     end
     @(posedge vif.i_clk);
@@ -78,27 +78,27 @@ class clk_gen_fail_test extends svaunit_test;
 
     // 64 Correct toggles
     for (int i = 0; i < 64; i++) begin
-      @(posedge vif.clk_ser)  vif.o_tx_sb_clk <= 1'b1;
-      @(negedge vif.clk_ser)  vif.o_tx_sb_clk <= 1'b0;
+      @(posedge vif.clk_800MHz)  vif.o_tx_sb_clk <= 1'b1;
+      @(negedge vif.clk_800MHz)  vif.o_tx_sb_clk <= 1'b0;
     end
     
     // 15 low cycles...
     for (int i = 0; i < 15; i++) begin
-      @(posedge vif.clk_ser);
+      @(posedge vif.clk_800MHz);
       vif.o_tx_sb_clk <= 1'b0;
     end
     
     // INTENTIONAL BUG: 1 rogue toggle in the middle of the low period!
-    @(posedge vif.clk_ser)  vif.o_tx_sb_clk <= 1'b1;
-    @(negedge vif.clk_ser)  vif.o_tx_sb_clk <= 1'b0;
+    @(posedge vif.clk_800MHz)  vif.o_tx_sb_clk <= 1'b1;
+    @(negedge vif.clk_800MHz)  vif.o_tx_sb_clk <= 1'b0;
     
     // Remaining 16 low cycles...
     for (int i = 0; i < 16; i++) begin
-      @(posedge vif.clk_ser);
+      @(posedge vif.clk_800MHz);
       vif.o_tx_sb_clk <= 1'b0;
     end
     
-    @(posedge vif.clk_ser);
+    @(posedge vif.clk_800MHz);
   endtask
 
 endclass

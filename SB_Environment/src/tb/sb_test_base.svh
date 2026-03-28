@@ -125,7 +125,7 @@ endfunction : build_phase
 
 function void sb_test_base::end_of_elaboration_phase(uvm_phase phase);
   super.end_of_elaboration_phase(phase);
-  
+
   vseq = sbinit_sanity_vseq::type_id::create("vseq", this);
   uvm_top.print_topology(); // Prints entire testbench hierarchy 
 endfunction : end_of_elaboration_phase

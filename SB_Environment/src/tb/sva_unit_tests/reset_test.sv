@@ -110,7 +110,7 @@ class reset_test extends svaunit_test;
           // THREAD 1: Background Timer 
           begin
             forever @(posedge vif.i_clk) begin
-              if (vif.i_t1_ms) ms_count++;
+              if (vif.i_timer_1ms) ms_count++;
             end
           end
 

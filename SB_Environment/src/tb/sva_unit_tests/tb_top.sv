@@ -7,10 +7,10 @@ module tb_top;
 
   // Clock generation
   bit i_clk;
-  bit clk_ser;
+  bit clk_800MHz;
 
   initial forever #16 i_clk = ~i_clk;     // 32 time units
-  initial forever #2 clk_ser = ~clk_ser;  // 4 time units
+  initial forever #2 clk_800MHz = ~clk_800MHz;  // 4 time units
 
   // Latch the start pulse and clear it on reset or timeout
   bit timer_en = 0;
@@ -28,14 +28,14 @@ module tb_top;
     // USE THE LATCHED ENABLE HERE
     if (dut_if.i_reset || !timer_en) begin
       ms_counter <= 0;
-      dut_if.i_t1_ms <= 1'b0;
+      dut_if.i_timer_1ms <= 1'b0;
     end else begin
       // Count 0 to 83 to create an exact 84-cycle interval
       if (ms_counter == 83) begin
-        dut_if.i_t1_ms <= 1'b1; // Pulse high for 1 logic cycle
+        dut_if.i_timer_1ms <= 1'b1; // Pulse high for 1 logic cycle
         ms_counter <= 0;
       end else begin
-        dut_if.i_t1_ms <= 1'b0;
+        dut_if.i_timer_1ms <= 1'b0;
         ms_counter <= ms_counter + 1;
       end
     end
@@ -62,7 +62,7 @@ module tb_top;
   // Instantiate your SVA interface
   sb_sva dut_if(
     .i_clk(i_clk),
-    .clk_ser(clk_ser)
+    .clk_800MHz(clk_800MHz)
     // ... connect other pins
   );
 

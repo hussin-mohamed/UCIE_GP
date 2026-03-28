@@ -77,7 +77,7 @@ class timeout_pat_gen_test extends svaunit_test;
           // THREAD 1: Local Timer Tracker
           begin
             forever @(posedge vif.i_clk) begin
-              if (vif.i_t1_ms) ms_count++;
+              if (vif.i_timer_1ms) ms_count++;
             end
           end
 

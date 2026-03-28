@@ -1,5 +1,0 @@
-s1(04Mar2026:13:49:39):  xrun -f src_files.f +incdir+../tb -uvm -hal -l log/hal_lint_2026-03-04.log 
-s2(04Mar2026:13:54:01):  xrun -f src_files.f +incdir+../tb -uvm -hal -l log/hal_lint_2026-03-04.log 
-s3(04Mar2026:13:55:12):  xrun -f src_files.f +incdir+../tb -uvm -hal -l log/hal_lint_2026-03-04.log 
-s4(04Mar2026:14:02:18):  xrun -f src_files.f +incdir+../tb -uvm -hal -timescale 1ns/1ns -l log/hal_lint_2026-03-04.log 
-s5(04Mar2026:14:03:29):  xrun -f src_files.f +incdir+../tb -uvm -hal -timescale 1ns/1ns -l log/hal_lint_2026-03-04.log 

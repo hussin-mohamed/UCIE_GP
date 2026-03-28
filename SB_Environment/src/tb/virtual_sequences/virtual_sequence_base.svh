@@ -34,6 +34,7 @@ class virtual_sequence_base extends uvm_sequence;
   
   ltsm_ctrl_sequencer ltsm_ctrl_seqr;
   phylink_sequencer   phylink_seqr;
+  tx_sequencer        tx_seqr;
 
 
   // Function: new
@@ -80,4 +81,5 @@ task virtual_sequence_base::body();
   end
   ltsm_ctrl_seqr = vseqr.ltsm_ctrl_seqr;
   phylink_seqr   = vseqr.phylink_seqr;
+  tx_seqr        = vseqr.tx_seqr;
 endtask : body

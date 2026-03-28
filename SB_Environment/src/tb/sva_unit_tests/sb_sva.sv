@@ -38,7 +38,7 @@ interface sb_sva #(
 )(
   // Clocks remain as ports because they are driven continuously by tb_top
   input logic i_clk,
-  input logic clk_ser
+  input logic clk_800MHz
 );
   import sb_seq_pkg::*;
 
@@ -61,7 +61,7 @@ interface sb_sva #(
   logic [PINFO_WIDTH-1:0]     i_rx_info;
   logic [PDATA_WIDTH-1:0]     i_rx_data;
 
-  logic i_t1_ms;
+  logic i_timer_1ms;
   logic i_sb_init_start;
 
   logic i_rx_sb_data;
@@ -106,14 +106,14 @@ interface sb_sva #(
     if (i_reset) begin
       tms <= 0;
     end else begin
-      if (i_t1_ms) begin
+      if (i_timer_1ms) begin
         tms <= tms + 1;
       end
     end
   end
 
   always @(posedge i_clk) begin
-    if (tms == 7 && i_t1_ms) begin
+    if (tms == 7 && i_timer_1ms) begin
       timeout = 1;
     end
   end

@@ -79,8 +79,10 @@ task ltsm_ctrl_driver::drive_item(inout ltsm_ctrl_seq_item req, output ltsm_ctrl
     `uvm_info(get_type_name(), "sbinit_mode is START", UVM_DEBUG)
     fork
       begin
+        `uvm_info(get_type_name(), "Waiting for timeout...", UVM_DEBUG)
         @(posedge bfm.timeout);
         -> timeout_triggered;
+        `uvm_info(get_type_name(), "TRIGGERED timeout", UVM_DEBUG)
       end
 
       begin
@@ -93,5 +95,6 @@ task ltsm_ctrl_driver::drive_item(inout ltsm_ctrl_seq_item req, output ltsm_ctrl
       end
     join_any
     disable fork;
+    `uvm_info(get_type_name(), "SBINIT ENDED", UVM_DEBUG)
   end
 endtask : drive_item

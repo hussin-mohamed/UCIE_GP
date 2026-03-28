@@ -25,76 +25,77 @@ package sb_seq_pkg;
   sequence q_pat_det(d, clk);
     @(negedge clk) (d ##1 !d)[*64];
   endsequence : q_pat_det
-
-  sequence q_succ_pat_det(o_tx_sb_data, pat_detected);
-    q_pat_gen(o_tx_sb_data)[*1:$] ##0 pat_detected ##1 q_pat_gen(o_tx_sb_data)[*4];
-  endsequence : q_succ_pat_det
 endpackage : sb_seq_pkg
 
 interface sb_sva #(
-  parameter int PENCODING_WIDTH = 9,
-  parameter int PINFO_WIDTH     = 16,
-  parameter int PDATA_WIDTH     = 64
+   parameter int pENCODING_WIDTH = 9
+  ,parameter int pINFO_WIDTH     = 16
+  ,parameter int pDATA_WIDTH     = 64
 )(
-  // Clocks remain as ports because they are driven continuously by tb_top
-  input logic i_clk,
-  input logic clk_ser
+  // Clocks
+   input logic i_clk
+  ,input logic clk_800MHz
+
+  // Reset
+  ,input logic i_reset
+
+  // TX path inputs
+  ,input logic                       i_tx_sb_req
+  ,input logic                       i_tx_sb_rsp
+  ,input logic                       i_tx_sb_done
+  ,input logic [pENCODING_WIDTH-1:0] i_tx_encoding
+  ,input logic [pINFO_WIDTH-1:0]     i_tx_info
+  ,input logic [pDATA_WIDTH-1:0]     i_tx_data
+
+  // RX path inputs
+  ,input logic                       i_rx_sb_req
+  ,input logic                       i_rx_sb_rsp
+  ,input logic                       i_rx_sb_done
+  ,input logic [pENCODING_WIDTH-1:0] i_rx_encoding
+  ,input logic [pINFO_WIDTH-1:0]     i_rx_info
+  ,input logic [pDATA_WIDTH-1:0]     i_rx_data
+
+  // LTSM control inputs
+  ,input logic i_sb_init_start
+  ,input logic i_timer_1ms
+
+  // Physical link inputs
+  ,input logic i_rx_sb_data
+  ,input logic i_rx_sb_clk
+
+  // TX path outputs
+  ,input logic [pENCODING_WIDTH-1:0] o_tx_decoding
+  ,input logic [pINFO_WIDTH-1:0]     o_tx_info
+  ,input logic [pDATA_WIDTH-1:0]     o_tx_data
+  ,input logic                       o_tx_valid
+
+  // RX path outputs
+  ,input logic [pENCODING_WIDTH-1:0] o_rx_decoding
+  ,input logic [pINFO_WIDTH-1:0]     o_rx_info
+  ,input logic [pDATA_WIDTH-1:0]     o_rx_data
+  ,input logic                       o_rx_valid
+
+  // Handshake outputs
+  ,input logic o_sb_tx_req
+  ,input logic o_sb_tx_rsp
+  ,input logic o_sb_rx_req
+  ,input logic o_sb_rx_rsp
+  ,input logic o_sb_tx_done
+  ,input logic o_sb_rx_done
+
+  // Status and physical link outputs
+  ,input logic o_sb_ready
+  ,input logic o_tx_sb_data
+  ,input logic o_tx_sb_clk
 );
   import sb_seq_pkg::*;
 
-  logic i_reset;
-
-  // LTSM -> Sideband
-  logic i_tx_sb_req;
-  logic i_tx_sb_rsp;
-  logic i_rx_sb_req;
-  logic i_rx_sb_rsp;
-
-  logic i_tx_sb_done;
-  logic i_rx_sb_done;
-
-  logic [PENCODING_WIDTH-1:0] i_tx_encoding;
-  logic [PINFO_WIDTH-1:0]     i_tx_info;
-  logic [PDATA_WIDTH-1:0]     i_tx_data;
-
-  logic [PENCODING_WIDTH-1:0] i_rx_encoding;
-  logic [PINFO_WIDTH-1:0]     i_rx_info;
-  logic [PDATA_WIDTH-1:0]     i_rx_data;
-
-  logic i_t1_ms;
-  logic i_sb_init_start;
-
-  logic i_rx_sb_data;
-  bit i_rx_sb_clk;
-
-  // Sideband -> LTSM 
-  logic [PENCODING_WIDTH-1:0] o_tx_decoding;
-  logic [PINFO_WIDTH-1:0]     o_tx_info;
-  logic [PDATA_WIDTH-1:0]     o_tx_data;
-  logic                       o_tx_valid;
-
-  logic [PENCODING_WIDTH-1:0] o_rx_decoding;
-  logic [PINFO_WIDTH-1:0]     o_rx_info;
-  logic [PDATA_WIDTH-1:0]     o_rx_data;
-  logic                       o_rx_valid;
-
-  logic o_sb_tx_req;
-  logic o_sb_tx_rsp;
-  logic o_sb_rx_req;
-  logic o_sb_rx_rsp;
-
-  logic o_sb_tx_done;
-  logic o_sb_rx_done;
-
-  logic o_sb_ready;
-
-  logic o_tx_sb_data;
-  logic o_tx_sb_clk;
-
-  bit clk_1x, clk_2x, pat_detected, timeout;
+  // ============================================================================
+  // Helper signals (NOT from RTL — internal to SVA checker)
+  // ============================================================================
+  bit clk_2x, pat_detected, timeout;
   bit [2:0] tms;
 
-  initial forever #2 clk_1x = ~clk_1x;
   initial forever #1 clk_2x = ~clk_2x;
 
   always @(negedge i_rx_sb_clk) begin
@@ -106,14 +107,14 @@ interface sb_sva #(
     if (i_reset) begin
       tms <= 0;
     end else begin
-      if (i_t1_ms) begin
+      if (i_timer_1ms) begin
         tms <= tms + 1;
       end
     end
   end
 
   always @(posedge i_clk) begin
-    if (tms == 7 && i_t1_ms) begin
+    if (tms == 7 && i_timer_1ms) begin
       timeout = 1;
     end
   end
@@ -122,8 +123,11 @@ interface sb_sva #(
     timeout = 0;
   end
 
+  // ============================================================================
+  // Properties & Assertions
+  // ============================================================================
   property p_pat_gen();
-    ##1 first_match(q_pat_gen(o_tx_sb_data)[*1:$] ##0 pat_detected ##1 q_pat_gen(o_tx_sb_data)[*4] ##1 @(posedge i_clk) $rose(o_sb_ready));
+    ##1 first_match(q_pat_gen(o_tx_sb_data)[*1:$] ##0 pat_detected ##1 q_pat_gen(o_tx_sb_data)[*4] ##1 @(posedge i_clk) ##1 $rose(o_sb_ready));
   endproperty : p_pat_gen
 
   property p_pat_low();
@@ -143,12 +147,12 @@ interface sb_sva #(
     disable iff(timeout || i_reset)
     $rose(i_sb_init_start)
     |=>
-    @(posedge clk_1x iff (tms%2 == 0))
+    @(posedge clk_800MHz iff (tms%2 == 0))
     p_pat_gen()
   ) pat_detected = 0;
   
   ap_pat_low : assert property(
-    @(posedge clk_1x)
+    @(posedge clk_800MHz)
     ($changed(tms) && (tms%2 != 0))
     |->
     p_pat_low()
@@ -194,4 +198,22 @@ interface sb_sva #(
           } == '0
         );
     end
+
+  // Track the exact simulation time of the last transition
+  time last_toggle_time = -1;
+
+  always @(o_tx_sb_clk) begin
+    // If the signal toggles again at the exact same simulation time
+    if ($time == last_toggle_time) begin
+      
+      // Use an immediate assertion to flag the failure instantly
+      chk_no_clk_glitch: assert(0) else begin
+        `uvm_error("SVA_GLITCH", $sformatf("Zero-time glitch detected on o_tx_sb_clk at time %0t!", $time))
+      end
+      
+    end
+    
+    // Update the tracker for the next transition
+    last_toggle_time = $time;
+  end
 endinterface : sb_sva

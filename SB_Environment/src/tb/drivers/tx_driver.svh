@@ -66,28 +66,30 @@ endfunction : new
 
 task tx_driver::drive_item(inout ltsm_seq_item req, output ltsm_seq_item rsp);
   // Prepare inputs
-  @(negedge bfm.clk);
-  bfm.i_tx_encoding = req.get_tx_encoding();
-  bfm.i_tx_data     = req.data;
-  bfm.i_tx_info     = req.info;
+  @(posedge bfm.clk);
+  bfm.i_tx_encoding <= req.get_tx_encoding();
+  bfm.i_tx_data     <= req.data;
+  bfm.i_tx_info     <= req.info;
 
   // Trigger a request/response message to the Sideband
-  @(negedge bfm.clk);
+  @(posedge bfm.clk);
   if (req.msgtype == REQ_MSG) begin
-    bfm.i_tx_sb_req = 1;
-    bfm.i_tx_sb_rsp = 0;
+    bfm.i_tx_sb_req <= 1;
+    bfm.i_tx_sb_rsp <= 0;
   end else if (req.msgtype == RSP_MSG) begin
-    bfm.i_tx_sb_req = 0;
-    bfm.i_tx_sb_rsp = 1;
+    bfm.i_tx_sb_req <= 0;
+    bfm.i_tx_sb_rsp <= 1;
   end else begin
     `uvm_fatal(get_type_name(), $sformatf("GOT NO_TYPE msgtype in %s: \n%s", req.get_type_name(), req.sprint()))
   end
 
   // Deassert the req/rsp signal upon receiving the done signal
-  @(negedge bfm.o_sb_tx_done);
-  bfm.i_tx_sb_req = 0;
-  bfm.i_tx_sb_rsp = 0;
+  while(!bfm.o_sb_tx_done) begin
+    @(posedge bfm.clk);
+  end
+  bfm.i_tx_sb_req <= 0;
+  bfm.i_tx_sb_rsp <= 0;
 
   // Wait a randomized number of cycles before ending the trasaction
-  repeat (req.wait_cycles) @(negedge bfm.clk);
+  repeat (req.wait_cycles) @(posedge bfm.clk);
 endtask : drive_item
