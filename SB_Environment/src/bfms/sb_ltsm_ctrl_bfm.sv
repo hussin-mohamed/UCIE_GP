@@ -16,55 +16,74 @@
 
 // Interface: sb_ltsm_ctrl_bfm
 // Description: Control and status interface between Sideband and Link Training
-//              State Machine (LTSM). This interface also generates the reset
-//              signal used by all other interfaces.
-// Author: Amr El-Batarny; Verification Team
+//              State Machine (LTSM).
 //******************************************************************************
 
 interface sb_ltsm_ctrl_bfm(
-  input logic clk
+   input  logic clk
+  ,input  logic reset
+  ,input  logic o_sb_ready // SBINIT initialization complete
 );
-
-  //============================================================================
-  // Reset Control (Driven by LTSM agent)
-  //============================================================================
-  logic reset;  // LTSM agent drives this signal
 
   //============================================================================
   // LTSM → SB Control Signals
   //============================================================================
-  logic i_sb_init_start;   // Trigger SBINIT sequence
-  logic i_t1_ms;           // 1ms timer tick for timeout logic
+  logic i_sb_init_start;  // Trigger SBINIT sequence
+  logic i_timer_1ms;          // 1ms timer tick for timeout logic
 
-  //============================================================================
-  // SB → LTSM Status Signals
-  //============================================================================
-  logic stop;              // SBINIT initialization complete
+  task clear();
+    i_sb_init_start <= 0;
+  endtask : clear
 
-  //============================================================================
-  // Clocking Blocks
-  //============================================================================
-  
-  // Driver clocking block - LTSM controls reset and sends commands
-  clocking driver_cb @(posedge clk);
-    default input #1step output #1ns;
-    output reset;            // LTSM controls reset timing
-    output i_sb_init_start;
-    output i_t1_ms;
-    input  stop;
-  endclocking
+  // Millisecond Counter ranging from 0ms to 7ms
+  bit [2:0] tms;
+  always @(posedge clk) begin
+    if (reset) begin
+      tms <= 0;
+    end else begin
+      if (i_timer_1ms) begin
+        tms <= tms + 1;
+      end
+    end
+  end
 
-  // Monitor clocking block - for sampling all signals
-  clocking monitor_cb @(posedge clk);
-    default input #1step;
-    input reset;
-    input i_sb_init_start;
-    input i_t1_ms;
-    input stop;
-  endclocking
+  // Timout flag generator
+  bit timeout;
+  always @(posedge clk) begin
+    if (tms == 7 && i_timer_1ms) begin
+      timeout = 1;
+    end
+  end
+  always @(posedge i_sb_init_start) begin
+    timeout = 0;
+  end
 
-  //============================================================================
-  // Assertions
-  //============================================================================
+  // Latch the start pulse and clear it on reset or timeout
+  bit timer_en = 0;
+  always @(posedge clk) begin
+    if (reset || timeout) begin
+      timer_en <= 1'b0; // Stop the timer when timeout asserts
+    end else if (i_sb_init_start) begin
+      timer_en <= 1'b1; // Latches high on the pulse
+    end
+  end
 
+  // Generate the 1ms pulse exactly fitting 7 pattern iterations (84 clk cycles)
+  int ms_counter = 0;
+  always @(posedge clk) begin
+    // USE THE LATCHED ENABLE HERE
+    if (reset || !timer_en) begin
+      ms_counter <= 0;
+      i_timer_1ms <= 1'b0;
+    end else begin
+      // Count 0 to 83 to create an exact 84-cycle interval
+      if (ms_counter == 83) begin
+        i_timer_1ms <= 1'b1; // Pulse high for 1 logic cycle
+        ms_counter <= 0;
+      end else begin
+        i_timer_1ms <= 1'b0;
+        ms_counter <= ms_counter + 1;
+      end
+    end
+  end
 endinterface : sb_ltsm_ctrl_bfm

@@ -1,0 +1,262 @@
+# vsim -c -lib work -do "run -all; quit" -l run.log testrunner 
+# Start time: 07:32:59 on Mar 03,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: (vopt-29) Unable to get status of file "/mnt/hgfs/VLSI/GP/UCIE_GP/SB_Environment/src/tb/unit_tests/work/_info".
+# Input/output error. (errno = EIO)
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
+# //  Questa Sim-64
+# //  Version 2021.2_1 linux_x86_64 May 15 2021
+# //
+# //  Copyright 1991-2021 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.junit_xml(fast)
+# Loading work.svunit_pkg(fast)
+# Loading mtiUvm.uvm_pkg(fast)
+# Loading work.svunit_uvm_mock_pkg(fast)
+# Loading work.shared_pkg(fast)
+# Loading work.sb_scoreboard_unit_test_sv_unit(fast)
+# Loading mtiUvm.questa_uvm_pkg(fast)
+# Loading work.testrunner(fast)
+# Compiling /tmp/amrelbatarny@amrelbatarny_dpi_6343/linux_x86_64_gcc-7.4.0/exportwrapper.c
+# Compiling /tmp/amrelbatarny@amrelbatarny_dpi_6343/linux_x86_64_gcc-13/exportwrapper.c
+# Loading /tmp/amrelbatarny@amrelbatarny_dpi_6343/linux_x86_64_gcc-13/vsim_auto_compile.so
+# Loading /home/amrelbatarny/QuestaSim/questasim/uvm-1.2/linux_x86_64/uvm_dpi.so
+# run -all
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_root.svh(392) @ 0: reporter [UVM/RELNOTES] 
+# ----------------------------------------------------------------
+# UVM-1.2
+# (C) 2007-2014 Mentor Graphics Corporation
+# (C) 2007-2014 Cadence Design Systems, Inc.
+# (C) 2006-2014 Synopsys, Inc.
+# (C) 2011-2013 Cypress Semiconductor Corp.
+# (C) 2013-2014 NVIDIA Corporation
+# ----------------------------------------------------------------
+# 
+#   ***********       IMPORTANT RELEASE NOTES         ************
+# 
+#   You are using a version of the UVM library that has been compiled
+#   with `UVM_NO_DEPRECATED undefined.
+#   See http://www.eda.org/svdb/view.php?id=3313 for more details.
+# 
+#   You are using a version of the UVM library that has been compiled
+#   with `UVM_OBJECT_DO_NOT_NEED_CONSTRUCTOR undefined.
+#   See http://www.eda.org/svdb/view.php?id=3770 for more details.
+# 
+#       (Specify +UVM_NO_RELNOTES to turn off this notice)
+# 
+# UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(277) @ 0: reporter [Questa UVM] QUESTA_UVM-1.2.3
+# UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(278) @ 0: reporter [Questa UVM]  questa_uvm::init(+struct)
+# INFO:  [0][__ts]: Registering Unit Test Case sb_scoreboard_ut
+# INFO:  [0][testrunner]: Registering Test Suite __ts
+# INFO:  [0][__ts]: RUNNING
+# INFO:  [0][sb_scoreboard_ut]: RUNNING
+# INFO:  [0][sb_scoreboard_ut]: ltsm2link_path_match_test::RUNNING
+# UVM_INFO @ 0: reporter [RNTST] Running test svunit_uvm_test...
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_comparer.svh(351) @ 0: reporter [MISCMP] Miscompare for phy_item.op_mode: lhs =  : rhs = ACTIVE
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_comparer.svh(382) @ 0: reporter [MISCMP] 1 Miscompare(s) for object t_out@1301 vs. phy_item@582
+#  
+#  
+# UVM_ERROR ../scoreboard/sb_cmp_base.svh(87) @ 0: my_sb_scoreboard.cmp_ltsm2link [LTSM2LINK_CMP] 
+# Transaction Mismatch Detected!
+# 
+# ----------------------------------------------------------------------
+# EXPECTED TRANSACTION (From Predictor):
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------
+# Name           Type              Size  Value              
+# ----------------------------------------------------------
+# t_out          phylink_seq_item  -     @1301              
+#   op_mode      operation_t       1     ACTIVE             
+#   pattern      integral          64    'hx                
+#   idle_ui_cnt  integral          32    'h0                
+#   fullcode     fullcode_t        16    SBINIT_out_of_Reset
+#   opcode       opcode_t          5     MSG_WO_DATA        
+#   srcid        srcid_t           3     SRC_PHY            
+#   dstid        dstid_t           3     DST_PHY            
+#   info         integral          16    'haaaa             
+#   data         integral          64    'h0                
+#   cp           integral          1     'h0                
+#   dp           integral          1     'h0                
+# ----------------------------------------------------------
+# 
+# ----------------------------------------------------------------------
+# ACTUAL TRANSACTION (From RTL Monitor):
+# ----------------------------------------------------------------------
+# ----------------------------------------------------------
+# Name           Type              Size  Value              
+# ----------------------------------------------------------
+# phy_item       phylink_seq_item  -     @582               
+#   op_mode      operation_t       1     ""                 
+#   pattern      integral          64    'hx                
+#   idle_ui_cnt  integral          32    'h0                
+#   fullcode     fullcode_t        16    SBINIT_out_of_Reset
+#   opcode       opcode_t          5     MSG_WO_DATA        
+#   srcid        srcid_t           3     SRC_PHY            
+#   dstid        dstid_t           3     DST_PHY            
+#   info         integral          16    'haaaa             
+#   data         integral          64    'h0                
+#   cp           integral          1     'h0                
+#   dp           integral          1     'h0                
+# ----------------------------------------------------------
+# 
+# 
+#  
+# INFO:  [10][sb_scoreboard_ut]: ltsm2link_path_match_test::PASSED
+# INFO:  [10][sb_scoreboard_ut]: link2ltsm_rx_path_match_test::RUNNING
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_comparer.svh(351) @ 10: reporter [MISCMP] Miscompare for ltsm_rx_item.msgtype: lhs =  : rhs = RSP
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_comparer.svh(382) @ 10: reporter [MISCMP] 1 Miscompare(s) for object ltsm_seq_item@1338 vs. ltsm_rx_item@1322
+#  
+#  
+# UVM_ERROR ../scoreboard/sb_cmp_base.svh(87) @ 10: my_sb_scoreboard.cmp_link2ltsm_rx [RX_LINK2LTSM_CMP] 
+# Transaction Mismatch Detected!
+# 
+# ----------------------------------------------------------------------
+# EXPECTED TRANSACTION (From Predictor):
+# ----------------------------------------------------------------------
+# ------------------------------------------------------------
+# Name           Type           Size  Value                   
+# ------------------------------------------------------------
+# ltsm_seq_item  ltsm_seq_item  -     @1338                   
+#   data         integral       64    'h0                     
+#   info         integral       16    'h6666                  
+#   msgtype      msgtype_t      2     RSP                     
+#   valid        integral       1     'h1                     
+#   tx_encoding  tx_encoding_t  9     NOP_TX                  
+#   rx_encoding  rx_encoding_t  9     SBINIT_RX_Done_Handshake
+#   dir          msg_dir_t      1     MSG_FROM_RX             
+# ------------------------------------------------------------
+# 
+# ----------------------------------------------------------------------
+# ACTUAL TRANSACTION (From RTL Monitor):
+# ----------------------------------------------------------------------
+# ------------------------------------------------------------
+# Name           Type           Size  Value                   
+# ------------------------------------------------------------
+# ltsm_rx_item   ltsm_seq_item  -     @1322                   
+#   data         integral       64    'h0                     
+#   info         integral       16    'h6666                  
+#   msgtype      msgtype_t      2     ""                      
+#   valid        integral       1     'h1                     
+#   tx_encoding  tx_encoding_t  9     NOP_TX                  
+#   rx_encoding  rx_encoding_t  9     SBINIT_RX_Done_Handshake
+#   dir          msg_dir_t      1     MSG_FROM_RX             
+# ------------------------------------------------------------
+# 
+# 
+#  
+# INFO:  [20][sb_scoreboard_ut]: link2ltsm_rx_path_match_test::PASSED
+# INFO:  [20][sb_scoreboard_ut]: ltsm2link_path_mismatch_test::RUNNING
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_comparer.svh(351) @ 20: reporter [MISCMP] Miscompare for phy_item.op_mode: lhs =  : rhs = ACTIVE
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_comparer.svh(351) @ 20: reporter [MISCMP] Miscompare for phy_item.data: lhs = 'hdeadbeef : rhs = 'h11112222
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_comparer.svh(382) @ 20: reporter [MISCMP] 2 Miscompare(s) for object t_out@1374 vs. phy_item@1363
+#  
+#  
+# UVM_ERROR ../scoreboard/sb_cmp_base.svh(87) @ 20: my_sb_scoreboard.cmp_ltsm2link [LTSM2LINK_CMP] 
+# Transaction Mismatch Detected!
+# 
+# ----------------------------------------------------------------------
+# EXPECTED TRANSACTION (From Predictor):
+# ----------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# Name           Type              Size  Value                         
+# ---------------------------------------------------------------------
+# t_out          phylink_seq_item  -     @1374                         
+#   op_mode      operation_t       1     ACTIVE                        
+#   pattern      integral          64    'hx                           
+#   idle_ui_cnt  integral          32    'h0                           
+#   fullcode     fullcode_t        16    MBINIT_PARAM_configuration_req
+#   opcode       opcode_t          5     MSG_W_64B_DATA                
+#   srcid        srcid_t           3     SRC_PHY                       
+#   dstid        dstid_t           3     DST_PHY                       
+#   info         integral          16    'h1234                        
+#   data         integral          64    'h11112222                    
+#   cp           integral          1     'h0                           
+#   dp           integral          1     'h0                           
+# ---------------------------------------------------------------------
+# 
+# ----------------------------------------------------------------------
+# ACTUAL TRANSACTION (From RTL Monitor):
+# ----------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# Name           Type              Size  Value                         
+# ---------------------------------------------------------------------
+# phy_item       phylink_seq_item  -     @1363                         
+#   op_mode      operation_t       1     ""                            
+#   pattern      integral          64    'hx                           
+#   idle_ui_cnt  integral          32    'h0                           
+#   fullcode     fullcode_t        16    MBINIT_PARAM_configuration_req
+#   opcode       opcode_t          5     MSG_W_64B_DATA                
+#   srcid        srcid_t           3     SRC_PHY                       
+#   dstid        dstid_t           3     DST_PHY                       
+#   info         integral          16    'h1234                        
+#   data         integral          64    'hdeadbeef                    
+#   cp           integral          1     'h0                           
+#   dp           integral          1     'h0                           
+# ---------------------------------------------------------------------
+# 
+# 
+#  
+# INFO:  [30][sb_scoreboard_ut]: ltsm2link_path_mismatch_test::PASSED
+# INFO:  [30][sb_scoreboard_ut]: link2ltsm_tx_path_mismatch_test::RUNNING
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_comparer.svh(351) @ 30: reporter [MISCMP] Miscompare for ltsm_tx_item.info: lhs = 'h9999 : rhs = 'h1111
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_comparer.svh(351) @ 30: reporter [MISCMP] Miscompare for ltsm_tx_item.msgtype: lhs =  : rhs = REQ
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_comparer.svh(382) @ 30: reporter [MISCMP] 2 Miscompare(s) for object ltsm_seq_item@1412 vs. ltsm_tx_item@1393
+#  
+#  
+# UVM_ERROR ../scoreboard/sb_cmp_base.svh(87) @ 30: my_sb_scoreboard.cmp_link2ltsm_tx [RX_LINK2LTSM_CMP] 
+# Transaction Mismatch Detected!
+# 
+# ----------------------------------------------------------------------
+# EXPECTED TRANSACTION (From Predictor):
+# ----------------------------------------------------------------------
+# ------------------------------------------------------------
+# Name           Type           Size  Value                   
+# ------------------------------------------------------------
+# ltsm_seq_item  ltsm_seq_item  -     @1412                   
+#   data         integral       64    'h0                     
+#   info         integral       16    'h1111                  
+#   msgtype      msgtype_t      2     REQ                     
+#   valid        integral       1     'h1                     
+#   tx_encoding  tx_encoding_t  9     SBINIT_TX_Done_Handshake
+#   rx_encoding  rx_encoding_t  9     NOP_RX                  
+#   dir          msg_dir_t      1     MSG_FROM_TX             
+# ------------------------------------------------------------
+# 
+# ----------------------------------------------------------------------
+# ACTUAL TRANSACTION (From RTL Monitor):
+# ----------------------------------------------------------------------
+# ------------------------------------------------------------
+# Name           Type           Size  Value                   
+# ------------------------------------------------------------
+# ltsm_tx_item   ltsm_seq_item  -     @1393                   
+#   data         integral       64    'h0                     
+#   info         integral       16    'h9999                  
+#   msgtype      msgtype_t      2     ""                      
+#   valid        integral       1     'h1                     
+#   tx_encoding  tx_encoding_t  9     SBINIT_TX_Done_Handshake
+#   rx_encoding  rx_encoding_t  9     NOP_RX                  
+#   dir          msg_dir_t      1     MSG_FROM_TX             
+# ------------------------------------------------------------
+# 
+# 
+#  
+# INFO:  [40][sb_scoreboard_ut]: link2ltsm_tx_path_mismatch_test::PASSED
+# INFO:  [40][sb_scoreboard_ut]: PASSED (4 of 4 tests passing)
+# 
+# INFO:  [40][__ts]: PASSED (1 of 1 testcases passing)
+# 
+# INFO:  [40][testrunner]: PASSED (1 of 1 suites passing) [SVUnit Unreleased]
+# ** Note: $finish    : .testrunner.sv(38)
+#    Time: 40 ns  Iteration: 1  Instance: /testrunner
+# End time: 07:33:09 on Mar 03,2026, Elapsed time: 0:00:10
+# Errors: 0, Warnings: 1

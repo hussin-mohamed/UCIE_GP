@@ -1,60 +1,62 @@
-// ****************************************************************************
-// *                                                                          *
-// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
-// *                                                                          *
-// * Synopsys Proprietary and Confidential. This file contains confidential   *
-// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
-// * reproduction is prohibited without the prior express written permission  *
-// * of Synopsys, Inc.                                                        *
-// *                                                                          *
-// * Synopsys, Inc.                                                           *
-// * 700 East Middlefield Road                                                *
-// * Mountain View, California 94043                                          *
-// * (800) 541-7737                                                           *
-// *                                                                          *
-// ****************************************************************************
+/***********************************************************************
+ * Author : Amr El Batarny
+ * File   : agent.svh
+ * Brief  : Parameterized UVM agent class providing flexible, reusable
+ *          agent infrastructure with configurable active/passive mode.
+ * Note   : Documentation comments generated with AI assistance using
+ *          the same format found in UVM source code.
+ **********************************************************************/
 
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
-// CLASS: agent_base
+// CLASS: agent
 //
-// The agent class provides a highly parameterized UVM agent implementation.
+// The agent class provides a highly parameterized UVM agent implementation
+// that can be configured with different sequencers, drivers, and monitors.
 // Supports both active and passive operation modes based on configuration.
 //
 // Type Parameters:
 //   CFG_NAME - Configuration object name for config_db lookup
+//   AGT_NAME - Default instance name for the agent
 //   INTF_T   - Virtual interface type
+//   SEQR_T   - Sequencer type
+//   DRVR_T   - Driver type
+//   MNTR_T   - Monitor type
+//   ITEM_T   - Transaction item type
 //
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 
-virtual class agent_base #(
+class agent #(
     string CFG_NAME = "GENERIC_CFG_NAME",
-    type   INTF_T   = virtual sb_tx_path_bfm,
-    type   ITEM_T   = tx_path_seq_item
+    string AGT_NAME = "GENERIC_AGENT",
+    type INTF_T,
+    type SEQR_T,
+    type DRVR_T,
+    type MNTR_T,
+    type ITEM_T
     ) extends uvm_agent;
 
-    INTF_T                 bfm;
-    tx_path_sequencer      seqr;
-    tx_path_driver         drvr;
-    tx_path_monitor        mntr;
-    agent_config #(INTF_T) cfg;
-
+    INTF_T                      bfm;
+    SEQR_T                      seqr;
+    DRVR_T                      drvr;
+    MNTR_T                      mntr;
+    agent_config      #(INTF_T) cfg;
     uvm_analysis_port #(ITEM_T) drvr_ap, mntr_ap;
 
     // This field determines whether an agent is active or passive.
     uvm_active_passive_enum is_active = UVM_ACTIVE;
 
     // Provide implementations of virtual methods such as get_type_name and create
-    `uvm_component_param_utils_begin(agent_base #(CFG_NAME, INTF_T))
+    `uvm_component_param_utils_begin(agent #(CFG_NAME, AGT_NAME, INTF_T, SEQR_T, DRVR_T, MNTR_T, ITEM_T))
         `uvm_field_enum(uvm_active_passive_enum, is_active, UVM_DEFAULT)
     `uvm_component_utils_end
 
 
     // Function: new
     //
-    // Creates a new agent instance with the given name.
+    // Creates a new agent instance with the given name (defaults to AGT_NAME parameter).
 
-    extern function new(string name, uvm_component parent);
+    extern function new(string name = AGT_NAME, uvm_component parent = null);
 
 
     // Function: build_phase
@@ -72,7 +74,7 @@ virtual class agent_base #(
 
     extern function void connect_phase(uvm_phase phase);
 
-endclass : agent_base
+endclass : agent
 
 
 //------------------------------------------------------------------------------
@@ -89,7 +91,7 @@ endclass : agent_base
 // new
 // ---
 
-function agent::new(string name, uvm_component parent);
+function agent::new(string name = AGT_NAME, uvm_component parent = null);
     super.new(name, parent);
 endfunction : new
 

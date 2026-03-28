@@ -14,8 +14,11 @@
 // *                                                                          *
 // ****************************************************************************
 
+typedef class agent_config;
+
+// Agent configuration objects typedefs
 typedef agent_config #(.INTF_T(virtual sb_ltsm_ctrl_bfm)) ltsm_ctrl_cfg_t;
-typedef agent_config #(.INTF_T(virtual sb_tx_path_bfm))   tx_path_cfg_t;
-typedef agent_config #(.INTF_T(virtual sb_rx_path_bfm))   rx_path_cfg_t;
+typedef agent_config #(.INTF_T(virtual sb_tx_bfm))        tx_cfg_t;
+typedef agent_config #(.INTF_T(virtual sb_rx_bfm))        rx_cfg_t;
 typedef agent_config #(.INTF_T(virtual sb_rdi_bfm))       rdi_cfg_t;
-typedef agent_config #(.INTF_T(virtual sb_phy_link_bfm))  phy_link_cfg_t;
+typedef agent_config #(.INTF_T(virtual sb_phylink_bfm))   phylink_cfg_t;
