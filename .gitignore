@@ -8,3 +8,5 @@ transcript
 *.qpg
 *.qtl
 *.o
+work/
+certe_dump.xml
