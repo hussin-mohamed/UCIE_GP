@@ -49,16 +49,18 @@ class mbtrain_rx_valvref extends state;
         end
         else if((item_rx_fsm_sb_in.i_sb_rx_done == 1 && train))begin
             o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_INIT_HANDSHAKE;
+            o_rx_data_expected=valid_DATA_FIELD;
             o_rx_info_expected = 16'h0000;
             o_sb_rx_req_expected = 1'b1;
             train =0;
-            if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected==item_rx_fsm_sb_out.o_rx_info && o_sb_rx_req_expected == item_rx_fsm_sb_out.o_sb_rx_req) begin
+            if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding && o_rx_info_expected==item_rx_fsm_sb_out.o_rx_info && o_sb_rx_req_expected == item_rx_fsm_sb_out.o_sb_rx_req && o_rx_data_expected == item_rx_fsm_sb_out.o_rx_data) begin
                 match = 1;
             end else begin
                 match = 0;
-                `uvm_info("mbtrain_rx_datatrainvref", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
-                `uvm_info("mbtrain_rx_datatrainvref", $sformatf("o_sb_rx_rsp mismatch expected value: %0b, got %0b", o_sb_rx_req_expected, item_rx_fsm_sb_out.o_sb_rx_req), UVM_LOW)
-                `uvm_info("mbtrain_rx_datatrainvref", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
+                `uvm_info("mbtrain_rx_valvref", $sformatf("Mismatch in o_rx_encoding: expected %0h, got %0h", o_rx_encoding_expected, item_rx_fsm_sb_out.o_rx_encoding), UVM_LOW)
+                `uvm_info("mbtrain_rx_valvref", $sformatf("o_sb_rx_rsp mismatch expected value: %0b, got %0b", o_sb_rx_req_expected, item_rx_fsm_sb_out.o_sb_rx_req), UVM_LOW)
+                `uvm_info("mbtrain_rx_valvref", $sformatf("o_rx_info mismatch expected value: %0h, got %0h", o_rx_info_expected, item_rx_fsm_sb_out.o_rx_info), UVM_LOW)
+                `uvm_info("mbtrain_rx_valvref", $sformatf("o_rx_data mismatch expected value: %0h, got %0h", o_rx_data_expected, item_rx_fsm_sb_out.o_rx_data), UVM_LOW)
             end           
         end
         else if (item_rx_fsm_sb_in.i_rx_decoding == DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE && item_rx_fsm_sb_in.i_sb_rx_req==1'b1 ) begin

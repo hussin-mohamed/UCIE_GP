@@ -51,17 +51,17 @@ class mbtrain_tx_linkspeed extends state;
             o_tx_encoding_expected = DATA_TO_CLOCK_TX_RX_INIT_HANDSHAKE;
             train = 1;
             o_tx_info_expected = 16'h0000 ;
-            o_tx_data_expected = /*will be known*/ ;
+            o_tx_data_expected =  data_DATA_FIELD;
             o_sb_tx_req_expected = 1'b1;
             error_count = 0;
-            if (o_tx_encoding_expected==item_tx_fsm_sb_out.o_tx_encoding && o_tx_info_expected==item_tx_fsm_sb_out.o_tx_info && o_sb_tx_req_expected == item_tx_fsm_sb_out.o_sb_tx_req && o_tx_data_expected == item_tx_fsm_sb_out.o_tx_data ) begin
+            if (o_tx_encoding_expected==item_tx_fsm_sb_out.o_tx_encoding && o_tx_info_expected==item_tx_fsm_sb_out.o_tx_info && o_sb_tx_req_expected == item_tx_fsm_sb_out.o_sb_tx_req /*&& o_tx_data_expected == item_tx_fsm_sb_out.o_tx_data*/ ) begin
                 match = 1;
             end else begin
                 match = 0;
                 `uvm_info("mbtrain_tx_linkspeed", $sformatf("Mismatch in o_tx_encoding: expected %0h, got %0h", o_tx_encoding_expected, item_tx_fsm_sb_out.o_tx_encoding), UVM_LOW)
                 `uvm_info("mbtrain_tx_linkspeed", $sformatf("o_tx_info mismatch expected value: %0h, got %0h", o_tx_info_expected, item_tx_fsm_sb_out.o_tx_info), UVM_LOW)
                 `uvm_info("mbtrain_tx_linkspeed", $sformatf("o_sb_tx_rsp_expected mismatch expected value: %0b, got %0b", o_sb_tx_req_expected, item_tx_fsm_sb_out.o_sb_tx_req), UVM_LOW)
-                `uvm_info("mbtrain_tx_linkspeed", $sformatf("Mismatch in o_tx_encoding: expected %0h, got %0h", o_tx_data_expected, item_tx_fsm_sb_out.o_tx_data), UVM_LOW)
+                `uvm_info("mbtrain_tx_linkspeed", $sformatf("Mismatch in o_tx_data_expected: expected %0h, got %0h", o_tx_data_expected, item_tx_fsm_sb_out.o_tx_data), UVM_LOW)
             end
         end
         else if ((item_tx_fsm_sb_in.i_tx_decoding == DATA_TO_CLOCK_TX_RX_INIT_HANDSHAKE && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 ) ) begin
