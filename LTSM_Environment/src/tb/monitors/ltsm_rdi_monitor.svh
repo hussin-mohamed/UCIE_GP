@@ -70,6 +70,7 @@ endfunction : new
 
 task ltsm_rdi_monitor::collect_transaction();
     item=ITEM_T::type_id::create("item");
+    forever begin
     @(negedge vif.clk);
     forever begin
         @(negedge vif.clk);
@@ -87,5 +88,9 @@ task ltsm_rdi_monitor::collect_transaction();
         item.o_pl_cerror = vif.o_pl_cerror;
         item.o_pl_nferror = vif.o_pl_nferror;
         ap.write(item);
+        if (vif.i_reset) begin
+            break;
+        end
+    end 
     end
 endtask : collect_transaction

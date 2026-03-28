@@ -74,6 +74,7 @@ endfunction : new
 
 task LTSM_controllers_monitor::collect_transaction();
     item = ITEM_T::type_id::create("item");
+    forever begin
     @(negedge vif.clk);
     forever begin
         @(negedge vif.clk);
@@ -82,5 +83,9 @@ task LTSM_controllers_monitor::collect_transaction();
         item.o_sbinit_start = vif.o_sbinit_start;
         item.o_t1_ms        = vif.o_t1_ms;
         ap.write(item);
+        if (vif.i_reset) begin
+            break;
+        end
+    end 
     end
 endtask : collect_transaction

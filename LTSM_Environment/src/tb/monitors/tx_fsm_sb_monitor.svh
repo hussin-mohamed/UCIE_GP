@@ -69,6 +69,7 @@ endfunction : new
 
 task tx_fsm_sb_monitor::collect_transaction();
     item = ITEM_T::type_id::create("item");
+    forever begin
     @(negedge vif.clk);
     forever begin
         @(negedge vif.clk);
@@ -79,5 +80,10 @@ task tx_fsm_sb_monitor::collect_transaction();
         item.o_sb_tx_done = vif.o_sb_tx_done;
         item.o_tx_info = vif.o_tx_info;
         ap.write(item);
+        if (vif.i_reset) begin
+            break;
+        end
+    end
+        
     end
 endtask : collect_transaction
