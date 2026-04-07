@@ -9,7 +9,7 @@ module ucie_ltsm_tx_sbinit #(
     input                               i_sb_tx_req,
     input                               i_sb_tx_rsp, 
     input                               i_sb_tx_done,
-    input                               i_stop,
+    input                               i_sb_ready,
     input   [3:0]                       i_current_state,
     input                               o_timer_8ms,
  
@@ -87,7 +87,7 @@ always_comb begin
                 o_tx_encoding = 9'h08;
                 o_sb_init_start = 1'b1;
 
-                if(i_stop == 1) begin 
+                if(i_sb_ready == 1) begin 
                     o_sb_init_start = 1'b0;
                     next_substate = OUT_OF_RESET_MSG;
                 end 
@@ -190,13 +190,13 @@ end
         else $error("ASSERT FAIL [TIMEOUT_RESETS_SUBSTATE]: substate not reset to PATTERN_GEN after timeout");
 
     // --------------------------------------------------------------------------
-    // sb_init_start high in PATTERN_GENERATION while i_stop not asserted
+    // sb_init_start high in PATTERN_GENERATION while i_sb_ready not asserted
     // --------------------------------------------------------------------------
     property sb_init_start_active;
         @(posedge i_clk) disable iff (i_reset || o_timer_8ms)
         (i_current_state == SBINIT &&
          current_substate == PATTERN_GENERATION &&
-         !i_stop && !substates_done)
+         !i_sb_ready && !substates_done)
         |-> o_sb_init_start;
     endproperty
     SB_INIT_START_ACTIVE : assert property (sb_init_start_active)

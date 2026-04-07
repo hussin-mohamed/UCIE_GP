@@ -61,7 +61,7 @@ module ucie_LTSM #(
     // -------------------------------------------------------------------------
     // SBINIT
     // -------------------------------------------------------------------------
-    input  logic                        i_stop,             // Stop-respond in SBINIT pattern detection
+    input  logic                        i_sb_ready,             // Stop-respond in SBINIT pattern detection
  
     input [15:0]                        r_local_cap,
     input [2:0]                         i_speedreg,
@@ -335,7 +335,7 @@ ucie_ltsm_init_fsm # (
     // -------------------------------------------------------------------------
     // SBINIT sub-FSM specific inputs
     // -------------------------------------------------------------------------
-    .i_stop                         (i_stop),
+    .i_sb_ready                         (i_sb_ready),
 
     // -------------------------------------------------------------------------
     // REPAIRCLK / REPAIRVAL / REVERSAL pattern-detection results

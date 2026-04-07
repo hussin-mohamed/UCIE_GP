@@ -63,7 +63,7 @@ module ucie_ltsm_init_fsm #(
     // -------------------------------------------------------------------------
     // SBINIT sub-FSM specific inputs
     // -------------------------------------------------------------------------
-    input  logic                        i_stop,             // TX SBINIT pattern-gen stop
+    input  logic                        i_sb_ready,             // TX SBINIT pattern-gen stop
 
     // -------------------------------------------------------------------------
     // REPAIRCLK / REPAIRVAL pattern-detection results
@@ -543,7 +543,7 @@ module ucie_ltsm_init_fsm #(
         .i_sb_tx_req      (i_sb_tx_req),
         .i_sb_tx_rsp      (i_sb_tx_rsp),
         .i_sb_tx_done     (i_sb_tx_done),
-        .i_stop           (i_stop),
+        .i_sb_ready           (i_sb_ready),
         .i_current_state  (current_state),
         .o_timer_8ms      (o_timer_8ms),
         .o_tx_encoding    (tx_enc_sbinit),
@@ -572,7 +572,7 @@ module ucie_ltsm_init_fsm #(
         .i_sb_rx_done     (i_sb_rx_done),
         .i_rx_done        (i_rx_done),
         .init_train_en    (init_train_en_reg),
-        .i_stop           (i_stop),
+        .i_sb_ready           (i_sb_ready),
         .i_current_state  (current_state),
         .o_timer_8ms      (o_timer_8ms),
         .o_rx_encoding    (rx_enc_sbinit),

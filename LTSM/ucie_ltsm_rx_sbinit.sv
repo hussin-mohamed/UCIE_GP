@@ -14,7 +14,7 @@ module ucie_ltsm_rx_sbinit #(
     input                               i_sb_rx_done,
     input                               i_rx_done,
     input                               init_train_en,  
-    input                               i_stop,
+    input                               i_sb_ready,
     input   [3:0]                       i_current_state,
     input                               o_timer_8ms,    
 
