@@ -118,9 +118,9 @@ module ucie_ltsm_tx_mbinit_repairmb #(
     always_comb begin
         if (&r_per_lane_result[15:0])
             w_extracted_lane_map = ALL_LANES_FUNCTIONAL;
-        else if (|r_per_lane_result[7:0] && !(|r_per_lane_result[15:8]))
+        else if (&r_per_lane_result[7:0] && !(&r_per_lane_result[15:8]))
             w_extracted_lane_map = LANES_0_TO_7;
-        else if (!(|r_per_lane_result[7:0]) && |r_per_lane_result[15:8])
+        else if (!(&r_per_lane_result[7:0]) && &r_per_lane_result[15:8])
             w_extracted_lane_map = LANES_8_TO_15;
         else
             w_extracted_lane_map = DEGRADE_NOT_POSSIBLE;
