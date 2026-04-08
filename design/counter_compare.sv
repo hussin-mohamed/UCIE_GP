@@ -1,11 +1,11 @@
 module counter_compare  (
-    input pclk,i_reset_n,counter_reset;
-    output o_lane_id_success;
+    input pclk,i_reset_n,counter_reset,
+    output o_laneid_success
 );
     wire reset;
     reg [4:0] counter;
-    assign o_lane_id_success = counter[4];
-    assifn reset = reset_n & counter_reset;
+    assign o_laneid_success = counter[4];
+    assign reset = i_reset_n & counter_reset;
     always @(posedge pclk or negedge reset) begin
         if (!reset) begin
             counter <= 0;

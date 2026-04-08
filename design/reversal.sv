@@ -17,7 +17,7 @@ module reversal #(
 
     function mux (input logic [pDATA_WIDTH-1:0] a,b, input logic sel);
         mux= sel ? b : a;
-        return mux
+        return mux;
     endfunction
 
 endmodule

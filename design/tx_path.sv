@@ -2,7 +2,7 @@ module tx_path#(
     parameter int pDATA_WIDTH = 32,
     parameter int pNUM_LANES  = 16
     ) (
-    input iclk;
+    input iclk
 );
     logic [pNUM_LANES-1:0][pDATA_WIDTH-1:0] lane_id_out,lane_LFSR_out,lane_LFSR_in,lane_mux_out,lane_reversal_out;
     logic [pNUM_LANES-1:0] enable_lfsr;

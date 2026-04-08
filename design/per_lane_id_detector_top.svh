@@ -19,7 +19,7 @@ module per_lane_id_detector_top #(
         8'b0100_0000,  // lane 2
         8'b1000_0000,  // lane 1
         8'b0000_0000   // lane 0
-    };
+    }
 ) (
     input  logic                              i_clk,
     input  logic                              i_reset_n,

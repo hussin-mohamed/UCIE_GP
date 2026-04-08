@@ -18,12 +18,12 @@ module tx_LFSR_top #(
     23'h1EC760,  // lane 2
     23'h0607BB,  // lane 1
     23'h1DBFBC   // lane 0
-    };
+    }
 ) (
     output logic [pNUM_LANES-1:0][pDATA_WIDTH-1:0] o_data_out,
-    input iclk,i_load,i_train,
-    input [pNUM_LANES-1:0] i_enable;
-    input [pNUM_LANES-1:0][pDATA_WIDTH-1:0] i_data_in,
+    input i_clk,i_load,i_train,
+    input [pNUM_LANES-1:0] i_enable,
+    input [pNUM_LANES-1:0][pDATA_WIDTH-1:0] i_data_in
 );
 
     genvar i;
@@ -32,12 +32,12 @@ module tx_LFSR_top #(
             tx_LFSR #(
                 .pLANE_ID_SEED (pLANE_ID_SEED[i])
             ) u_LFSR (
-                .i_clk (iclk),
+                .i_clk (i_clk),
                 .i_load(i_load),
                 .i_train(i_train),
                 .i_enable(i_enable[i]),
                 .i_data_in(i_data_in[i]),
-                .o_data_out(o_data_out[i]),
+                .o_data_out(o_data_out[i])
             );
         end
     endgenerate

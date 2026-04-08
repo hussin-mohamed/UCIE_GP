@@ -18,14 +18,14 @@ module rx_LFSR_top #(
     23'h1EC760,  // lane 2
     23'h0607BB,  // lane 1
     23'h1DBFBC   // lane 0
-    };
+    }
 ) (
     output logic [pNUM_LANES-1:0][pDATA_WIDTH-1:0] o_data_out,
     output logic [pNUM_LANES-1:0] o_lane_success,
-    input iclk,i_reset_n,i_load,i_train,
-    input [pNUM_LANES-1:0] i_enable;
+    input i_clk,i_reset_n,i_load,i_train,
+    input [pNUM_LANES-1:0] i_enable,
     input [pNUM_LANES-1:0][pDATA_WIDTH-1:0] i_data_in,
-    input [15:0] i_error_threshhold,
+    input [15:0] i_error_threshhold
 );
 
     genvar i;
@@ -34,13 +34,13 @@ module rx_LFSR_top #(
             rx_LFSR #(
                 .pLANE_ID_SEED (pLANE_ID_SEED[i])
             ) u_LFSR (
-                .i_clk (iclk),
+                .i_clk (i_clk),
                 .i_reset_n(i_reset_n),
                 .i_load(i_load),
                 .i_train(i_train),
                 .i_enable(i_enable[i]),
                 .i_data_in(i_data_in[i]),
-                .i_error_threshhold[i_error_threshhold],
+                .i_error_threshhold(i_error_threshhold),
                 .o_data_out(o_data_out[i]),
                 .o_lane_success(o_lane_success[i])
             );

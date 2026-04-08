@@ -9,7 +9,7 @@ module per_lane_id_detector #(
     wire [pDATA_WIDTH-1:0] pattern;
     wire counter_reset,pclk;
     lane_id_register #(pLANE_ID_PATTERN,pDATA_WIDTH) reg_0 (pattern);
-    assign counter_reset = |(pattern ^ i_data_in);
+    assign counter_reset = !(|(pattern ^ i_data_in));
     assign pclk=i_clk & i_enable & !o_laneid_success;
     counter_compare counter(
         .pclk(pclk),

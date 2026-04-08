@@ -17,5 +17,5 @@ module rx_LFSR_detection #(
             counter<=counter+1;
         end
     end
-    assign o_lane_success=(counter<i_error_threshhold)?1'b1:1'b0;
+    assign o_lane_success=(counter<=i_error_threshhold)?1'b1:1'b0;
 endmodule
