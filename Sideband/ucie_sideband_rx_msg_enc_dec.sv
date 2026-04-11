@@ -152,14 +152,14 @@ module ucie_sideband_rx_msg_enc_dec
     
     // ========== MBTRAIN.REPAIR Messages ==========
     MBTRAIN_REPAIR_INIT_RESP              = 'hC0,
-    MBTRAIN_REPAIR_END_RESP               = 'hC3,
-    MBTRAIN_REPAIR_APPLY_DEGRADE_RESP     = 'hC4,
+    MBTRAIN_REPAIR_END_RESP               = 'hC2,
+    MBTRAIN_REPAIR_APPLY_DEGRADE_RESP     = 'hC1,
     
     // ========== PHYRETRAIN Messages ==========
     PHYRETRAIN_RETRAIN_START_RESP         = 'hDA,
     
     // ========== TRAINERROR Messages ==========
-    TRAINERROR_ENTRY_RESP                 = 'hE0,
+    TRAINERROR_ENTRY_RESP                 = 'h40,
 
     // ========== TX INIT D to C Messages ==========
     TX_INIT_DTC_START_RESP                = 'h180,
@@ -168,9 +168,10 @@ module ucie_sideband_rx_msg_enc_dec
     TX_INIT_DTC_END_RESP                  = 'h184,
 
     // ========== RX INIT D to C Messages ==========
-    RX_INIT_DTC_START_REQ                 = 'h185,
-    RX_INIT_DTC_RESULTS_RESP               = 'h188,
-    RX_INIT_DTC_END_RESP                   = 'h18A
+    RX_INIT_DTC_START_REQ                 = 'h188,
+    RX_INIT_DTC_LFSR_CLR_ERR_RESP         = 'h189,
+    RX_INIT_DTC_RESULTS_RESP               = 'h18B,
+    RX_INIT_DTC_END_RESP                   = 'h18D
 
   } encoding_r;
 
@@ -267,7 +268,7 @@ typedef enum logic [pDECODING_WIDTH-1:0] {
   PHYRETRAIN_START_REQ               = 'hDA,
 
   // ========== TRAINERROR Messages ==========
-  TRAINERROR_ENTRY_REQ               = 'hE0,
+  TRAINERROR_ENTRY_REQ               = 'h40,
 
   // ========== TX INIT D to C Messages ==========
   TX_INIT_DTC_START_REQ              = 'h180,
@@ -276,10 +277,12 @@ typedef enum logic [pDECODING_WIDTH-1:0] {
   TX_INIT_DTC_END_REQ                = 'h184,
 
   // ========== RX INIT D to C Messages ==========
-  RX_INIT_DTC_START_RESP             = 'h185,
-  RX_INIT_DTC_RESULTS_REQ            = 'h188,
-  RX_INIT_DTC_SWEEP_DONE_RESULTS_REQ = 'h189,
-  RX_INIT_DTC_END_REQ                = 'h18A,
+  RX_INIT_DTC_START_RESP             = 'h188,
+  RX_INIT_DTC_LFSR_CLR_ERR_REQ       = 'h189,
+  RX_INIT_DTC_RESULTS_REQ            = 'h18B,
+  RX_INIT_DTC_SWEEP_DONE_RESULTS_REQ = 'h18C,
+  RX_INIT_DTC_END_REQ                = 'h18D,
+  
 
   DEFAULT                            = {pDECODING_WIDTH{1'b0}}
 } decoding_r;
@@ -675,6 +678,7 @@ always @(*) begin
       dec_resp     = 1'b1;
       dec_decoding = RX_INIT_DTC_START_RESP;
     end
+    
     {8'h85, 8'h0B, 5'b10010}: begin  // Rx Init D to C results req
       dec_req      = 1'b1;
       dec_resp     = 1'b0;
@@ -1180,6 +1184,14 @@ end
             enc_srcid       = 3'b010; // Physical Layer source ID
             enc_dstid       = 3'b110; // Remote Die Physical Layer destination ID
             enc_dp          = ^i_data_in; // Data Parity (even parity over all data bits)
+          end
+          RX_INIT_DTC_LFSR_CLR_ERR_RESP: begin
+            enc_msg_code    = 'h8A; // LFSR_clear_error resp message code
+            enc_msg_subcode = 'h02; // LFSR_clear_error resp message subcode
+            enc_op_code     = 'b10010; // No Data Operation message code
+            enc_srcid       = 3'b010; // Physical Layer source ID
+            enc_dstid       = 3'b110; // Remote Die Physical Layer destination ID
+            enc_dp          = 1'b0; // Data Parity (even parity over all data bits)
           end
           RX_INIT_DTC_RESULTS_RESP: begin
             enc_msg_code    = 'h8A; // Rx Init D to C results resp message code

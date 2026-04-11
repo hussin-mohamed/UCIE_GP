@@ -105,7 +105,7 @@ module ucie_sideband_tx_msg_enc_dec
     MBTRAIN_TXSELFCAL_DONE_REQ        = 'hD1,
     // ========== MBTRAIN.RXCLKCAL Messages ==========
     MBTRAIN_RXCLKCAL_START_REQ        = 'h98,
-    MBTRAIN_RXCLKCAL_DONE_REQ         = 'h9B,
+    MBTRAIN_RXCLKCAL_DONE_REQ         = 'h9A,
     // ========== MBTRAIN.VALTRAINCENTER Messages ==========
     MBTRAIN_VALTRAINCENTER_START_REQ  = 'hA0,
     MBTRAIN_VALTRAINCENTER_DONE_REQ   = 'hA2,
@@ -138,17 +138,18 @@ module ucie_sideband_tx_msg_enc_dec
     // ========== PHYRETRAIN Messages ==========
     PHYRETRAIN_START_REQ            = 'hDA,
     // ========== TRAINERROR Messages ==========
-    TRAINERROR_ENTRY_REQ            = 'hE0,
+    TRAINERROR_ENTRY_REQ            = 'h40,
     // ========== TX INIT D to C Messages ==========
     TX_INIT_DTC_START_REQ           = 'h180,
     TX_INIT_DTC_LFSR_CLR_ERR_REQ    = 'h181,
     TX_INIT_DTC_RESULTS_REQ         = 'h183,
     TX_INIT_DTC_END_REQ             = 'h184,
     // ========== RX INIT D to C Messages ==========
-    RX_INIT_DTC_START_RESP           = 'h185,
-    RX_INIT_DTC_RESULTS_REQ         = 'h188,
-    RX_INIT_DTC_SWEEP_DONE_REQ      = 'h189,
-    RX_INIT_DTC_END_REQ             = 'h18A
+    RX_INIT_DTC_START_RESP           = 'h188,
+    RX_INIT_DTC_LFSR_CLR_ERR_REQ    = 'h189,
+    RX_INIT_DTC_RESULTS_REQ         = 'h18B,
+    RX_INIT_DTC_SWEEP_DONE_REQ      = 'h18C,
+    RX_INIT_DTC_END_REQ             = 'h18D
   } encoding_t;
   
 
@@ -1154,6 +1155,14 @@ end
           RX_INIT_DTC_START_RESP: begin
             enc_msg_code    = 'h8A; // Start Rx Init D to C eye sweep resp message code
             enc_msg_subcode = 'h0A; // Start Rx Init D to C eye sweep resp message subcode
+            enc_op_code     = 'b10010; // No Data Operation message code
+            enc_srcid       = 3'b010; // Physical Layer source ID
+            enc_dstid       = 3'b110; // Remote Die Physical Layer destination ID
+            enc_dp          = 1'b0; // Data Parity (even parity over all data bits)
+          end
+          RX_INIT_DTC_LFSR_CLR_ERR_REQ: begin
+            enc_msg_code    = 'h85; // LFSR_clear_error req message code
+            enc_msg_subcode = 'h02; // LFSR_clear_error req message subcode
             enc_op_code     = 'b10010; // No Data Operation message code
             enc_srcid       = 3'b010; // Physical Layer source ID
             enc_dstid       = 3'b110; // Remote Die Physical Layer destination ID
