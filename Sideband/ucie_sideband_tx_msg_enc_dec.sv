@@ -202,7 +202,7 @@ module ucie_sideband_tx_msg_enc_dec
 
     // ========== MBTRAIN.RXCLKCAL Messages ==========
     MBTRAIN_RXCLKCAL_START_RESP    = 'h98,
-    MBTRAIN_RXCLKCAL_DONE_RESP     = 'h9B,
+    MBTRAIN_RXCLKCAL_DONE_RESP     = 'h9A,
 
     // ========== MBTRAIN.VALTRAINCENTER Messages ==========
     MBTRAIN_VALTRAINCENTER_START_RESP = 'hA0,
@@ -245,7 +245,7 @@ module ucie_sideband_tx_msg_enc_dec
     PHYRETRAIN_START_RESP          = 'hDA,
 
     // ========== TRAINERROR Messages ==========
-    TRAINERROR_ENTRY_RESP          = 'hE0,
+    TRAINERROR_ENTRY_RESP          = 'h40,
 
     // ========== TX INIT D to C Messages ==========
     TX_INIT_DTC_START_RESP         = 'h180,
@@ -276,7 +276,17 @@ always @(posedge i_clk or posedge i_reset) begin
       stall_flag      <= 1'b0;
     end
     else begin
-    if (!i_empty && !stall_flag) begin
+    if (i_done) begin
+      stall_flag      <= 1'b0; // Clear stall flag on done signal
+      o_req           <= 1'b0;
+      o_resp          <= 1'b0;
+      o_info_out      <= {pINFO_WIDTH{1'b0}};
+      o_data_out      <= {pDATA_WIDTH{1'b0}};
+      o_decoding      <= {pDECODING_WIDTH{1'b0}};
+      o_valid         <= 1'b0;
+    end
+
+    else if (!i_empty && !stall_flag) begin
       o_valid         <= dec_valid; // Valid message
       o_info_out      <= o_info_out_w; // Extract info field from input message
       o_data_out      <= o_data_out_w; // Extract data field from input message
@@ -294,15 +304,6 @@ always @(posedge i_clk or posedge i_reset) begin
       o_valid         <= o_valid;
     end
     else begin
-      o_req           <= 1'b0;
-      o_resp          <= 1'b0;
-      o_info_out      <= {pINFO_WIDTH{1'b0}};
-      o_data_out      <= {pDATA_WIDTH{1'b0}};
-      o_decoding      <= {pDECODING_WIDTH{1'b0}};
-      o_valid         <= 1'b0;
-    end
-    if (i_done) begin
-      stall_flag      <= 1'b0; // Clear stall flag on done signal
       o_req           <= 1'b0;
       o_resp          <= 1'b0;
       o_info_out      <= {pINFO_WIDTH{1'b0}};
@@ -530,7 +531,7 @@ always @(*) begin
       dec_resp     = 1'b1;
       dec_decoding = MBTRAIN_DATATRAINVREF_START_RESP;
     end
-    {8'hBA, 8'h0F, 5'b10010}: begin  // MBTRAIN.DATATRAINVREF end resp
+    {8'hBA, 8'h10, 5'b10010}: begin  // MBTRAIN.DATATRAINVREF end resp
       dec_req      = 1'b0;
       dec_resp     = 1'b1;
       dec_decoding = MBTRAIN_DATATRAINVREF_END_RESP;

@@ -152,7 +152,7 @@ module ucie_sideband_rx_msg_enc_dec
     
     // ========== MBTRAIN.REPAIR Messages ==========
     MBTRAIN_REPAIR_INIT_RESP              = 'hC0,
-    MBTRAIN_REPAIR_END_RESP               = 'hC2,
+    MBTRAIN_REPAIR_END_RESP               = 'hC4,
     MBTRAIN_REPAIR_APPLY_DEGRADE_RESP     = 'hC1,
     
     // ========== PHYRETRAIN Messages ==========
@@ -183,7 +183,7 @@ typedef enum logic [pDECODING_WIDTH-1:0] {
   SBINIT_DONE_REQ                    = 'h9,
 
   // ========== MBINIT.PARAM Messages ==========
-  MBINIT_PARAM_DONE_REQ              = 'h12,
+  MBINIT_PARAM_DONE_REQ              = 'h10,
 
   // ========== MBINIT.CAL Messages ==========
   MBINIT_CAL_DONE_REQ                = 'h18,
@@ -261,7 +261,7 @@ typedef enum logic [pDECODING_WIDTH-1:0] {
 
   // ========== MBTRAIN.REPAIR Messages ==========
   MBTRAIN_REPAIR_INIT_REQ            = 'hC0,
-  MBTRAIN_REPAIR_APPDEG_REQ          = 'hC3,
+  MBTRAIN_REPAIR_APPDEG_REQ          = 'hC1,
   MBTRAIN_REPAIR_END_REQ             = 'hC4,
 
   // ========== PHYRETRAIN Messages ==========
@@ -302,7 +302,17 @@ typedef enum logic [pDECODING_WIDTH-1:0] {
       stall_flag      <= 1'b0;
     end
     else begin
-    if (!i_empty && !stall_flag) begin
+    if (i_done) begin
+      stall_flag      <= 1'b0; // Clear stall flag on done signal
+      o_req           <= 1'b0;
+      o_resp          <= 1'b0;
+      o_info_out      <= {pINFO_WIDTH{1'b0}};
+      o_data_out      <= {pDATA_WIDTH{1'b0}};
+      o_decoding      <= {pDECODING_WIDTH{1'b0}};
+      o_valid         <= 1'b0;
+    end
+
+    else if (!i_empty && !stall_flag) begin
       o_valid         <= dec_valid; // Valid message
       o_info_out      <= o_info_out_w; // Extract info field from input message
       o_data_out      <= o_data_out_w; // Extract data field from input message
@@ -320,15 +330,6 @@ typedef enum logic [pDECODING_WIDTH-1:0] {
       o_valid         <= o_valid;
     end
     else begin
-      o_req           <= 1'b0;
-      o_resp          <= 1'b0;
-      o_info_out      <= {pINFO_WIDTH{1'b0}};
-      o_data_out      <= {pDATA_WIDTH{1'b0}};
-      o_decoding      <= {pDECODING_WIDTH{1'b0}};
-      o_valid         <= 1'b0;
-    end
-    if (i_done) begin
-      stall_flag      <= 1'b0; // Clear stall flag on done signal
       o_req           <= 1'b0;
       o_resp          <= 1'b0;
       o_info_out      <= {pINFO_WIDTH{1'b0}};
@@ -437,7 +438,7 @@ always @(*) begin
       dec_resp     = 1'b0;
       dec_decoding = MBINIT_REVERSALMB_CLR_ERR_REQ;
     end
-    {8'hA5, 8'h0F, 5'b11011}: begin  // MBINIT.REVERSALMB result req
+    {8'hA5, 8'h0F, 5'b10010}: begin  // MBINIT.REVERSALMB result req
       dec_req      = 1'b1;
       dec_resp     = 1'b0;
       dec_decoding = MBINIT_REVERSALMB_RESULT_REQ;
@@ -557,7 +558,7 @@ always @(*) begin
       dec_resp     = 1'b0;
       dec_decoding = MBTRAIN_DATATRAINVREF_START_REQ;
     end
-    {8'hB5, 8'h0F, 5'b10010}: begin  // MBTRAIN.DATATRAINVREF end req
+    {8'hB5, 8'h10, 5'b10010}: begin  // MBTRAIN.DATATRAINVREF end req
       dec_req      = 1'b1;
       dec_resp     = 1'b0;
       dec_decoding = MBTRAIN_DATATRAINVREF_END_REQ;
@@ -1002,8 +1003,8 @@ end
             enc_dp          = 1'b0; // Data Parity (even parity over all data bits)
           end
           MBTRAIN_DATATRAINVREF_END_RESP: begin
-            enc_msg_code    = 'hB5; // (MBTRAIN.DATATRAINVREF end req) message code
-            enc_msg_subcode = 'h10; // (MBTRAIN.DATATRAINVREF end req) message subcode
+            enc_msg_code    = 'hBA; // (MBTRAIN.DATATRAINVREF end resp) message code
+            enc_msg_subcode = 'h10; // (MBTRAIN.DATATRAINVREF end resp) message subcode
             enc_op_code     = 'b10010; // No Data Operation message code
             enc_srcid       = 3'b010; // Physical Layer source ID
             enc_dstid       = 3'b110; // Remote Die Physical Layer destination ID
