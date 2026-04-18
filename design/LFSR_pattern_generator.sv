@@ -29,7 +29,7 @@ module LFSR_pattern_generator #(
             // Compute next LFSR state for each bit position
             assign next[i+1] = cal(next[i]);
             // Extract MSB from each state to form output pattern
-            assign pattern[pDATA_WIDTH-i-1] = next[i][22];
+            assign pattern[i] = next[i][22];
         end
     endgenerate
 

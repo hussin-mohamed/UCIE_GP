@@ -3,18 +3,29 @@ module per_lane_id_detector #(
     parameter pDATA_WIDTH = 32 
 ) (
     input [pDATA_WIDTH-1:0]i_data_in,
-    input i_clk,i_enable,i_reset_n,
+    input i_clk,i_enable,i_reset,
     output o_laneid_success
 );
     wire [pDATA_WIDTH-1:0] pattern;
-    wire counter_reset,pclk;
-    lane_id_register #(pLANE_ID_PATTERN,pDATA_WIDTH) reg_0 (pattern);
-    assign counter_reset = !(|(pattern ^ i_data_in));
-    assign pclk=i_clk & i_enable & !o_laneid_success;
+    logic pclk;
+    logic enable;
+    lane_id_register #(pLANE_ID_PATTERN,pDATA_WIDTH) reg_0 (
+        .i_clk (i_clk),
+        .i_reset (i_reset),
+        .pattern (pattern)
+    );
+    //assign counter_reset = !(|(pattern ^ i_data_in));
+    always @(*) begin
+        if (!i_clk) begin
+            enable = i_enable & !o_laneid_success;
+        end
+    end
+    assign pclk=i_clk & enable;
     counter_compare counter(
         .pclk(pclk),
-        .counter_reset(counter_reset),
-        .i_reset_n(i_reset_n),
+        .pattern(pattern),
+        .i_data_in(i_data_in),
+        .i_reset(i_reset),
         .o_laneid_success(o_laneid_success)
     );
 endmodule

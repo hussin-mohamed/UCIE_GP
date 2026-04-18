@@ -5,7 +5,7 @@ module LFSR_tb;
 
     logic [pNUM_LANES-1:0][pDATA_WIDTH-1:0] o_data_out_rx,i_data_in_tx;
     logic [pNUM_LANES-1:0] o_lane_success;
-    bit i_clk,i_reset_n,i_load,i_train;
+    bit i_clk,i_reset,i_load,i_train;
     bit [pNUM_LANES-1:0] i_enable;
     logic [pNUM_LANES-1:0][pDATA_WIDTH-1:0] scrambled_data;
     logic [15:0] i_error_threshhold;
@@ -18,7 +18,7 @@ module LFSR_tb;
         .o_data_out(o_data_out_rx),
         .o_lane_success(o_lane_success),
         .i_clk(i_clk),
-        .i_reset_n(i_reset_n),
+        .i_reset(i_reset),
         .i_load(i_load),
         .i_train(i_train),
         .i_enable(i_enable),
@@ -49,14 +49,14 @@ end
 
 
 initial begin
-    i_reset_n = 0;
+    i_reset = 1;
     i_load = 0;
     i_train = 0;
     i_enable = 0;
     i_data_in_tx = 0;
     i_error_threshhold = 16'h0000;
     repeat (2) @(negedge i_clk);
-    i_reset_n = 1;
+    i_reset = 0;
     i_load=1;
     i_enable = 16'hFFFF;
     i_train=1;
@@ -79,12 +79,11 @@ initial begin
     end
     end
     i_train=0;
-    for (i = 0 ; i < pNUM_LANES ; i = i + 1 ) begin
-        i_data_in_tx[i] = 32'hABCD1234;
+    repeat (10) begin
+       for (i = 0 ; i < pNUM_LANES ; i = i + 1 ) begin
+        i_data_in_tx[i] = $random;
     end
     @(negedge i_clk);
-    repeat (10) begin
-       @(negedge i_clk);
     if (o_data_out_rx == i_data_in_tx) begin
         $display("testpassed");
     end

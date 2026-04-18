@@ -4,25 +4,25 @@ parameter int pDATA_WIDTH = 32;
     parameter int pNUM_LANES  = 16;
     // packed array of all lane ID patterns
     parameter logic [pNUM_LANES-1:0][7:0] pLANE_ID_PATTERN = {
-        8'b1111_0000,  // lane 15
-        8'b0111_0000,  // lane 14
-        8'b1011_0000,  // lane 13
-        8'b0011_0000,  // lane 12
-        8'b1101_0000,  // lane 11
-        8'b0101_0000,  // lane 10
-        8'b1001_0000,  // lane 9
-        8'b0001_0000,  // lane 8
-        8'b1110_0000,  // lane 7
-        8'b0110_0000,  // lane 6
-        8'b1010_0000,  // lane 5
-        8'b0010_0000,  // lane 4
-        8'b1100_0000,  // lane 3
-        8'b0100_0000,  // lane 2
-        8'b1000_0000,  // lane 1
+        8'b0000_1111,  // lane 15
+        8'b0000_1110,  // lane 14
+        8'b0000_1101,  // lane 13
+        8'b0000_1100,  // lane 12
+        8'b0000_1011,  // lane 11
+        8'b0000_1010,  // lane 10
+        8'b0000_1001,  // lane 9
+        8'b0000_1000,  // lane 8
+        8'b0000_0111,  // lane 7
+        8'b0000_0110,  // lane 6
+        8'b0000_0101,  // lane 5
+        8'b0000_0100,  // lane 4
+        8'b0000_0011,  // lane 3
+        8'b0000_0010,  // lane 2
+        8'b0000_0001,  // lane 1
         8'b0000_0000   // lane 0
     };
     bit                              i_clk;
-    logic                              i_reset_n;
+    logic                              i_reset;
     logic [pNUM_LANES-1:0]             i_enable;
     logic [pNUM_LANES-1:0][pDATA_WIDTH-1:0] i_data_in;
     logic [pNUM_LANES-1:0]             o_laneid_success;
@@ -33,7 +33,7 @@ parameter int pDATA_WIDTH = 32;
         .pLANE_ID_PATTERN(pLANE_ID_PATTERN)
     ) dut (
         .i_clk(i_clk),
-        .i_reset_n(i_reset_n),
+        .i_reset(i_reset),
         .i_enable(i_enable),
         .i_data_in(i_data_in),
         .o_laneid_success(o_laneid_success)
@@ -44,13 +44,13 @@ parameter int pDATA_WIDTH = 32;
         end
     end
 initial begin
-    i_reset_n = 0;
+    i_reset = 1;
     i_enable = 0;
     for (i = 0; i < pNUM_LANES; i = i + 1) begin
         i_data_in[i] = 32'b0;
     end
     @(negedge i_clk);
-    i_reset_n = 1;
+    i_reset = 0;
     i_enable = 16'hFFFF; // Enable all lanes
     repeat (18) @(negedge i_clk);
     if (!o_laneid_success) begin

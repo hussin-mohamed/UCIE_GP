@@ -22,7 +22,7 @@ module rx_LFSR_top #(
 ) (
     output logic [pNUM_LANES-1:0][pDATA_WIDTH-1:0] o_data_out,
     output logic [pNUM_LANES-1:0] o_lane_success,
-    input i_clk,i_reset_n,i_load,i_train,
+    input i_clk,i_reset,i_load,i_train,
     input [pNUM_LANES-1:0] i_enable,
     input [pNUM_LANES-1:0][pDATA_WIDTH-1:0] i_data_in,
     input [15:0] i_error_threshhold
@@ -35,7 +35,7 @@ module rx_LFSR_top #(
                 .pLANE_ID_SEED (pLANE_ID_SEED[i])
             ) u_LFSR (
                 .i_clk (i_clk),
-                .i_reset_n(i_reset_n),
+                .i_reset(i_reset),
                 .i_load(i_load),
                 .i_train(i_train),
                 .i_enable(i_enable[i]),

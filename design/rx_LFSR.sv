@@ -2,7 +2,7 @@ module rx_LFSR #(
     parameter int pLANE_ID_SEED = 23'h1DBFBC,
     parameter int pDATA_WIDTH = 32
 ) (
-    input i_clk,i_enable,i_reset_n,i_load,i_train,
+    input i_clk,i_enable,i_reset,i_load,i_train,
     input [pDATA_WIDTH-1:0] i_data_in,
     input [15:0] i_error_threshhold,
     output logic o_lane_success,
@@ -33,7 +33,7 @@ module rx_LFSR #(
     );
     rx_LFSR_detection det (
         .pclk(lclk),
-        .i_reset_n(i_reset_n),
+        .i_reset(i_reset),
         .pattern(pattern_tobechecked),
         .i_error_threshhold(i_error_threshhold),
         .o_lane_success(o_lane_success)

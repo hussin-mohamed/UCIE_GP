@@ -2,7 +2,7 @@ module rx_LFSR_detection #(
     parameter int pDATA_WIDTH = 32
 ) (
     input pclk,
-    input i_reset_n,
+    input i_reset,
     input [pDATA_WIDTH-1:0] pattern,
     input [15:0] i_error_threshhold,
     output o_lane_success
@@ -16,8 +16,8 @@ module rx_LFSR_detection #(
     assign enable = | pattern;
 
     // Counter logic: increment on each valid pattern detection
-    always @(posedge pclk or negedge i_reset_n) begin
-        if (!i_reset_n) begin
+    always @(posedge pclk or posedge i_reset) begin
+        if (i_reset) begin
             counter <= 16'b0;
         end
         else if (enable) begin

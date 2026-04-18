@@ -7,8 +7,14 @@ module tx_LFSR #(
     output logic [pDATA_WIDTH-1:0] o_data_out
 );
     wire pclk;
+    logic enable;
+    always @(*) begin
+        if(!i_clk)begin
+            enable = i_enable;
+        end
+    end
     logic [pDATA_WIDTH-1:0] scrambled_data,pattern_out;
-    assign pclk = i_clk & i_enable ;
+    assign pclk = i_clk & enable ;
     assign scrambled_data = pattern_out ^ i_data_in ;
     always @(*) begin
         if(!i_train)begin
