@@ -2,7 +2,7 @@ module rx_path#(
     parameter int pDATA_WIDTH = 32,
     parameter int pNUM_LANES  = 16
     ) (
-    input iclk,i_reset_n
+    input iclk,i_reset
 );
     logic [pNUM_LANES-1:0][pDATA_WIDTH-1:0] lane_id_in,lane_LFSR_out,lane_LFSR_in,lane_demux_in;
     logic [pNUM_LANES-1:0] enable_lfsr,enable_laneid,lane_id_success,lane_lfsr_succes,error_threshhold;
@@ -11,7 +11,7 @@ module rx_path#(
     logic sel_reverse;
     per_lane_id_detector_top per_lane_id(
         .i_clk(i_clk),
-        .i_reset_n(i_reset_n),
+        .i_reset(i_reset),
         .i_enable(enable_laneid),
         .i_data_in(lane_id_in),
         .o_laneid_success(lane_id_success)
@@ -23,7 +23,7 @@ module rx_path#(
         .iclk(iclk),
         .i_load(load),
         .i_train(train),
-        .i_reset_n(i_reset_n),
+        .i_reset(i_reset),
         .i_enable(enable_lfsr),
         .i_data_in(lane_LFSR_in),
         .i_error_threshhold(error_threshhold)
