@@ -149,7 +149,7 @@ module ucie_sideband_tx_msg_enc_dec
     RX_INIT_DTC_LFSR_CLR_ERR_REQ    = 'h189,
     RX_INIT_DTC_RESULTS_REQ         = 'h18B,
     RX_INIT_DTC_SWEEP_DONE_REQ      = 'h18C,
-    RX_INIT_DTC_END_REQ             = 'h18D
+    RX_INIT_DTC_END_RESP           = 'h18D
   } encoding_t;
   
 
@@ -254,10 +254,9 @@ module ucie_sideband_tx_msg_enc_dec
     TX_INIT_DTC_END_RESP           = 'h184,
 
     // ========== RX INIT D to C Messages ==========
-    RX_INIT_DTC_START_REQ          = 'h185,
-    RX_INIT_DTC_RESULTS_RESP       = 'h188,
-    RX_INIT_DTC_END_RESP           = 'h18A,
-
+    RX_INIT_DTC_START_REQ          = 'h188,
+    RX_INIT_DTC_RESULTS_RESP       = 'h18B,
+    RX_INIT_DTC_END_REQ             = 'h18D,
     // ========== Default ==========
     DEFAULT                        = {pDECODING_WIDTH{1'b0}}
   } decoding_t;
@@ -657,10 +656,10 @@ always @(*) begin
       dec_resp     = 1'b1;
       dec_decoding = RX_INIT_DTC_RESULTS_RESP;
     end
-    {8'h8A, 8'h0D, 5'b10010}: begin  // End Rx Init D to C eye sweep resp
-      dec_req      = 1'b0;
-      dec_resp     = 1'b1;
-      dec_decoding = RX_INIT_DTC_END_RESP;
+    {8'h85, 8'h0D, 5'b10010}: begin  // End Rx Init D to C eye sweep req
+      dec_req      = 1'b1;
+      dec_resp     = 1'b0;
+      dec_decoding = RX_INIT_DTC_END_REQ;
     end
 
     default: begin
@@ -1185,9 +1184,9 @@ end
             enc_dstid       = 3'b110; // Remote Die Physical Layer destination ID
             enc_dp          = ^i_data_in; // Data Parity (even parity over all data bits)
           end
-          RX_INIT_DTC_END_REQ: begin
-            enc_msg_code    = 'h85; // End Rx Init D to C eye sweep req message code
-            enc_msg_subcode = 'h0D; // End Rx Init D to C eye sweep req message subcode
+          RX_INIT_DTC_END_RESP: begin
+            enc_msg_code    = 'h8A; // End Rx Init D to C eye sweep resp message code
+            enc_msg_subcode = 'h0D; // End Rx Init D to C eye sweep resp message subcode
             enc_op_code     = 'b10010; // No Data Operation message code
             enc_srcid       = 3'b010; // Physical Layer source ID
             enc_dstid       = 3'b110; // Remote Die Physical Layer destination ID

@@ -113,8 +113,8 @@ always @(posedge i_clk or posedge i_reset)
         else begin 
           if ((!i_traffic_tx_fifo_full || !i_traffic_rx_fifo_full) && i_traffic_msg_ready) begin
           // write logic
-            if (((msg_code [3:0] == 4'hA) && ({msg_code, msg_subcode} != {8'h8A,8'h0A})) 
-                || ({msg_code, msg_subcode} == {8'h85,8'h0A})) 
+            if (((msg_code [3:0] == 4'hA) && ({msg_code, msg_subcode} != {8'h8A,8'h0A}) && ({msg_code, msg_subcode} != {8'h8A,8'h0D})) 
+                || ({msg_code, msg_subcode} == {8'h85,8'h0A}) || ({msg_code, msg_subcode} == {8'h85,8'h0D}) ) 
             begin
                o_traffic_tx_fifo_msg <= i_sb_msg_in;
                o_traffic_tx_fifo_wr_en <= 1'b1;
@@ -122,10 +122,11 @@ always @(posedge i_clk or posedge i_reset)
                o_traffic_rx_fifo_wr_en <= 1'b0;
                o_stall_traffic <= 1'b0;
             end
-            else if (((msg_code [3:0] == 4'h5) && ({msg_code, msg_subcode} != {8'h85,8'h0A})) 
+            else if (((msg_code [3:0] == 4'h5) && ({msg_code, msg_subcode} != {8'h85,8'h0A}) && ({msg_code, msg_subcode} != {8'h85,8'h0D})) 
                 || ({msg_code, msg_subcode} == {8'h8A,8'h0A})
                 || ({msg_code, msg_subcode} == {8'h91,8'h00})
-                || ({msg_code, msg_subcode} == {8'h81,8'h0C}))
+                || ({msg_code, msg_subcode} == {8'h81,8'h0C})
+                || ({msg_code, msg_subcode} == {8'h8A,8'h0D}))
             begin
                o_traffic_rx_fifo_msg <= i_sb_msg_in;
                o_traffic_rx_fifo_wr_en <= 1'b1;

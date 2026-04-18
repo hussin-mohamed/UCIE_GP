@@ -28,8 +28,8 @@ module ucie_sideband_ser
   //---- SIGNAL DECLARATIONS ---------------------------------------------------
   reg  [pSER_WIDTH-1:0] shift_reg;
   reg  [5:0]            bit_counter;
-  reg                   clk_en_latch;
-
+  reg                   clk_en_ff;  
+  
   wire flag_31 = (bit_counter == 6'd31);
   wire flag_63 = (bit_counter == 6'd63);
 
@@ -46,8 +46,7 @@ module ucie_sideband_ser
 
   //---- FSM NEXT STATE LOGIC --------------------------------------------------
   always @(*) begin
-    next_state = state; 
-    
+    next_state = state;
     case (state)
       ST_IDLE: begin
         if (!i_fifo_empty)
@@ -62,9 +61,9 @@ module ucie_sideband_ser
       ST_TX: begin
         if (flag_63) begin
           if (!i_fifo_empty)
-            next_state = ST_LOW; 
+            next_state = ST_LOW;
           else
-            next_state = ST_IDLE; 
+            next_state = ST_IDLE;
         end
       end
       
@@ -98,9 +97,9 @@ module ucie_sideband_ser
       shift_reg <= {pSER_WIDTH{1'b0}};
     end else begin
       if (state == ST_LOW && flag_31) begin
-        shift_reg <= i_fifo_ser_msg; 
+        shift_reg <= i_fifo_ser_msg;
       end else if (state == ST_TX) begin
-        shift_reg <= {1'b0, shift_reg[pSER_WIDTH-1:1]}; 
+        shift_reg <= {1'b0, shift_reg[pSER_WIDTH-1:1]};
       end
     end
   end
@@ -110,14 +109,14 @@ module ucie_sideband_ser
   assign o_sb_cur_msg_done = (state == ST_TX && flag_63);
 
   //---- Lookahead Clock Gating -----------------------------------------
-  always @(i_clk or next_state or i_reset) begin
+  always @(negedge i_clk or posedge i_reset) begin
     if (i_reset) begin
-      clk_en_latch = 1'b0;
-    end else if (!i_clk) begin
-      clk_en_latch = (next_state == ST_TX);
+      clk_en_ff <= 1'b0;
+    end else begin
+      clk_en_ff <= (next_state == ST_TX);
     end
   end
   
-  assign o_tx_sb_clk = clk_en_latch & i_clk;
+  assign o_tx_sb_clk = clk_en_ff & i_clk;
 
 endmodule
