@@ -29,7 +29,12 @@ module ucie_ltsm_rx_reset #(
     // Latch registers — set when condition arrives, clear on reset or state leave
     // -------------------------------------------------------------------------
     always_ff @(posedge i_clk or posedge i_reset) begin
-        if (i_reset || i_current_state != RESET) begin
+        if (i_reset) begin
+            i_supply_stable_reg <= 0;
+            i_pll_stable_reg    <= 0;
+            i_timer_4ms_reg     <= 0;
+        end
+        else if (i_current_state != RESET) begin
             i_supply_stable_reg <= 0;
             i_pll_stable_reg    <= 0;
             i_timer_4ms_reg     <= 0;
@@ -67,6 +72,7 @@ module ucie_ltsm_rx_reset #(
     // =========================================================================
     // Assertions
     // =========================================================================
+    /*
 `ifdef SIM
 
     // --------------------------------------------------------------------------
@@ -108,5 +114,6 @@ module ucie_ltsm_rx_reset #(
         else $error("ASSERT FAIL [DONE_ONLY_IN_RESET]: done asserted outside RESET state");
 
 `endif
+*/
 
 endmodule

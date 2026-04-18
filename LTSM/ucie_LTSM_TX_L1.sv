@@ -38,7 +38,10 @@ logic o_tx_sb_rsp_reg;
 logic L1_rsp_recieved;
 
 logic done_ack;
+logic done_ack_old;
 logic [DECODING_WIDTH-1:0] o_tx_encoding_old;
+logic speed_idle_state_enable_old;
+logic pmnak_enable_old;
 
 logic [1:0] CS, NS;  // Current State, Next State
 
@@ -58,7 +61,7 @@ always_ff @(posedge i_clk or posedge i_reset) begin
             CS <= START_HANDSHAKE; 
             o_tx_sb_rsp <= 0;
             o_tx_sb_req <= 0;
-            o_tx_encoding <= 0;
+            o_tx_encoding <= 'h108;
         end
     end
 end
@@ -68,17 +71,25 @@ end
 //================================================================================
 // Tracks when done signal has been acknowledged in handshake protocol
 always_comb begin
-    if (i_reset) done_ack = 0;
-    else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;
+    done_ack = done_ack_old;
+    if (o_tx_encoding != o_tx_encoding_old) done_ack = 0;
     else if (i_sb_tx_done) begin
         done_ack = 1;  // Set when done received
-    end else if (i_sb_tx_rsp) begin
-        done_ack = 0;  // Clear on response to allow next transaction
     end
 end
 
 always_ff @(posedge i_clk) begin
-    o_tx_encoding_old <= o_tx_encoding;  // Register to track previous encoding for done_ack logic
+    if (i_reset) begin
+        o_tx_encoding_old <= 0;
+        done_ack_old <= 0;
+        speed_idle_state_enable_old <= 0;
+        pmnak_enable_old <= 0;
+    end else begin
+        o_tx_encoding_old <= o_tx_encoding;  // Register to track previous encoding for done_ack logic
+        done_ack_old <= done_ack;  // Register to track previous encoding for done_ack logic
+        speed_idle_state_enable_old <= speed_idle_state_enable;
+        pmnak_enable_old <= pmnak_enable;
+    end
 end
 
 //================================================================================
@@ -98,14 +109,16 @@ always @(posedge i_clk or posedge i_reset) begin
 end
 
 always_comb begin
-    if (i_reset) begin
-        o_tx_encoding_reg = START_HANDSHAKE;
+        o_tx_encoding_reg = 'h110;
         o_tx_sb_req_reg = 0;
         o_tx_sb_rsp_reg = 0;
         L1_rsp_recieved = 0;
-        speed_idle_state_enable = 0;
-    end else if (!state_enable) begin
-        o_tx_encoding_reg = START_HANDSHAKE;
+        speed_idle_state_enable = speed_idle_state_enable_old;
+        pmnak_enable = pmnak_enable_old;
+        NS = CS;
+        o_pl_state_sts = 'b0001;  // Default to IDLE state status
+    if (!state_enable) begin
+        o_tx_encoding_reg = 'h108;
         o_tx_sb_req_reg = 0;
         o_tx_sb_rsp_reg = 0;
         L1_rsp_recieved = 0;
@@ -122,7 +135,7 @@ always_comb begin
                 if (done_ack) o_tx_sb_req_reg = 0;
                 else o_tx_sb_req_reg = 1;
     
-                if (i_rsp_sent && i_rsp_received && i_encoding_rsp_sent == 'h110 && i_encoding_rsp_received == 'h110) begin
+                if ((i_rsp_sent && i_encoding_rsp_sent == 'h110) || (i_encoding_rsp_sent == 'h111 && i_encoding_rsp_received == 'h110 && i_rsp_received && i_rsp_sent)) begin
                     NS = L1;
                     o_tx_encoding_reg = 'h111;
                     o_tx_sb_req_reg = 0;

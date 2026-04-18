@@ -138,6 +138,8 @@ logic r_eye_sweep_reset;
 logic first_attempt;
 logic L1_access;
 
+logic train_error_pip;
+
 
 //================================================================================
 // Eye Sweep Test Module Instantiation
@@ -193,11 +195,19 @@ always_comb begin
 end
 
 // Previous state completion logic - checks if handshake is complete
-assign previous_state_done = (i_reset)? 0 : (rsp_sent & rsp_received);
+assign previous_state_done = (rsp_sent & rsp_received);
 
 // Training error aggregation - timeout, eye sweep error, or speed idle error
 assign train_error = (timeout || train_error_data_to_clock_test || trainerror || rx_trainerror);
 
+
+always @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) begin
+        train_error_pip <= 0;
+    end else begin
+        train_error_pip <= train_error;
+    end
+end
 //================================================================================
 // State Machine Sequential Logic
 //================================================================================
@@ -292,9 +302,9 @@ end
 
 always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
-        first_attempt = 1;
+        first_attempt <= 1;
     end else if (CS == TXSELFCAL) begin
-        first_attempt = 0;
+        first_attempt <= 0;
     end
 end
 
@@ -333,10 +343,10 @@ always @(*) begin
     no_retry = 0;    // Default to allowing retries
     if (!init_train_en) begin
         substates_done = 0;
-    end else begin
+    end else
         // On training error (timeout, eye sweep failure, or speed negotiation error),
         // abort immediately back to VALVREF so the full calibration sequence restarts.
-    if (train_error) begin
+    if (train_error_pip) begin
         NS = VALVREF;
         substates_done = 0;
         clock_to_test_enable = 0;
@@ -416,6 +426,9 @@ always @(*) begin
                                     next_substate = 2;
                                 end 
                             end  
+                            default:begin
+                                
+                            end
                         endcase
                     end
                     // Check if both sides completed the state (handshake complete)
@@ -490,6 +503,9 @@ always @(*) begin
                                     next_substate = 2;
                                 end 
                             end  
+                            default:begin
+                                
+                            end
                         endcase
                     end
                     if (previous_state_done && encoding_rsp_sent == 'h8A && encoding_rsp_received == 'h8A) begin
@@ -558,6 +574,9 @@ always @(*) begin
                                     next_substate = 1;
                                 end 
                             end  
+                            default:begin
+                                
+                            end
                         endcase
                     end
                     if (previous_state_done && encoding_rsp_sent == 'hCA && encoding_rsp_received == 'hCA) begin
@@ -605,6 +624,9 @@ always @(*) begin
                                     next_substate = 1;
                                 end 
                             end  
+                            default:begin
+                                
+                            end
                         endcase
                     end
                     if (previous_state_done && encoding_rsp_sent == 'hD0 && encoding_rsp_received == 'hD0) begin
@@ -657,6 +679,9 @@ always @(*) begin
                                     next_substate = 1;
                                 end 
                             end  
+                            default:begin
+                                
+                            end
                         endcase
                     end
                     if (previous_state_done && encoding_rsp_sent == 'h9A && encoding_rsp_received == 'h9A) begin
@@ -731,6 +756,9 @@ always @(*) begin
                                     next_substate = 2;
                                 end 
                             end  
+                            default:begin
+                                
+                            end
                         endcase
                     end
                     if (previous_state_done && encoding_rsp_sent == 'hA2 && encoding_rsp_received == 'hA2) begin
@@ -804,6 +832,9 @@ always @(*) begin
                                     next_substate = 2;
                                 end 
                             end  
+                            default:begin
+                                
+                            end
                         endcase
                     end
                     if (previous_state_done && encoding_rsp_sent == 'hEA && encoding_rsp_received == 'hEA) begin
@@ -878,6 +909,9 @@ always @(*) begin
                                     next_substate = 2;
                                 end 
                             end  
+                            default:begin
+                                
+                            end
                         endcase
                     end 
                     if (previous_state_done && encoding_rsp_sent == 'h92 && encoding_rsp_received == 'h92) begin
@@ -953,6 +987,9 @@ always @(*) begin
                                     next_substate = 2;
                                 end 
                             end  
+                            default:begin
+                                
+                            end
                         endcase
                     end
                     if (previous_state_done && encoding_rsp_sent == 'hF2 && encoding_rsp_received == 'hF2) begin
@@ -1003,6 +1040,9 @@ always @(*) begin
                                     next_substate = 1;
                                 end 
                             end  
+                            default:begin
+                                
+                            end
                         endcase
                     end 
                     if (previous_state_done && encoding_rsp_sent == 'hAC && encoding_rsp_received == 'hAC) begin
@@ -1077,6 +1117,9 @@ always @(*) begin
                                     next_substate = 2;
                                 end 
                             end  
+                            default:begin
+                                
+                            end
                         endcase
                     end 
                     // Training complete - return to VALVREF with training enabled
@@ -1244,6 +1287,9 @@ always @(*) begin
                                     next_substate = 6;
                                 end 
                             end
+                            default:begin
+                                
+                            end
                         endcase
                     end else begin
                         if (speed_idle_state_enable) begin
@@ -1388,6 +1434,9 @@ always @(*) begin
                                     next_substate = 2;
                                 end 
                             end
+                            default:begin
+                                
+                            end
                         endcase
                     end 
 
@@ -1415,11 +1464,9 @@ always @(*) begin
                     o_tx_data_reg = 0;
                     o_tx_info_reg = 0;
                 end
-
             endcase
         end
     end
-end
 
 `ifdef ASSERT_ON
 

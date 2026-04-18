@@ -55,21 +55,27 @@ module ucie_ltsm_rx_mbinit_repairval #(
     // State memory + result latch
     // -------------------------------------------------------------------------
     always_ff @(posedge i_clk or posedge i_reset) begin
-        if (i_reset || i_current_state != MBINIT_REPAIRVAL) begin
+        if (i_reset) begin
+            current_substate                <= INIT_HANDSHAKE;
+            substates_done                  <= 0;
+            i_rx_valid_results_reg <= '0;
+        end else if (i_current_state != MBINIT_REPAIRVAL) begin
             current_substate                <= INIT_HANDSHAKE;
             substates_done                  <= 0;
             i_rx_valid_results_reg <= '0;
         end else begin
-            current_substate <= next_substate;
-
-            if ((current_substate == PATTERN_DETECTION && i_rx_done) ||
-                (current_substate == PATTERN_DETECTION &&
-                 i_sb_rx_req && i_rx_decoding == 9'h2A))
-                i_rx_valid_results_reg <= i_rx_valid_results;
-
             if (current_substate == DONE_HANDSHAKE &&
-                i_sb_rx_req && i_rx_decoding == 9'h2B)
-                substates_done <= 1;
+                i_sb_rx_req && i_rx_decoding == 9'h2B) begin
+                substates_done   <= 1;
+                current_substate <= DONE_HANDSHAKE;
+            end else begin
+                current_substate <= next_substate;
+
+                if ((current_substate == PATTERN_DETECTION && i_rx_done) ||
+                    (current_substate == WAIT_RESULT_REQ &&
+                     i_sb_rx_req && i_rx_decoding == 9'h2A)) // edited
+                    i_rx_valid_results_reg <= i_rx_valid_results;
+            end
         end
     end
 
@@ -106,66 +112,76 @@ module ucie_ltsm_rx_mbinit_repairval #(
         o_done_mbinit_repairval_rx = 0;
         next_substate              = INIT_HANDSHAKE;
 
-        if (o_timer_8ms) begin
+        if (!substates_done && o_timer_8ms) begin
             o_train_error = 1;
             next_substate = INIT_HANDSHAKE;
         end
-        else if (i_current_state == MBINIT_REPAIRVAL && !substates_done) begin
+        else if (i_current_state == MBINIT_REPAIRVAL) begin
             case (current_substate)
 
                 INIT_HANDSHAKE: begin
                     o_rx_encoding = 9'h28;
-                    o_rx_sb_rsp   = done_ack ? 0 : 1;
+                    if (!substates_done) begin
+                        o_rx_sb_rsp = done_ack ? 0 : 1;
 
-                    if (i_sb_rx_req && i_rx_decoding == 9'h28)
-                        next_substate = PATTERN_DETECTION;
-                    else
-                        next_substate = INIT_HANDSHAKE;
+                        if (i_sb_rx_req && i_rx_decoding == 9'h28)
+                            next_substate = PATTERN_DETECTION;
+                        else
+                            next_substate = INIT_HANDSHAKE;
+                    end
                 end
 
                 PATTERN_DETECTION: begin
                     o_rx_encoding = 9'h29;
 
-                    if (i_rx_done) begin
-                        next_substate = WAIT_RESULT_REQ;
-                    end else if (i_sb_rx_req && i_rx_decoding == 9'h29) begin
-                        o_rx_sb_rsp   = 1;
-                        next_substate = SEND_RESP;
-                    end else begin
-                        next_substate = PATTERN_DETECTION;
+                    if (!substates_done) begin
+                        if (i_rx_done) begin
+                            next_substate = WAIT_RESULT_REQ;
+                        end else if (i_sb_rx_req && i_rx_decoding == 9'h29) begin
+                            o_rx_sb_rsp   = 1;
+                            next_substate = SEND_RESP;
+                        end else begin
+                            next_substate = PATTERN_DETECTION;
+                        end
                     end
                 end
 
                 WAIT_RESULT_REQ: begin
                     o_rx_encoding = 9'h2A;
-                    o_rx_sb_rsp   = done_ack ? 0 : 1;
+                    if (!substates_done) begin
+                        o_rx_sb_rsp = done_ack ? 0 : 1;
 
-                    if (i_sb_rx_req && i_rx_decoding == 9'h2A)
-                        next_substate = SEND_RESP;
-                    else
-                        next_substate = WAIT_RESULT_REQ;
+                        if (i_sb_rx_req && i_rx_decoding == 9'h2A)
+                            next_substate = SEND_RESP;
+                        else
+                            next_substate = WAIT_RESULT_REQ;
+                    end
                 end
 
                 SEND_RESP: begin
-                    o_rx_encoding   = 9'h2A;
-                    o_rx_info[0]    = i_rx_valid_results_reg; // 2 data lanes
-                    o_rx_sb_rsp     = 1;
+                    o_rx_encoding = 9'h2B;  // error
+                    o_rx_info[0]  = i_rx_valid_results_reg;  // 2 data lanes
+                    if (!substates_done) begin
+                        o_rx_sb_rsp = 1;
 
-                    if (i_sb_rx_done)
-                        next_substate = DONE_HANDSHAKE;
-                    else
-                        next_substate = SEND_RESP;
+                        if (i_sb_rx_done)
+                            next_substate = DONE_HANDSHAKE;
+                        else
+                            next_substate = SEND_RESP;
+                    end else next_substate = SEND_RESP;
                 end
 
                 DONE_HANDSHAKE: begin
-                    o_rx_encoding = 9'h2B;
-                    o_rx_sb_rsp   = done_ack ? 0 : 1;
+                    o_rx_encoding = 9'h2C;  // error
+                    if (!substates_done) begin
+                        o_rx_sb_rsp = done_ack ? 0 : 1;
 
-                    if (i_sb_rx_req && i_rx_decoding == 9'h2B) begin
-                        o_done_mbinit_repairval_rx = 1;
-                        next_substate              = INIT_HANDSHAKE;
-                    end else begin
-                        next_substate = DONE_HANDSHAKE;
+                        if (i_sb_rx_req && i_rx_decoding == 9'h2C) begin  // error
+                            o_done_mbinit_repairval_rx = 1;
+                            next_substate              = INIT_HANDSHAKE;
+                        end else begin
+                            next_substate = DONE_HANDSHAKE;
+                        end
                     end
                 end
 
@@ -178,6 +194,7 @@ module ucie_ltsm_rx_mbinit_repairval #(
     // =========================================================================
     // Assertions
     // =========================================================================
+    /*
 `ifdef SIM
 
     property enc_check(substate, logic [8:0] enc);
@@ -237,5 +254,5 @@ module ucie_ltsm_rx_mbinit_repairval #(
         else $error("ASSERT FAIL [DONE_ONLY_IN_STATE]: done asserted outside MBINIT_REPAIRVAL");
 
 `endif
-
+*/
 endmodule

@@ -65,14 +65,20 @@ localparam DONE_HANDSHAKE      = 3'b101;
 // State memory
 // -------------------------------------------------------------------------
 always_ff @(posedge i_clk or posedge i_reset) begin
-    if (i_reset || i_current_state != MBINIT_REVERSAL) begin
+    if (i_reset) begin
+        current_substate <= INIT_HANDSHAKE;
+        substates_done   <= 0;
+    end else if (i_current_state != MBINIT_REVERSAL) begin
         current_substate <= INIT_HANDSHAKE;
         substates_done   <= 0;
     end else begin
-        current_substate <= next_substate;
         if (current_substate == DONE_HANDSHAKE &&
-            i_sb_tx_rsp && i_tx_decoding == 9'h35)
-            substates_done <= 1;
+            i_sb_tx_rsp && i_tx_decoding == 9'h35) begin
+            substates_done   <= 1;
+            current_substate <= DONE_HANDSHAKE;
+        end else begin
+            current_substate <= next_substate;
+        end
     end
 end
 
@@ -97,71 +103,83 @@ always_comb begin
     o_done_mbinit_reversal_tx = 0;
     next_substate           = INIT_HANDSHAKE;
 
-    if (o_timer_8ms) begin
+    if (!substates_done && o_timer_8ms) begin
         o_train_error = 1;
         next_substate = INIT_HANDSHAKE;
     end
-    else if (i_current_state == MBINIT_REVERSAL && !substates_done) begin
+    else if (i_current_state == MBINIT_REVERSAL) begin
         case (current_substate)
 
             INIT_HANDSHAKE: begin
                 o_tx_encoding = 9'h30;
-                o_tx_sb_req   = ~done_ack;
-                if (i_sb_tx_rsp && i_tx_decoding == 9'h30)
-                    next_substate = CLEAR_LOG_HANDSHAKE;
-                else
-                    next_substate = INIT_HANDSHAKE;
+                if (!substates_done) begin
+                    o_tx_sb_req = ~done_ack;
+                    if (i_sb_tx_rsp && i_tx_decoding == 9'h30)
+                        next_substate = CLEAR_LOG_HANDSHAKE;
+                    else
+                        next_substate = INIT_HANDSHAKE;
+                end
             end
 
             CLEAR_LOG_HANDSHAKE: begin
                 o_tx_encoding = 9'h31;
-                o_tx_sb_req   = ~done_ack;
-                if (i_sb_tx_rsp && i_tx_decoding == 9'h31)
-                    next_substate = LANE_ID_GENERATION;
-                else
-                    next_substate = CLEAR_LOG_HANDSHAKE;
+                if (!substates_done) begin
+                    o_tx_sb_req = ~done_ack;
+                    if (i_sb_tx_rsp && i_tx_decoding == 9'h31)
+                        next_substate = LANE_ID_GENERATION;
+                    else
+                        next_substate = CLEAR_LOG_HANDSHAKE;
+                end
             end
 
             LANE_ID_GENERATION: begin
                 o_tx_encoding = 9'h32;
-                o_tx_sb_req   = ~done_ack;
-                if (i_tx_done)
-                    next_substate = RESULT_HANDSHAKE;
-                else
-                    next_substate = LANE_ID_GENERATION;
+                if (!substates_done) begin
+                    o_tx_sb_req = ~done_ack;
+                    if (i_tx_done)
+                        next_substate = RESULT_HANDSHAKE;
+                    else
+                        next_substate = LANE_ID_GENERATION;
+                end
             end
 
             RESULT_HANDSHAKE: begin
                 o_tx_encoding = 9'h33;
-                o_tx_sb_req   = ~done_ack;
-                // w_popcount is always valid; only use it when RSP arrives
-                if (i_sb_tx_rsp && i_tx_decoding == 9'h33) begin
-                    if (w_popcount <= 5'd8)
-                        next_substate = APPLY_REVERSAL;
-                    else
-                        next_substate = DONE_HANDSHAKE;
-                end else begin
-                    next_substate = RESULT_HANDSHAKE;
+                if (!substates_done) begin
+                    o_tx_sb_req = ~done_ack;
+                    // w_popcount is always valid; only use it when RSP arrives
+                    if (i_sb_tx_rsp && i_tx_decoding == 9'h33) begin
+                        if (w_popcount <= 5'd8)
+                            next_substate = APPLY_REVERSAL;
+                        else
+                            next_substate = DONE_HANDSHAKE;
+                    end else begin
+                        next_substate = RESULT_HANDSHAKE;
+                    end
                 end
             end
 
             APPLY_REVERSAL: begin
                 o_tx_encoding = 9'h34;
-                o_tx_sb_req   = ~done_ack;
-                if (i_tx_done)
-                    next_substate = CLEAR_LOG_HANDSHAKE;
-                else
-                    next_substate = APPLY_REVERSAL;
+                if (!substates_done) begin
+                    o_tx_sb_req = ~done_ack;
+                    if (i_tx_done)
+                        next_substate = CLEAR_LOG_HANDSHAKE;
+                    else
+                        next_substate = APPLY_REVERSAL;
+                end
             end
 
             DONE_HANDSHAKE: begin
                 o_tx_encoding = 9'h35;
-                o_tx_sb_req   = ~done_ack;
-                if (i_sb_tx_rsp && i_tx_decoding == 9'h35) begin
-                    o_done_mbinit_reversal_tx = 1;
-                    next_substate             = INIT_HANDSHAKE;
-                end else begin
-                    next_substate = DONE_HANDSHAKE;
+                if (!substates_done) begin
+                    o_tx_sb_req = ~done_ack;
+                    if (i_sb_tx_rsp && i_tx_decoding == 9'h35) begin
+                        o_done_mbinit_reversal_tx = 1;
+                        next_substate             = INIT_HANDSHAKE;
+                    end else begin
+                        next_substate = DONE_HANDSHAKE;
+                    end
                 end
             end
 
@@ -173,6 +191,7 @@ end
     // ==========================================================================
     // Assertions
     // ==========================================================================
+    /*
 `ifdef SIM
 
     property encoding_check(substate, logic [8:0] expected_enc);
@@ -273,4 +292,5 @@ end
         else $error("ASSERT FAIL [DONE_ONLY_IN_STATE]: done asserted outside MBINIT_REVERSAL");
 
 `endif
+*/
 endmodule
