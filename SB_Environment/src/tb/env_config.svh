@@ -18,9 +18,10 @@
 //
 // CLASS: env_config
 //
-// The env_config class encapsulates all configuration settings for the bridge
-// environment including virtual interface handles and active/passive mode
-// settings for all agents. It also provides scoreboard enable/disable flags.
+// The env_config class encapsulates all configuration settings for the
+// sideband verification environment. It stores the virtual interface handles
+// used by the environment, the active/passive settings for each agent, and
+// the reactive-mode controls that enable monitor-to-sequencer feedback.
 //
 //-----------------------------------------------------------------------------
 
@@ -40,6 +41,12 @@ class env_config extends uvm_object;
   uvm_active_passive_enum is_active_rx        = UVM_ACTIVE;
   uvm_active_passive_enum is_active_rdi       = UVM_ACTIVE;
   uvm_active_passive_enum is_active_phylink   = UVM_ACTIVE;
+
+  bit is_reactive_ltsm_ctrl;
+  bit is_reactive_tx;
+  bit is_reactive_rx;
+  bit is_reactive_rdi;
+  bit is_reactive_phylink;
 
   `uvm_object_utils_begin(env_config)
     `uvm_field_enum(uvm_active_passive_enum, is_active_ltsm_ctrl, UVM_DEFAULT)
@@ -65,7 +72,7 @@ endclass : env_config
 
 //-----------------------------------------------------------------------------
 //
-// CLASS- env_config
+// CLASS: env_config
 //
 //-----------------------------------------------------------------------------
 

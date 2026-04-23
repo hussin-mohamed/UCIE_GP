@@ -19,7 +19,7 @@
 // CLASS: sb_sequence_base
 //
 // The sb_sequence_base class provides a parameterized base implementation
-// for APB sequences. It includes request/response handles, print utilities,
+// for Sideband sequences. It includes request/response handles, print utilities,
 // and enforces implementation of the body() task in derived classes.
 //
 // Type Parameters:
@@ -70,7 +70,9 @@ endclass : sb_sequence_base
 
 //-----------------------------------------------------------------------------
 //
-// CLASS- sb_sequence_base
+// CLASS: sb_sequence_base
+//
+// Base implementation of the shared sequence utilities.
 //
 //-----------------------------------------------------------------------------
 
@@ -99,6 +101,8 @@ endtask
 
 // body
 // ----
+//
+// Emits a fatal message when a derived sequence forgets to override body().
 
 task sb_sequence_base::body();
   `uvm_fatal("BODY", "APB_BASE_SEQ - Base sequence's body is not implemented and must be overriden")

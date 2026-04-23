@@ -18,13 +18,47 @@
 //
 // CLASS: sb_cmp_link2ltsm_rdi
 //
-// Description: ...
+// Comparator placeholder for the link-to-LTSM RDI path. The class is present
+// so the scoreboard can be wired consistently while RDI checking is completed.
 //---------------------------------------------------------------------------
 
 class sb_cmp_link2ltsm_rdi extends sb_cmp_base #(rdi_seq_item, "RDI_LINK2LTSM_CMP");
   `uvm_component_utils(sb_cmp_link2ltsm_rdi)
 
-  function new(string name, uvm_component parent);
-    super.new(name, parent);
-  endfunction
+  // Function: new
+  //
+  // Creates the RDI link-to-LTSM comparator.
+
+  extern function new(string name, uvm_component parent);
+
+  // Function: set_timeout_val
+  //
+  // Placeholder hook for assigning an RDI-specific timeout once the path is
+  // fully modeled in the environment.
+
+  extern virtual function void set_timeout_val(rdi_seq_item item);
 endclass
+
+//---------------------------------------------------------------------------
+// IMPLEMENTATION
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+//
+// CLASS: sb_cmp_link2ltsm_rdi
+//
+//---------------------------------------------------------------------------
+
+// new
+// ---
+
+function sb_cmp_link2ltsm_rdi::new(string name, uvm_component parent);
+  super.new(name, parent);
+endfunction
+
+// set_timeout_val
+// ---------------
+
+function void sb_cmp_link2ltsm_rdi::set_timeout_val(rdi_seq_item item);
+  
+endfunction : set_timeout_val

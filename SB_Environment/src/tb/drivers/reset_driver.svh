@@ -18,7 +18,10 @@
 //
 // CLASS: reset_driver
 //
-// ...
+// The reset_driver class owns reset sequencing for the sideband environment.
+// It randomizes a reset pulse width, drives the shared reset interface during
+// the UVM reset phase, and coordinates reset timing with the rest of the
+// environment.
 //
 //------------------------------------------------------------------------------
 
@@ -51,14 +54,14 @@ class reset_driver extends uvm_driver;
 
   // Function: build_phase
   //
-  // Creates the analysis port for broadcasting driven transactions.
+  // Retrieves the shared reset virtual interface from the config database.
 
   extern virtual function void build_phase(uvm_phase phase);
 
 
   // Task: reset_phase
   //
-  // ...
+  // Randomizes the reset pulse width and applies reset to the DUT.
 
   extern virtual task reset_phase(uvm_phase phase);
 
@@ -70,7 +73,7 @@ endclass : reset_driver
 
 //------------------------------------------------------------------------------
 //
-// CLASS- reset_driver
+// CLASS: reset_driver
 //
 //------------------------------------------------------------------------------
 

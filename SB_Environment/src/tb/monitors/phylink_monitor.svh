@@ -18,7 +18,7 @@
 //
 // CLASS: phylink_monitor
 //
-// ...
+// Sideband phylink monitor for capturing transactions on the phylink interface.
 //
 //-----------------------------------------------------------------------------
 
@@ -33,11 +33,17 @@ class phylink_monitor extends sb_monitor_base #(phylink_seq_item, virtual sb_phy
     extern function new(string name, uvm_component parent);
 
 
-    // Task: collect_item
+    // Task: collect_item_out
     //
-    // ...
+    // Collects one phylink item observed at the DUT output interface.
 
-    extern virtual task collect_item(output phylink_seq_item _item);
+    extern virtual task collect_item_out(output phylink_seq_item _item);
+
+    // Task: collect_item_in
+    //
+    // Collects one phylink item observed at the DUT input interface.
+
+    extern virtual task collect_item_in(output phylink_seq_item _item);
 
 endclass : phylink_monitor
 
@@ -48,7 +54,7 @@ endclass : phylink_monitor
 
 //-----------------------------------------------------------------------------
 //
-// CLASS- phylink_monitor
+// CLASS: phylink_monitor
 //
 //-----------------------------------------------------------------------------
 
@@ -60,31 +66,51 @@ function phylink_monitor::new(string name, uvm_component parent);
     super.new(name, parent);
 endfunction : new
 
-// collect_item
-// ------------
+// collect_item_out
+// ----------------
+//
+// Deserializes one outgoing phylink message and converts it into an item.
 
-task phylink_monitor::collect_item(output phylink_seq_item _item);
+task phylink_monitor::collect_item_out(output phylink_seq_item _item);
     logic [127:0] msg_raw;
     message_t     msg;
 
     _item = phylink_seq_item::type_id::create("_item");
 
-    // Since collect_item() is executed, this means the SB is in the ACTIVE mode
+    // Since collect_item_out() is executed, this means the SB is in the ACTIVE mode
     _item.op_mode = ACTIVE;
 
     // Start deserialization
-    bfm.deserialize_data(msg_raw);
+    bfm.deserialize_data_out(msg_raw);
 
     // Convert the raw message into a message_t struct
     msg = raw2struct(msg_raw);
 
     // Populate the _item with the message fields
-    _item.fullcode = msg.fullcode;
-    _item.opcode   = msg.opcode;
-    _item.srcid    = msg.srcid;
-    _item.dstid    = msg.dstid;
-    _item.info     = msg.info;
-    _item.data     = msg.data;
-    _item.cp       = msg.cp;
-    _item.dp       = msg.dp;
-endtask : collect_item
+    populate_item_with_msg(msg, _item);
+endtask : collect_item_out
+
+
+// collect_item_in
+// ----------------
+//
+// Deserializes one incoming phylink message and converts it into an item.
+
+task phylink_monitor::collect_item_in(output phylink_seq_item _item);
+    logic [127:0] msg_raw;
+    message_t     msg;
+
+    _item = phylink_seq_item::type_id::create("_item");
+
+    // Since collect_item_in() is executed, this means the SB is in the ACTIVE mode
+    _item.op_mode = ACTIVE;
+
+    // Start deserialization
+    bfm.deserialize_data_in(msg_raw);
+
+    // Convert the raw message into a message_t struct
+    msg = raw2struct(msg_raw);
+
+    // Populate the _item with the message fields
+    populate_item_with_msg(msg, _item);
+endtask : collect_item_in

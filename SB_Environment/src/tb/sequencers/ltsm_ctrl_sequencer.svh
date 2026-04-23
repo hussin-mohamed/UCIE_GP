@@ -18,7 +18,8 @@
 //
 // CLASS: ltsm_ctrl_sequencer
 //
-// ...
+// Sideband LTSM_CTRL sequencer for managing transaction flow on the LTSM_CTRL
+// interface.
 //
 //-----------------------------------------------------------------------------
 
@@ -41,7 +42,7 @@ endclass : ltsm_ctrl_sequencer
 
 //-----------------------------------------------------------------------------
 //
-// CLASS- ltsm_ctrl_sequencer
+// CLASS: ltsm_ctrl_sequencer
 //
 //-----------------------------------------------------------------------------
 

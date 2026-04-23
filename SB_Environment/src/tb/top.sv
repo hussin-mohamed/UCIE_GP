@@ -88,7 +88,11 @@ module sb_tb_top;
   //============================================================================
   // DUT Instantiation
   //============================================================================
-  ucie_sb_top dut(
+  ucie_sb_top #(
+    .pFIFO_DEPTH(TX_FIFO_SIZE)
+  )
+  dut
+  (
     // Clock and reset
      .i_clk                (clk)
     ,.i_reset              (reset_wire)

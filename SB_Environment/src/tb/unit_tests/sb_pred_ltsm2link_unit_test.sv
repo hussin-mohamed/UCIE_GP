@@ -1,3 +1,19 @@
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
+
 `include "../shared_pkg.sv"
 import shared_pkg::*;
 import uvm_pkg::*;
@@ -22,26 +38,72 @@ import svunit_uvm_mock_pkg::*;
   `FAIL_UNLESS_EQUAL(ACT.cp, EXP.cp) \
   `FAIL_UNLESS_EQUAL(ACT.dp, EXP.dp)
 
+//---------------------------------------------------------------------------
+//
+// CLASS: sb_pred_ltsm2link_uvm_wrapper
+//
+// Lightweight UVM wrapper around sb_pred_ltsm2link that captures predictor
+// output through a local analysis FIFO for unit-test checking.
+//
+//---------------------------------------------------------------------------
+
 class sb_pred_ltsm2link_uvm_wrapper extends sb_pred_ltsm2link;
 
   `uvm_component_utils(sb_pred_ltsm2link_uvm_wrapper)
   
   uvm_tlm_analysis_fifo #(phylink_seq_item) out_fifo;
 
-  function new(string name = "sb_pred_ltsm2link_uvm_wrapper", uvm_component parent);
-    super.new(name, parent);
-  endfunction
+  // Function: new
+  //
+  // Creates the predictor wrapper component.
 
-  function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-    out_fifo = new("out_fifo", this);
-  endfunction
+  extern function new(string name = "sb_pred_ltsm2link_uvm_wrapper", uvm_component parent);
 
-  function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
-    results_ap_phy.connect(out_fifo.analysis_export);
-  endfunction
+  // Function: build_phase
+  //
+  // Constructs the local FIFO used to observe predicted phylink items.
+
+  extern function void build_phase(uvm_phase phase);
+
+  // Function: connect_phase
+  //
+  // Connects the predictor output port to the local observation FIFO.
+
+  extern function void connect_phase(uvm_phase phase);
 endclass
+
+//---------------------------------------------------------------------------
+// IMPLEMENTATION
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+//
+// CLASS: sb_pred_ltsm2link_uvm_wrapper
+//
+//---------------------------------------------------------------------------
+
+// new
+// ---
+
+function sb_pred_ltsm2link_uvm_wrapper::new(string name = "sb_pred_ltsm2link_uvm_wrapper", uvm_component parent);
+  super.new(name, parent);
+endfunction
+
+// build_phase
+// -----------
+
+function void sb_pred_ltsm2link_uvm_wrapper::build_phase(uvm_phase phase);
+  super.build_phase(phase);
+  out_fifo = new("out_fifo", this);
+endfunction
+
+// connect_phase
+// -------------
+
+function void sb_pred_ltsm2link_uvm_wrapper::connect_phase(uvm_phase phase);
+  super.connect_phase(phase);
+  results_ap_phy.connect(out_fifo.analysis_export);
+endfunction
 
 module sb_pred_ltsm2link_unit_test;
   import svunit_pkg::svunit_testcase;

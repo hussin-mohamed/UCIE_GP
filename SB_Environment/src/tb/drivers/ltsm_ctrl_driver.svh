@@ -18,7 +18,10 @@
 //
 // CLASS: ltsm_ctrl_driver
 //
-// ...
+// The ltsm_ctrl_driver converts ltsm_ctrl_seq_item requests into SBINIT
+// control activity on the LTSM control BFM. It is responsible for initiating
+// sideband initialization and for propagating timeout events to the rest of
+// the environment.
 //
 //------------------------------------------------------------------------------
 
@@ -32,12 +35,18 @@ class ltsm_ctrl_driver extends sb_driver_base #(ltsm_ctrl_seq_item, virtual sb_l
 
   extern function new(string name, uvm_component parent);
 
+  // Function: start_of_simulation_phase
+  //
+  // Disables the base-class ready wait because this driver is itself
+  // responsible for launching SBINIT.
+
   extern virtual function void start_of_simulation_phase(uvm_phase phase);
 
 
   // Task: drive_item
   //
-  // ...
+  // Drives a control transaction that starts SBINIT and races completion
+  // against timeout detection.
 
   extern virtual task drive_item(inout ltsm_ctrl_seq_item req, output ltsm_ctrl_seq_item rsp);
 
@@ -50,7 +59,7 @@ endclass : ltsm_ctrl_driver
 
 //------------------------------------------------------------------------------
 //
-// CLASS- ltsm_ctrl_driver
+// CLASS: ltsm_ctrl_driver
 //
 //------------------------------------------------------------------------------
 

@@ -14,6 +14,14 @@
 // *                                                                          *
 // ****************************************************************************
 
+//-----------------------------------------------------------------------------
+//
+// CLASS: tx_agent
+//
+// Thin typed wrapper around agent_base for the sideband TX LTSM interface.
+//
+//-----------------------------------------------------------------------------
+
 class tx_agent extends agent_base #(
   .CFG_NAME("tx_cfg"),
   .INTF_T(virtual sb_tx_bfm),
@@ -24,9 +32,28 @@ class tx_agent extends agent_base #(
 );
   `uvm_component_utils(tx_agent)
 
+  // Function: new
+  //
+  // Creates the TX agent component.
+
   extern function new(string name, uvm_component parent);
 
 endclass
+
+//-----------------------------------------------------------------------------
+// IMPLEMENTATION
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+//
+// CLASS: tx_agent
+//
+// Methods implementation for the TX agent wrapper.
+//
+//-----------------------------------------------------------------------------
+
+// new
+// ---
 
 function tx_agent::new(string name, uvm_component parent);
   super.new(name, parent);

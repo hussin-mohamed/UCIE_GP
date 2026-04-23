@@ -1,0 +1,527 @@
+# do runsim_2026-04-23_12-34-47.do
+# ** Warning: (vlib-34) Library already exists at "work".
+# Errors: 0, Warnings: 1
+# QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+# Start time: 12:34:48 on Apr 23,2026
+# vlog ../../../Sideband/ucie_sb_rx_path.sv ../../../Sideband/ucie_sb_top.sv ../../../Sideband/ucie_sb_traffic.sv ../../../Sideband/ucie_sb_tx_path.sv ../../../Sideband/ucie_sideband_demux.sv ../../../Sideband/ucie_sideband_deser.sv ../../../Sideband/ucie_sideband_fifo.sv ../../../Sideband/ucie_sideband_fifo_FWFT.sv ../../../Sideband/ucie_sideband_fifo_traffic.sv ../../../Sideband/ucie_sideband_in.sv ../../../Sideband/ucie_sideband_mux.sv ../../../Sideband/ucie_sideband_out.sv ../../../Sideband/ucie_sideband_rx_msg.sv ../../../Sideband/ucie_sideband_rx_msg_enc_dec.sv ../../../Sideband/ucie_sideband_ser.sv ../../../Sideband/ucie_sideband_traffic_fifo.sv ../../../Sideband/ucie_sideband_tx_msg.sv ../../../Sideband/ucie_sideband_tx_msg_enc_dec.sv "+cover" "+define+SIM" 
+# -- Compiling module ucie_sb_rx_path
+# -- Compiling module ucie_sb_top
+# -- Compiling module ucie_sb_traffic
+# -- Compiling module ucie_sb_tx_path
+# -- Compiling module ucie_sideband_demux
+# -- Compiling module ucie_sideband_deser
+# -- Compiling module ucie_sideband_fifo
+# -- Compiling module ucie_sideband_fifo_FWFT
+# -- Compiling module ucie_sideband_fifo_traffic
+# -- Compiling module ucie_sideband_in
+# -- Compiling module ucie_sideband_mux
+# -- Compiling module ucie_sideband_out
+# -- Compiling module ucie_sideband_rx_msg
+# -- Compiling module ucie_sideband_rx_msg_enc_dec
+# -- Compiling module ucie_sideband_ser
+# -- Compiling module ucie_sideband_traffic_fifo
+# -- Compiling module ucie_sideband_tx_msg
+# -- Compiling module ucie_sideband_tx_msg_enc_dec
+# 
+# Top level modules:
+# 	ucie_sb_top
+# 	ucie_sideband_fifo
+# End time: 12:34:48 on Apr 23,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+# Start time: 12:34:49 on Apr 23,2026
+# vlog -f src_files.f -mfcu "+define+SIM" 
+# -- Compiling package shared_pkg
+# -- Compiling interface sb_ltsm_ctrl_bfm
+# -- Compiling interface sb_rdi_bfm
+# -- Compiling interface sb_rx_bfm
+# ** Note: (vlog-2286) ../bfms/sb_phylink_bfm.sv(17): Using implicit +incdir+C:/questasim64_2021.1/uvm-1.2/../verilog_src/uvm-1.2/src from import uvm_pkg
+# -- Compiling package shared_pkg_sv_unit
+# -- Importing package shared_pkg
+# -- Importing package mtiUvm.uvm_pkg (uvm-1.2 Built-in)
+# -- Compiling interface sb_phylink_bfm
+# -- Compiling interface sb_reset_intf
+# -- Compiling interface sb_tx_bfm
+# -- Compiling package sb_seq_pkg
+# -- Compiling interface sb_sva
+# -- Importing package sb_seq_pkg
+# -- Compiling package sb_pkg
+# ** Warning: ../tb/tests/sb_test_base.svh(191): (vlog-2240) Treating stand-alone use of function 'randomize' as an implicit VOID cast.
+# -- Compiling module sb_tb_top
+# -- Importing package sb_pkg
+# 
+# Top level modules:
+# 	sb_tb_top
+# End time: 12:34:49 on Apr 23,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 1
+# sb_rand_test
+# UVM_NONE
+# random
+# out/ucdb/2026-04-23_12-34-47_sb_rand_test_run1.ucdb
+# out/reports/text/2026-04-23_12-34-47_sb_rand_test_run1_code_cov.txt
+# out/reports/text/2026-04-23_12-34-47_sb_rand_test_run1_func_cov.txt
+# out/reports/html/2026-04-23_12-34-47_sb_rand_test_run1_func_html
+# out/reports/html/2026-04-23_12-34-47_sb_rand_test_run1_code_html
+# vsim -voptargs="+acc" -nodpiexports work.sb_tb_top -classdebug -uvmcontrol=all -coverage "+UVM_VERBOSITY=UVM_NONE" "+UVM_NO_RELNOTES" "+UVM_TESTNAME=sb_rand_test" "+UVM_TIMEOUT=100000,YES" -sv_seed random 
+# Start time: 12:34:49 on Apr 23,2026
+# ** Note: (vsim-8009) Loading existing optimized design _opt
+# //  Questa Sim-64
+# //  Version 2021.1 win64 Jan 19 2021
+# //
+# //  Copyright 1991-2021 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.sb_ltsm_ctrl_bfm(fast)
+# Loading work.sb_tx_bfm(fast)
+# Loading work.sb_rx_bfm(fast)
+# Loading work.sb_rdi_bfm(fast)
+# Loading work.sb_phylink_bfm(fast)
+# Loading work.sb_reset_intf(fast)
+# Loading work.shared_pkg(fast)
+# Loading mtiUvm.uvm_pkg(fast)
+# Loading work.sb_pkg(fast)
+# Loading work.shared_pkg_sv_unit(fast)
+# Loading mtiUvm.questa_uvm_pkg(fast)
+# Loading work.sb_tb_top(fast)
+# Loading work.sb_reset_intf(fast__2)
+# Loading work.sb_ltsm_ctrl_bfm(fast__2)
+# Loading work.sb_tx_bfm(fast__2)
+# Loading work.sb_rx_bfm(fast__2)
+# Loading work.sb_rdi_bfm(fast__2)
+# Loading work.sb_phylink_bfm(fast__2)
+# Loading work.ucie_sb_top(fast)
+# Loading work.ucie_sb_tx_path(fast)
+# Loading work.ucie_sideband_mux(fast)
+# Loading work.ucie_sideband_mux(fast__1)
+# Loading work.ucie_sb_rx_path(fast)
+# Loading work.ucie_sideband_demux(fast)
+# Loading work.ucie_sideband_out(fast)
+# Loading work.ucie_sideband_traffic_fifo(fast)
+# Loading work.ucie_sideband_fifo_FWFT(fast)
+# Loading work.ucie_sideband_ser(fast)
+# Loading work.ucie_sideband_in(fast)
+# Loading work.ucie_sideband_fifo_traffic(fast)
+# Loading work.ucie_sideband_deser(fast)
+# Loading work.ucie_sb_traffic(fast)
+# Loading work.ucie_sideband_tx_msg(fast)
+# Loading work.ucie_sideband_fifo_FWFT(fast__1)
+# Loading work.ucie_sideband_tx_msg_enc_dec(fast)
+# Loading work.ucie_sideband_rx_msg(fast)
+# Loading work.ucie_sideband_fifo_FWFT(fast__2)
+# Loading work.ucie_sideband_rx_msg_enc_dec(fast)
+# Loading work.sb_seq_pkg(fast)
+# Loading work.sb_sva(fast__1)
+# Loading C:/questasim64_2021.1/uvm-1.2\win64\uvm_dpi.dll
+# Sv_Seed = 616475765
+# 1
+# UVM_INFO @ 0: reporter [TIMOUTSET] '+UVM_TIMEOUT=100000,YES' provided on the command line is being applied.
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_root.svh(579) @ 0: reporter [UVMTOP] UVM testbench topology:
+# --------------------------------------------------------------------------
+# Name                          Type                        Size  Value     
+# --------------------------------------------------------------------------
+# uvm_test_top                  sb_rand_test                -     @384      
+#   env                         sb_env                      -     @397      
+#     cvg                       sb_coverage_collector       -     @423      
+#       ltsm_exp                uvm_analysis_imp_ltsm       -     @440      
+#         recording_detail      integral                    32    'd1       
+#       phylink_exp             uvm_analysis_imp_phylink    -     @431      
+#         recording_detail      integral                    32    'd1       
+#       recording_detail        integral                    32    'd1       
+#     ltsm_ctrl_agt             ltsm_ctrl_agent             -     @475      
+#       drvr                    ltsm_ctrl_driver            -     @659      
+#         ap                    uvm_analysis_port           -     @809      
+#           recording_detail    integral                    32    'd1       
+#         rsp_port              uvm_analysis_port           -     @676      
+#           recording_detail    integral                    32    'd1       
+#         seq_item_port         uvm_seq_item_pull_port      -     @667      
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       seqr                    ltsm_ctrl_sequencer         -     @685      
+#         rsp_export            uvm_analysis_export         -     @693      
+#           recording_detail    integral                    32    'd1       
+#         seq_item_export       uvm_seq_item_pull_imp       -     @799      
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#         arbitration_queue     array                       0     -         
+#         lock_queue            array                       0     -         
+#         num_last_reqs         integral                    32    'd1       
+#         num_last_rsps         integral                    32    'd1       
+#       is_active               uvm_active_passive_enum     1     UVM_ACTIVE
+#       recording_detail        integral                    32    'd1       
+#     phylink_agt               phylink_agent               -     @499      
+#       drvr                    phylink_driver              -     @833      
+#         ap                    uvm_analysis_port           -     @1001     
+#           recording_detail    integral                    32    'd1       
+#         rsp_port              uvm_analysis_port           -     @850      
+#           recording_detail    integral                    32    'd1       
+#         seq_item_port         uvm_seq_item_pull_port      -     @841      
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       in_ap                   uvm_analysis_port           -     @983      
+#         recording_detail      integral                    32    'd1       
+#       mntr                    phylink_monitor             -     @825      
+#         in_ap                 uvm_analysis_port           -     @1019     
+#           recording_detail    integral                    32    'd1       
+#         out_ap                uvm_analysis_port           -     @1010     
+#           recording_detail    integral                    32    'd1       
+#         reactive_ap           uvm_analysis_port           -     @1028     
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       out_ap                  uvm_analysis_port           -     @992      
+#         recording_detail      integral                    32    'd1       
+#       seqr                    phylink_sequencer           -     @859      
+#         reactive_exp          uvm_analysis_export         -     @1042     
+#           recording_detail    integral                    32    'd1       
+#         reactive_fifo         uvm_tlm_analysis_fifo #(T)  -     @1051     
+#           analysis_export     uvm_analysis_imp            -     @1095     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1086     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1068     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1077     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1059     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         rsp_export            uvm_analysis_export         -     @867      
+#           recording_detail    integral                    32    'd1       
+#         seq_item_export       uvm_seq_item_pull_imp       -     @973      
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#         arbitration_queue     array                       0     -         
+#         lock_queue            array                       0     -         
+#         num_last_reqs         integral                    32    'd1       
+#         num_last_rsps         integral                    32    'd1       
+#       recording_detail        integral                    32    'd1       
+#     rst_drvr                  reset_driver                -     @449      
+#       rsp_port                uvm_analysis_port           -     @466      
+#         recording_detail      integral                    32    'd1       
+#       seq_item_port           uvm_seq_item_pull_port      -     @457      
+#         recording_detail      integral                    32    'd1       
+#       intf_name               string                      10    reset_intf
+#       reset_time_ns           integral                    32    'd0       
+#       recording_detail        integral                    32    'd1       
+#     rx_agt                    rx_agent                    -     @491      
+#       drvr                    rx_driver                   -     @1118     
+#         ap                    uvm_analysis_port           -     @1286     
+#           recording_detail    integral                    32    'd1       
+#         rsp_port              uvm_analysis_port           -     @1135     
+#           recording_detail    integral                    32    'd1       
+#         seq_item_port         uvm_seq_item_pull_port      -     @1126     
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       in_ap                   uvm_analysis_port           -     @1268     
+#         recording_detail      integral                    32    'd1       
+#       mntr                    rx_monitor                  -     @1110     
+#         in_ap                 uvm_analysis_port           -     @1304     
+#           recording_detail    integral                    32    'd1       
+#         out_ap                uvm_analysis_port           -     @1295     
+#           recording_detail    integral                    32    'd1       
+#         reactive_ap           uvm_analysis_port           -     @1313     
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       out_ap                  uvm_analysis_port           -     @1277     
+#         recording_detail      integral                    32    'd1       
+#       seqr                    rx_sequencer                -     @1144     
+#         reactive_exp          uvm_analysis_export         -     @1327     
+#           recording_detail    integral                    32    'd1       
+#         reactive_fifo         uvm_tlm_analysis_fifo #(T)  -     @1336     
+#           analysis_export     uvm_analysis_imp            -     @1380     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1371     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1353     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1362     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1344     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         rsp_export            uvm_analysis_export         -     @1152     
+#           recording_detail    integral                    32    'd1       
+#         seq_item_export       uvm_seq_item_pull_imp       -     @1258     
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#         arbitration_queue     array                       0     -         
+#         lock_queue            array                       0     -         
+#         num_last_reqs         integral                    32    'd1       
+#         num_last_rsps         integral                    32    'd1       
+#       recording_detail        integral                    32    'd1       
+#     sb                        sb_scoreboard               -     @415      
+#       axp_in_phy              uvm_analysis_export         -     @1416     
+#         recording_detail      integral                    32    'd1       
+#       axp_in_rdi              uvm_analysis_export         -     @1407     
+#         recording_detail      integral                    32    'd1       
+#       axp_in_rx               uvm_analysis_export         -     @1398     
+#         recording_detail      integral                    32    'd1       
+#       axp_in_tx               uvm_analysis_export         -     @1389     
+#         recording_detail      integral                    32    'd1       
+#       axp_out_phy             uvm_analysis_export         -     @1452     
+#         recording_detail      integral                    32    'd1       
+#       axp_out_rdi             uvm_analysis_export         -     @1443     
+#         recording_detail      integral                    32    'd1       
+#       axp_out_rx              uvm_analysis_export         -     @1434     
+#         recording_detail      integral                    32    'd1       
+#       axp_out_tx              uvm_analysis_export         -     @1425     
+#         recording_detail      integral                    32    'd1       
+#       cmp_link2ltsm_rdi       sb_cmp_link2ltsm_rdi        -     @1510     
+#         axp_in_exp            uvm_analysis_export         -     @1518     
+#           recording_detail    integral                    32    'd1       
+#         axp_out_actual        uvm_analysis_export         -     @1527     
+#           recording_detail    integral                    32    'd1       
+#         expfifo               uvm_tlm_analysis_fifo #(T)  -     @1536     
+#           analysis_export     uvm_analysis_imp            -     @1580     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1571     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1553     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1562     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1544     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         outfifo               uvm_tlm_analysis_fifo #(T)  -     @1589     
+#           analysis_export     uvm_analysis_imp            -     @1633     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1624     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1606     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1615     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1597     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       cmp_link2ltsm_rx        sb_cmp_link2ltsm_rx         -     @1502     
+#         axp_in_exp            uvm_analysis_export         -     @1642     
+#           recording_detail    integral                    32    'd1       
+#         axp_out_actual        uvm_analysis_export         -     @1651     
+#           recording_detail    integral                    32    'd1       
+#         expfifo               uvm_tlm_analysis_fifo #(T)  -     @1660     
+#           analysis_export     uvm_analysis_imp            -     @1704     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1695     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1677     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1686     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1668     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         outfifo               uvm_tlm_analysis_fifo #(T)  -     @1713     
+#           analysis_export     uvm_analysis_imp            -     @1757     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1748     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1730     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1739     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1721     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       cmp_link2ltsm_tx        sb_cmp_link2ltsm_tx         -     @1494     
+#         axp_in_exp            uvm_analysis_export         -     @1766     
+#           recording_detail    integral                    32    'd1       
+#         axp_out_actual        uvm_analysis_export         -     @1775     
+#           recording_detail    integral                    32    'd1       
+#         expfifo               uvm_tlm_analysis_fifo #(T)  -     @1784     
+#           analysis_export     uvm_analysis_imp            -     @1828     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1819     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1801     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1810     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1792     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         outfifo               uvm_tlm_analysis_fifo #(T)  -     @1837     
+#           analysis_export     uvm_analysis_imp            -     @1881     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1872     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1854     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1863     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1845     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       cmp_ltsm2link           sb_cmp_ltsm2link            -     @1469     
+#         axp_in_exp            uvm_analysis_export         -     @1890     
+#           recording_detail    integral                    32    'd1       
+#         axp_out_actual        uvm_analysis_export         -     @1899     
+#           recording_detail    integral                    32    'd1       
+#         expfifo               uvm_tlm_analysis_fifo #(T)  -     @1908     
+#           analysis_export     uvm_analysis_imp            -     @1952     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1943     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1925     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1934     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1916     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         outfifo               uvm_tlm_analysis_fifo #(T)  -     @1961     
+#           analysis_export     uvm_analysis_imp            -     @2005     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1996     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1978     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1987     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1969     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       prd_link2ltsm           sb_pred_link2ltsm           -     @1477     
+#         analysis_imp          uvm_analysis_imp            -     @1485     
+#           recording_detail    integral                    32    'd1       
+#         results_ap_rdi        uvm_analysis_port           -     @2032     
+#           recording_detail    integral                    32    'd1       
+#         results_ap_rx         uvm_analysis_port           -     @2023     
+#           recording_detail    integral                    32    'd1       
+#         results_ap_tx         uvm_analysis_port           -     @2014     
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       prd_ltsm2link           sb_pred_ltsm2link           -     @1461     
+#         axp_in_rdi            uvm_analysis_imp_rdi        -     @2059     
+#           recording_detail    integral                    32    'd1       
+#         axp_in_rx             uvm_analysis_imp_rx         -     @2050     
+#           recording_detail    integral                    32    'd1       
+#         axp_in_tx             uvm_analysis_imp_tx         -     @2041     
+#           recording_detail    integral                    32    'd1       
+#         results_ap_phy        uvm_analysis_port           -     @2068     
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       recording_detail        integral                    32    'd1       
+#     tx_agt                    tx_agent                    -     @483      
+#       drvr                    tx_driver                   -     @2087     
+#         ap                    uvm_analysis_port           -     @2255     
+#           recording_detail    integral                    32    'd1       
+#         rsp_port              uvm_analysis_port           -     @2104     
+#           recording_detail    integral                    32    'd1       
+#         seq_item_port         uvm_seq_item_pull_port      -     @2095     
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       in_ap                   uvm_analysis_port           -     @2237     
+#         recording_detail      integral                    32    'd1       
+#       mntr                    tx_monitor                  -     @2079     
+#         in_ap                 uvm_analysis_port           -     @2273     
+#           recording_detail    integral                    32    'd1       
+#         out_ap                uvm_analysis_port           -     @2264     
+#           recording_detail    integral                    32    'd1       
+#         reactive_ap           uvm_analysis_port           -     @2282     
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       out_ap                  uvm_analysis_port           -     @2246     
+#         recording_detail      integral                    32    'd1       
+#       seqr                    tx_sequencer                -     @2113     
+#         reactive_exp          uvm_analysis_export         -     @2296     
+#           recording_detail    integral                    32    'd1       
+#         reactive_fifo         uvm_tlm_analysis_fifo #(T)  -     @2305     
+#           analysis_export     uvm_analysis_imp            -     @2349     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @2340     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @2322     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @2331     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @2313     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         rsp_export            uvm_analysis_export         -     @2121     
+#           recording_detail    integral                    32    'd1       
+#         seq_item_export       uvm_seq_item_pull_imp       -     @2227     
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#         arbitration_queue     array                       0     -         
+#         lock_queue            array                       0     -         
+#         num_last_reqs         integral                    32    'd1       
+#         num_last_rsps         integral                    32    'd1       
+#       recording_detail        integral                    32    'd1       
+#     vseqr                     virtual_sequencer           -     @511      
+#       rsp_export              uvm_analysis_export         -     @519      
+#         recording_detail      integral                    32    'd1       
+#       seq_item_export         uvm_seq_item_pull_imp       -     @625      
+#         recording_detail      integral                    32    'd1       
+#       recording_detail        integral                    32    'd1       
+#       arbitration_queue       array                       0     -         
+#       lock_queue              array                       0     -         
+#       num_last_reqs           integral                    32    'd1       
+#       num_last_rsps           integral                    32    'd1       
+#     recording_detail          integral                    32    'd1       
+#   recording_detail            integral                    32    'd1       
+# --------------------------------------------------------------------------
+# 
+# **************************************************************************
+# * Questa UVM Transaction Recording Turned ON.                            *
+# * recording_detail has been set.                                         *
+# *  To turn off, set 'recording_detail' to off:                           *
+# * uvm_config_db#(int)            ::set(null, "", "recording_detail", 0); *
+# * uvm_config_db#(uvm_bitstream_t)::set(null, "", "recording_detail", 0); *
+# **************************************************************************
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_factory.svh(1645) @ 16550562: reporter [UVM/FACTORY/PRINT] 
+#### Factory Configuration (*)
+# 
+# No instance overrides are registered with this factory
+# 
+# Type Overrides:
+# 
+#   Requested Type  Override Type
+#   --------------  -------------
+#   sb_sanity_vseq  sb_rand_vseq
+# (*) Types with no associated type name will be printed as <unknown>
+# 
+####
+# 
+# 
+# ** Note: $finish    : C:/questasim64_2021.1/win64/../verilog_src/uvm-1.2/src/base/uvm_root.svh(517)
+#    Time: 16550562 ns  Iteration: 119  Instance: /sb_tb_top
+# Break in Task uvm_pkg/uvm_root::run_test at C:/questasim64_2021.1/win64/../verilog_src/uvm-1.2/src/base/uvm_root.svh line 517
+# Stopped at C:/questasim64_2021.1/win64/../verilog_src/uvm-1.2/src/base/uvm_root.svh line 517
+# Saving coverage database on exit...
+# End time: 12:35:16 on Apr 23,2026, Elapsed time: 0:00:27
+# Errors: 0, Warnings: 0
+# QuestaSim-64 vcover 2021.1 Coverage Utility 2021.01 Jan 19 2021
+# Start time: 12:35:16 on Apr 23,2026
+# vcover report out/ucdb/2026-04-23_12-34-47_sb_rand_test_run1.ucdb -details -annotate -code bcefst -output out/reports/text/2026-04-23_12-34-47_sb_rand_test_run1_code_cov.txt 
+# End time: 12:35:16 on Apr 23,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# QuestaSim-64 vcover 2021.1 Coverage Utility 2021.01 Jan 19 2021
+# Start time: 12:35:16 on Apr 23,2026
+# vcover report out/ucdb/2026-04-23_12-34-47_sb_rand_test_run1.ucdb -details -cvg -directive -output out/reports/text/2026-04-23_12-34-47_sb_rand_test_run1_func_cov.txt 
+# End time: 12:35:16 on Apr 23,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 0
+# QuestaSim-64 vcover 2021.1 Coverage Utility 2021.01 Jan 19 2021
+# Start time: 12:35:16 on Apr 23,2026
+# vcover report out/ucdb/2026-04-23_12-34-47_sb_rand_test_run1.ucdb -html -output out/reports/html/2026-04-23_12-34-47_sb_rand_test_run1_code_html -code bcefst -annotate -details 
+# End time: 12:35:18 on Apr 23,2026, Elapsed time: 0:00:02
+# Errors: 0, Warnings: 0
+# QuestaSim-64 vcover 2021.1 Coverage Utility 2021.01 Jan 19 2021
+# Start time: 12:35:18 on Apr 23,2026
+# vcover report out/ucdb/2026-04-23_12-34-47_sb_rand_test_run1.ucdb -html -output out/reports/html/2026-04-23_12-34-47_sb_rand_test_run1_func_html -cvg -details 
+# 
+# End time: 12:35:19 on Apr 23,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 0

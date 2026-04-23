@@ -1,8 +1,24 @@
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
+
 //------------------------------------------------------------------------------
 //
 // CLASS: sb_driver_base
 //
-// ...
+// Base driver class for all Sideband drivers, handling BFM interaction and reset.
 //
 // Type Parameters:
 //   ITEM_T - Transaction item type to be driven
@@ -16,9 +32,10 @@ virtual class sb_driver_base #(type ITEM_T = uvm_sequence_item, type INTF_T = vi
   INTF_T                      bfm;
   ITEM_T                      req, rsp;
   uvm_analysis_port #(ITEM_T) ap;
-  bit                         is_reactive;
   event                       reset_driver;
   bit                         wait_for_sbinit;
+  int unsigned                active_txn_cnt = 0;
+  int unsigned                sbinit_txn_cnt = 0;
 
   // Function: new
   //
@@ -29,9 +46,13 @@ virtual class sb_driver_base #(type ITEM_T = uvm_sequence_item, type INTF_T = vi
 
   // Function: build_phase
   //
-  // Creates the analysis port for broadcasting driven transactions.
+  // Creates the analysis port and initializes the default SBINIT wait policy.
 
   extern virtual function void build_phase(uvm_phase phase);
+
+  // Task: reset_phase
+  //
+  // Clears the attached BFM during the UVM reset phase.
 
   extern task reset_phase(uvm_phase phase);
 
@@ -45,7 +66,8 @@ virtual class sb_driver_base #(type ITEM_T = uvm_sequence_item, type INTF_T = vi
 
   // Task: drive_items
   //
-  // ...
+  // Fetches sequence items, publishes ACTIVE items to the reference model, and
+  // delegates pin-level activity to the protocol-specific drive_item() method.
 
   extern virtual task drive_items();
 
@@ -57,6 +79,18 @@ virtual class sb_driver_base #(type ITEM_T = uvm_sequence_item, type INTF_T = vi
 
   pure virtual task drive_item(inout ITEM_T req, output ITEM_T rsp);
 
+  // Function: report_phase
+  //
+  // Reports the number of ACTIVE transactions driven during simulation.
+  
+  extern virtual function void report_phase(uvm_phase phase);
+  
+  // Function: record_driven_item
+  //
+  // Updates the ACTIVE or SBINIT transaction counters after a successful drive.
+
+  extern virtual function void record_driven_item();
+
 endclass : sb_driver_base
 
 
@@ -66,7 +100,7 @@ endclass : sb_driver_base
 
 //------------------------------------------------------------------------------
 //
-// CLASS- sb_driver_base
+// CLASS: sb_driver_base
 //
 //------------------------------------------------------------------------------
 
@@ -100,7 +134,7 @@ task sb_driver_base::run_phase(uvm_phase phase);
     
     // Wait for the SBINIT to finish
     if (wait_for_sbinit) begin
-     `uvm_info(get_type_name(), "Waiting for the ready signal...", UVM_DEBUG)
+     `uvm_info(get_type_name(), "Waiting for the ready signalBase driver class for all Sideband drivers, handling BFM interaction and reset.", UVM_DEBUG)
       @(negedge bfm.o_sb_ready);
       repeat(2) @(negedge bfm.clk);
     end
@@ -139,15 +173,17 @@ task sb_driver_base::drive_items();
     `uvm_info(get_type_name(), "Got a request item", UVM_DEBUG)
 
     // Send the item to the reference model
-    ap.write(req);
+    if (req.op_mode == ACTIVE) begin // The model accepts only ACTIVE itmes
+      ap.write(req);
+    end
 
     // Call the drive_item() task to convert the transaction-level item to pin-level signals
-    `uvm_info(get_type_name(), "Driving...", UVM_DEBUG)
+    `uvm_info(get_type_name(), "DrivingBase driver class for all Sideband drivers, handling BFM interaction and reset.", UVM_DEBUG)
     drive_item(req, rsp);
     `uvm_info(get_type_name(), $sformatf("DRIVED %s: \n%s", req.get_type_name(), req.sprint()), UVM_DEBUG)
 
     // Trigger item driving completion for the sequence with/without sending response
-    if(is_reactive) begin
+    if(rsp != null) begin
       rsp.set_id_info(req); // Preserve transaction ID
       seq_item_port.item_done(rsp);
     end else begin
@@ -155,3 +191,23 @@ task sb_driver_base::drive_items();
     end
   end
 endtask : drive_items
+
+// report_phase
+// ------------
+
+function void sb_driver_base::report_phase(uvm_phase phase);
+  super.report_phase(phase);
+  `uvm_info(get_type_name(), $sformatf("DRIVED %0d ACTIVE TRANSACTIONS", active_txn_cnt), UVM_LOW)
+endfunction : report_phase
+
+
+// record_driven_item
+// ------------------
+function void sb_driver_base::record_driven_item();
+    // Count only ACTIVE items
+    if (req.op_mode == ACTIVE) begin
+      active_txn_cnt++;
+    end else begin
+      sbinit_txn_cnt++;
+    end
+endfunction : record_driven_item

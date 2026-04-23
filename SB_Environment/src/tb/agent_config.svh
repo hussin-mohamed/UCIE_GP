@@ -32,6 +32,7 @@ class agent_config #(type INTF_T = virtual sb_tx_bfm) extends uvm_object;
   INTF_T bfm;
 
   uvm_active_passive_enum is_active = UVM_ACTIVE;
+  bit is_reactive;
 
   `uvm_object_param_utils_begin(agent_config #(INTF_T))
   `uvm_field_enum(uvm_active_passive_enum, is_active, UVM_DEFAULT)
@@ -53,7 +54,7 @@ endclass : agent_config
 
 //---------------------------------------------------------------------------
 //
-// CLASS- agent_config
+// CLASS: agent_config
 //
 //---------------------------------------------------------------------------
 

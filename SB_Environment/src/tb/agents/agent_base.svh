@@ -18,6 +18,10 @@
 //
 // CLASS: agent_base
 //
+// The agent_base class is a parameterized base class for all Sideband agents.
+// It handles common tasks like configuration retrieval, monitor and driver
+// instantiation, and analysis port connections.
+//
 //-----------------------------------------------------------------------------
 
 virtual class agent_base #(
@@ -35,30 +39,53 @@ virtual class agent_base #(
   MNTR_T            mntr;
   agent_config #(INTF_T) cfg;
 
-  uvm_analysis_port #(ITEM_T) drvr_ap, mntr_ap;
+  uvm_analysis_port #(ITEM_T) in_ap, out_ap;
   
   // This field determines whether an agent is active or passive.
   uvm_active_passive_enum is_active = UVM_ACTIVE;
+
+  // Function: new
+  //
+  // Creates a new parameterized agent_base instance.
   
-  // Provide implementations of virtual methods such as get_type_name and create
-  // `uvm_component_param_utils_begin(agent_base #(CFG_NAME, INTF_T, ITEM_T, SEQR_T, DRVR_T, MNTR_T))
-  //   `uvm_field_enum(uvm_active_passive_enum, is_active, UVM_DEFAULT)
-  // `uvm_component_utils_end
-
   extern function new(string name, uvm_component parent);
-  extern function void build_phase(uvm_phase phase);
-  extern function void connect_phase(uvm_phase phase);
-  extern task pre_reset_phase(uvm_phase phase);
 
+  // Function: build_phase
+  //
+  // Retrieves configuration, instantiates monitor, and conditionally
+  // instantiates driver and sequencer if the agent is active.
+  
+  extern function void build_phase(uvm_phase phase);
+
+  // Function: connect_phase
+  //
+  // Connects the monitor analysis ports and, if active, connects the
+  // driver to the sequencer and assigns the BFM handle.
+  
+  extern function void connect_phase(uvm_phase phase);
+
+  // Task: pre_reset_phase
+  //
+  // Stops any running sequences and triggers a driver reset if active.
+  
+  extern task pre_reset_phase(uvm_phase phase);
 endclass : agent_base
+
 
 //---------------------------------------------------------------------------
 // IMPLEMENTATION
 //---------------------------------------------------------------------------
 
+// new
+// ---
+
 function agent_base::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
+
+
+// build_phase
+// -----------
 
 function void agent_base::build_phase(uvm_phase phase);
   super.build_phase(phase);
@@ -66,33 +93,44 @@ function void agent_base::build_phase(uvm_phase phase);
   if(!uvm_config_db#(agent_config #(INTF_T))::get(this, "", CFG_NAME, cfg))
     `uvm_fatal("build_phase", $sformatf("AGENT - Unable to get the agent configuration object from the uvm_config_db, CFG_NAME: %s, agent name: %s", CFG_NAME, this.get_full_name()))
 
-  // Use the parameterized type for creation!
   mntr = MNTR_T::type_id::create("mntr", this);
+
+  mntr.is_reactive = cfg.is_reactive;
   
   if (cfg != null) is_active = cfg.is_active;
 
   if(is_active == UVM_ACTIVE) begin
-    // Use the parameterized types for creation!
-    drvr    = DRVR_T::type_id::create("drvr", this);
-    seqr    = SEQR_T::type_id::create("seqr", this);
-    drvr_ap = new("drvr_ap", this);
+    // Create driver and sequencer for active agents
+    drvr = DRVR_T::type_id::create("drvr", this);
+    seqr = SEQR_T::type_id::create("seqr", this);
   end
 
-  mntr_ap = new("mntr_ap", this);
+  // Initialize analysis ports
+  in_ap = new("in_ap", this);
+  out_ap = new("out_ap", this);
 endfunction : build_phase
+
+
+// connect_phase
+// -------------
 
 function void agent_base::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
 
-  mntr.ap.connect(mntr_ap);
+  mntr.out_ap.connect(out_ap);
+  mntr.in_ap.connect(in_ap);
   mntr.bfm = cfg.bfm;
-  
+
   if(is_active == UVM_ACTIVE) begin
     drvr.seq_item_port.connect(seqr.seq_item_export);
+    mntr.reactive_ap.connect(seqr.reactive_exp);
     drvr.bfm = cfg.bfm;
-    drvr.ap.connect(drvr_ap);
   end
 endfunction : connect_phase
+
+
+// pre_reset_phase
+// ---------------
 
 task agent_base::pre_reset_phase(uvm_phase phase);
   super.pre_reset_phase(phase);

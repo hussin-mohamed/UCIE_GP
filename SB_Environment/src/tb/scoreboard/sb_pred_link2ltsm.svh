@@ -18,7 +18,9 @@
 //
 // CLASS: sb_pred_link2ltsm
 //
-// Description: ...
+// Predictor for the link-to-LTSM direction. It decodes monitored phylink items
+// into the LTSM transactions expected on the DUT outputs.
+//
 //---------------------------------------------------------------------------
 
 class sb_pred_link2ltsm extends uvm_subscriber #(phylink_seq_item);
@@ -28,32 +30,79 @@ class sb_pred_link2ltsm extends uvm_subscriber #(phylink_seq_item);
   uvm_analysis_port #(ltsm_seq_item)  results_ap_rx;
   uvm_analysis_port #(rdi_seq_item)   results_ap_rdi;
 
+  int unsigned invalid_msg_cnt;
+
+
+  // Function: new
+  //
+  // Creates the link-to-LTSM predictor component.
+
   extern function new(string name, uvm_component parent);
+
+
+  // Function: build_phase
+  //
+  // Constructs the predictor output ports for TX, RX, and RDI paths.
 
   extern function void build_phase(uvm_phase phase);
 
+  // Function: write
+  //
+  // Decodes one ACTIVE phylink item and forwards the resulting LTSM item to the
+  // correct destination stream.
+
   extern function void write(phylink_seq_item t);
 
-  extern function bit is_supported_msg(phylink_seq_item _t_in);
+  // Function: get_predicted_item
+  //
+  // Produces the expected LTSM item and tags it with direction, data, and
+  // validity information derived from the phylink item.
 
-  extern function ltsm_seq_item get_predicted_item(phylink_seq_item _t_in);
+  extern function bit get_predicted_item(
+    input phylink_seq_item _t_in,
+    output ltsm_seq_item   _ltsm_item
+  );
+
+  // Function: lookup_encoding_tx
+  //
+  // Finds the TX encoding whose message template matches the incoming phylink
+  // header fields.
 
   extern function bit lookup_encoding_tx(
     input  phylink_seq_item _t_in,
     output tx_encoding_t    _tx_enc
   );
 
+  // Function: lookup_encoding_rx
+  //
+  // Finds the RX encoding whose message template matches the incoming phylink
+  // header fields.
+
   extern function bit lookup_encoding_rx(
     input  phylink_seq_item _t_in,
     output rx_encoding_t    _rx_enc
   );
-
-  extern function bit is_valid(input phylink_seq_item _t_in);
 endclass
+
+//---------------------------------------------------------------------------
+// IMPLEMENTATION
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+//
+// CLASS: sb_pred_ltsm2link
+//
+//---------------------------------------------------------------------------
+
+// new
+// ---
 
 function sb_pred_link2ltsm::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction
+
+// build_phase
+// -----------
 
 function void sb_pred_link2ltsm::build_phase(uvm_phase phase);
   super.build_phase(phase);
@@ -62,75 +111,65 @@ function void sb_pred_link2ltsm::build_phase(uvm_phase phase);
   results_ap_rdi = new("results_ap_rdi", this);
 endfunction
 
+// write
+// -----
+
 function void sb_pred_link2ltsm::write(phylink_seq_item t);
   ltsm_seq_item ltsm_item;
+  msg_dir_t     msg_dir;
 
-  // If the message is not supported, then do not send anything
-  if (!is_supported_msg(t)) begin
-    return;
+  if (t.op_mode != ACTIVE) begin
+    `uvm_fatal(get_type_name(), $sformatf("The sb_pred_link2ltsm handles only ACTIVE items. Received item:\n %s", t.sprint()))
   end
   
-  // Get the predicted ltsm item
-  ltsm_item = get_predicted_item(t);
-
-  // Route the item to the correct port based on the item's direction assigned by get_predicted_item()
-  if (ltsm_item.get_dir() == MSG_FROM_TX) begin
-    results_ap_tx.write(ltsm_item);
-  end else begin
-    results_ap_rx.write(ltsm_item);
+  if (get_predicted_item(t, ltsm_item)) begin
+    // Store the direction for checking it
+    msg_dir = ltsm_item.get_dir();
+    
+    // Route the item to the correct port based on the item's direction assigned by get_predicted_item()
+    if (msg_dir == MSG_TO_RX) begin
+      results_ap_tx.write(ltsm_item);
+    end else if (msg_dir == MSG_TO_TX) begin
+      results_ap_rx.write(ltsm_item);
+    end
+  end else begin // If the message is not supported, then do not send anything
+    invalid_msg_cnt++;
+    return;
   end
 endfunction : write
 
-function bit sb_pred_link2ltsm::is_supported_msg(phylink_seq_item _t_in);
-  bit is_supported_opcode;
-  bit is_supported_srcid;
-  bit is_supported_dstid;
-  bit is_supported_fullcode;
+// get_predicted_item
+// ------------------
 
-  is_supported_opcode   = (_t_in.opcode == MSG_WO_DATA || _t_in.opcode == MSG_W_64B_DATA);
-  is_supported_srcid    = (_t_in.srcid == SRC_PHY);
-  is_supported_dstid    = (_t_in.dstid == DST_PHY);
-  is_supported_fullcode =
-  (
-    _t_in.fullcode              == SBINIT_out_of_Reset                    ||
-    _t_in.fullcode              == Rx_Init_D_to_C_sweep_done_with_results ||
-    get_msgtype(_t_in.fullcode) == REQ_MSG                                ||
-    get_msgtype(_t_in.fullcode) == RSP_MSG
-  );
-
-  // Return 1 if and only if the message is supported
-  if (
-    !is_supported_opcode   ||
-    !is_supported_srcid    ||
-    !is_supported_dstid    ||
-    !is_supported_fullcode
-  ) begin
-    return 0;
-  end else begin
-    return 1;
-  end
-endfunction : is_supported_msg
-
-function ltsm_seq_item sb_pred_link2ltsm::get_predicted_item(phylink_seq_item _t_in);
-  ltsm_seq_item ltsm_item;
+function bit sb_pred_link2ltsm::get_predicted_item(
+  input phylink_seq_item _t_in,
+  output ltsm_seq_item   _ltsm_item
+);
   tx_encoding_t tx_enc;
   rx_encoding_t rx_enc;
 
-  ltsm_item = new();
+  _ltsm_item = new();
 
-  if (lookup_encoding_tx(_t_in, tx_enc)) begin
-    ltsm_item.set_tx_encoding(tx_enc);
-  end else if (lookup_encoding_rx(_t_in, rx_enc)) begin
-    ltsm_item.set_rx_encoding(rx_enc);
+  if (lookup_encoding_tx(_t_in, tx_enc)) begin // From TX to RX
+    rx_enc = tx2rx_enc_lut[tx_enc];
+    _ltsm_item.set_rx_encoding(rx_enc, 1);
+    get_predicted_item = 1;
+  end else if (lookup_encoding_rx(_t_in, rx_enc)) begin // From RX to TX
+    tx_enc = rx2tx_enc_lut[rx_enc];
+    _ltsm_item.set_tx_encoding(tx_enc, 1);
+    get_predicted_item = 1;
+  end else begin
+    get_predicted_item = 0;
   end
 
-  ltsm_item.info    = _t_in.info;
-  ltsm_item.data    = _t_in.data;
-  ltsm_item.msgtype = get_msgtype(_t_in.fullcode);
-  ltsm_item.valid   = is_valid(_t_in);
-
-  return ltsm_item;
+  _ltsm_item.info    = _t_in.info;
+  _ltsm_item.data    = _t_in.data;
+  _ltsm_item.msgtype = get_msgtype_by_fullcode(_t_in.fullcode);
+  _ltsm_item.valid   = is_valid(_t_in);
 endfunction : get_predicted_item
+
+// lookup_encoding_tx
+// ------------------
 
 function bit sb_pred_link2ltsm::lookup_encoding_tx(
   input  phylink_seq_item _t_in,
@@ -146,6 +185,10 @@ function bit sb_pred_link2ltsm::lookup_encoding_tx(
   msg.data     = '0;
   msg.cp       = '0;
   msg.dp       = '0;
+  msg.rsvd1    = '0;
+  msg.rsvd2    = '0;
+  msg.rsvd3    = '0;
+  msg.rsvd4    = '0;
 
   // Search for the tx_encoding that corresponds to this message
   foreach (tx_messages[key]) begin
@@ -158,6 +201,9 @@ function bit sb_pred_link2ltsm::lookup_encoding_tx(
 
   return 0;
 endfunction : lookup_encoding_tx
+
+// lookup_encoding_rx
+// ------------------
 
 function bit sb_pred_link2ltsm::lookup_encoding_rx(
   input  phylink_seq_item _t_in,
@@ -173,6 +219,10 @@ function bit sb_pred_link2ltsm::lookup_encoding_rx(
   msg.data     = '0;
   msg.cp       = '0;
   msg.dp       = '0;
+  msg.rsvd1    = '0;
+  msg.rsvd2    = '0;
+  msg.rsvd3    = '0;
+  msg.rsvd4    = '0;
 
   // Search for the rx_encoding that corresponds to this message
   foreach (rx_messages[key]) begin
@@ -185,30 +235,3 @@ function bit sb_pred_link2ltsm::lookup_encoding_rx(
 
   return 0;
 endfunction : lookup_encoding_rx
-
-function bit sb_pred_link2ltsm::is_valid(input phylink_seq_item _t_in);
-  message_t     msg;
-  logic [127:0] msg_raw;
-  bit           cp, dp;
-
-  msg.fullcode = _t_in.fullcode;
-  msg.opcode   = _t_in.opcode;
-  msg.srcid    = _t_in.srcid;
-  msg.dstid    = _t_in.dstid;
-  msg.info     = _t_in.info;
-  msg.data     = _t_in.data;
-  msg.cp       = _t_in.cp;
-  msg.dp       = _t_in.dp;
-
-  msg_raw = struct2raw(msg);
-
-  // Parity Bits Calculation
-  cp = ^{msg_raw[61:0]};  // cp (even parity of header bits)
-  dp = ^{msg_raw[127:64]};  // dp (even parity of data payload)
-
-  if ((_t_in.cp != cp) || (_t_in.dp != dp)) begin
-    return 0;
-  end else begin
-    return 1;
-  end
-endfunction : is_valid

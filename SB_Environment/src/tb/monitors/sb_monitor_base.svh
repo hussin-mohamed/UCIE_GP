@@ -18,7 +18,7 @@
 //
 // CLASS: sb_monitor_base
 //
-// ...
+// Base monitor class for all Sideband monitors, providing common interface and capture logic.
 //
 //-----------------------------------------------------------------------------
 
@@ -26,9 +26,11 @@ virtual class sb_monitor_base #(type ITEM_T = uvm_sequence_item, type INTF_T = v
   // `uvm_component_param_utils(sb_monitor_base #(ITEM_T, INTF_T))
   
   INTF_T bfm;
-  ITEM_T item;
-  uvm_analysis_port #(ITEM_T) ap;
-  int unsigned txn_cnt = 0;
+  ITEM_T item_out, item_in;
+  uvm_analysis_port #(ITEM_T) out_ap, in_ap, reactive_ap;
+  int unsigned txn_out_cnt = 0;
+  int unsigned txn_in_cnt = 0;
+  bit is_reactive;
 
 
   // Function: new
@@ -48,24 +50,36 @@ virtual class sb_monitor_base #(type ITEM_T = uvm_sequence_item, type INTF_T = v
   // Task: run_phase
   //
   // Waits for reset deassertion then continuously collects transactions by
-  // calling the virtual collect_item() method.
+  // calling the virtual collect_item_out() method.
 
   extern virtual task run_phase(uvm_phase phase);
 
 
-  // Task: monitor_items
+  // Task: monitor_items_out
   //
-  // ...
+  // Base monitor class for all Sideband monitors, providing common interface and capture logic.
 
-  extern virtual task monitor_items();
+  extern virtual task monitor_items_out();
+
+  // Task: monitor_items_in
+  //
+  // Base monitor class for all Sideband monitors, providing common interface and capture logic.
+
+  extern virtual task monitor_items_in();
 
 
-  // Task: collect_item
+  // Task: collect_item_out
   //
   // Pure virtual method that must be implemented by derived classes to define
   // protocol-specific transaction collection behavior.
 
-  pure virtual task collect_item(output ITEM_T _item);
+  pure virtual task collect_item_out(output ITEM_T _item);
+
+  // Task: collect_item_in
+  //
+  // Base monitor class for all Sideband monitors, providing common interface and capture logic.
+
+  pure virtual task collect_item_in(output ITEM_T _item);
 
 
   // Function: report_phase
@@ -83,7 +97,7 @@ endclass : sb_monitor_base
 
 //-----------------------------------------------------------------------------
 //
-// CLASS- sb_monitor_base
+// CLASS: sb_monitor_base
 //
 //-----------------------------------------------------------------------------
 
@@ -100,7 +114,9 @@ endfunction : new
 
 function void sb_monitor_base::build_phase(uvm_phase phase);
   super.build_phase(phase);
-  ap = new("ap", this);
+  out_ap      = new("out_ap", this);
+  in_ap       = new("in_ap", this);
+  reactive_ap = new("reactive_ap", this);
 endfunction
 
 // run_phase
@@ -116,9 +132,10 @@ task sb_monitor_base::run_phase(uvm_phase phase);
     // Wait for the SBINIT to finish
     @(negedge bfm.o_sb_ready);
 
-    fork 
-      monitor_items(); 
-    join_none 
+    fork
+      monitor_items_out();
+      monitor_items_in();
+    join_none
 
     @(posedge bfm.reset);
     disable fork;
@@ -126,24 +143,44 @@ task sb_monitor_base::run_phase(uvm_phase phase);
   end 
 endtask : run_phase
 
-// monitor_items
-// -------------
+// monitor_items_out
+// ----------------
 
-task sb_monitor_base::monitor_items();
+task sb_monitor_base::monitor_items_out();
   forever begin
-    collect_item(item);
+    collect_item_out(item_out);
 
-    // Write the item to the analysis port and log the monitored item
-    ap.write(item);
-    `uvm_info(get_type_name(), $sformatf("MONITORED %s: \n%s", item.get_type_name(), item.sprint()), UVM_DEBUG)
-    txn_cnt++;
+    // Write item_out to the analysis port and log the monitored item_out
+    out_ap.write(item_out);
+    `uvm_info(get_type_name(), $sformatf("MONITORED item_out %s: \n%s", item_out.get_type_name(), item_out.sprint()), UVM_DEBUG)
+    txn_out_cnt++;
+
+    // Send item_out to the sequencer if the monitor is configured to be reactive
+    if (is_reactive) begin
+      reactive_ap.write(item_out);
+    end
   end
-endtask : monitor_items
+endtask : monitor_items_out
+
+// monitor_items_in
+// ----------------
+
+task sb_monitor_base::monitor_items_in();
+  forever begin
+    collect_item_in(item_in);
+
+    // Write the item_in to the analysis port and log the monitored item_in
+    in_ap.write(item_in);
+    `uvm_info(get_type_name(), $sformatf("MONITORED item_in %s: \n%s", item_in.get_type_name(), item_in.sprint()), UVM_DEBUG)
+    txn_in_cnt++;
+  end
+endtask : monitor_items_in
 
 // report_phase
 // ------------
 
 function void sb_monitor_base::report_phase(uvm_phase phase);
   super.report_phase(phase);
-  `uvm_info(get_type_name(), $sformatf("MONITORED %0d TRANSACTIONS", txn_cnt), UVM_LOW)
+  `uvm_info(get_type_name(), $sformatf("MONITORED %0d OUTPUT TRANSACTIONS", txn_out_cnt), UVM_LOW)
+  `uvm_info(get_type_name(), $sformatf("MONITORED %0d INPUT TRANSACTIONS", txn_in_cnt), UVM_LOW)
 endfunction : report_phase

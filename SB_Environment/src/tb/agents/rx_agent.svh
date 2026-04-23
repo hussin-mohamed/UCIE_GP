@@ -14,6 +14,14 @@
 // *                                                                          *
 // ****************************************************************************
 
+//-----------------------------------------------------------------------------
+//
+// CLASS: rx_agent
+//
+// Thin typed wrapper around agent_base for the sideband RX LTSM interface.
+//
+//-----------------------------------------------------------------------------
+
 class rx_agent extends agent_base #(
   .CFG_NAME("rx_cfg"),
   .INTF_T(virtual sb_rx_bfm),
@@ -24,9 +32,28 @@ class rx_agent extends agent_base #(
 );
   `uvm_component_utils(rx_agent)
 
+  // Function: new
+  //
+  // Creates the RX agent component.
+
   extern function new(string name, uvm_component parent);
 
 endclass
+
+//-----------------------------------------------------------------------------
+// IMPLEMENTATION
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+//
+// CLASS: rx_agent
+//
+// Methods implementation for the RX agent wrapper.
+//
+//-----------------------------------------------------------------------------
+
+// new
+// ---
 
 function rx_agent::new(string name, uvm_component parent);
   super.new(name, parent);

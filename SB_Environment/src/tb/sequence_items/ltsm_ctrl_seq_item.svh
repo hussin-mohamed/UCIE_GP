@@ -18,10 +18,14 @@
 //
 // CLASS: ltsm_ctrl_seq_item
 //
-// Description: ...
+// Sideband control sequence item used to drive SBINIT control commands through
+// the LTSM control agent.
 //-----------------------------------------------------------------------------
 
 class ltsm_ctrl_seq_item extends uvm_sequence_item;
+
+  // Enum specifying the type of the current operation of the Sideband (SBINIT/ACTIVE)
+  operation_t op_mode;
 
   // Enum specifying the type of mode of the SBINIT (START/T1MS)
   sbinit_mode_t sbinit_mode;
@@ -42,13 +46,18 @@ endclass : ltsm_ctrl_seq_item
 
 //-----------------------------------------------------------------------------
 //
-// CLASS- ltsm_ctrl_seq_item
+// CLASS: ltsm_ctrl_seq_item
+//
+// Methods implementation for the control sequence item.
 //
 //-----------------------------------------------------------------------------
 
 // new
 // ---
+//
+// Initializes the item in SBINIT mode.
 
 function ltsm_ctrl_seq_item::new(string name = "");
   super.new(name);
+  op_mode = SBINIT;
 endfunction
