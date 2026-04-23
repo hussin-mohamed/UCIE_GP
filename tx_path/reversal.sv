@@ -15,7 +15,7 @@ module reversal #(
         end
     endgenerate
 
-    function mux (input logic [pDATA_WIDTH-1:0] a,b, input logic sel);
+    function logic [pDATA_WIDTH-1:0] mux (input logic [pDATA_WIDTH-1:0] a,b, input logic sel);
         mux= sel ? b : a;
         return mux;
     endfunction
