@@ -14,6 +14,14 @@
 // *                                                                          *
 // ****************************************************************************
 
+//-----------------------------------------------------------------------------
+//
+// CLASS: phylink_agent
+//
+// Thin typed wrapper around agent_base for the sideband phylink interface.
+//
+//-----------------------------------------------------------------------------
+
 class phylink_agent extends agent_base #(
   .CFG_NAME("phylink_cfg"),
   .INTF_T(virtual sb_phylink_bfm),
@@ -24,9 +32,28 @@ class phylink_agent extends agent_base #(
 );
   `uvm_component_utils(phylink_agent)
 
+  // Function: new
+  //
+  // Creates the phylink agent component.
+
   extern function new(string name, uvm_component parent);
 
 endclass
+
+//-----------------------------------------------------------------------------
+// IMPLEMENTATION
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+//
+// CLASS: phylink_agent
+//
+// Methods implementation for the phylink agent wrapper.
+//
+//-----------------------------------------------------------------------------
+
+// new
+// ---
 
 function phylink_agent::new(string name, uvm_component parent);
   super.new(name, parent);

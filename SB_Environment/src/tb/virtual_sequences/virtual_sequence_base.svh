@@ -35,6 +35,7 @@ class virtual_sequence_base extends uvm_sequence;
   ltsm_ctrl_sequencer ltsm_ctrl_seqr;
   phylink_sequencer   phylink_seqr;
   tx_sequencer        tx_seqr;
+  rx_sequencer        rx_seqr;
 
 
   // Function: new
@@ -44,12 +45,12 @@ class virtual_sequence_base extends uvm_sequence;
   extern function new(string name = "virtual_sequence_base");
 
 
-  // Task: body
+  // Task: pre_body
   //
   // Retrieves virtual sequencer handle and extracts child sequencer references
   // for use by derived sequence implementations.
 
-  extern task body();
+  extern task pre_body();
 
 endclass : virtual_sequence_base
 
@@ -60,7 +61,7 @@ endclass : virtual_sequence_base
 
 //-------------------------------------------------------------------------------
 //
-// CLASS- virtual_sequence_base
+// CLASS: virtual_sequence_base
 //
 //-------------------------------------------------------------------------------
 
@@ -72,14 +73,15 @@ function virtual_sequence_base::new(string name = "virtual_sequence_base");
   super.new(name);
 endfunction : new
 
-// body
+// pre_body
 // ----
 
-task virtual_sequence_base::body();
+task virtual_sequence_base::pre_body();
   if (!$cast(vseqr, m_sequencer)) begin
     `uvm_fatal(get_type_name(), "Couldn't cast the virtual sequencer")
   end
   ltsm_ctrl_seqr = vseqr.ltsm_ctrl_seqr;
   phylink_seqr   = vseqr.phylink_seqr;
   tx_seqr        = vseqr.tx_seqr;
-endtask : body
+  rx_seqr        = vseqr.rx_seqr;
+endtask : pre_body

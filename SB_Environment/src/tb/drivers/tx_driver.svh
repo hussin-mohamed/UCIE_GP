@@ -18,7 +18,9 @@
 //
 // CLASS: tx_driver
 //
-// ...
+// The tx_driver class converts TX-side sequence items into pin-level activity
+// on the sb_tx_bfm. It drives request/response handshakes toward the DUT and
+// waits for the corresponding done indication before completing each item.
 //
 //------------------------------------------------------------------------------
 
@@ -35,8 +37,7 @@ class tx_driver extends sb_driver_base #(ltsm_seq_item, virtual sb_tx_bfm);
 
   // Task: drive_item
   //
-  // Drives APB transactions on the bus by setting path selection signals and
-  // executing read or write operations based on the transaction type.
+  // Drives one TX-side sideband transaction across the BFM handshake signals.
 
   extern virtual task drive_item(inout ltsm_seq_item req, output ltsm_seq_item rsp);
 
@@ -49,7 +50,7 @@ endclass : tx_driver
 
 //------------------------------------------------------------------------------
 //
-// CLASS- tx_driver
+// CLASS: tx_driver
 //
 //------------------------------------------------------------------------------
 
@@ -89,6 +90,8 @@ task tx_driver::drive_item(inout ltsm_seq_item req, output ltsm_seq_item rsp);
   end
   bfm.i_tx_sb_req <= 0;
   bfm.i_tx_sb_rsp <= 0;
+
+  record_driven_item();
 
   // Wait a randomized number of cycles before ending the trasaction
   repeat (req.wait_cycles) @(posedge bfm.clk);

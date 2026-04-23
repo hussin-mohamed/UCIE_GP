@@ -1,3 +1,19 @@
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
+
 `include "../shared_pkg.sv"
 import shared_pkg::*;
 import uvm_pkg::*;
@@ -14,6 +30,16 @@ import svunit_uvm_mock_pkg::*;
 //=============================================================================
 // UUT Wrapper
 //=============================================================================
+
+//---------------------------------------------------------------------------
+//
+// CLASS: sb_pred_link2ltsm_uvm_wrapper
+//
+// Lightweight UVM wrapper around sb_pred_link2ltsm that captures the TX and
+// RX predictor outputs in local FIFOs for unit-test checking.
+//
+//---------------------------------------------------------------------------
+
 class sb_pred_link2ltsm_uvm_wrapper extends sb_pred_link2ltsm;
 
   `uvm_component_utils(sb_pred_link2ltsm_uvm_wrapper)
@@ -21,22 +47,59 @@ class sb_pred_link2ltsm_uvm_wrapper extends sb_pred_link2ltsm;
   uvm_tlm_analysis_fifo #(ltsm_seq_item) out_fifo_tx;
   uvm_tlm_analysis_fifo #(ltsm_seq_item) out_fifo_rx;
 
-  function new(string name = "sb_pred_link2ltsm_uvm_wrapper", uvm_component parent);
-    super.new(name, parent);
-  endfunction
+  // Function: new
+  //
+  // Creates the predictor wrapper component.
 
-  function void build_phase(uvm_phase phase);
-     super.build_phase(phase);
-     out_fifo_tx = new("out_fifo_tx", this);
-     out_fifo_rx = new("out_fifo_rx", this);
-  endfunction
+  extern function new(string name = "sb_pred_link2ltsm_uvm_wrapper", uvm_component parent);
 
-  function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
-    results_ap_tx.connect(out_fifo_tx.analysis_export);
-    results_ap_rx.connect(out_fifo_rx.analysis_export);
-  endfunction
+  // Function: build_phase
+  //
+  // Constructs the local FIFOs used to observe predicted TX and RX items.
+
+  extern function void build_phase(uvm_phase phase);
+
+  // Function: connect_phase
+  //
+  // Connects the predictor output ports to the local observation FIFOs.
+
+  extern function void connect_phase(uvm_phase phase);
 endclass
+
+//---------------------------------------------------------------------------
+// IMPLEMENTATION
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+//
+// CLASS: sb_pred_link2ltsm_uvm_wrapper
+//
+//---------------------------------------------------------------------------
+
+// new
+// ---
+
+function sb_pred_link2ltsm_uvm_wrapper::new(string name = "sb_pred_link2ltsm_uvm_wrapper", uvm_component parent);
+  super.new(name, parent);
+endfunction
+
+// build_phase
+// -----------
+
+function void sb_pred_link2ltsm_uvm_wrapper::build_phase(uvm_phase phase);
+   super.build_phase(phase);
+   out_fifo_tx = new("out_fifo_tx", this);
+   out_fifo_rx = new("out_fifo_rx", this);
+endfunction
+
+// connect_phase
+// -------------
+
+function void sb_pred_link2ltsm_uvm_wrapper::connect_phase(uvm_phase phase);
+  super.connect_phase(phase);
+  results_ap_tx.connect(out_fifo_tx.analysis_export);
+  results_ap_rx.connect(out_fifo_rx.analysis_export);
+endfunction
 
 //=============================================================================
 // Unit Test Module

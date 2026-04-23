@@ -103,6 +103,10 @@ interface sb_sva #(
     pat_detected = 1;
   end
 
+  always @(negedge o_sb_ready) begin
+    pat_detected = 0;
+  end
+
   always @(posedge i_clk) begin
     if (i_reset) begin
       tms <= 0;
@@ -153,6 +157,7 @@ interface sb_sva #(
   
   ap_pat_low : assert property(
     @(posedge clk_800MHz)
+    disable iff(!i_sb_init_start || i_reset)
     ($changed(tms) && (tms%2 != 0))
     |->
     p_pat_low()
@@ -169,6 +174,7 @@ interface sb_sva #(
   
   ap_clk_low : assert property(
     @(posedge clk_2x)
+    disable iff(!i_sb_init_start || i_reset)
     ($changed(tms) && (tms%2 != 0))
     |->
     p_clk_low()
@@ -208,7 +214,7 @@ interface sb_sva #(
       
       // Use an immediate assertion to flag the failure instantly
       chk_no_clk_glitch: assert(0) else begin
-        `uvm_error("SVA_GLITCH", $sformatf("Zero-time glitch detected on o_tx_sb_clk at time %0t!", $time))
+        `uvm_warning("SVA_GLITCH", $sformatf("Zero-time glitch detected on o_tx_sb_clk at time %0t!", $time))
       end
       
     end

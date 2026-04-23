@@ -18,7 +18,10 @@
 //
 // CLASS: ltsm_ctrl_agent
 //
-// ...
+// The ltsm_ctrl_agent owns the sequencer and driver that stimulate the SBINIT
+// control interface. This agent is specialized for the initialization-control
+// path and therefore manages only the active control components needed to
+// launch and restart sideband initialization.
 //
 //-----------------------------------------------------------------------------
 
@@ -33,7 +36,7 @@ class ltsm_ctrl_agent extends uvm_agent;
   // This field determines whether an agent is active or passive.
   uvm_active_passive_enum is_active = UVM_ACTIVE;
 
-  // Provide implementations of virtual methods such as get_type_name and create
+  // Factory registration for the concrete control agent type.
   `uvm_component_utils_begin(ltsm_ctrl_agent)
     `uvm_field_enum(uvm_active_passive_enum, is_active, UVM_DEFAULT)
   `uvm_component_utils_end
@@ -48,18 +51,23 @@ class ltsm_ctrl_agent extends uvm_agent;
 
   // Function: build_phase
   //
-  // Retrieves agent configuration from config_db and creates monitor. If configured
-  // as active agent, also creates driver and sequencer and their analysis ports.
+  // Retrieves the control-agent configuration and, when active, creates the
+  // control driver and sequencer.
 
   extern function void build_phase(uvm_phase phase);
 
 
   // Function: connect_phase
   //
-  // Connects monitor to its interface and analysis port. For active agents,
-  // connects driver to sequencer, assigns interface, and connects driver analysis port.
+  // Connects the control driver to the sequencer and assigns the virtual
+  // interface handle when the agent is active.
 
   extern function void connect_phase(uvm_phase phase);
+
+  // Task: pre_reset_phase
+  //
+  // Stops any running control sequences and notifies the driver to terminate
+  // its active drive thread before reset is applied.
 
   extern task pre_reset_phase(uvm_phase phase);
 
@@ -72,7 +80,7 @@ endclass : ltsm_ctrl_agent
 
 //---------------------------------------------------------------------------
 //
-// CLASS- agent
+// CLASS: ltsm_ctrl_agent
 //
 //---------------------------------------------------------------------------
 

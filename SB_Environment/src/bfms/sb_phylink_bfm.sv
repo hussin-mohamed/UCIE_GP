@@ -20,7 +20,7 @@ import uvm_pkg::*;
 
 
 // Interface: sb_phylink_bfm
-// Description: Serial sideband communication interface with partner UCIe die
+// Description: Serial Sideband communication interface with partner UCIe die
 //              (MDI - Module Die Interface)
 //******************************************************************************
 
@@ -58,6 +58,10 @@ interface sb_phylink_bfm(
   always @(negedge o_tx_sb_clk) begin
     wait(q_pat_det(o_tx_sb_data, o_tx_sb_clk).triggered);
     pat_detected = 1;
+  end
+
+  always @(negedge o_sb_ready) begin
+    pat_detected = 0;
   end
 
   always_comb begin
@@ -156,7 +160,7 @@ interface sb_phylink_bfm(
     end
   endtask : serialize_data
 
-  task deserialize_data(output logic [127:0] _data);
+  task deserialize_data_out(output logic [127:0] _data);
     opcode_t opcode;
 
     @(posedge o_tx_sb_clk);
@@ -176,6 +180,33 @@ interface sb_phylink_bfm(
         @(negedge o_tx_sb_clk);
         _data[i+64] = o_tx_sb_data;
       end
+    end else begin
+      _data[127:64] = 0;
     end
-  endtask : deserialize_data
+  endtask : deserialize_data_out
+
+  task deserialize_data_in(output logic [127:0] _data);
+    opcode_t opcode;
+
+    @(posedge i_rx_sb_clk);
+
+    for (int i = 0; i < 64; i++) begin
+      @(negedge i_rx_sb_clk);
+      _data[i] = i_rx_sb_data;
+    end
+
+    opcode = opcode_t'(_data[4:0]);
+
+
+    if (opcode == MSG_W_64B_DATA) begin
+      @(posedge i_rx_sb_clk);
+
+      for (int i = 0; i < 64; i++) begin
+        @(negedge i_rx_sb_clk);
+        _data[i+64] = i_rx_sb_data;
+      end
+    end else begin
+      _data[127:64] = 0;
+    end
+  endtask : deserialize_data_in
 endinterface : sb_phylink_bfm

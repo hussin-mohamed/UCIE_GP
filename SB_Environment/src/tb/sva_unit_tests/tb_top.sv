@@ -63,7 +63,7 @@ module tb_top;
   sb_sva dut_if(
     .i_clk(i_clk),
     .clk_800MHz(clk_800MHz)
-    // ... connect other pins
+    // The remaining interface signals are driven directly by each SVA unit test.
   );
 
   initial begin

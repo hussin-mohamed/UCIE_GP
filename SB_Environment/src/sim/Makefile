@@ -18,23 +18,44 @@
 SIM       ?= questa
 GUI       ?= 1
 COVERAGE  ?= 1
-TEST      ?= sanity_test
+TEST      ?= sb_sanity_test
 VERBOSITY ?= UVM_MEDIUM
 SEED      ?= random
+RUN_ID    ?= 1
 
-# Export variables so the TCL script (.do file) can read them (Questa flow)
+# Export variables so the TCL script (.do file) can read them
 export TEST_NAME = $(TEST)
 export UVM_VERB  = $(VERBOSITY)
 export SIM_SEED  = $(SEED)
+export COV_DB_NAME
+export COV_TXT_NAME
+export COV_FUNC_TXT_NAME
+export COV_FUNC_HTML
+export COV_CODE_HTML
 
 # Explicitly share these variables with Windows executables (WSL Fix)
-export WSLENV := $(WSLENV):TEST_NAME/u:UVM_VERB/u:SIM_SEED/u
+export WSLENV := $(WSLENV):TEST_NAME/u:UVM_VERB/u:SIM_SEED/u:COV_DB_NAME/u:COV_TXT_NAME/u:COV_FUNC_TXT_NAME/u:COV_FUNC_HTML/u:COV_CODE_HTML/u
+
+# ================================================================
+# Directory Structure
+# ================================================================
+BASE_OUT_DIR := out
+LOG_DIR      := $(BASE_OUT_DIR)/logs
+UCDB_DIR     := $(BASE_OUT_DIR)/ucdb
+TXT_RPT_DIR  := $(BASE_OUT_DIR)/reports/text
+HTML_RPT_DIR := $(BASE_OUT_DIR)/reports/html
 
 # Generate date-based filenames
 DATE := $(shell date +%Y-%m-%d)
 TIME := $(shell date +%H-%M-%S)
-LOG_DIR  := log
-LOG_FILE := $(LOG_DIR)/$(DATE)_$(TIME)_$(SIM)_$(TEST).log
+
+# Unique file paths using the new directory structure
+LOG_FILE          := $(LOG_DIR)/$(DATE)_$(TIME)_$(SIM)_$(TEST)_run$(RUN_ID).log
+COV_DB_NAME       := $(UCDB_DIR)/$(DATE)_$(TIME)_$(TEST)_run$(RUN_ID).ucdb
+COV_TXT_NAME      := $(TXT_RPT_DIR)/$(DATE)_$(TIME)_$(TEST)_run$(RUN_ID)_code_cov.txt
+COV_FUNC_TXT_NAME := $(TXT_RPT_DIR)/$(DATE)_$(TIME)_$(TEST)_run$(RUN_ID)_func_cov.txt
+COV_FUNC_HTML     := $(HTML_RPT_DIR)/$(DATE)_$(TIME)_$(TEST)_run$(RUN_ID)_func_html
+COV_CODE_HTML     := $(HTML_RPT_DIR)/$(DATE)_$(TIME)_$(TEST)_run$(RUN_ID)_code_html
 
 # Questa File names
 DO_FILE = runsim.do
@@ -56,13 +77,13 @@ ifeq ($(COVERAGE),1)
 endif
 
 # Default target
-.PHONY: all run clean cleanlog cleanall force-clean help mkdirs lint lint-gui
+.PHONY: all run clean cleanout cleanall force-clean help mkdirs lint lint-gui
 
 all: run
 
-# Ensure log directory exists
+# Ensure all output directories exist
 mkdirs:
-	@mkdir -p $(LOG_DIR)
+	@mkdir -p $(LOG_DIR) $(UCDB_DIR) $(TXT_RPT_DIR) $(HTML_RPT_DIR)
 
 run: mkdirs
 	@echo "=========================================="
@@ -85,6 +106,11 @@ else ifeq ($(SIM),questa)
 	@sed -i 's/\$$env(TEST_NAME)/$(TEST)/g' $(TEMP_DO_FILE)
 	@sed -i 's/\$$env(UVM_VERB)/$(VERBOSITY)/g' $(TEMP_DO_FILE)
 	@sed -i 's/\$$env(SIM_SEED)/$(SEED)/g' $(TEMP_DO_FILE)
+	@sed -i 's|\$$env(COV_DB_NAME)|$(COV_DB_NAME)|g'    $(TEMP_DO_FILE)
+	@sed -i 's|\$$env(COV_TXT_NAME)|$(COV_TXT_NAME)|g'  $(TEMP_DO_FILE)
+	@sed -i 's|\$$env(COV_FUNC_TXT_NAME)|$(COV_FUNC_TXT_NAME)|g' $(TEMP_DO_FILE)
+	@sed -i 's|\$$env(COV_FUNC_HTML)|$(COV_FUNC_HTML)|g' $(TEMP_DO_FILE)
+	@sed -i 's|\$$env(COV_CODE_HTML)|$(COV_CODE_HTML)|g' $(TEMP_DO_FILE)
 
 ifeq ($(GUI),0)
 	@echo "→ Disabling GUI commands for Questa..."
@@ -115,6 +141,34 @@ endif
 	@echo "Log: $(LOG_FILE)"
 	@echo "=========================================="
 
+merge_cov: mkdirs
+	@echo "=========================================="
+	@echo "Merging Coverage Databases..."
+	@echo "=========================================="
+	@vcover.exe merge $(UCDB_DIR)/regression_merged.ucdb $(UCDB_DIR)/*.ucdb
+	@echo "→ Generating unified coverage reports..."
+	@vcover.exe report $(UCDB_DIR)/regression_merged.ucdb \
+		-details -annotate -code bcefst \
+		-output $(TXT_RPT_DIR)/regression_code_cov.txt
+	@vcover.exe report $(UCDB_DIR)/regression_merged.ucdb \
+		-details -cvg -directive \
+		-output $(TXT_RPT_DIR)/regression_func_cov.txt
+	@vcover.exe report $(UCDB_DIR)/regression_merged.ucdb \
+		-html \
+		-output $(HTML_RPT_DIR)/regression_code_html \
+		-code bcefst -annotate -details
+	@vcover.exe report $(UCDB_DIR)/regression_merged.ucdb \
+		-html \
+		-output $(HTML_RPT_DIR)/regression_func_html \
+		-cvg -details
+	@echo "=========================================="
+	@echo "Merge complete! Reports generated:"
+	@echo "  Code Coverage (TXT) : $(TXT_RPT_DIR)/regression_code_cov.txt"
+	@echo "  Func Coverage (TXT) : $(TXT_RPT_DIR)/regression_func_cov.txt"
+	@echo "  Code Coverage (HTML): $(HTML_RPT_DIR)/regression_code_html/index.html"
+	@echo "  Func Coverage (HTML): $(HTML_RPT_DIR)/regression_func_html/index.html"
+	@echo "=========================================="
+
 lint: mkdirs
 	@echo "=========================================="
 	@echo "Running Cadence HAL UVM Linting via xrun..."
@@ -137,6 +191,10 @@ clean:
 	@echo "Cleaning simulation artifacts..."
 	@echo "=========================================="
 	@echo "→ Killing any running vsim/xrun processes..."
+	@rm -rf wlf*
+	@rm -rf *stacktrace*
+	@rm -rf vsim*
+	@rm -rf tr_db*
 	@pkill -9 vsim 2>/dev/null || true
 	@pkill -9 xrun 2>/dev/null || true
 	@pkill -9 xmsim 2>/dev/null || true
@@ -159,17 +217,17 @@ clean:
 	@rm -f *.ucdb *cover_report.txt coverage_rpt.txt && echo "→ Removed coverage reports" || true
 	@echo "=========================================="
 	@echo "Clean complete!"
-	@echo "Note: Log files in log/ are preserved."
-	@echo "      Use 'make cleanlog' to remove logs."
+	@echo "Note: Output files in out/ are preserved."
+	@echo "      Use 'make cleanout' to remove all logs and reports."
 	@echo "=========================================="
 
-cleanlog:
+cleanout:
 	@echo "=========================================="
-	@echo "Removing log files..."
+	@echo "Removing output directory..."
 	@echo "=========================================="
-	@rm -rf $(LOG_DIR)/* && echo "→ Emptying log directory ($(LOG_DIR)/)" || echo "  ⚠ No log files found"
+	@rm -rf $(BASE_OUT_DIR)/* && echo "→ Emptying output directory ($(BASE_OUT_DIR)/)" || echo "  ⚠ No output files found"
 	@echo "=========================================="
-	@echo "Log cleanup complete!"
+	@echo "Output cleanup complete!"
 	@echo "=========================================="
 
 cleanall: force-clean
@@ -209,7 +267,7 @@ help:
 	@echo "  make lint        - Run HAL methodology linting (Batch)"
 	@echo "  make lint-gui    - Run HAL methodology linting (GUI)"
 	@echo "  make clean       - Remove simulation artifacts (keeps logs)"
-	@echo "  make cleanlog    - Remove ONLY log files"
+	@echo "  make cleanout    - Remove ONLY out files"
 	@echo "  make cleanall    - Force remove ALL files including locks"
 	@echo "  make help        - Display this help message"
 	@echo ""

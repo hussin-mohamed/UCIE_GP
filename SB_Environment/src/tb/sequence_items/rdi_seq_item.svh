@@ -18,16 +18,20 @@
 //
 // CLASS: rdi_seq_item
 //
-// Description: ...
+// Minimal Sideband RDI sequence item used to keep the environment interfaces
+// and scoreboard hooks in place while the RDI path is completed.
 //-----------------------------------------------------------------------------
 
 class rdi_seq_item extends uvm_sequence_item;
+  // Enum specifying the type of the current operation of the Sideband (SBINIT/ACTIVE)
+  operation_t op_mode;
+  opcode_t      opcode;
 
   `uvm_object_utils(rdi_seq_item)
 
   // Function: new
   //
-  // Creates a new rdi_seq_item instance with the given name.
+  // Creates a new RDI sequence item instance with the given name.
   extern function new(string name = "");
 endclass : rdi_seq_item
 
@@ -37,13 +41,18 @@ endclass : rdi_seq_item
 
 //-----------------------------------------------------------------------------
 //
-// CLASS- rdi_seq_item
+// CLASS: rdi_seq_item
+//
+// Methods implementation for the RDI sequence item.
 //
 //-----------------------------------------------------------------------------
 
 // new
 // ---
+//
+// Initializes the item to ACTIVE mode.
 
 function rdi_seq_item::new(string name = "");
   super.new(name);
+  op_mode = ACTIVE;
 endfunction

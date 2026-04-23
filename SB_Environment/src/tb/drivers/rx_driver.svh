@@ -18,7 +18,9 @@
 //
 // CLASS: rx_driver
 //
-// ...
+// The rx_driver class converts RX-side sequence items into pin-level activity
+// on the sb_rx_bfm. It drives request/response handshakes toward the DUT and
+// waits for the corresponding done indication before completing each item.
 //
 //------------------------------------------------------------------------------
 
@@ -35,8 +37,7 @@ class rx_driver extends sb_driver_base #(ltsm_seq_item, virtual sb_rx_bfm);
 
   // Task: drive_item
   //
-  // Drives APB transactions on the bus by setting path selection signals and
-  // executing read or write operations based on the transaction type.
+  // Drives one RX-side sideband transaction across the BFM handshake signals.
 
   extern virtual task drive_item(inout ltsm_seq_item req, output ltsm_seq_item rsp);
 
@@ -49,7 +50,7 @@ endclass : rx_driver
 
 //------------------------------------------------------------------------------
 //
-// CLASS- rx_driver
+// CLASS: rx_driver
 //
 //------------------------------------------------------------------------------
 
@@ -66,28 +67,32 @@ endfunction : new
 
 task rx_driver::drive_item(inout ltsm_seq_item req, output ltsm_seq_item rsp);
   // Prepare inputs
-  @(negedge bfm.clk);
-  bfm.i_rx_encoding = req.get_rx_encoding();
-  bfm.i_rx_data     = req.data;
-  bfm.i_rx_info     = req.info;
+  @(posedge bfm.clk);
+  bfm.i_rx_encoding <= req.get_rx_encoding();
+  bfm.i_rx_data     <= req.data;
+  bfm.i_rx_info     <= req.info;
 
   // Trigger a request/response message to the Sideband
-  @(negedge bfm.clk);
+  @(posedge bfm.clk);
   if (req.msgtype == REQ_MSG) begin
-    bfm.i_rx_sb_req = 1;
-    bfm.i_rx_sb_rsp = 0;
+    bfm.i_rx_sb_req <= 1;
+    bfm.i_rx_sb_rsp <= 0;
   end else if (req.msgtype == RSP_MSG) begin
-    bfm.i_rx_sb_req = 0;
-    bfm.i_rx_sb_rsp = 1;
+    bfm.i_rx_sb_req <= 0;
+    bfm.i_rx_sb_rsp <= 1;
   end else begin
     `uvm_fatal(get_type_name(), $sformatf("GOT NO_TYPE msgtype in %s: \n%s", req.get_type_name(), req.sprint()))
   end
 
   // Deassert the req/rsp signal upon receiving the done signal
-  @(negedge bfm.o_sb_rx_done);
-  bfm.i_rx_sb_req = 0;
-  bfm.i_rx_sb_rsp = 0;
+  while(!bfm.o_sb_rx_done) begin
+    @(posedge bfm.clk);
+  end
+  bfm.i_rx_sb_req <= 0;
+  bfm.i_rx_sb_rsp <= 0;
+
+  record_driven_item();
 
   // Wait a randomized number of cycles before ending the trasaction
-  repeat (req.wait_cycles) @(negedge bfm.clk);
+  repeat (req.wait_cycles) @(posedge bfm.clk);
 endtask : drive_item

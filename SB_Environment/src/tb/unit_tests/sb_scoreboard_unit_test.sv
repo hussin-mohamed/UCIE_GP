@@ -1,3 +1,19 @@
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
+
 `include "../shared_pkg.sv"
 import shared_pkg::*;
 import uvm_pkg::*;
@@ -22,27 +38,76 @@ import uvm_pkg::*;
 
 import svunit_uvm_mock_pkg::*;
 
+//---------------------------------------------------------------------------
+//
+// CLASS: sb_scoreboard_uvm_wrapper
+//
+// Lightweight UVM wrapper around sb_scoreboard used to instantiate the full
+// scoreboard in SVUnit without additional environment infrastructure.
+//
+//---------------------------------------------------------------------------
+
 class sb_scoreboard_uvm_wrapper extends sb_scoreboard;
 
   `uvm_component_utils(sb_scoreboard_uvm_wrapper)
-  function new(string name = "sb_scoreboard_uvm_wrapper", uvm_component parent);
-    super.new(name, parent);
-  endfunction
+
+  // Function: new
+  //
+  // Creates the scoreboard wrapper component.
+
+  extern function new(string name = "sb_scoreboard_uvm_wrapper", uvm_component parent);
 
   //===================================
   // Build
   //===================================
-  function void build_phase(uvm_phase phase);
-     super.build_phase(phase);
-  endfunction
+
+  // Function: build_phase
+  //
+  // Delegates scoreboard construction to the base class.
+
+  extern function void build_phase(uvm_phase phase);
 
   //==================================
   // Connect
   //=================================
-  function void connect_phase(uvm_phase phase);
-    super.connect_phase(phase);
-  endfunction
+
+  // Function: connect_phase
+  //
+  // Delegates scoreboard connectivity to the base class.
+
+  extern function void connect_phase(uvm_phase phase);
 endclass
+
+//---------------------------------------------------------------------------
+// IMPLEMENTATION
+//---------------------------------------------------------------------------
+
+//---------------------------------------------------------------------------
+//
+// CLASS: sb_scoreboard_uvm_wrapper
+//
+//---------------------------------------------------------------------------
+
+// new
+// ---
+
+function sb_scoreboard_uvm_wrapper::new(string name = "sb_scoreboard_uvm_wrapper", uvm_component parent);
+  super.new(name, parent);
+endfunction
+
+// build_phase
+// -----------
+
+function void sb_scoreboard_uvm_wrapper::build_phase(uvm_phase phase);
+   super.build_phase(phase);
+endfunction
+
+// connect_phase
+// -------------
+
+function void sb_scoreboard_uvm_wrapper::connect_phase(uvm_phase phase);
+  super.connect_phase(phase);
+endfunction
 
 module sb_scoreboard_unit_test;
   import svunit_pkg::svunit_testcase;
