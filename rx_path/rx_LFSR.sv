@@ -10,8 +10,20 @@ module rx_LFSR #(
 );
     wire pclk,lclk;
     logic [pDATA_WIDTH-1:0] scrambled_data,pattern_out,pattern_tobechecked;
-    assign pclk = i_clk & i_enable & o_lane_success ;
-    assign lclk = pclk&i_train;
+    
+    wire l_enable,p_enable;
+    always @(*) begin
+        if (!i_clk) begin
+            p_enable=i_enable & o_lane_success;
+        end
+        if(!p_clk)begin
+            l_enable=i_train;
+        end
+    end
+
+    assign pclk = i_clk & p_enable ;
+    assign lclk = pclk  & l_enable;
+
     assign scrambled_data = pattern_out ^ i_data_in ;
     always @(*) begin
         if(i_train)begin
