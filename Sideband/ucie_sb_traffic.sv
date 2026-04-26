@@ -40,6 +40,8 @@ module ucie_sb_traffic
   reg  tx_rd_first;
   wire [7:0] msg_code;
   wire [7:0] msg_subcode;
+  wire  [2:0] srcid;
+  wire  [2:0] dstid;
   
 
   //---- SEQUENTIAL PROCESSES --------------------------------------------------
@@ -62,16 +64,19 @@ always @(posedge i_clk or posedge i_reset)
             o_sb_msg_out <= {pMSG_WIDTH{1'b0}}; 
             o_tx_traffic_fifo_rd_en <= 1'b0;
             o_rx_traffic_fifo_rd_en <= 1'b0;
+            tx_rd_first <= 1'b0;
             end
         tx_n_empty_rx_empty: begin 
             o_sb_msg_out <= i_tx_traffic_fifo_msg; 
             o_tx_traffic_fifo_rd_en <= 1'b1;
             o_rx_traffic_fifo_rd_en <= 1'b0;
+            tx_rd_first <= 1'b0;
             end
         tx_empty_rx_n_empty: begin 
             o_sb_msg_out <= i_rx_traffic_fifo_msg; 
             o_rx_traffic_fifo_rd_en <= 1'b1;   
             o_tx_traffic_fifo_rd_en <= 1'b0; 
+            tx_rd_first <= 1'b0;
             end
         tx_n_empty_rx_n_empty: begin 
             if (tx_rd_first) begin
@@ -113,8 +118,8 @@ always @(posedge i_clk or posedge i_reset)
         else begin 
           if ((!i_traffic_tx_fifo_full || !i_traffic_rx_fifo_full) && i_traffic_msg_ready) begin
           // write logic
-            if (((msg_code [3:0] == 4'hA) && ({msg_code, msg_subcode} != {8'h8A,8'h0A}) && ({msg_code, msg_subcode} != {8'h8A,8'h0D})) 
-                || ({msg_code, msg_subcode} == {8'h85,8'h0A}) || ({msg_code, msg_subcode} == {8'h85,8'h0D}) ) 
+            if (((srcid == 3'b010) && (dstid == 3'b110)) && (((msg_code [3:0] == 4'hA) && ({msg_code, msg_subcode} != {8'h8A,8'h0A}) && ({msg_code, msg_subcode} != {8'h8A,8'h0D})) 
+                || ({msg_code, msg_subcode} == {8'h85,8'h0A}) || ({msg_code, msg_subcode} == {8'h85,8'h0D})) ) 
             begin
                o_traffic_tx_fifo_msg <= i_sb_msg_in;
                o_traffic_tx_fifo_wr_en <= 1'b1;
@@ -122,11 +127,11 @@ always @(posedge i_clk or posedge i_reset)
                o_traffic_rx_fifo_wr_en <= 1'b0;
                o_stall_traffic <= 1'b0;
             end
-            else if (((msg_code [3:0] == 4'h5) && ({msg_code, msg_subcode} != {8'h85,8'h0A}) && ({msg_code, msg_subcode} != {8'h85,8'h0D})) 
+            else if (((srcid == 3'b010) && (dstid == 3'b110)) && (((msg_code [3:0] == 4'h5) && ({msg_code, msg_subcode} != {8'h85,8'h0A}) && ({msg_code, msg_subcode} != {8'h85,8'h0D})) 
                 || ({msg_code, msg_subcode} == {8'h8A,8'h0A})
                 || ({msg_code, msg_subcode} == {8'h91,8'h00})
                 || ({msg_code, msg_subcode} == {8'h81,8'h0C})
-                || ({msg_code, msg_subcode} == {8'h8A,8'h0D}))
+                || ({msg_code, msg_subcode} == {8'h8A,8'h0D})))
             begin
                o_traffic_rx_fifo_msg <= i_sb_msg_in;
                o_traffic_rx_fifo_wr_en <= 1'b1;
@@ -162,6 +167,8 @@ always @(posedge i_clk or posedge i_reset)
   //---- COMBINATIONAL LOGIC ---------------------------------------------------
    assign msg_code = i_sb_msg_in[117:110];
    assign msg_subcode = i_sb_msg_in[71:64];
+   assign srcid = i_sb_msg_in[127:125];
+   assign dstid = i_sb_msg_in[90:88];
    assign o_msg_ready = ((o_tx_traffic_fifo_rd_en || o_rx_traffic_fifo_rd_en) && !i_stall_traffic) 
           || i_stall_traffic; // Message is ready when we are reading from either FIFO and traffic is not stalled
 

@@ -53,7 +53,7 @@ module ucie_sideband_out
   );
 
   // ========== fifo Instance ==========
-  ucie_sideband_fifo_FWFT
+  ucie_sideband_fifo
   #(
     .pFIFO_WIDTH      (pSER_WIDTH),
     .pFIFO_DEPTH      (32)

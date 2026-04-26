@@ -51,7 +51,7 @@ module ucie_sideband_in
   );
 
   
-  ucie_sideband_fifo_FWFT #(
+  ucie_sideband_fifo #(
     .pFIFO_WIDTH      (pDESER_WIDTH),
     .pFIFO_DEPTH      (32)
   )

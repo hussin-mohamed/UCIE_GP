@@ -78,10 +78,11 @@ module ucie_sb_tx_path (
   always_ff @(posedge i_s_clk or posedge i_reset) begin
     if (i_reset) begin
       latch_flag <= 0;
-    end else begin
-      if (ui_counter == 95 && i_rx_done && current_state == CYCLING) latch_flag <= 1;
-      else if (current_state != CYCLING) latch_flag <= 0;
     end
+    // else begin
+      // if (ui_counter == 95 && i_rx_done && current_state == CYCLING) latch_flag <= 1;
+      // else if (current_state != CYCLING) latch_flag <= 0;
+    // end
   end
 
   always_comb begin
@@ -97,7 +98,7 @@ module ucie_sb_tx_path (
           if (ui_counter == 95) next_state = EXTRA_ITERS;
         end
 
-        if (latch_flag) next_state = EXTRA_ITERS;
+        // if (latch_flag) next_state = EXTRA_ITERS;
       end
 
       EXTRA_ITERS: begin

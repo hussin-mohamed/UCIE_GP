@@ -63,7 +63,7 @@ module ucie_sideband_fifo_traffic
 
           ST_CAP_M2: begin
             if (!i_fifo_empty) begin
-              o_sb_msg <= {o_sb_msg[pMSG_WIDTH-1:pDESER_WIDTH], i_traffic_deser_fifo[31:0], i_traffic_deser_fifo[63:32]};
+              o_sb_msg <= {o_sb_msg[pMSG_WIDTH-1:pDESER_WIDTH], i_traffic_deser_fifo[63:32], i_traffic_deser_fifo[31:0]};
               o_fifo_rd_en    <= 1'b1; // Pop msg 2
               
               // Assert ready exactly as the full message is formed

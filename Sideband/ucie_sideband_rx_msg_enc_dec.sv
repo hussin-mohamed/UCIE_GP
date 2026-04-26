@@ -64,6 +64,8 @@ module ucie_sideband_rx_msg_enc_dec
   reg  dec_resp;
   reg  [pDECODING_WIDTH-1:0] dec_decoding;
 
+  reg  invalid_dec;
+
   
   //---- SEQUENTIAL PROCESSES --------------------------------------------------
 
@@ -302,7 +304,7 @@ typedef enum logic [pDECODING_WIDTH-1:0] {
       stall_flag      <= 1'b0;
     end
     else begin
-    if (i_done) begin
+    if (i_done || invalid_dec) begin
       stall_flag      <= 1'b0; // Clear stall flag on done signal
       o_req           <= 1'b0;
       o_resp          <= 1'b0;
@@ -351,19 +353,17 @@ assign dec_dstid       = i_msg_in[90:88];
 assign dec_dp          = ^{i_msg_in[63:0]};
 assign dec_cp          = ^{{i_msg_in[127:96], i_msg_in[93:64]}};
 
-assign dec_valid       = (dec_cp == i_msg_in[94]) &&
-                         (dec_dp == i_msg_in[95]) &&
-                         (dec_srcid == 3'b010) &&
-                         (dec_dstid == 3'b110);
+assign dec_valid       = (invalid_dec) ? 1'b0 : ((dec_cp == i_msg_in[94]) && (dec_dp == i_msg_in[95]));
 
 assign o_dec_ready = !i_empty && !stall_flag;
-assign o_info_out_w = i_msg_in[87:72];
-assign o_data_out_w = i_msg_in[63:0];
+assign o_info_out_w =  (invalid_dec) ? {pINFO_WIDTH{1'b0}} : i_msg_in[87:72];
+assign o_data_out_w = (invalid_dec) ? {pDATA_WIDTH{1'b0}} : i_msg_in[63:0];
 
 // --- Combinational case decode ---
 always @(*) begin
   dec_req      = 1'b0;
   dec_resp     = 1'b0;
+  invalid_dec  = 1'b0;
   dec_decoding = DEFAULT;
 
   case ({dec_msg_code, dec_msg_subcode, dec_op_code})
@@ -699,6 +699,7 @@ always @(*) begin
     default: begin
       dec_req      = 1'b0;
       dec_resp     = 1'b0;
+      invalid_dec  = 1'b1;
       dec_decoding = DEFAULT;
     end
   endcase
@@ -1222,10 +1223,10 @@ end
         endcase
 
         // Control Parity and Message Construction (calculated once at the end)
-        enc_cp      = ^{enc_srcid,{2{pRESERVED}},{5{pRESERVED}},enc_msg_code,{9{pRESERVED}},enc_op_code,enc_dp,1'b0,{3{pRESERVED}},
+        enc_cp      = ^{enc_srcid,{2{pRESERVED}},{5{pRESERVED}},enc_msg_code,{9{pRESERVED}},enc_op_code,1'b0,1'b0,{3{pRESERVED}},
                         enc_dstid,i_info_in,enc_msg_subcode}; // Control Parity (even parity over header fields)
         o_msg_out   = {enc_srcid,{2{pRESERVED}},{5{pRESERVED}},enc_msg_code,{9{pRESERVED}},enc_op_code,enc_dp,enc_cp,{3{pRESERVED}},
-                        enc_dstid,i_info_in,enc_msg_subcode,i_data_in}; // Construct message
+                        enc_dstid,i_info_in,enc_msg_subcode,i_data_in[31:0],i_data_in[63:32]}; // Construct message
         o_enc_ready = 1'b1;
         o_done      = 1'b1;
       end
