@@ -57,7 +57,10 @@ module ucie_lane_to_byte #(
     // =========================================================================
     // Internal signals   
     // =========================================================================
-    wire                                clk                     ;
+    wire                                p_clk                   ;
+    wire                                x16_clk                 ;
+    wire                                x8_clk                  ;
+    wire                                x4_clk                  ;
     logic                               enable                  ;
     logic   [4:0]                       decoding                ;
     logic                               mux_8                   ;
@@ -241,9 +244,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_0 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_0)                                      ,
         .data_out(reg_x16_out0)                                 ,
         .data_valid(reg_x16_valid_0)
@@ -253,9 +255,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_1 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_1)                                      ,
         .data_out(reg_x16_out1)                                 ,
         .data_valid(reg_x16_valid_1)
@@ -265,9 +266,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_2 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_2)                                      ,
         .data_out(reg_x16_out2)                                 ,
         .data_valid(reg_x16_valid_2)
@@ -277,9 +277,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_3 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_3)                                      ,
         .data_out(reg_x16_out3)                                 ,
         .data_valid(reg_x16_valid_3)
@@ -289,9 +288,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_4 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_4)                                      ,
         .data_out(reg_x16_out4)                                 ,
         .data_valid(reg_x16_valid_4)
@@ -301,9 +299,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_5 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_5)                                      ,
         .data_out(reg_x16_out5)                                 ,
         .data_valid(reg_x16_valid_5)
@@ -313,9 +310,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_6 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_6)                                      ,
         .data_out(reg_x16_out6)                                 ,
         .data_valid(reg_x16_valid_6)
@@ -325,9 +321,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_7 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_7)                                      ,
         .data_out(reg_x16_out7)                                 ,
         .data_valid(reg_x16_valid_7)
@@ -337,9 +332,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_8 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_8)                                      ,
         .data_out(reg_x16_out8)                                 ,
         .data_valid(reg_x16_valid_8)
@@ -349,9 +343,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_9 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_9)                                      ,
         .data_out(reg_x16_out9)                                 ,
         .data_valid(reg_x16_valid_9)
@@ -361,9 +354,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_10 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_10)                                     ,
         .data_out(reg_x16_out10)                                ,
         .data_valid(reg_x16_valid_10)
@@ -373,9 +365,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_11 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_11)                                     ,
         .data_out(reg_x16_out11)                                ,
         .data_valid(reg_x16_valid_11)
@@ -385,9 +376,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_12 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_12)                                     ,
         .data_out(reg_x16_out12)                                ,
         .data_valid(reg_x16_valid_12)
@@ -397,9 +387,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_13 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_13)                                     ,
         .data_out(reg_x16_out13)                                ,
         .data_valid(reg_x16_valid_13)
@@ -409,9 +398,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_14 (
-        .clk(clk)                                               ,
-        .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
+        .clk(x16_clk)                                           ,
+        .rst(i_reset)                                           , 
         .data_in(i_lane_14)                                     ,
         .data_out(reg_x16_out14)                                ,
         .data_valid(reg_x16_valid_14)
@@ -421,9 +409,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X16_WIDTH)
     ) 
     u_shift_reg_x16_15 (
-        .clk(clk)                                               ,
+        .clk(x16_clk)                                           ,
         .rst(i_reset)                                           ,
-        .enable(x16_en)                                         ,
         .data_in(i_lane_15)                                     ,
         .data_out(reg_x16_out15)                                ,
         .data_valid(reg_x16_valid_15)
@@ -437,9 +424,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X8_WIDTH)
     ) 
     u_shift_reg_x8_0 (
-        .clk(clk)                                               ,
-        .rst(i_reset)                                           ,
-        .enable(x8_en)                                          ,
+        .clk(x8_clk)                                            ,
+        .rst(i_reset)                                           , 
         .data_in(reg_x8_in0)                                    ,
         .data_out(reg_x8_out0)                                  ,
         .data_valid(reg_x8_valid_0)
@@ -449,9 +435,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X8_WIDTH)
     ) 
     u_shift_reg_x8_1 (
-        .clk(clk)                                               ,
+        .clk(x8_clk)                                            ,
         .rst(i_reset)                                           ,
-        .enable(x8_en)                                          ,
         .data_in(reg_x8_in1)                                    ,
         .data_out(reg_x8_out1)                                  ,
         .data_valid(reg_x8_valid_1)
@@ -461,9 +446,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X8_WIDTH)
     ) 
     u_shift_reg_x8_2 (
-        .clk(clk)                                               ,
+        .clk(x8_clk)                                            ,
         .rst(i_reset)                                           ,
-        .enable(x8_en)                                          ,
         .data_in(reg_x8_in2)                                    ,
         .data_out(reg_x8_out2)                                  ,
         .data_valid(reg_x8_valid_2)
@@ -473,9 +457,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X8_WIDTH)
     ) 
     u_shift_reg_x8_3 (
-        .clk(clk)                                               ,
+        .clk(x8_clk)                                            ,
         .rst(i_reset)                                           ,
-        .enable(x8_en)                                          ,
         .data_in(reg_x8_in3)                                    ,
         .data_out(reg_x8_out3)                                  ,
         .data_valid(reg_x8_valid_3)
@@ -485,9 +468,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X8_WIDTH)
     ) 
     u_shift_reg_x8_4 (
-        .clk(clk)                                               ,
+        .clk(x8_clk)                                            ,
         .rst(i_reset)                                           ,
-        .enable(x8_en)                                          ,
         .data_in(reg_x8_in4)                                    ,
         .data_out(reg_x8_out4)                                  ,
         .data_valid(reg_x8_valid_4)
@@ -497,9 +479,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X8_WIDTH)
     ) 
     u_shift_reg_x8_5 (
-        .clk(clk)                                               ,
-        .rst(i_reset)                                           ,
-        .enable(x8_en)                                          ,
+        .clk(x8_clk)                                            ,
+        .rst(i_reset)                                           , 
         .data_in(reg_x8_in5)                                    ,
         .data_out(reg_x8_out5)                                  ,
         .data_valid(reg_x8_valid_5)
@@ -509,9 +490,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X8_WIDTH)
     ) 
     u_shift_reg_x8_6 (
-        .clk(clk)                                               ,
-        .rst(i_reset)                                           ,
-        .enable(x8_en)                                          ,
+        .clk(x8_clk)                                            ,
+        .rst(i_reset)                                           , 
         .data_in(reg_x8_in6)                                    ,
         .data_out(reg_x8_out6)                                  ,
         .data_valid(reg_x8_valid_6)
@@ -521,9 +501,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X8_WIDTH)
     ) 
     u_shift_reg_x8_7 (
-        .clk(clk)                                               ,
+        .clk(x8_clk)                                            ,
         .rst(i_reset)                                           ,
-        .enable(x8_en)                                          ,
         .data_in(reg_x8_in7)                                    ,
         .data_out(reg_x8_out7)                                  ,
         .data_valid(reg_x8_valid_7)
@@ -536,9 +515,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X4_WIDTH)
     ) 
     u_shift_reg_x4_0 (
-        .clk(clk)                                               ,
+        .clk(x4_clk)                                            ,
         .rst(i_reset)                                           ,
-        .enable(x4_en)                                          ,
         .data_in(reg_x4_in0)                                    ,
         .data_out(reg_x4_out0)                                  ,
         .data_valid(reg_x4_valid_0)
@@ -548,9 +526,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X4_WIDTH)
     ) 
     u_shift_reg_x4_1 (
-        .clk(clk)                                               ,
+        .clk(x4_clk)                                            ,
         .rst(i_reset)                                           ,
-        .enable(x4_en)                                          ,
         .data_in(reg_x4_in1)                                    ,
         .data_out(reg_x4_out1)                                  ,
         .data_valid(reg_x4_valid_1)
@@ -560,9 +537,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X4_WIDTH)
     ) 
     u_shift_reg_x4_2 (
-        .clk(clk)                                               ,
+        .clk(x4_clk)                                            ,
         .rst(i_reset)                                           ,
-        .enable(x4_en)                                          ,
         .data_in(reg_x4_in2)                                    ,
         .data_out(reg_x4_out2)                                  ,
         .data_valid(reg_x4_valid_2)
@@ -572,9 +548,8 @@ module ucie_lane_to_byte #(
         .pWIDTH_OUT(shift_register_X4_WIDTH)
     ) 
     u_shift_reg_x4_3 (
-        .clk(clk)                                               ,
+        .clk(x4_clk)                                            ,
         .rst(i_reset)                                           ,
-        .enable(x4_en)                                          ,
         .data_in(reg_x4_in3)                                    ,
         .data_out(reg_x4_out3)                                  ,
         .data_valid(reg_x4_valid_3)
@@ -627,13 +602,15 @@ module ucie_lane_to_byte #(
     //clock gating logic
     // =========================================================================
     always_comb begin  
-        if(!clk)begin
+        if(!p_clk)begin
             enable     =    i_enable                            ;
         end
     end
 
-    assign      clk    =    i_clk   &&  enable                  ;                                       // Gated clock for power saving when not enabled
-
+    assign      p_clk      =    i_clk   &&  enable              ;                                       // Primary clock input
+    assign      x16_clk    =    i_clk   &&  enable && x16_en    ;                                       // Gated clock for power saving when not enabled
+    assign      x8_clk     =    i_clk   &&  enable && x8_en     ;
+    assign      x4_clk     =    i_clk   &&  enable && x4_en     ;
 
     // =========================================================================
     //Generate control signals for muxes and lane enables based on decoding output
@@ -658,7 +635,7 @@ module ucie_lane_to_byte #(
     // Pipeline: data fills shift regs -> reordering (combinatorial) -> register output
     // =========================================================================
 
-    always @(posedge clk or posedge i_reset) begin
+    always @(posedge p_clk or posedge i_reset) begin
         if (i_reset) begin
             o_data_out     <=  {pDATA_OUT_WIDTH{1'b0}}          ;
             o_data_valid   <=  1'b0                             ;                       ;
