@@ -280,7 +280,7 @@ module ucie_lane_to_byte #(
     always @(posedge p_clk or posedge i_reset) begin
         if (i_reset) begin
             o_data_out     <=  {pDATA_OUT_WIDTH{1'b0}}          ;
-            o_data_valid   <=  1'b0                             ;                       ;
+            o_data_valid   <=  1'b0                             ;                       
         end 
         else if (i_enable) begin
             o_data_out     <=  data_out                         ;
