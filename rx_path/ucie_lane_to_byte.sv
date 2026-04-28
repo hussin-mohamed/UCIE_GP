@@ -69,77 +69,20 @@ module ucie_lane_to_byte #(
     logic                               x8_en                   ;
     logic                               x4_en                   ;
 
-    // Internal registers for mux outputs to feed into shift registers
-    logic  [pDATA_IN_WIDTH-1:0]           reg_x8_in0            ;
-    logic  [pDATA_IN_WIDTH-1:0]           reg_x8_in1            ;
-    logic  [pDATA_IN_WIDTH-1:0]           reg_x8_in2            ;
-    logic  [pDATA_IN_WIDTH-1:0]           reg_x8_in3            ;
-    logic  [pDATA_IN_WIDTH-1:0]           reg_x8_in4            ;
-    logic  [pDATA_IN_WIDTH-1:0]           reg_x8_in5            ;
-    logic  [pDATA_IN_WIDTH-1:0]           reg_x8_in6            ;
-    logic  [pDATA_IN_WIDTH-1:0]           reg_x8_in7            ;
-    logic  [pDATA_IN_WIDTH-1:0]           reg_x4_in0            ;
-    logic  [pDATA_IN_WIDTH-1:0]           reg_x4_in1            ;
-    logic  [pDATA_IN_WIDTH-1:0]           reg_x4_in2            ;
-    logic  [pDATA_IN_WIDTH-1:0]           reg_x4_in3            ;
+    // Internal lane array (collect individual inputs)
+    logic  [pDATA_IN_WIDTH-1:0]           lane_in [15:0]        ;
     
-    // Shift register outputs        
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out0          ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out1          ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out2          ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out3          ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out4          ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out5          ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out6          ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out7          ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out8          ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out9          ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out10         ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out11         ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out12         ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out13         ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out14         ;
-    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out15         ;
-    logic                                 reg_x16_valid_0       ;
-    logic                                 reg_x16_valid_1       ;
-    logic                                 reg_x16_valid_2       ;
-    logic                                 reg_x16_valid_3       ;
-    logic                                 reg_x16_valid_4       ;
-    logic                                 reg_x16_valid_5       ;
-    logic                                 reg_x16_valid_6       ;
-    logic                                 reg_x16_valid_7       ;
-    logic                                 reg_x16_valid_8       ;
-    logic                                 reg_x16_valid_9       ;
-    logic                                 reg_x16_valid_10      ;
-    logic                                 reg_x16_valid_11      ;
-    logic                                 reg_x16_valid_12      ;
-    logic                                 reg_x16_valid_13      ;
-    logic                                 reg_x16_valid_14      ;
-    logic                                 reg_x16_valid_15      ;
-    logic  [shift_register_X8_WIDTH-1:0]  reg_x8_out0           ;
-    logic  [shift_register_X8_WIDTH-1:0]  reg_x8_out1           ;
-    logic  [shift_register_X8_WIDTH-1:0]  reg_x8_out2           ;
-    logic  [shift_register_X8_WIDTH-1:0]  reg_x8_out3           ;
-    logic  [shift_register_X8_WIDTH-1:0]  reg_x8_out4           ;
-    logic  [shift_register_X8_WIDTH-1:0]  reg_x8_out5           ;
-    logic  [shift_register_X8_WIDTH-1:0]  reg_x8_out6           ;
-    logic  [shift_register_X8_WIDTH-1:0]  reg_x8_out7           ;
-    logic                                 reg_x8_valid_0        ;
-    logic                                 reg_x8_valid_1        ;
-    logic                                 reg_x8_valid_2        ;
-    logic                                 reg_x8_valid_3        ;
-    logic                                 reg_x8_valid_4        ;
-    logic                                 reg_x8_valid_5        ;
-    logic                                 reg_x8_valid_6        ;
-    logic                                 reg_x8_valid_7        ;
-    logic  [shift_register_X4_WIDTH-1:0]  reg_x4_out0           ;
-    logic  [shift_register_X4_WIDTH-1:0]  reg_x4_out1           ;
-    logic  [shift_register_X4_WIDTH-1:0]  reg_x4_out2           ;
-    logic  [shift_register_X4_WIDTH-1:0]  reg_x4_out3           ;
-    logic                                 reg_x4_valid_0        ;
-    logic                                 reg_x4_valid_1        ;
-    logic                                 reg_x4_valid_2        ;
-    logic                                 reg_x4_valid_3        ;
+    // Mux output arrays for feeding into shift registers
+    logic  [pDATA_IN_WIDTH-1:0]           reg_x8_in [7:0]       ;
+    logic  [pDATA_IN_WIDTH-1:0]           reg_x4_in [3:0]       ;
+    
+    // Shift register output arrays        
+    logic  [shift_register_X16_WIDTH-1:0] reg_x16_out [15:0]    ;
+    logic   [15:0]                              reg_x16_valid   ;
+    logic  [shift_register_X8_WIDTH-1:0]  reg_x8_out [7:0]      ;
+    logic   [7:0]                              reg_x8_valid     ;
+    logic  [shift_register_X4_WIDTH-1:0]  reg_x4_out [3:0]      ;
+    logic     [3:0]                             reg_x4_valid    ;
 
     logic [pDATA_OUT_WIDTH-1:0]          data_out               ;
     logic                              data_valid               ;
@@ -147,7 +90,27 @@ module ucie_lane_to_byte #(
 
 
     // =========================================================================
-    //instantiate decoder to decode lane map code and generate control signals for muxes and lane enables
+    // Collect individual lane inputs into array
+    // =========================================================================
+    assign lane_in[0]  = i_lane_0;
+    assign lane_in[1]  = i_lane_1;
+    assign lane_in[2]  = i_lane_2;
+    assign lane_in[3]  = i_lane_3;
+    assign lane_in[4]  = i_lane_4;
+    assign lane_in[5]  = i_lane_5;
+    assign lane_in[6]  = i_lane_6;
+    assign lane_in[7]  = i_lane_7;
+    assign lane_in[8]  = i_lane_8;
+    assign lane_in[9]  = i_lane_9;
+    assign lane_in[10] = i_lane_10;
+    assign lane_in[11] = i_lane_11;
+    assign lane_in[12] = i_lane_12;
+    assign lane_in[13] = i_lane_13;
+    assign lane_in[14] = i_lane_14;
+    assign lane_in[15] = i_lane_15;
+
+    // =========================================================================
+    // decoder to decode lane map code and generate control signals
     // =========================================================================
     ucie_lane_to_byte_decoder u_decoder_inst (
         .i_lane_map_code(i_lane_map_code),
@@ -156,405 +119,86 @@ module ucie_lane_to_byte #(
 
 
     // =========================================================================
-    //mux x8
+    // Mux x8 - Generate block for 8 muxes
     // =========================================================================
-
-    ucie_mux_2_to_1 u_mux8_inst_0 (
-        .i_lane_x(i_lane_0)                                     ,
-        .i_lane_y(i_lane_8)                                     ,
-        .i_sel(mux_8)                                           ,
-        .o_lane(reg_x8_in0)
-    );
-    ucie_mux_2_to_1 u_mux8_inst_1 (
-        .i_lane_x(i_lane_1)                                     ,
-        .i_lane_y(i_lane_9)                                     ,
-        .i_sel(mux_8)                                           ,
-        .o_lane(reg_x8_in1)
-    );
-    ucie_mux_2_to_1 u_mux8_inst_2 (
-        .i_lane_x(i_lane_2)                                     ,
-        .i_lane_y(i_lane_10)                                    ,
-        .i_sel(mux_8)                                           ,
-        .o_lane(reg_x8_in2)
-    );
-    ucie_mux_2_to_1 u_mux8_inst_3 (
-        .i_lane_x(i_lane_3)                                     ,
-        .i_lane_y(i_lane_11)                                    ,
-        .i_sel(mux_8)                                           ,
-        .o_lane(reg_x8_in3)
-    );
-    ucie_mux_2_to_1 u_mux8_inst_4 (
-        .i_lane_x(i_lane_4)                                     ,
-        .i_lane_y(i_lane_12)                                    ,
-        .i_sel(mux_8)                                           ,
-        .o_lane(reg_x8_in4)
-    );
-    ucie_mux_2_to_1 u_mux8_inst_5 (
-        .i_lane_x(i_lane_5)                                     ,
-        .i_lane_y(i_lane_13)                                    ,
-        .i_sel(mux_8)                                           ,
-        .o_lane(reg_x8_in5)
-    );
-    ucie_mux_2_to_1 u_mux8_inst_6 (
-        .i_lane_x(i_lane_6)                                     ,
-        .i_lane_y(i_lane_14)                                    ,
-        .i_sel(mux_8)                                           ,
-        .o_lane(reg_x8_in6)
-    );
-    ucie_mux_2_to_1 u_mux8_inst_7 (
-        .i_lane_x(i_lane_7)                                     ,
-        .i_lane_y(i_lane_15)                                    ,
-        .i_sel(mux_8)                                           ,
-        .o_lane(reg_x8_in7)
-    );    
+    generate
+        for (genvar i = 0; i < 8; i++) begin : gen_mux8
+            ucie_mux_2_to_1 u_mux8_inst (
+                .i_lane_x(lane_in[i])                               ,
+                .i_lane_y(lane_in[i+8])                             ,
+                .i_sel(mux_8)                                       ,
+                .o_lane(reg_x8_in[i])
+            );
+        end
+    endgenerate
     
     // =========================================================================
-    //mux x4
+    // Mux x4 - Generate block for 4 muxes
     // =========================================================================
-    ucie_mux_2_to_1 u_mux4_inst_0 (
-        .i_lane_x(i_lane_0)                                     ,
-        .i_lane_y(i_lane_4)                                     ,
-        .i_sel(mux_4)                                           ,
-        .o_lane(reg_x4_in0)
-    );
-    ucie_mux_2_to_1 u_mux4_inst_1 (
-        .i_lane_x(i_lane_1)                                     ,
-        .i_lane_y(i_lane_5)                                     ,
-        .i_sel(mux_4)                                           ,
-        .o_lane(reg_x4_in1)
-    );
-    ucie_mux_2_to_1 u_mux4_inst_2 (
-        .i_lane_x(i_lane_2)                                     ,
-        .i_lane_y(i_lane_6)                                     ,
-        .i_sel(mux_4)                                           ,
-        .o_lane(reg_x4_in2)
-    );
-    ucie_mux_2_to_1 u_mux4_inst_3 (
-        .i_lane_x(i_lane_3)                                     ,
-        .i_lane_y(i_lane_7)                                     ,
-        .i_sel(mux_4)                                           ,
-        .o_lane(reg_x4_in3)
-    );
+    generate
+        for (genvar i = 0; i < 4; i++) begin : gen_mux4
+            ucie_mux_2_to_1 u_mux4_inst (
+                .i_lane_x(lane_in[i])                               ,
+                .i_lane_y(lane_in[i+4])                             ,
+                .i_sel(mux_4)                                       ,
+                .o_lane(reg_x4_in[i])
+            );
+        end
+    endgenerate
 
     // =========================================================================
-    //instantiate shift register to accumulate data and generate output data and valid signal x16
+    // Shift registers x16 - Generate block for 16 shift registers
     // =========================================================================
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_0 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_0)                                      ,
-        .data_out(reg_x16_out0)                                 ,
-        .data_valid(reg_x16_valid_0)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_1 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_1)                                      ,
-        .data_out(reg_x16_out1)                                 ,
-        .data_valid(reg_x16_valid_1)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_2 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_2)                                      ,
-        .data_out(reg_x16_out2)                                 ,
-        .data_valid(reg_x16_valid_2)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_3 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_3)                                      ,
-        .data_out(reg_x16_out3)                                 ,
-        .data_valid(reg_x16_valid_3)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_4 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_4)                                      ,
-        .data_out(reg_x16_out4)                                 ,
-        .data_valid(reg_x16_valid_4)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_5 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_5)                                      ,
-        .data_out(reg_x16_out5)                                 ,
-        .data_valid(reg_x16_valid_5)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_6 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_6)                                      ,
-        .data_out(reg_x16_out6)                                 ,
-        .data_valid(reg_x16_valid_6)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_7 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_7)                                      ,
-        .data_out(reg_x16_out7)                                 ,
-        .data_valid(reg_x16_valid_7)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_8 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_8)                                      ,
-        .data_out(reg_x16_out8)                                 ,
-        .data_valid(reg_x16_valid_8)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_9 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_9)                                      ,
-        .data_out(reg_x16_out9)                                 ,
-        .data_valid(reg_x16_valid_9)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_10 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_10)                                     ,
-        .data_out(reg_x16_out10)                                ,
-        .data_valid(reg_x16_valid_10)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_11 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_11)                                     ,
-        .data_out(reg_x16_out11)                                ,
-        .data_valid(reg_x16_valid_11)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_12 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_12)                                     ,
-        .data_out(reg_x16_out12)                                ,
-        .data_valid(reg_x16_valid_12)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_13 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_13)                                     ,
-        .data_out(reg_x16_out13)                                ,
-        .data_valid(reg_x16_valid_13)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_14 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           , 
-        .data_in(i_lane_14)                                     ,
-        .data_out(reg_x16_out14)                                ,
-        .data_valid(reg_x16_valid_14)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X16_WIDTH)
-    ) 
-    u_shift_reg_x16_15 (
-        .clk(x16_clk)                                           ,
-        .rst(i_reset)                                           ,
-        .data_in(i_lane_15)                                     ,
-        .data_out(reg_x16_out15)                                ,
-        .data_valid(reg_x16_valid_15)
-    );
+    generate
+        for (genvar i = 0; i < 16; i++) begin : gen_shift_reg_x16
+            ucie_shift_register #(
+                .pWIDTH_OUT(shift_register_X16_WIDTH)
+            ) 
+            u_shift_reg_x16 (
+                .clk(x16_clk)                                       ,
+                .rst(i_reset)                                       ,
+                .data_in(lane_in[i])                                ,
+                .data_out(reg_x16_out[i])                           ,
+                .data_valid(reg_x16_valid[i])
+            );
+        end
+    endgenerate
 
     // =========================================================================
-    // Shift registers for x8 mode (8 lanes)
+    // Shift registers x8 - Generate block for 8 shift registers
     // =========================================================================
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X8_WIDTH)
-    ) 
-    u_shift_reg_x8_0 (
-        .clk(x8_clk)                                            ,
-        .rst(i_reset)                                           , 
-        .data_in(reg_x8_in0)                                    ,
-        .data_out(reg_x8_out0)                                  ,
-        .data_valid(reg_x8_valid_0)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X8_WIDTH)
-    ) 
-    u_shift_reg_x8_1 (
-        .clk(x8_clk)                                            ,
-        .rst(i_reset)                                           ,
-        .data_in(reg_x8_in1)                                    ,
-        .data_out(reg_x8_out1)                                  ,
-        .data_valid(reg_x8_valid_1)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X8_WIDTH)
-    ) 
-    u_shift_reg_x8_2 (
-        .clk(x8_clk)                                            ,
-        .rst(i_reset)                                           ,
-        .data_in(reg_x8_in2)                                    ,
-        .data_out(reg_x8_out2)                                  ,
-        .data_valid(reg_x8_valid_2)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X8_WIDTH)
-    ) 
-    u_shift_reg_x8_3 (
-        .clk(x8_clk)                                            ,
-        .rst(i_reset)                                           ,
-        .data_in(reg_x8_in3)                                    ,
-        .data_out(reg_x8_out3)                                  ,
-        .data_valid(reg_x8_valid_3)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X8_WIDTH)
-    ) 
-    u_shift_reg_x8_4 (
-        .clk(x8_clk)                                            ,
-        .rst(i_reset)                                           ,
-        .data_in(reg_x8_in4)                                    ,
-        .data_out(reg_x8_out4)                                  ,
-        .data_valid(reg_x8_valid_4)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X8_WIDTH)
-    ) 
-    u_shift_reg_x8_5 (
-        .clk(x8_clk)                                            ,
-        .rst(i_reset)                                           , 
-        .data_in(reg_x8_in5)                                    ,
-        .data_out(reg_x8_out5)                                  ,
-        .data_valid(reg_x8_valid_5)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X8_WIDTH)
-    ) 
-    u_shift_reg_x8_6 (
-        .clk(x8_clk)                                            ,
-        .rst(i_reset)                                           , 
-        .data_in(reg_x8_in6)                                    ,
-        .data_out(reg_x8_out6)                                  ,
-        .data_valid(reg_x8_valid_6)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X8_WIDTH)
-    ) 
-    u_shift_reg_x8_7 (
-        .clk(x8_clk)                                            ,
-        .rst(i_reset)                                           ,
-        .data_in(reg_x8_in7)                                    ,
-        .data_out(reg_x8_out7)                                  ,
-        .data_valid(reg_x8_valid_7)
-    );
+    generate
+        for (genvar i = 0; i < 8; i++) begin : gen_shift_reg_x8
+            ucie_shift_register #(
+                .pWIDTH_OUT(shift_register_X8_WIDTH)
+            ) 
+            u_shift_reg_x8 (
+                .clk(x8_clk)                                        ,
+                .rst(i_reset)                                       ,
+                .data_in(reg_x8_in[i])                              ,
+                .data_out(reg_x8_out[i])                            ,
+                .data_valid(reg_x8_valid[i])
+            );
+        end
+    endgenerate
 
     // =========================================================================
-    // Shift registers for x4 mode (4 lanes)
+    // Shift registers x4 - Generate block for 4 shift registers
     // =========================================================================
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X4_WIDTH)
-    ) 
-    u_shift_reg_x4_0 (
-        .clk(x4_clk)                                            ,
-        .rst(i_reset)                                           ,
-        .data_in(reg_x4_in0)                                    ,
-        .data_out(reg_x4_out0)                                  ,
-        .data_valid(reg_x4_valid_0)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X4_WIDTH)
-    ) 
-    u_shift_reg_x4_1 (
-        .clk(x4_clk)                                            ,
-        .rst(i_reset)                                           ,
-        .data_in(reg_x4_in1)                                    ,
-        .data_out(reg_x4_out1)                                  ,
-        .data_valid(reg_x4_valid_1)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X4_WIDTH)
-    ) 
-    u_shift_reg_x4_2 (
-        .clk(x4_clk)                                            ,
-        .rst(i_reset)                                           ,
-        .data_in(reg_x4_in2)                                    ,
-        .data_out(reg_x4_out2)                                  ,
-        .data_valid(reg_x4_valid_2)
-    );
-
-    ucie_shift_register #(
-        .pWIDTH_OUT(shift_register_X4_WIDTH)
-    ) 
-    u_shift_reg_x4_3 (
-        .clk(x4_clk)                                            ,
-        .rst(i_reset)                                           ,
-        .data_in(reg_x4_in3)                                    ,
-        .data_out(reg_x4_out3)                                  ,
-        .data_valid(reg_x4_valid_3)
-    );
-
+    generate
+        for (genvar i = 0; i < 4; i++) begin : gen_shift_reg_x4
+            ucie_shift_register #(
+                .pWIDTH_OUT(shift_register_X4_WIDTH)
+            ) 
+            u_shift_reg_x4 (
+                .clk(x4_clk)                                        ,
+                .rst(i_reset)                                       ,
+                .data_in(reg_x4_in[i])                              ,
+                .data_out(reg_x4_out[i])                            ,
+                .data_valid(reg_x4_valid[i])
+            );
+        end
+    endgenerate
     // =========================================================================
     // Reordering block to reorder bytes from shift registers into proper sequence based on mode
     // =========================================================================
@@ -564,38 +208,38 @@ module ucie_lane_to_byte #(
     u_reorder_inst (
         .i_clk(i_clk)                                           ,
         .i_reset(i_reset)                                       ,
-        .i_mode_x16(x16_en)                                     ,  // Mode selection based on lane map code
+        .i_mode_x16(x16_en)                                     ,
         .i_mode_x8(x8_en)                                       ,
         .i_mode_x4(x4_en)                                       ,
-        .i_x16_lane_0(reg_x16_out0)                             ,
-        .i_x16_lane_1(reg_x16_out1)                             ,
-        .i_x16_lane_2(reg_x16_out2)                             ,
-        .i_x16_lane_3(reg_x16_out3)                             ,
-        .i_x16_lane_4(reg_x16_out4)                             ,
-        .i_x16_lane_5(reg_x16_out5)                             ,
-        .i_x16_lane_6(reg_x16_out6)                             ,
-        .i_x16_lane_7(reg_x16_out7)                             ,
-        .i_x16_lane_8(reg_x16_out8)                             ,
-        .i_x16_lane_9(reg_x16_out9)                             ,
-        .i_x16_lane_10(reg_x16_out10)                           ,
-        .i_x16_lane_11(reg_x16_out11)                           ,
-        .i_x16_lane_12(reg_x16_out12)                           ,
-        .i_x16_lane_13(reg_x16_out13)                           ,
-        .i_x16_lane_14(reg_x16_out14)                           ,
-        .i_x16_lane_15(reg_x16_out15)                           ,
-        .i_x8_lane_0(reg_x8_out0)                               ,
-        .i_x8_lane_1(reg_x8_out1)                               ,
-        .i_x8_lane_2(reg_x8_out2)                               ,
-        .i_x8_lane_3(reg_x8_out3)                               ,
-        .i_x8_lane_4(reg_x8_out4)                               ,
-        .i_x8_lane_5(reg_x8_out5)                               ,
-        .i_x8_lane_6(reg_x8_out6)                               ,
-        .i_x8_lane_7(reg_x8_out7)                               ,
-        .i_x4_lane_0(reg_x4_out0)                               ,
-        .i_x4_lane_1(reg_x4_out1)                               ,
-        .i_x4_lane_2(reg_x4_out2)                               ,
-        .i_x4_lane_3(reg_x4_out3)                               ,
-        .o_data_reordered(data_out)                          
+        .i_x16_lane_0(reg_x16_out[0])                           ,
+        .i_x16_lane_1(reg_x16_out[1])                           ,
+        .i_x16_lane_2(reg_x16_out[2])                           ,
+        .i_x16_lane_3(reg_x16_out[3])                           ,
+        .i_x16_lane_4(reg_x16_out[4])                           ,
+        .i_x16_lane_5(reg_x16_out[5])                           ,
+        .i_x16_lane_6(reg_x16_out[6])                           ,
+        .i_x16_lane_7(reg_x16_out[7])                           ,
+        .i_x16_lane_8(reg_x16_out[8])                           ,
+        .i_x16_lane_9(reg_x16_out[9])                           ,
+        .i_x16_lane_10(reg_x16_out[10])                         ,
+        .i_x16_lane_11(reg_x16_out[11])                         ,
+        .i_x16_lane_12(reg_x16_out[12])                         ,
+        .i_x16_lane_13(reg_x16_out[13])                         ,
+        .i_x16_lane_14(reg_x16_out[14])                         ,
+        .i_x16_lane_15(reg_x16_out[15])                         ,
+        .i_x8_lane_0(reg_x8_out[0])                             ,
+        .i_x8_lane_1(reg_x8_out[1])                             ,
+        .i_x8_lane_2(reg_x8_out[2])                             ,
+        .i_x8_lane_3(reg_x8_out[3])                             ,
+        .i_x8_lane_4(reg_x8_out[4])                             ,
+        .i_x8_lane_5(reg_x8_out[5])                             ,
+        .i_x8_lane_6(reg_x8_out[6])                             ,
+        .i_x8_lane_7(reg_x8_out[7])                             ,
+        .i_x4_lane_0(reg_x4_out[0])                             ,
+        .i_x4_lane_1(reg_x4_out[1])                             ,
+        .i_x4_lane_2(reg_x4_out[2])                             ,
+        .i_x4_lane_3(reg_x4_out[3])                             ,
+        .o_data_reordered(data_out)                             
     );
 
     // =========================================================================
@@ -616,18 +260,16 @@ module ucie_lane_to_byte #(
     //Generate control signals for muxes and lane enables based on decoding output
     // =========================================================================
                                        // Determine mux selection based on decoding signals
-    assign mux_8            =       decoding[4]                 ;                                        // Enable for 8-lane mux
-    assign mux_4            =       decoding[3]                 ;                                        // Enable for 4-lane mux
-    assign x16_en           =       decoding[2]                 ;                                        // Enable for 16-lane mode
-    assign x8_en            =       decoding[1]                 ;                                        // Enable for 8-lane mode
+    assign mux_8            =       decoding[4]                 ;
+    assign mux_4            =       decoding[3]                 ;
+    assign x16_en           =       decoding[2]                 ;
+    assign x8_en            =       decoding[1]                 ;
     assign x4_en            =       decoding[0]                 ;
-    assign data_valid       = (reg_x16_valid_0 && reg_x16_valid_1 && reg_x16_valid_2 && reg_x16_valid_3 && reg_x16_valid_4
-                                && reg_x16_valid_5 && reg_x16_valid_6 && reg_x16_valid_7 && reg_x16_valid_8 && reg_x16_valid_9
-                                && reg_x16_valid_10 && reg_x16_valid_11 && reg_x16_valid_12 && reg_x16_valid_13 && reg_x16_valid_14
-                                && reg_x16_valid_15)
-                                ||(reg_x8_valid_0 && reg_x8_valid_1 && reg_x8_valid_2 && reg_x8_valid_3 
-                                && reg_x8_valid_4 && reg_x8_valid_5 && reg_x8_valid_6 && reg_x8_valid_7) 
-                                ||(reg_x4_valid_0 && reg_x4_valid_1 && reg_x4_valid_2 && reg_x4_valid_3)  ;                                    
+    
+    // =========================================================================
+    // Data valid generation using reduction operators
+    // =========================================================================
+    assign data_valid       = (&reg_x16_valid) || (&reg_x8_valid) || (&reg_x4_valid) ;                                    
    
    
     // =========================================================================
