@@ -20,7 +20,6 @@ module ucie_shift_register #(
 ) (
     input  logic                    clk                         ,
     input  logic                    rst                         ,
-    input  logic                    enable                      ,
     input  logic [63:0]             data_in                     ,
     output logic [pWIDTH_OUT-1:0]    data_out                   ,
     output logic                    data_valid
@@ -77,7 +76,7 @@ module ucie_shift_register #(
             shift_reg         <=    {pWIDTH_OUT{1'b0}}          ;
             count             <=   8'b0                         ;
         end 
-        else if (enable) begin
+        else begin
             shift_reg         <=    shift_reg_next              ;
             count             <=   count_next                   ;
 
