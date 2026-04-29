@@ -1,6 +1,6 @@
 module rx_LFSR #(
     parameter int pLANE_ID_SEED = 23'h1DBFBC,
-    parameter int pDATA_WIDTH = 32
+    parameter int pDATA_WIDTH = 64
 ) (
     input i_clk,i_enable,i_reset,i_load,i_train,
     input [pDATA_WIDTH-1:0] i_data_in,
@@ -11,12 +11,12 @@ module rx_LFSR #(
     wire pclk,lclk;
     logic [pDATA_WIDTH-1:0] scrambled_data,pattern_out,pattern_tobechecked;
     
-    wire l_enable,p_enable;
+    logic l_enable,p_enable;
     always @(*) begin
         if (!i_clk) begin
             p_enable=i_enable & o_lane_success;
         end
-        if(!p_clk)begin
+        if(!pclk)begin
             l_enable=i_train;
         end
     end

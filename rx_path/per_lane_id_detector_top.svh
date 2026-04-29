@@ -1,5 +1,5 @@
 module per_lane_id_detector_top #(
-    parameter int pDATA_WIDTH = 32,
+    parameter int pDATA_WIDTH = 64,
     parameter int pNUM_LANES  = 16,
     // packed array of all lane ID patterns
     

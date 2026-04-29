@@ -1,6 +1,6 @@
 module LFSR_pattern_generator #(
     parameter logic [22:0] pLANE_ID_SEED = 23'h1DBFBC,
-    parameter int pDATA_WIDTH = 32
+    parameter int pDATA_WIDTH = 64
 ) (
     input pclk,
     input i_load,
@@ -22,9 +22,10 @@ module LFSR_pattern_generator #(
 
     // ==================== Combinational Logic ====================
     // Generate pDATA_WIDTH parallel LFSR states and extract output pattern
+    genvar i;
     generate
         assign next[0] = LFSR;
-        genvar i;
+        
         for (i = 0; i < pDATA_WIDTH; i++) begin
             // Compute next LFSR state for each bit position
             assign next[i+1] = cal(next[i]);

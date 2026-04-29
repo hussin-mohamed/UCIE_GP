@@ -1,5 +1,5 @@
 module rx_LFSR_detection #(
-    parameter int pDATA_WIDTH = 32
+    parameter int pDATA_WIDTH = 64
 ) (
     input pclk,
     input i_reset,

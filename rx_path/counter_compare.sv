@@ -1,6 +1,6 @@
 module counter_compare
   #(
-    parameter pDATA_WIDTH = 32
+    parameter pDATA_WIDTH = 64
   )
   (
     input pclk,                    // Clock input
@@ -15,7 +15,7 @@ module counter_compare
     reg [4:0] counter;
     
     // Combinational logic
-    assign o_laneid_success = counter[4];           // Output MSB of counter
+    assign o_laneid_success = counter[3];           // Output MSB of counter
     //assign reset = i_reset_n & counter_reset;       // Combined reset signal
     
     // Sequential logic - counter increment

@@ -1,6 +1,6 @@
 module per_lane_id_detector #(
     parameter pLANE_ID_PATTERN = 8'b0000_0000  ,
-    parameter pDATA_WIDTH = 32 
+    parameter pDATA_WIDTH = 64 
 ) (
     input [pDATA_WIDTH-1:0]i_data_in,
     input i_clk,i_enable,i_reset,
