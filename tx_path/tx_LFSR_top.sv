@@ -1,5 +1,5 @@
 module tx_LFSR_top #(
-    parameter int pDATA_WIDTH = 32,
+    parameter int pDATA_WIDTH = 64,
     parameter int pNUM_LANES  = 16,
     parameter logic [pNUM_LANES-1:0][22:0] pLANE_ID_SEED = {
     23'h1BB807,  // lane 15

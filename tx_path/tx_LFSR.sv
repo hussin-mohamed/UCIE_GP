@@ -1,6 +1,6 @@
 module tx_LFSR #(
     parameter int pLANE_ID_SEED = 23'h1DBFBC,
-    parameter int pDATA_WIDTH = 32
+    parameter int pDATA_WIDTH = 64
 ) (
     input i_clk,i_enable,i_load,i_train,
     input [pDATA_WIDTH-1:0] i_data_in,

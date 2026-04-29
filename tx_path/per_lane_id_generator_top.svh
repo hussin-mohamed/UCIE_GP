@@ -1,5 +1,5 @@
 module per_lane_id_generator_top #(
-    parameter int pDATA_WIDTH = 32,
+    parameter int pDATA_WIDTH = 64,
     parameter int pNUM_LANES  = 16,
     parameter logic [pNUM_LANES-1:0][7:0] pLANE_ID_PATTERN = {
         8'b0000_1111,  // lane 15
