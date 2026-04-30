@@ -11,6 +11,7 @@ module deser_h #(
   input  wire                    i_reset,
   input  wire                    i_rx_data,
   input  wire                    i_fifo_full,
+  input  wire                    i_valid,
   output reg  [pDESER_WIDTH-1:0] o_fifo_deser_msg,
   output wire                    o_fifo_wr_en
 );
@@ -19,7 +20,7 @@ module deser_h #(
   reg [pDESER_WIDTH-1:0] shift_reg;
   reg [6:0]              bit_counter;
   reg                    data_rdy_toggle;
-  
+  reg                    enable;
   reg                    sync1;
   reg                    sync2;
   reg                    sync3;
@@ -32,12 +33,20 @@ module deser_h #(
       bit_counter       <= 6'd0;
       o_fifo_deser_msg  <= {pDESER_WIDTH{1'b0}};
       data_rdy_toggle   <= 1'b0;
+      enable <=0;
     end 
     else begin
-      shift_reg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]}; 
+      if (i_valid && !enable) begin
+        shift_reg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]};  
+        enable <= 1'b1;
+      end
+      else if (enable) begin
+        shift_reg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]};
+      end
 
-      if (bit_counter == 7'd64) begin
-        bit_counter      <= 6'd1;
+      if (bit_counter == 7'd63) begin
+        bit_counter      <= 6'd0;
+        enable           <= 1'b0;
         o_fifo_deser_msg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]};
         data_rdy_toggle  <= ~data_rdy_toggle;
       end 
