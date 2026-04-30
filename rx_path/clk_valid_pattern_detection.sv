@@ -96,12 +96,12 @@ module clk_valid_pattern_detection (
         end
 
         // Every 8 samples: compare window to expected pattern 11110000
-        if (counter_v_per_lane_h == 9) begin
+        if (counter_v_per_lane_h == 8) begin
             if (w_serialized_per_lane_h == 8'b11110000)
                 counter_correct_per_lane_h <= counter_correct_per_lane_h + 1;
             else
                 counter_correct_per_lane_h <= 0;
-            counter_v_per_lane_h <= 2;
+            counter_v_per_lane_h <= 1;
         end
     end
 
@@ -147,10 +147,10 @@ module clk_valid_pattern_detection (
         end
 
         // Every 8 samples: accumulate error on mismatch
-        if (counter_v_compare_h == 9) begin
+        if (counter_v_compare_h == 8) begin
             if (w_serialized_compare_h != 8'b11110000)
                 counter_error_h <= counter_error_h + 1;
-            counter_v_compare_h <= 2;
+            counter_v_compare_h <= 1;
         end
     end
 
@@ -212,12 +212,12 @@ module clk_valid_pattern_detection (
             counter_v_per_lane_q    <= counter_v_per_lane_q + 1;
         end
 
-        if (counter_v_per_lane_q == 9) begin
+        if (counter_v_per_lane_q == 8) begin
             if (w_serialized_per_lane_q == 8'b11110000)
                 counter_correct_per_lane_q <= counter_correct_per_lane_q + 1;
             else
                 counter_correct_per_lane_q <= 0;
-            counter_v_per_lane_q <= 2;
+            counter_v_per_lane_q <= 1;
         end
     end
 
@@ -262,10 +262,10 @@ module clk_valid_pattern_detection (
             counter_v_compare_q    <= counter_v_compare_q + 1;
         end
 
-        if (counter_v_compare_q == 9) begin
+        if (counter_v_compare_q == 8) begin
             if (w_serialized_compare_q != 8'b11110000)
                 counter_error_q <= counter_error_q + 1;
-            counter_v_compare_q <= 2;
+            counter_v_compare_q <= 1;
         end
     end
 

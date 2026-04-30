@@ -3,11 +3,10 @@
 // Description: Deserializes 64-bit messages and uses a toggle synchronizer 
 //              to safely generate a single  FIFO write pulse.
 //------------------------------------------------------------------------------
-module deser_q #(
+module deser_h #(
   parameter pDESER_WIDTH = 64
 )(
   input  wire                    i_clk_p,
-  input  wire                    i_clk_n,
   input  wire                    i_hclk,
   input  wire                    i_reset,
   input  wire                    i_rx_data,
@@ -27,7 +26,7 @@ module deser_q #(
 
   //---- RX CLOCK DOMAIN (Strictly Input Clock Logic) --------------------------
 
-  always_ff @( i_clk_p or i_clk_n or posedge i_reset) begin : blockName
+  always_ff @( i_clk_p or posedge i_reset) begin : blockName
     if (i_reset) begin
       shift_reg         <= {pDESER_WIDTH{1'b0}};
       bit_counter       <= 6'd0;
@@ -37,7 +36,7 @@ module deser_q #(
     else begin
       shift_reg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]}; 
 
-      if (bit_counter == 6'd64) begin
+      if (bit_counter == 7'd64) begin
         bit_counter      <= 6'd1;
         o_fifo_deser_msg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]};
         data_rdy_toggle  <= ~data_rdy_toggle;

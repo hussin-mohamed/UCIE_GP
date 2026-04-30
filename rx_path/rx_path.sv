@@ -3,7 +3,7 @@ module rx_path#(
     parameter int pNUM_LANES  = 16
     ) (
     input i_clk_l,i_reset,i_clk_p,i_clk_n,i_valid,i_track,i_hclk,i_dclk,
-    input [pNUM_LANES-1:0] i_lanes,
+    input [pNUM_LANES-1:0] i_lanes
 
 );
     logic [pNUM_LANES-1:0][pDATA_WIDTH-1:0] lane_id_in,lane_LFSR_out,lane_LFSR_in,lane_demux_in,deserializer_out;
