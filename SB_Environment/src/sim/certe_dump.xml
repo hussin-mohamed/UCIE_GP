@@ -1,5 +1,5 @@
 <certe_dump>
-  <instance type=" sb_conc_test "> 
+  <instance type=" sb_sendall_test "> 
      uvm_test_top 
   
      <instance type=" sb_env "> 

@@ -1,2 +1,0 @@
-var g_data = {"66":{"pr":"/sb_pkg","ty":2,"dui":9,"dun":"work.sb_pkg","cvgs":[{"h":["cg_phylink",2,1,78,67],"cov":[421,232,46.73],"opts":{"goal":"100","per_instance":"true"}},{"h":["/sb_pkg/sb_coverage_collector/cg_phylink",1,1,67],"cov":[421,232,46.73],"opts":{"goal":"100","merge_instance":"auto(true)"}}]}};
-processCovergroupsData(g_data);
