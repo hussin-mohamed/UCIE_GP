@@ -23,6 +23,7 @@ module clk_valid_pattern_generation (
         .i_reset(i_reset),
         .o_clk(w_qclk_2)
     );
+    
     // clock divider by 24 for each half rate clock and quadrature clock
 
     // half rate clock
@@ -178,6 +179,30 @@ module clk_valid_pattern_generation (
     end
     assign w_enable_h=(counter_h<16)?1:0;
 
+     logic [4:0] counter_h_2;
+
+    wire w_enable_h_2;
+
+    always_ff @( negedge i_hclk ) begin 
+
+        if(i_reset)begin
+
+            counter_h<=0;
+
+        end
+        else if (counter_h_2 == 23 || i_pattern_type != 2'b01) begin
+
+            counter_h_2 <=0;
+
+        end
+        else begin
+
+            counter_h_2 <= counter_h_2 + 1;
+
+        end
+    end
+    assign w_enable_h_2=(counter_h_2<16)?1:0;
+
     // pwm to modify the duty cycle of the quartere rate clock to be 16 cycles high and 8 loww of the original clock
 
     logic [4:0] counter_q_1;
@@ -230,7 +255,7 @@ module clk_valid_pattern_generation (
     // These are intentionally inferred as latches:
     //   - Updated only on the low phase of the active clock
     //   - Hold their value on the high phase (clock gating safe update window)
-    logic w_henable;   // Half-rate clock gate enable
+    logic w_henable_1,w_henable_2;   // Half-rate clock gate enable
     logic w_qenable_1,w_qenable_2;   // Quarter-rate clock gate enable
     logic w_venable;   // Valid gate enable
 
@@ -251,19 +276,39 @@ module clk_valid_pattern_generation (
                 case (i_pattern_type)
                     2'b00: begin
                         // Valid only: suppress clock, pass valid
-                        w_henable = 1'b1;
+                        w_henable_1 = 1'b0;
                     end
                     2'b01: begin
                         // Clock only: pass clock, suppress valid
-                        w_henable = w_enable_h;
+                        w_henable_1 = w_enable_h;
                     end
                     2'b10: begin
                         // Clock + Valid: pass both
-                        w_henable = 1'b1;
+                        w_henable_1 = 1'b1;
                     end
                     default: begin
                         // Idle: suppress both
-                        w_henable = 1'b0;
+                        w_henable_1 = 1'b1;
+                    end
+                endcase
+            end
+            if (i_hclk) begin
+                case (i_pattern_type)
+                    2'b00: begin
+                        // Valid only: suppress clock, pass valid
+                        w_henable_2 = 1'b0;
+                    end
+                    2'b01: begin
+                        // Clock only: pass clock, suppress valid
+                        w_henable_2 = w_enable_h_2;
+                    end
+                    2'b10: begin
+                        // Clock + Valid: pass both
+                        w_henable_2 = 1'b1;
+                    end
+                    default: begin
+                        // Idle: suppress both
+                        w_henable_2 = 1'b1;
                     end
                 endcase
             end
@@ -290,11 +335,12 @@ module clk_valid_pattern_generation (
             // When i_hclk is HIGH: enables hold their latched value (latch transparent on LOW)
 
             // Gate the half-rate clock with its enable
-            o_clk_p = i_hclk & w_henable;
-            o_clk_n = ~o_clk_p; // to produce 180 phase difference
+            o_clk_p = i_hclk & w_henable_1;
+            o_clk_n = ~i_hclk & w_henable_2; // to produce 180 phase difference
         end else begin
 
-            w_henable = 1'b0;
+            w_henable_1 = 1'b0;
+            w_henable_2 = 1'b0;
             // --- Quarter-Rate Path ---
             // Update enables only when quarter-rate clock is LOW (safe window)
             if (!w_qclk_1) begin
