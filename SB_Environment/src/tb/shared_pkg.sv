@@ -24,8 +24,8 @@ package shared_pkg;
   parameter T_CLK = 32ns;
   parameter UI    = 4ns;
 
-  parameter LINK2LTSM_RTL_LATENCY = 8 * T_CLK;
-  parameter LTSM2LINK_RTL_LATENCY = (7.5 * T_CLK) + (0.5 * UI);
+  parameter LINK2LTSM_RTL_LATENCY = 11 * T_CLK;
+  parameter LTSM2LINK_RTL_LATENCY = (8 * T_CLK) + (0.5 * UI);
   parameter HEADER_SER_LATENCY    = 64 * UI;
   parameter DATA_SER_LATENCY      = 64 * UI;
   parameter IDLE_LATENCY          = 32 * UI;
