@@ -1,0 +1,186 @@
+\chapter{Sideband Verification Environment}
+\minitoc
+\clearpage 
+
+\section{Introduction and Verification Scope}
+The Sideband interface is a critical component of the system, responsible for initialization, configuration, and out-of-band message passing. The primary objective of this verification environment is to ensure absolute protocol compliance, data integrity, and robust error handling across the Module Die Interface (MDI). This chapter details the transaction-level UVM architecture, the modular agent topology, dynamic reset handling, the self-checking infrastructure, and the coverage strategy used to verify the Sideband block.
+
+\section{UVM Environment Structure}
+To achieve a scalable and reusable verification environment, the architecture strictly adheres to the Universal Verification Methodology (UVM) hierarchy. 
+
+% Placeholder for the UVM Block Diagram
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth, keepaspectratio]{assets/Sideband_UVM_Structure.png}
+    \caption{Hierarchical block diagram of the Sideband UVM Environment.}
+    \label{fig:uvm_structure}
+\end{figure}
+
+As illustrated in Figure \ref{fig:uvm_structure}, the top-level simulation module encapsulates both the Design Under Test (DUT) and the physical Bus Functional Models (BFMs). Inside the UVM domain, the \texttt{uvm\_test\_top} instantiates the top-level \texttt{sb\_env}. The environment acts as the central hub, containing:
+\begin{itemize}
+    \item A Virtual Sequencer (\texttt{vseqr}) to orchestrate multi-interface traffic.
+    \item A dedicated Reset Driver (\texttt{rst\_drvr}) to handle asynchronous system resets.
+    \item Four currently implemented UVM Agents for localized interface driving and monitoring, with a fifth D2D RDI agent planned for a future revision.
+    \item A centralized Scoreboard (\texttt{sb}) for end-to-end data integrity checking.
+\end{itemize}
+
+\section{Testbench Architecture}
+Designing a scalable and maintainable testbench requires careful consideration of the DUT boundaries and interface complexity. 
+
+\subsection{Agent Topology}
+The Sideband interface presents a high degree of complexity, encompassing more than 35 discrete physical signals. To handle this complexity, the environment was architected around five distinct UVM agents rather than a single, monolithic interface agent. At the current stage of development, however, only four agents are implemented because the D2D RDI interface is not yet supported.
+
+Instead of relying on general modularity arguments alone, this approach was driven by the physical realities of the Sideband block. Each agent operates independently and acts as a proxy for a specific external block communicating with the Sideband. The current implementation includes the following agents:
+\begin{itemize}
+    \item LTSM TX Agent (\texttt{tx\_agt})
+    \item LTSM RX Agent (\texttt{rx\_agt})
+    \item Remote Link Agent (\texttt{phylink\_agt})
+    \item LTSM Control Agent (\texttt{ltsm\_ctrl\_agt})
+\end{itemize}
+
+The D2D RDI Agent (\texttt{rdi\_agt}) remains part of the planned architecture, but it is intentionally omitted from the present environment until RDI support is added.
+
+This topology offers strong practical benefits. During development, it allowed the verification work to focus on one independent functionality at a time when building drivers and monitors. In terms of stimulus, the same modularity empowers virtual sequences to manage multiple agents in parallel and create complex concurrent scenarios with limited overhead. Debugging is also improved because protocol violations can be traced back directly to the interface-specific component that observed them.
+
+\subsection{Bus Functional Models (BFMs)}
+To keep the UVM drivers and monitors abstracted from physical timing details, Bus Functional Models (BFMs) were heavily utilized. The BFMs encapsulate pin-level toggling, clock-edge alignment, serialization details, and intra-packet delays. By handling these physical-layer constraints inside the SystemVerilog interfaces, the UVM components remain reusable and focused on transaction intent rather than waveform construction.
+
+\section{Dynamic Reset Testing Methodology}
+A robust verification environment must gracefully handle dynamic, mid-simulation resets without locking up or generating false errors. To achieve this, the environment implements the UVM phase-jumping framework detailed by Hunter et al. in \cite{HunterSNUG2013}.
+
+The reset methodology combines both idle reset testing and active reset testing. Idle reset testing verifies that the environment can safely restart after a run has naturally drained. Once the stimulus has completed, the DUT becomes quiescent, and the scoreboard no longer holds pending transactions, the base test redirects execution back to the reset phases and starts another run. This checks that the environment can re-enter reset from a clean state without leaving stale transactions, stale objections, or stale predictor data behind.
+
+Active reset testing targets the more stressful case in which reset is asserted while transactions are still flowing through the DUT. In the base test, the main virtual sequence starts normally, and a second thread waits for a randomized delay before forcing a jump back to the reset phases. In this way, reset can interrupt ongoing local traffic, incoming remote traffic, or internal routing activity. This style of testing is particularly important because it exposes bugs that do not appear in clean start-to-finish runs, such as partially updated internal state, broken arbitration recovery, or stale data remaining inside verification components.
+
+To make phase jumping safe, the environment itself was built to be reset-aware. The virtual sequencer stops outstanding sequences before reset begins, monitor threads terminate and restart around reset boundaries, comparator FIFOs are flushed before the next run starts, and predictor-side queues are cleared so that transactions from the old run cannot be matched against transactions from the new run. This follows the reset philosophy described in \cite{HunterSNUG2013}: phase jumps are effective only when all stateful verification components know how to recover cleanly.
+
+\section{Assertion-Based Verification (ABV)}
+To mathematically guarantee the Sideband Initialization (SBINIT) protocol, Assertion-Based Verification (ABV) was integrated directly at the interface level. SystemVerilog Assertions (SVA) were written to capture critical handshakes, ensure negative-edge data sampling, and detect zero-time glitches on clock lines.
+
+The assertion set focuses on observable SBINIT behavior at the interface level rather than on internal RTL implementation details. One group of properties checks correct initialization-pattern generation and ensures that readiness is only reached after the required training behavior has been completed. A second group checks the mandatory low-idle windows on both the data and clock lines during the off portion of the SBINIT cycling. A third checker validates reset cleanliness by ensuring that key outputs return to their reset values when reset is asserted. In addition, a dedicated glitch detector watches the transmitted clock and flags zero-time toggles that would correspond to physically invalid waveform behavior. These assertions complement the scoreboard by proving temporal protocol rules that are difficult to verify through transaction comparison alone.
+
+Because assertions act as independent checkers, it is critical that they themselves be trusted. Every assertion was therefore verified using targeted SVA unit tests to ensure that no false passes or missed failures could corrupt the top-level regression results.
+
+\section{Checking Mechanisms (The Scoreboard)}
+All four currently implemented agents actively communicate with the scoreboard. To prevent a large explosion of TLM port connections and maintain data routing clarity, a highly structured scoreboard architecture was developed. When RDI support is added, the same scoreboard architecture is intended to scale to that fifth agent as well.
+
+\subsection{Predictor and Comparator Separation}
+The architecture heavily borrows from established UVM scoreboard design patterns, specifically advocating for the strict separation of the Predictor and the Comparator \cite{uvm_scoreboard_arch}. The prediction logic itself was split into two independent predictors to handle the bi-directional nature of the Sideband:
+\begin{enumerate}
+    \item \textbf{\texttt{prd\_ltsm2link}:} Models the outbound direction, predicting the output to the remote link based on traffic from the currently supported LTSM TX and RX drivers, and is structured to later incorporate the RDI driver once that interface is supported.
+    \item \textbf{\texttt{prd\_link2ltsm}:} Models the inbound direction. It takes a single input from the Remote Link driver and predicts the routing to the currently active local comparators based on the decoded direction of the incoming message.
+\end{enumerate}
+
+The three active comparators each check one observable verification path. The \texttt{cmp\_ltsm2link} comparator verifies the outbound direction by comparing the predictor output against the phylink transaction reconstructed by the remote-link monitor at the DUT boundary. The \texttt{cmp\_link2ltsm\_tx} comparator checks the inbound direction for messages that are expected to emerge on the local TX-facing interface after being received from the link and translated by the DUT. Likewise, the \texttt{cmp\_link2ltsm\_rx} comparator checks inbound traffic that should emerge on the local RX-facing interface. Although each comparator targets a different path, they all follow the same checking philosophy: wait for an expected transaction, allow a bounded DUT latency window, report a timeout if the DUT drops the transaction, and otherwise compare the predicted and observed transactions field by field.
+
+\subsection{Cross-Die Message Translation}
+During the development of the \texttt{prd\_link2ltsm} predictor, a critical protocol nuance was identified regarding cross-die message mapping. When the local Sideband receives a message from the remote die's TX path, it may need to forward it to the local RX path, and vice versa. However, the receiving local interface expects the encoding specific to its own domain rather than the original remote encoding.
+
+To accurately model this behavior, the predictor was refined using two associative arrays acting as hardware look-up tables (LUTs): \texttt{tx2rx\_enc\_lut} and \texttt{rx2tx\_enc\_lut}. These tables translate the encodings before the expected transaction reaches the relevant comparator, ensuring that the predicted transaction reflects the same semantic message as seen by the local receiving interface.
+
+\section{Transaction Level Modeling (Sequence Items)}
+At the core of the verification environment is the transition from pin-level signals to an abstract, object-oriented view using UVM sequence items. The agents serve as the translation layer, converting abstract sequences into physical signals and vice versa.
+
+\texttt{ltsm\_seq\_item} models the local, parallel-facing view of the Sideband protocol. It captures the message direction, the local encoding or message classification, the optional data payload, and the sideband information field without embedding pin-level timing. This makes it the natural transaction abstraction for the TX and RX local interfaces.
+
+\texttt{phylink\_seq\_item}, by contrast, models the remote serialized view of the protocol. It can represent either SBINIT behavior or ACTIVE message traffic on the physical link. For ACTIVE traffic, it carries the logical message fields such as fullcode, opcode, source and destination identifiers, information field, payload, and parity status. For SBINIT, it represents the initialization pattern behavior and the timing-oriented attributes needed by the remote-link BFM.
+
+These two transaction abstractions are connected to the signal-level interfaces by the UVM agents. On the stimulus side, the TX and RX drivers translate \texttt{ltsm\_seq\_item} objects into local handshake, encoding, information, and payload activity, while the phylink driver translates \texttt{phylink\_seq\_item} objects into serialized SBINIT or ACTIVE traffic on the remote link pins. On the checking side, the monitors perform the inverse operation and reconstruct the same transaction-level objects from observed DUT behavior. This allows the environment to reason about Sideband traffic in a transaction-oriented form while still driving and sampling the real interfaces.
+
+To maximize readability and constrainability, the protocol model was organized using strongly typed enumerations, logical message structures, and associative lookup tables rather than anonymous bit-vectors. The shared package defines the supported TX and RX encodings, the protocol fullcodes and opcodes, the source and destination identifiers, and a canonical message structure that groups the logical fields of a Sideband packet into one object. The same package also stores associative arrays containing the supported message templates, the currently recognized unsupported fullcodes, and the cross-die translation tables. Utility functions then bridge between these abstractions and the wire representation by packing and unpacking messages, extracting message fields, deriving message type information, and recalculating parity when needed.
+
+\subsection{\texttt{ltsm\_seq\_item} Randomization Strategy}
+The constrained-random strategy for \texttt{ltsm\_seq\_item} is direction-aware. Before randomization, the item is configured to represent either TX-originated or RX-originated traffic, and only the corresponding encoding space is then explored. This prevents illegal combinations that do not belong to the selected source. Additional constraints preserve protocol realism by forcing header-only message classes to carry no payload, bounding the wait interval between transactions, and biasing the stimulus toward corner values in the information and data fields. As a result, the item can generate both ordinary message traffic and useful boundary-value cases while still remaining aligned with the legal local protocol view.
+
+\subsection{\texttt{phylink\_seq\_item} Randomization Strategy}
+The randomization strategy for \texttt{phylink\_seq\_item} is mode-aware. When configured for SBINIT, the item focuses on initialization behavior such as training-pattern generation, timing skew, and controlled corruption used to stress the initialization detector. When configured for ACTIVE traffic, it primarily draws from the set of known protocol message templates so that most randomized traffic remains meaningful and checkable. At the same time, it can deliberately generate unsupported or corrupted traffic to verify robustness against invalid cases. After the message form is selected, parity is derived from the logical fields and optional corruption may then be introduced in a controlled way, allowing the same item to cover both nominal protocol traffic and negative testing scenarios.
+
+\section{Test Strategy and Stimulus Scenarios}
+Leveraging the current 4-agent implementation of the planned 5-agent architecture, the stimulus generation strategy relies on virtual sequences acting as orchestrators across the independent agent sequencers.
+
+\subsection{Base Test Infrastructure}
+All top-level tests inherit from a common base test. This layer creates the environment, publishes the required virtual interfaces, constructs the shared environment configuration, and launches the selected virtual sequence on the virtual sequencer. Because each test reuses this infrastructure, the derived test classes only need to choose the desired virtual sequence, enable any required operating mode, and define a suitable timeout. The same base layer also embeds the reset methodology described earlier, which means each major test automatically benefits from the same reset-aware framework without duplicating reset-control logic.
+
+\subsection{Sanity Test}
+The \texttt{sb\_sanity\_test} is the initial bring-up test for the environment. Its virtual sequence first coordinates both sides of SBINIT: the control-side sequence starts the initialization flow, while the remote-link sequence drives the expected incoming training behavior. After initialization completes successfully, the test issues a small set of directed ACTIVE transactions across the local TX path, the local RX path, and the remote link. The purpose of this test is not exhaustiveness, but rather to prove that the environment can bring the DUT out of reset, complete initialization, drive representative traffic on each supported interface, and obtain clean scoreboard and assertion behavior.
+
+\subsection{Send-All Test}
+The \texttt{sb\_sendall\_test} reuses the same initialization flow as the sanity test, but replaces the short directed ACTIVE phase with an exhaustive protocol sweep. Its virtual sequence launches dedicated TX, RX, and phylink sequences that systematically walk through the supported message definitions stored in the environment model. Rather than relying on random generation, these sequences intentionally exercise each supported encoding and its corresponding protocol form at least once. This makes the test especially effective at exposing mismatches between the verification model and the RTL specification, particularly in areas such as encoding values, opcode selection, and message classification.
+
+\subsection{Random Test}
+The \texttt{sb\_rand\_test} extends the environment from directed protocol checking into high-volume constrained-random stress. After bringing the DUT through initialization, it drives randomized local TX traffic, randomized local RX traffic, and a larger volume of randomized phylink traffic. Because the underlying sequence items are constrained using the strategies described earlier, the test explores a wide legal space while still injecting carefully selected invalid or corrupted cases. This makes the random test effective both for deepening coverage and for revealing subtle data-handling or parity-related issues that are unlikely to surface in purely directed testing.
+
+\subsection{Concurrent Test}
+The \texttt{sb\_conc\_test} targets the interaction between simultaneous traffic sources. After the usual initialization phase, its virtual sequence launches TX, RX, and phylink activity in parallel so that the DUT must handle concurrent requests instead of isolated streams. To model the LTSM more faithfully, the local TX and RX paths are run in reactive mode. In this mode, the output monitors forward observed DUT responses back to the corresponding sequencers, and each local sequence waits for the response to the current message before issuing the next one. This creates a closed-loop stimulus style that mirrors request-response dependence in the real system and is particularly effective at exposing arbitration and reset-recovery problems that only appear when multiple paths are active together.
+
+\section{Unit Testing the Verification Components}
+A robust testbench cannot be trusted if the testbench itself is flawed. To ensure the integrity of the UVM components, SVUnit was integrated into the development workflow \cite{svunit_paper}. By unit testing the predictors, comparators, SVA properties, and BFMs in strict isolation prior to top-level integration, the testbench is proven stable, ensuring that any failures found during top-level regressions are legitimate RTL bugs.
+
+\section{Coverage Strategy}
+Coverage was collected in two complementary forms. Code coverage was used to measure how thoroughly the regression exercised the implemented RTL structure, while functional coverage was used to measure whether the intended protocol behaviors and corner cases had actually been explored. The functional coverage model is currently centered on the phylink domain, where it tracks valid and invalid messages, supported and unsupported message categories, opcode classes, source and destination identifiers, payload extremes, and important cross combinations between routing, validity, and data conditions.
+
+To keep the reported code coverage meaningful, a small set of exclusions was applied in the simulation scripts. These exclusions remove assertion code from RTL code-coverage accounting and also exclude toggle points that are either fixed by protocol definition or intentionally unreachable under the current legal stimulus strategy, such as hard-wired protocol fields and selected backpressure conditions. The numerical coverage results themselves are presented later in the Results section.
+
+\section{Results and Conclusion}
+The integration of the environment and the execution of the major tests immediately yielded a high Return on Investment (ROI), uncovering several critical RTL and model-alignment issues while also validating the core checking infrastructure of the Sideband environment.
+
+\subsection{Sanity Test Evidence}
+The \texttt{sb\_sanity\_test} produced two complementary forms of evidence. First, the assertion waveform confirmed that the full set of SBINIT assertions remained satisfied throughout the sanity sequence. Second, the scoreboard logs showed successful predictor-to-monitor matches for both outbound phylink traffic and inbound link-to-LTSM routing.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth, keepaspectratio]{assets/assertions_in_the_waveform.png}
+    \caption{Waveform snapshot showing the SBINIT sanity-sequence assertions passing during the sanity test.}
+    \label{fig:sideband_assertions_waveform}
+\end{figure}
+
+Representative scoreboard matches from the sanity-test log are summarized as follows:
+\begin{itemize}
+    \item A successful \texttt{LTSM2LINK\_CMP} comparison was recorded for the initialization path, with the predictor output matching the RTL monitor transaction field for field.
+    \item A successful outbound ACTIVE-message comparison confirmed correct handling of a payload-carrying transfer, including its information field and data payload.
+    \item A successful inbound comparison confirmed correct routing and encoding translation after link reception.
+    \item The monitor summary further showed activity on the supported interfaces, confirming that the test exercised both the local paths and the remote link path.
+\end{itemize}
+
+The comparator summary at the end of the run showed that the active comparator instances completed with zero mismatches, while unsupported or currently inactive paths reported zero executed vectors, which is consistent with the present environment configuration in which the RDI interface is not yet supported.
+
+% Figure placeholder: Insert the relevant comparator-summary text from the logfile showing the active comparators completing with 0 errors.
+
+\textbf{Initialization Issues Discovered:}
+\begin{itemize}
+    \item Data was toggling synchronously with the clock rather than at the required data rate.
+    \item SVA caught zero-time glitches occurring on the clock line.
+    \item The RTL was incorrectly sampling data on the positive edge, violating the UCIe requirement for negative-edge sampling.
+    \item Corrupted, extraneous data was transmitted on the receive-side data line before the actual initialization pattern began.
+\end{itemize}
+
+\textbf{Message Transmission Issues Discovered:}
+\begin{itemize}
+    \item Negative-edge sampling failures persisted during ACTIVE message transmission.
+    \item A power and gating issue was identified where the clock toggled continuously instead of only toggling when valid data was present to send.
+\end{itemize}
+
+\subsection{Send-All Test Findings}
+The \texttt{sb\_sendall\_test} was primarily used as a specification-alignment test. Because it systematically exercised the supported message space instead of sampling it randomly, it quickly exposed mismatches between the verification environment model and the RTL implementation. The dominant class of issues found by this test involved encoding and opcode mismatches. Some of these mismatches were traced back to mistakes in the environment model, while others were traced back to RTL defects. This result demonstrates the value of an exhaustive protocol sweep early in the verification cycle: it not only checks the DUT, but also validates that the verification model itself reflects the intended protocol definition accurately.
+
+% Figure placeholder: Insert representative send-all logfile text showing encoding and opcode mismatches between the RTL and the environment.
+
+\subsection{Random Test Findings}
+The \texttt{sb\_rand\_test} exposed bugs that were harder to uncover with directed testing alone. One bug affected payload ordering, where the RTL placed the least significant 32 bits of the payload into the most significant 32-bit position and vice versa. A second bug affected parity generation, where the control-parity calculation incorrectly included the data-parity contribution. A third issue appeared around unsupported fullcodes, specifically for unsupported cases whose hexadecimal representation contains \texttt{A} in the second digit, which triggered incorrect behavior in the RTL handling of invalid traffic. These findings highlight the importance of constrained-random stress in revealing subtle data-path and negative-case issues beyond simple message-definition mismatches.
+
+% Figure placeholder: Insert the relevant UVM_ERROR text from the logfile showing the randomized data mismatch.
+
+\subsection{Concurrent and Reset Test Findings}
+The \texttt{sb\_conc\_test}, combined with the active-reset mechanism in the base test, exposed a reset-recovery bug in the concurrent traffic logic. When a reset was applied while both TX and RX traffic were active, part of the RTL traffic-management logic did not return to a clean reset state. As a result, the post-reset prioritization of concurrent TX and RX messages followed an incorrect flow. This issue would have been difficult to observe in isolated directed testing because it depended on the interaction between concurrency, in-flight traffic, and a sudden asynchronous reset event.
+
+% Figure placeholder: Insert logfile text showing the concurrent/reset failure symptoms and, if desired, the clean result after the fix.
+
+\subsection{Regression Results}
+After the directed and random debugging phases, the major stress tests were consolidated into regression. The regression included \texttt{sb\_sendall\_test}, \texttt{sb\_rand\_test}, and \texttt{sb\_conc\_test}, each executed in ten runs. All runs completed successfully. This regression campaign achieved 90.46\% code coverage and 100\% functional coverage.
+
+The coverage numbers should be interpreted together with the deliberate exclusions documented in the simulation scripts. Some toggle points were excluded because they correspond to fixed protocol constants, reserved fields, or assertion logic that should not be counted as RTL implementation coverage. In addition, selected unreachable toggle cases were excluded where the current legal stimulus architecture cannot drive those conditions meaningfully. The code-coverage review also helped identify redundant RTL logic consisting of two lines that were not functionally used, and these lines were subsequently removed.
+
+% Figure placeholder: Insert regression terminal screenshot showing all three tests passing across 10 runs each.
+% Figure placeholder: Insert coverage-report excerpt showing 90.46% code coverage and 100% functional coverage.
+
+Together, the passing assertions, transaction matches, targeted bug discoveries, and final regression results demonstrate that the environment is effective both as a bug-finding platform and as a trustworthy checker for the currently supported Sideband functionality. With the environment architecture, reset methodology, and regression strategy established, the verification effort is well positioned to scale further as additional protocol paths such as RDI are integrated.
