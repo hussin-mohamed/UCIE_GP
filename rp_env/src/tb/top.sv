@@ -53,7 +53,7 @@ module rp_tb_top;
   );
 
   // LTSM controller interface
-  rp_ltsmcc_bfm    ltsmc_bfm(
+  rp_ltsmc_bfm    ltsmc_bfm(
      .clk(clk)
     ,.reset(reset_wire)
   );
@@ -76,7 +76,7 @@ module rp_tb_top;
     // Set virtual interfaces in UVM config database
     uvm_config_db#(virtual rp_reset_intf)::set  (null, "uvm_test_top", "reset_intf",   reset_intf);
     uvm_config_db#(virtual rp_rdi_bfm)::set     (null, "uvm_test_top", "rdi_bfm",      rdi_bfm);
-    uvm_config_db#(virtual rp_ltsmcc_bfm)::set    (null, "uvm_test_top", "ltsmc_bfm",     ltsmc_bfm);
+    uvm_config_db#(virtual rp_ltsmc_bfm)::set    (null, "uvm_test_top", "ltsmc_bfm",     ltsmc_bfm);
     uvm_config_db#(virtual rp_rmblink_bfm)::set (null, "uvm_test_top", "rmblink_bfm",  rmblink_bfm);
   
     // Run UVM test

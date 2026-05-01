@@ -22,7 +22,7 @@
 //
 //-----------------------------------------------------------------------------
 
-class ltsmc_monitor extends rp_monitor_base #(ltsmc_seq_item, virtual rp_ltsmcc_bfm);
+class ltsmc_monitor extends rp_monitor_base #(ltsmc_seq_item, virtual rp_ltsmc_bfm);
   `uvm_component_utils(ltsmc_monitor)
 
 

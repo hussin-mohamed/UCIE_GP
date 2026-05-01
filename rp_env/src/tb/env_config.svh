@@ -29,7 +29,7 @@ class env_config extends uvm_object;
 
   virtual rp_reset_intf     reset_intf;
   virtual rp_rdi_bfm        rdi_bfm;
-  virtual rp_ltsmcc_bfm       ltsmc_bfm;
+  virtual rp_ltsmc_bfm       ltsmc_bfm;
   virtual rp_rmblink_bfm    rmblink_bfm;
 
   bit disable_checking [5]; // Five flags for the five scoreboards

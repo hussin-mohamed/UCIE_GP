@@ -77,17 +77,17 @@ class rp_pred extends uvm_component;
 
   extern function void write_rdi(rdi_seq_item t);
 
-  // Function: get_predicted_ltsmcc_item
+  // Function: get_predicted_ltsmc_item
   //
   // Builds the expected ltsm item corresponding.
 
-  extern function ltsmc_seq_item get_predicted_ltsmcc_item(ltsmc_seq_item _t_ltsmcc_in, rmblink_seq_item _t_rmblink_in);
+  extern function ltsmc_seq_item get_predicted_ltsmc_item(ltsmc_seq_item _t_ltsmc_in, rmblink_seq_item _t_rmblink_in);
 
   // Function: get_predicted_rdi_item
   //
   // Builds the expected rdi item corresponding.
 
-  extern function rdi_seq_item get_predicted_rdi_item(ltsmc_seq_item _t_ltsmcc_in, rmblink_seq_item _t_rmblink_in);
+  extern function rdi_seq_item get_predicted_rdi_item(ltsmc_seq_item _t_ltsmc_in, rmblink_seq_item _t_rmblink_in);
 endclass : rp_pred
 
 //---------------------------------------------------------------------------
@@ -147,16 +147,16 @@ function void rp_pred::write_ltsmc(ltsmc_seq_item t);
   // ...
 endfunction : write_ltsmc
 
-// get_predicted_ltsmcc_item
+// get_predicted_ltsmc_item
 // ------------------
 
-function ltsmc_seq_item rp_pred::get_predicted_ltsmcc_item(ltsmc_seq_item _t_ltsmcc_in, rmblink_seq_item _t_rmblink_in);
+function ltsmc_seq_item rp_pred::get_predicted_ltsmc_item(ltsmc_seq_item _t_ltsmc_in, rmblink_seq_item _t_rmblink_in);
   // ...
-endfunction : get_predicted_ltsmcc_item
+endfunction : get_predicted_ltsmc_item
 
 // get_predicted_rdi_item
 // ------------------
 
-function rdi_seq_item rp_pred::get_predicted_rdi_item(ltsmc_seq_item _t_ltsmcc_in, rmblink_seq_item _t_rmblink_in);
+function rdi_seq_item rp_pred::get_predicted_rdi_item(ltsmc_seq_item _t_ltsmc_in, rmblink_seq_item _t_rmblink_in);
   // ...
 endfunction : get_predicted_rdi_item

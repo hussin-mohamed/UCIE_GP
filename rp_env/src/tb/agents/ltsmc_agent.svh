@@ -24,7 +24,7 @@
 
 class ltsmc_agent extends rp_agent_base #(
   .CFG_NAME("ltsmc_cfg"),
-  .INTF_T(virtual rp_ltsmcc_bfm),
+  .INTF_T(virtual rp_ltsmc_bfm),
   .ITEM_T(ltsmc_seq_item),
   .SEQR_T(ltsmc_sequencer),
   .DRVR_T(ltsmc_driver),

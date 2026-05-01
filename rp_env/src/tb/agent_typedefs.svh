@@ -18,5 +18,5 @@ typedef class agent_config;
 
 // Agent configuration objects typedefs
 typedef agent_config #(.INTF_T(virtual rp_rdi_bfm))     rdi_cfg_t;
-typedef agent_config #(.INTF_T(virtual rp_ltsmcc_bfm))    ltsmc_cfg_t;
+typedef agent_config #(.INTF_T(virtual rp_ltsmc_bfm))  ltsmc_cfg_t;
 typedef agent_config #(.INTF_T(virtual rp_rmblink_bfm)) rmblink_cfg_t;

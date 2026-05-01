@@ -25,7 +25,7 @@
 //
 //------------------------------------------------------------------------------
 
-class ltsmc_driver extends rp_driver_base #(ltsmc_seq_item, virtual rp_ltsmcc_bfm);
+class ltsmc_driver extends rp_driver_base #(ltsmc_seq_item, virtual rp_ltsmc_bfm);
   `uvm_component_utils(ltsmc_driver)
 
 

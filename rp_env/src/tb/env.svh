@@ -91,11 +91,11 @@ class rp_env extends uvm_env;
   extern function void configure_rdi_agent();
   
 
-  // Function: configure_ltsmcc_agent
+  // Function: configure_ltsmc_agent
   //
   // Configures the LTSM control agent with interface and activity settings.
 
-  extern function void configure_ltsmcc_agent();
+  extern function void configure_ltsmc_agent();
 
 
   // Function: configure_rmblink_agent
@@ -197,18 +197,18 @@ endtask : pre_reset_phase
 
 function void rp_env::configure_agents();
   configure_rdi_agent();
-  configure_ltsmcc_agent();
+  configure_ltsmc_agent();
   configure_rmblink_agent();
 endfunction : configure_agents
 
-// configure_ltsmcc_agent
+// configure_ltsmc_agent
 // -------------------------
 
-function void rp_env::configure_ltsmcc_agent();
+function void rp_env::configure_ltsmc_agent();
   ltsmc_cfg.bfm         = env_cfg.ltsmc_bfm;
   ltsmc_cfg.is_active   = env_cfg.is_active_ltsmc;
   ltsmc_cfg.is_reactive = env_cfg.is_reactive_ltsmc;
-endfunction : configure_ltsmcc_agent
+endfunction : configure_ltsmc_agent
 
 // configure_rdi_agent
 // -------------------
