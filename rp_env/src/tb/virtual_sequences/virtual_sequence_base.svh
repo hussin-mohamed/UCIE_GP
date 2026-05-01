@@ -33,7 +33,7 @@ class virtual_sequence_base extends uvm_sequence;
   virtual_sequencer   vseqr;
   
   rdi_sequencer       rdi_seqr;
-  ltsmc_sequencer     ltsm_seqr;
+  ltsmc_sequencer     ltsmc_seqr;
   rmblink_sequencer   rmblink_seqr;
 
 
@@ -80,6 +80,6 @@ task virtual_sequence_base::pre_body();
     `uvm_fatal(get_type_name(), "Couldn't cast the virtual sequencer")
   end
   rdi_seqr      = vseqr.rdi_seqr;
-  ltsm_seqr     = vseqr.ltsm_seqr;
+  ltsmc_seqr     = vseqr.ltsmc_seqr;
   rmblink_seqr  = vseqr.rmblink_seqr;
 endtask : pre_body

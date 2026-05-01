@@ -124,8 +124,8 @@ function void rp_test_base::build_phase(uvm_phase phase);
   if(!uvm_config_db#(virtual rp_rdi_bfm)::get     (this, "", "rdi_bfm",     env_cfg.rdi_bfm))
     `uvm_fatal("build_phase", "TEST - Unable to get the rdi_vbfm from the uvm_config_db")
 
-  if(!uvm_config_db#(virtual rp_ltsm_bfm)::get    (this, "", "ltsm_bfm",    env_cfg.ltsm_bfm))
-    `uvm_fatal("build_phase", "TEST - Unable to get the ltsm_vbfm from the uvm_config_db")
+  if(!uvm_config_db#(virtual rp_ltsmcc_bfm)::get    (this, "", "ltsmc_bfm",    env_cfg.ltsmc_bfm))
+    `uvm_fatal("build_phase", "TEST - Unable to get the ltsmc_vbfm from the uvm_config_db")
 
   if(!uvm_config_db#(virtual rp_rmblink_bfm)::get (this, "", "rmblink_bfm", env_cfg.rmblink_bfm))
     `uvm_fatal("build_phase", "TEST - Unable to get the tx_vbfm from the uvm_config_db")

@@ -48,7 +48,7 @@ package rp_pkg;
   // Contains all monitor components for capturing transaction data.
   `include "monitors/rp_monitor_base.svh"
   `include "monitors/rdi_monitor.svh"
-  `include "monitors/ltsm_monitor.svh"
+  `include "monitors/ltsmc_monitor.svh"
   `include "monitors/rmblink_monitor.svh"
 
   // Group: Drivers
@@ -57,7 +57,7 @@ package rp_pkg;
   `include "drivers/rp_driver_base.svh"
   `include "drivers/reset_driver.svh"
   `include "drivers/rdi_driver.svh"
-  `include "drivers/ltsm_driver.svh"
+  `include "drivers/ltsmc_driver.svh"
   `include "drivers/rmblink_driver.svh"
 
   // Group: Agents
@@ -65,7 +65,7 @@ package rp_pkg;
   // Contains all agent components that encapsulate monitors, drivers, and sequencers.
   `include "agents/rp_agent_base.svh"
   `include "agents/rdi_agent.svh"
-  `include "agents/ltsm_agent.svh"
+  `include "agents/ltsmc_agent.svh"
   `include "agents/rmblink_agent.svh"
 
   // Group: Scoreboard
@@ -74,7 +74,7 @@ package rp_pkg;
   `include "scoreboard/rp_pred.svh"
   `include "scoreboard/rp_cmp_base.svh"
   `include "scoreboard/rp_cmp_rdi.svh"
-  `include "scoreboard/rp_cmp_ltsm.svh"
+  `include "scoreboard/rp_cmp_ltsmc.svh"
   `include "scoreboard/rp_scoreboard.svh"
 
   // Group: Coverage Collector

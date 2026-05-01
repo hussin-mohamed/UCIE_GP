@@ -16,19 +16,19 @@
 
 //-----------------------------------------------------------------------------
 //
-// CLASS: ltsm_monitor
+// CLASS: ltsmc_monitor
 //
 // RX-Path TX monitor for capturing transactions on the TX interface.
 //
 //-----------------------------------------------------------------------------
 
-class ltsm_monitor extends rp_monitor_base #(ltsmc_seq_item, virtual rp_ltsm_bfm);
-  `uvm_component_utils(ltsm_monitor)
+class ltsmc_monitor extends rp_monitor_base #(ltsmc_seq_item, virtual rp_ltsmcc_bfm);
+  `uvm_component_utils(ltsmc_monitor)
 
 
   // Function: new
   //
-  // Creates a new ltsm_monitor instance with the given name and parent.
+  // Creates a new ltsmc_monitor instance with the given name and parent.
 
   extern function new(string name, uvm_component parent);
 
@@ -45,7 +45,7 @@ class ltsm_monitor extends rp_monitor_base #(ltsmc_seq_item, virtual rp_ltsm_bfm
 
   extern virtual task collect_item_in(output ltsmc_seq_item _item);
 
-endclass : ltsm_monitor
+endclass : ltsmc_monitor
 
 
 //-----------------------------------------------------------------------------
@@ -54,7 +54,7 @@ endclass : ltsm_monitor
 
 //-----------------------------------------------------------------------------
 //
-// CLASS: ltsm_monitor
+// CLASS: ltsmc_monitor
 //
 //-----------------------------------------------------------------------------
 
@@ -62,14 +62,14 @@ endclass : ltsm_monitor
 // new
 // ---
 
-function ltsm_monitor::new(string name, uvm_component parent);
+function ltsmc_monitor::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
 // collect_item_out
 // ----------------
 
-task ltsm_monitor::collect_item_out(output ltsmc_seq_item _item);
+task ltsmc_monitor::collect_item_out(output ltsmc_seq_item _item);
   _item = new();
 endtask : collect_item_out
 
@@ -77,6 +77,6 @@ endtask : collect_item_out
 // collect_item_in
 // ----------------
 
-task ltsm_monitor::collect_item_in(output ltsmc_seq_item _item);
+task ltsmc_monitor::collect_item_in(output ltsmc_seq_item _item);
   _item = new();
 endtask : collect_item_in

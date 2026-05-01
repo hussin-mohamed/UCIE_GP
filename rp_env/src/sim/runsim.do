@@ -33,11 +33,11 @@ add wave -group Global_Signals -position insertpoint  \
 
 # 2. LTSM Control BFM
 add wave -group LTSM_CTRL -position insertpoint  \
-  sim:/rp_tb_top/ltsm_bfm/i_sb_init_start \
-  sim:/rp_tb_top/ltsm_bfm/i_timer_1ms \
-  sim:/rp_tb_top/ltsm_bfm/o_sb_ready \
-  sim:/rp_tb_top/ltsm_bfm/timeout \
-  sim:/rp_tb_top/ltsm_bfm/tms
+  sim:/rp_tb_top/ltsmc_bfm/i_sb_init_start \
+  sim:/rp_tb_top/ltsmc_bfm/i_timer_1ms \
+  sim:/rp_tb_top/ltsmc_bfm/o_sb_ready \
+  sim:/rp_tb_top/ltsmc_bfm/timeout \
+  sim:/rp_tb_top/ltsmc_bfm/tms
 
 # 3. PHY Link BFM (Serial MDI)
 add wave -group PHY_LINK_MDI -position insertpoint  \

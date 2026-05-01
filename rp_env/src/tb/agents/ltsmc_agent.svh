@@ -16,21 +16,21 @@
 
 //-----------------------------------------------------------------------------
 //
-// CLASS: ltsm_agent
+// CLASS: ltsmc_agent
 //
 // Thin typed wrapper around rp_agent_base for the sideband RX LTSM interface.
 //
 //-----------------------------------------------------------------------------
 
-class ltsm_agent extends rp_agent_base #(
-  .CFG_NAME("ltsm_cfg"),
-  .INTF_T(virtual rp_ltsm_bfm),
+class ltsmc_agent extends rp_agent_base #(
+  .CFG_NAME("ltsmc_cfg"),
+  .INTF_T(virtual rp_ltsmcc_bfm),
   .ITEM_T(ltsmc_seq_item),
   .SEQR_T(ltsmc_sequencer),
-  .DRVR_T(ltsm_driver),
-  .MNTR_T(ltsm_monitor)
+  .DRVR_T(ltsmc_driver),
+  .MNTR_T(ltsmc_monitor)
 );
-  `uvm_component_utils(ltsm_agent)
+  `uvm_component_utils(ltsmc_agent)
 
   // Function: new
   //
@@ -46,7 +46,7 @@ endclass
 
 //-----------------------------------------------------------------------------
 //
-// CLASS: ltsm_agent
+// CLASS: ltsmc_agent
 //
 // Methods implementation for the RX agent wrapper.
 //
@@ -55,6 +55,6 @@ endclass
 // new
 // ---
 
-function ltsm_agent::new(string name, uvm_component parent);
+function ltsmc_agent::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new

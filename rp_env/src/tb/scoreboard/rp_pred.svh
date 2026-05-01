@@ -16,7 +16,7 @@
 
 
 `uvm_analysis_imp_decl(_rmblink)
-`uvm_analysis_imp_decl(_ltsm)
+`uvm_analysis_imp_decl(_ltsmc)
 
 //---------------------------------------------------------------------------
 //
@@ -31,12 +31,12 @@ class rp_pred extends uvm_component;
   `uvm_component_utils(rp_pred)
 
   uvm_analysis_imp_rmblink #(rmblink_seq_item,  rp_pred) axp_in_rmblink;
-  uvm_analysis_imp_ltsm    #(ltsmc_seq_item,  rp_pred)    axp_in_ltsm;
+  uvm_analysis_imp_ltsmc    #(ltsmc_seq_item,  rp_pred)    axp_in_ltsmc;
 
   uvm_analysis_port #(rdi_seq_item)  results_ap_rdi;
-  uvm_analysis_port #(ltsmc_seq_item) results_ap_ltsm;
+  uvm_analysis_port #(ltsmc_seq_item) results_ap_ltsmc;
 
-  ltsmc_seq_item    ltsm_item;
+  ltsmc_seq_item    ltsmc_item;
   rmblink_seq_item rmblink_item;
 
   int unsigned txn_id = 0;
@@ -65,11 +65,11 @@ class rp_pred extends uvm_component;
 
   extern function void write_rmblink(rmblink_seq_item t);
 
-  // Function: write_ltsm
+  // Function: write_ltsmc
   //
   // Queues an incoming RX-side LTSM item for prediction.
 
-  extern function void write_ltsm(ltsmc_seq_item t);
+  extern function void write_ltsmc(ltsmc_seq_item t);
 
   // Function: write_rdi
   //
@@ -77,17 +77,17 @@ class rp_pred extends uvm_component;
 
   extern function void write_rdi(rdi_seq_item t);
 
-  // Function: get_predicted_ltsm_item
+  // Function: get_predicted_ltsmcc_item
   //
   // Builds the expected ltsm item corresponding.
 
-  extern function ltsmc_seq_item get_predicted_ltsm_item(ltsmc_seq_item _t_ltsm_in, rmblink_seq_item _t_rmblink_in);
+  extern function ltsmc_seq_item get_predicted_ltsmcc_item(ltsmc_seq_item _t_ltsmcc_in, rmblink_seq_item _t_rmblink_in);
 
   // Function: get_predicted_rdi_item
   //
   // Builds the expected rdi item corresponding.
 
-  extern function rdi_seq_item get_predicted_rdi_item(ltsmc_seq_item _t_ltsm_in, rmblink_seq_item _t_rmblink_in);
+  extern function rdi_seq_item get_predicted_rdi_item(ltsmc_seq_item _t_ltsmcc_in, rmblink_seq_item _t_rmblink_in);
 endclass : rp_pred
 
 //---------------------------------------------------------------------------
@@ -113,9 +113,9 @@ endfunction : new
 function void rp_pred::build_phase(uvm_phase phase);
   super.build_phase(phase);
   axp_in_rmblink  = new("axp_in_rmblink", this);
-  axp_in_ltsm     = new("axp_in_ltsm", this);
+  axp_in_ltsmc     = new("axp_in_ltsmc", this);
   results_ap_rdi  = new("axp_in_rdi", this);
-  results_ap_ltsm = new("results_ap_phy", this);
+  results_ap_ltsmc = new("results_ap_phy", this);
 endfunction : build_phase
 
 // pre_reset_phase
@@ -140,23 +140,23 @@ function void rp_pred::write_rmblink(rmblink_seq_item t);
   // ...
 endfunction : write_rmblink
 
-// write_ltsm
+// write_ltsmc
 // --------
 
-function void rp_pred::write_ltsm(ltsmc_seq_item t);
+function void rp_pred::write_ltsmc(ltsmc_seq_item t);
   // ...
-endfunction : write_ltsm
+endfunction : write_ltsmc
 
-// get_predicted_ltsm_item
+// get_predicted_ltsmcc_item
 // ------------------
 
-function ltsmc_seq_item rp_pred::get_predicted_ltsm_item(ltsmc_seq_item _t_ltsm_in, rmblink_seq_item _t_rmblink_in);
+function ltsmc_seq_item rp_pred::get_predicted_ltsmcc_item(ltsmc_seq_item _t_ltsmcc_in, rmblink_seq_item _t_rmblink_in);
   // ...
-endfunction : get_predicted_ltsm_item
+endfunction : get_predicted_ltsmcc_item
 
 // get_predicted_rdi_item
 // ------------------
 
-function rdi_seq_item rp_pred::get_predicted_rdi_item(ltsmc_seq_item _t_ltsm_in, rmblink_seq_item _t_rmblink_in);
+function rdi_seq_item rp_pred::get_predicted_rdi_item(ltsmc_seq_item _t_ltsmcc_in, rmblink_seq_item _t_rmblink_in);
   // ...
 endfunction : get_predicted_rdi_item

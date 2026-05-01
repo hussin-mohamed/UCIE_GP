@@ -16,22 +16,22 @@
 
 //------------------------------------------------------------------------------
 //
-// CLASS: ltsm_driver
+// CLASS: ltsmc_driver
 //
-// The ltsm_driver converts ltsmc_seq_item requests into SBINIT
+// The ltsmc_driver converts ltsmc_seq_item requests into SBINIT
 // control activity on the LTSM control BFM. It is responsible for initiating
 // sideband initialization and for propagating timeout events to the rest of
 // the environment.
 //
 //------------------------------------------------------------------------------
 
-class ltsm_driver extends rp_driver_base #(ltsmc_seq_item, virtual rp_ltsm_bfm);
-  `uvm_component_utils(ltsm_driver)
+class ltsmc_driver extends rp_driver_base #(ltsmc_seq_item, virtual rp_ltsmcc_bfm);
+  `uvm_component_utils(ltsmc_driver)
 
 
   // Function: new
   //
-  // Creates a new ltsm_driver instance with the given name and parent.
+  // Creates a new ltsmc_driver instance with the given name and parent.
 
   extern function new(string name, uvm_component parent);
 
@@ -42,7 +42,7 @@ class ltsm_driver extends rp_driver_base #(ltsmc_seq_item, virtual rp_ltsm_bfm);
 
   extern virtual task drive_item(inout ltsmc_seq_item req, output ltsmc_seq_item rsp);
 
-endclass : ltsm_driver
+endclass : ltsmc_driver
 
 
 //------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ endclass : ltsm_driver
 
 //------------------------------------------------------------------------------
 //
-// CLASS: ltsm_driver
+// CLASS: ltsmc_driver
 //
 //------------------------------------------------------------------------------
 
@@ -59,13 +59,13 @@ endclass : ltsm_driver
 // new
 // ---
 
-function ltsm_driver::new(string name, uvm_component parent);
+function ltsmc_driver::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
 // drive_item
 // -----
 
-task ltsm_driver::drive_item(inout ltsmc_seq_item req, output ltsmc_seq_item rsp);
+task ltsmc_driver::drive_item(inout ltsmc_seq_item req, output ltsmc_seq_item rsp);
  // driving logic
 endtask : drive_item

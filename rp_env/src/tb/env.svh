@@ -35,13 +35,13 @@ class rp_env extends uvm_env;
   reset_driver    rst_drvr;
 
   rdi_agent       rdi_agt;
-  ltsm_agent      ltsm_agt;
+  ltsmc_agent      ltsmc_agt;
   rmblink_agent   rmblink_agt;
 
   env_config      env_cfg;
 
   rdi_cfg_t       rdi_cfg;
-  ltsm_cfg_t      ltsm_cfg;
+  ltsmc_cfg_t      ltsmc_cfg;
   rmblink_cfg_t   rmblink_cfg;
 
   virtual_sequencer vseqr;
@@ -91,11 +91,11 @@ class rp_env extends uvm_env;
   extern function void configure_rdi_agent();
   
 
-  // Function: configure_ltsm_agent
+  // Function: configure_ltsmcc_agent
   //
   // Configures the LTSM control agent with interface and activity settings.
 
-  extern function void configure_ltsm_agent();
+  extern function void configure_ltsmcc_agent();
 
 
   // Function: configure_rmblink_agent
@@ -144,11 +144,11 @@ function void rp_env::build_phase(uvm_phase phase);
   rst_drvr = reset_driver::type_id::create("rst_drvr", this);
 
   rdi_agt       = rdi_agent::type_id::create("rdi_agt", this);
-  ltsm_agt      = ltsm_agent::type_id::create("ltsm_agt", this);
+  ltsmc_agt      = ltsmc_agent::type_id::create("ltsmc_agt", this);
   rmblink_agt   = rmblink_agent::type_id::create("rmblink_agt", this);
 
   rdi_cfg       = rdi_cfg_t::type_id::create("rdi_cfg");
-  ltsm_cfg      = ltsm_cfg_t::type_id::create("ltsm_cfg");
+  ltsmc_cfg      = ltsmc_cfg_t::type_id::create("ltsmc_cfg");
   rmblink_cfg   = rmblink_cfg_t::type_id::create("rmblink_cfg");
 
   vseqr = virtual_sequencer::type_id::create("vseqr", this);
@@ -160,7 +160,7 @@ function void rp_env::build_phase(uvm_phase phase);
 
   uvm_config_db#(virtual rp_reset_intf)::set (this, "rst_drvr",      "reset_intf",    env_cfg.reset_intf);
   uvm_config_db#(rdi_cfg_t)::set             (this, "rdi_agt",       "rdi_cfg",       rdi_cfg);
-  uvm_config_db#(ltsm_cfg_t)::set            (this, "ltsm_agt",      "ltsm_cfg",      ltsm_cfg);
+  uvm_config_db#(ltsmc_cfg_t)::set            (this, "ltsmc_agt",      "ltsmc_cfg",      ltsmc_cfg);
   uvm_config_db#(rmblink_cfg_t)::set         (this, "rmblink_agt",   "rmblink_cfg",   rmblink_cfg);
 endfunction : build_phase
 
@@ -172,13 +172,13 @@ function void rp_env::connect_phase(uvm_phase phase);
   // rmblink_agt.in_ap.connect(cvg.rmblink_exp);
 
   rmblink_agt.in_ap.connect(sb.axp_in_rmblink);
-  ltsm_agt.in_ap.connect(sb.axp_in_ltsm);
+  ltsmc_agt.in_ap.connect(sb.axp_in_ltsmc);
 
   rdi_agt.out_ap.connect(sb.axp_out_rdi);
-  ltsm_agt.out_ap.connect(sb.axp_out_ltsm);
+  ltsmc_agt.out_ap.connect(sb.axp_out_ltsmc);
 
   vseqr.rdi_seqr     = rdi_agt.seqr;
-  vseqr.ltsm_seqr    = ltsm_agt.seqr;
+  vseqr.ltsmc_seqr    = ltsmc_agt.seqr;
   vseqr.rmblink_seqr = rmblink_agt.seqr;
 endfunction : connect_phase
 
@@ -197,18 +197,18 @@ endtask : pre_reset_phase
 
 function void rp_env::configure_agents();
   configure_rdi_agent();
-  configure_ltsm_agent();
+  configure_ltsmcc_agent();
   configure_rmblink_agent();
 endfunction : configure_agents
 
-// configure_ltsm_agent
+// configure_ltsmcc_agent
 // -------------------------
 
-function void rp_env::configure_ltsm_agent();
-  ltsm_cfg.bfm         = env_cfg.ltsm_bfm;
-  ltsm_cfg.is_active   = env_cfg.is_active_ltsm;
-  ltsm_cfg.is_reactive = env_cfg.is_reactive_ltsm;
-endfunction : configure_ltsm_agent
+function void rp_env::configure_ltsmcc_agent();
+  ltsmc_cfg.bfm         = env_cfg.ltsmc_bfm;
+  ltsmc_cfg.is_active   = env_cfg.is_active_ltsmc;
+  ltsmc_cfg.is_reactive = env_cfg.is_reactive_ltsmc;
+endfunction : configure_ltsmcc_agent
 
 // configure_rdi_agent
 // -------------------

@@ -16,14 +16,14 @@
 
 //---------------------------------------------------------------------------
 //
-// CLASS: rp_cmp_ltsm
+// CLASS: rp_cmp_ltsmc
 //
 // Comparator for the LTSM-to-link path. It checks the predicted ltsmc item
 // against the monitored DUT ltsmc output.
 //---------------------------------------------------------------------------
 
-class rp_cmp_ltsm extends rp_cmp_base #(ltsmc_seq_item, "LTSM_CMP");
-  `uvm_component_utils(rp_cmp_ltsm)
+class rp_cmp_ltsmc extends rp_cmp_base #(ltsmc_seq_item, "LTSM_CMP");
+  `uvm_component_utils(rp_cmp_ltsmc)
 
   // Function: new
   //
@@ -44,20 +44,20 @@ endclass
 
 //---------------------------------------------------------------------------
 //
-// CLASS: rp_cmp_ltsm
+// CLASS: rp_cmp_ltsmc
 //
 //---------------------------------------------------------------------------
 
 // new
 // ---
 
-function rp_cmp_ltsm::new(string name, uvm_component parent);
+function rp_cmp_ltsmc::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction
 
 // set_timeout_val
 // ---------------
 
-function void rp_cmp_ltsm::set_timeout_val(ltsmc_seq_item item);
+function void rp_cmp_ltsmc::set_timeout_val(ltsmc_seq_item item);
   
 endfunction : set_timeout_val

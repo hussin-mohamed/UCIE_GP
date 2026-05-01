@@ -28,17 +28,17 @@ class rp_scoreboard extends uvm_scoreboard;
 
   // --- Inputs from Drivers (Stimulus) ---
   uvm_analysis_export #(rmblink_seq_item)  axp_in_rmblink;
-  uvm_analysis_export #(ltsmc_seq_item)    axp_in_ltsm;
+  uvm_analysis_export #(ltsmc_seq_item)    axp_in_ltsmc;
 
   // --- Outputs from Monitors (Actuals) ---
   uvm_analysis_export #(rdi_seq_item)      axp_out_rdi;
-  uvm_analysis_export #(ltsmc_seq_item)    axp_out_ltsm;
+  uvm_analysis_export #(ltsmc_seq_item)    axp_out_ltsmc;
 
   // --- Components ---
   rp_pred prd;
   
   rp_cmp_rdi  cmp_rdi;
-  rp_cmp_ltsm cmp_ltsm;
+  rp_cmp_ltsmc cmp_ltsmc;
 
   // Function: new
   //
@@ -84,14 +84,14 @@ function void rp_scoreboard::build_phase(uvm_phase phase);
 
   // Construct exports
   axp_in_rmblink = new("axp_in_rmblink", this);
-  axp_in_ltsm    = new("axp_in_ltsm",    this);
+  axp_in_ltsmc    = new("axp_in_ltsmc",    this);
   axp_out_rdi    = new("axp_out_rdi",    this);
-  axp_out_ltsm   = new("axp_out_ltsm",   this);
+  axp_out_ltsmc   = new("axp_out_ltsmc",   this);
 
   // Factory create components
   prd      = rp_pred::type_id::create("prd", this);
   cmp_rdi  = rp_cmp_rdi::type_id::create("cmp_rdi", this);
-  cmp_ltsm = rp_cmp_ltsm::type_id::create("cmp_ltsm", this);
+  cmp_ltsmc = rp_cmp_ltsmc::type_id::create("cmp_ltsmc", this);
 endfunction : build_phase
 
 // connect_phase
@@ -100,13 +100,13 @@ endfunction : build_phase
 function void rp_scoreboard::connect_phase(uvm_phase phase);
   // Connect wrapper inputs to predictor inputs
   axp_in_rmblink.connect(prd.axp_in_rmblink);
-  axp_in_ltsm.connect(prd.axp_in_ltsm);
+  axp_in_ltsmc.connect(prd.axp_in_ltsmc);
   
   // Connect predictor output to comparator expected input
   prd.results_ap_rdi.connect(cmp_rdi.axp_in_exp);
-  prd.results_ap_ltsm.connect(cmp_ltsm.axp_in_exp);
+  prd.results_ap_ltsmc.connect(cmp_ltsmc.axp_in_exp);
   
   // Connect wrapper actual output to comparator actual input
   axp_out_rdi.connect(cmp_rdi.axp_out_actual);
-  axp_out_ltsm.connect(cmp_ltsm.axp_out_actual);
+  axp_out_ltsmc.connect(cmp_ltsmc.axp_out_actual);
 endfunction : connect_phase

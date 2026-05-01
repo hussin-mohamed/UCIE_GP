@@ -15,7 +15,7 @@
 // ****************************************************************************
 
 `uvm_analysis_imp_decl(_rmblink)
-`uvm_analysis_imp_decl(_ltsm)
+`uvm_analysis_imp_decl(_ltsmc)
 
 //---------------------------------------------------------------------------
 //
@@ -31,10 +31,10 @@ class rp_coverage_collector extends uvm_component;
   `uvm_component_utils(rp_coverage_collector)
 
   uvm_analysis_imp_rmblink #(rmblink_seq_item, rp_coverage_collector) rmblink_exp;
-  uvm_analysis_imp_ltsm    #(ltsmc_seq_item, rp_coverage_collector)    ltsm_exp;
+  uvm_analysis_imp_ltsmc    #(ltsmc_seq_item, rp_coverage_collector)    ltsmc_exp;
 
   rmblink_seq_item rmblink_item;
-  ltsmc_seq_item    ltsm_item;
+  ltsmc_seq_item    ltsmc_item;
 
 
   //---------------------------------------------------------------------------
@@ -135,12 +135,12 @@ class rp_coverage_collector extends uvm_component;
 
   extern virtual function void write_rmblink(rmblink_seq_item t);
 
-  // Function: write_ltsm
+  // Function: write_ltsmc
   //
   // Receives one monitored LTSM transaction. The hook is kept for future LTSM
   // coverage expansion and is currently a placeholder.
 
-  extern virtual function void write_ltsm(ltsmc_seq_item t);
+  extern virtual function void write_ltsmc(ltsmc_seq_item t);
 endclass
 
 //---------------------------------------------------------------------------
@@ -159,10 +159,10 @@ endclass
 function rp_coverage_collector::new(string name, uvm_component parent);
   super.new(name, parent);
   rmblink_exp = new("rmblink_exp", this);
-  ltsm_exp    = new("ltsm_exp", this);
+  ltsmc_exp    = new("ltsmc_exp", this);
 
   cg_rmblink = new();
-  // cg_ltsm = new();
+  // cg_ltsmc = new();
 endfunction : new
 
 // write_rmblink
@@ -178,14 +178,14 @@ function void rp_coverage_collector::write_rmblink(rmblink_seq_item t);
   cg_rmblink.sample();
 endfunction : write_rmblink
 
-// write_ltsm
+// write_ltsmc
 // ----------
 
-function void rp_coverage_collector::write_ltsm(ltsmc_seq_item t);
+function void rp_coverage_collector::write_ltsmc(ltsmc_seq_item t);
   // if (t == null) begin
   //   `uvm_error("COV", "Null ltsmc_seq_item received")
   //   return;
   // end
-  // $cast(ltsm_item, t.clone());
-  // cg_ltsm.sample();
-endfunction : write_ltsm
+  // $cast(ltsmc_item, t.clone());
+  // cg_ltsmc.sample();
+endfunction : write_ltsmc

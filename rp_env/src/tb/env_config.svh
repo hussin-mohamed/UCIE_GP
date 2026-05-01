@@ -29,22 +29,22 @@ class env_config extends uvm_object;
 
   virtual rp_reset_intf     reset_intf;
   virtual rp_rdi_bfm        rdi_bfm;
-  virtual rp_ltsm_bfm       ltsm_bfm;
+  virtual rp_ltsmcc_bfm       ltsmc_bfm;
   virtual rp_rmblink_bfm    rmblink_bfm;
 
   bit disable_checking [5]; // Five flags for the five scoreboards
 
   uvm_active_passive_enum is_active_rdi     = UVM_PASSIVE;
-  uvm_active_passive_enum is_active_ltsm    = UVM_ACTIVE;
+  uvm_active_passive_enum is_active_ltsmc    = UVM_ACTIVE;
   uvm_active_passive_enum is_active_rmblink = UVM_ACTIVE;
 
   bit is_reactive_rdi;
-  bit is_reactive_ltsm;
+  bit is_reactive_ltsmc;
   bit is_reactive_rmblink;
 
   `uvm_object_utils_begin(env_config)
     `uvm_field_enum(uvm_active_passive_enum, is_active_rdi,     UVM_DEFAULT)
-    `uvm_field_enum(uvm_active_passive_enum, is_active_ltsm,    UVM_DEFAULT)
+    `uvm_field_enum(uvm_active_passive_enum, is_active_ltsmc,    UVM_DEFAULT)
     `uvm_field_enum(uvm_active_passive_enum, is_active_rmblink, UVM_DEFAULT)
   `uvm_object_utils_end
 

@@ -14,12 +14,12 @@
 // *                                                                          *
 // ****************************************************************************
 
-// Interface: rp_ltsm_bfm
+// Interface: rp_ltsmcc_bfm
 // Description: Control and status interface between RX-Path and Link Training
 //              State Machine (LTSM).
 //******************************************************************************
 
-interface rp_ltsm_bfm(
+interface rp_ltsmcc_bfm(
    input  logic clk
   ,input  logic reset
 );
@@ -31,4 +31,4 @@ interface rp_ltsm_bfm(
     // ...
   endtask : clear
 
-endinterface : rp_ltsm_bfm
+endinterface : rp_ltsmcc_bfm

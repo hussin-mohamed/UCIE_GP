@@ -34,7 +34,7 @@ class virtual_sequencer extends uvm_sequencer;
 
   extern function new(string name, uvm_component parent);
 
-  ltsmc_sequencer     ltsm_seqr;
+  ltsmc_sequencer     ltsmc_seqr;
   rdi_sequencer       rdi_seqr;
   rmblink_sequencer   rmblink_seqr;
 
