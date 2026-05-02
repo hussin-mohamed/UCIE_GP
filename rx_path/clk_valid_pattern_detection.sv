@@ -179,7 +179,7 @@ module clk_valid_pattern_detection (
     // --- Per-Lane Detection Signals ---
     logic [7:0]  w_serialized_per_lane_h;       // Shift register accumulating valid samples
     logic [3:0]  counter_v_per_lane_h;          // Sample counter; triggers check at 8
-    logic [3:0]  counter_correct_per_lane_h;    // Consecutive correct 8-bit pattern count
+    logic [4:0]  counter_correct_per_lane_h;    // Consecutive correct 8-bit pattern count
     logic        w_clk_enable_valid_per_lane_h; // Clock gate: disables after result asserts
     logic        w_clk_per_lane_h;              // Gated sampling clock
     logic        w_valid_result_per_lane_h;
@@ -223,7 +223,7 @@ module clk_valid_pattern_detection (
 
     
     // Result asserts after 16 consecutive correct 8-bit windows
-    assign w_valid_result_per_lane_h = (counter_correct_per_lane_h == 'd15) ? 1 : 0;
+    assign w_valid_result_per_lane_h = (counter_correct_per_lane_h == 'd16) ? 1 : 0;
 
 
     // --- Compare / Error-Count Detection Signals ---
@@ -294,7 +294,7 @@ module clk_valid_pattern_detection (
     // --- Per-Lane Detection Signals ---
     logic [7:0]  w_serialized_per_lane_q;
     logic [3:0]  counter_v_per_lane_q;
-    logic [3:0]  counter_correct_per_lane_q;
+    logic [4:0]  counter_correct_per_lane_q;
     logic        w_clk_p_enable_valid_per_lane_q; // Gate for clk_p in quad mode
     logic        w_clk_n_enable_valid_per_lane_q; // Gate for clk_n in quad mode
     logic        w_clk_p_per_lane_q;
@@ -338,7 +338,7 @@ module clk_valid_pattern_detection (
     end
 
     
-    assign w_valid_result_per_lane_q = (counter_correct_per_lane_q == 'd15) ? 1 : 0;
+    assign w_valid_result_per_lane_q = (counter_correct_per_lane_q == 'd16) ? 1 : 0;
 
 
     // --- Compare / Error-Count Detection Signals (Quadrature) ---
@@ -414,9 +414,9 @@ module clk_valid_pattern_detection (
     logic [47:0] w_serialized_track_h;        // Serialized track signal samples
     logic [5:0]  counter_clk_h;               // Sample counter; triggers check at 48
     logic        w_enable_h;                  // Latches high on first clk_p assertion
-    logic [3:0]  counter_correct_p_h;         // Consecutive correct windows for clk_p
-    logic [3:0]  counter_correct_n_h;         // Consecutive correct windows for clk_n
-    logic [3:0]  counter_correct_track_h;     // Consecutive correct windows for track
+    logic [4:0]  counter_correct_p_h;         // Consecutive correct windows for clk_p
+    logic [4:0]  counter_correct_n_h;         // Consecutive correct windows for clk_n
+    logic [4:0]  counter_correct_track_h;     // Consecutive correct windows for track
     logic        w_enable_clk_h;              // Gate enable: disables after result asserts
     logic        w_dclk;                      // Gated dclk
     logic [2:0]  w_clk_result_h;
@@ -469,7 +469,7 @@ module clk_valid_pattern_detection (
         // Every 48 samples: evaluate each signal independently
         if (counter_clk_h == 48) begin
             // clk_p counter: increment on match, reset on mismatch
-            if (counter_correct_p_h != 15) begin
+            if (counter_correct_p_h != 16) begin
                 if (w_serialized_clk_p_h == p_CLK_SEQ_1)
                 counter_correct_p_h <= counter_correct_p_h + 1;
             else
@@ -478,7 +478,7 @@ module clk_valid_pattern_detection (
             
 
             // clk_n counter: expects inverted pattern (~p_CLK_SEQ_1)
-            if (counter_correct_n_h != 15) begin
+            if (counter_correct_n_h != 16) begin
                 if (w_serialized_clk_n_h == p_CLK_SEQ_2)
                 counter_correct_n_h <= counter_correct_n_h + 1;
             else
@@ -487,7 +487,7 @@ module clk_valid_pattern_detection (
             
 
             // track counter: expects same pattern as clk_p
-            if (counter_correct_track_h != 15) begin
+            if (counter_correct_track_h != 16) begin
                 if (w_serialized_track_h == p_CLK_SEQ_1)
                 counter_correct_track_h <= counter_correct_track_h + 1;
             else
@@ -501,9 +501,9 @@ module clk_valid_pattern_detection (
 
     
     // Each bit asserts independently after 16 consecutive correct 48-bit windows
-    assign w_clk_result_h[0] = (counter_correct_p_h     == 15) ? 1 : 0; // clk_p
-    assign w_clk_result_h[1] = (counter_correct_n_h     == 15) ? 1 : 0; // clk_n
-    assign w_clk_result_h[2] = (counter_correct_track_h == 15) ? 1 : 0; // track
+    assign w_clk_result_h[0] = (counter_correct_p_h     == 16) ? 1 : 0; // clk_p
+    assign w_clk_result_h[1] = (counter_correct_n_h     == 16) ? 1 : 0; // clk_n
+    assign w_clk_result_h[2] = (counter_correct_track_h == 16) ? 1 : 0; // track
 
 
     // =========================================================================
@@ -520,9 +520,9 @@ module clk_valid_pattern_detection (
     logic [5:0]  counter_clk_n_q;            // Sample counter for posedge path
     logic        w_enable_p_q;               // Latches high on first clk_p assertion
     logic        w_enable_n_q;               // Latches high on first clk_n assertion
-    logic [3:0]  counter_correct_p_q;        // Consecutive correct windows for clk_p
-    logic [3:0]  counter_correct_n_q;        // Consecutive correct windows for clk_n
-    logic [3:0]  counter_correct_track_q;    // Consecutive correct windows for track
+    logic [4:0]  counter_correct_p_q;        // Consecutive correct windows for clk_p
+    logic [4:0]  counter_correct_n_q;        // Consecutive correct windows for clk_n
+    logic [4:0]  counter_correct_track_q;    // Consecutive correct windows for track
     logic        w_enable_clk_q;             // Gate enable: disables after result asserts
     logic        w_hclk;                     // Gated hclk
     logic [2:0]  w_clk_result_q;
@@ -568,7 +568,7 @@ module clk_valid_pattern_detection (
         // Every 48 samples: evaluate clk_p and track independently
         if (counter_clk_p_q == 48) begin
             // clk_p counter
-            if (counter_correct_p_q != 15) begin
+            if (counter_correct_p_q != 16) begin
                 if (w_serialized_clk_p_q == p_CLK_SEQ_1)
                 counter_correct_p_q <= counter_correct_p_q + 1;
             else
@@ -576,7 +576,7 @@ module clk_valid_pattern_detection (
             end
             
             // track counter
-            if (counter_correct_track_q !=15) begin
+            if (counter_correct_track_q !=16) begin
                 if (w_serialized_track_q == p_CLK_SEQ_1)
                 counter_correct_track_q <= counter_correct_track_q + 1;
             else
@@ -615,7 +615,7 @@ module clk_valid_pattern_detection (
 
         // Every 48 samples: evaluate clk_n
         if (counter_clk_n_q == 48) begin
-            if (counter_correct_n_q != 15) begin
+            if (counter_correct_n_q != 16) begin
                 if (w_serialized_clk_n_q == p_CLK_SEQ_1)
                 counter_correct_n_q <= counter_correct_n_q + 1;
             else
@@ -628,9 +628,9 @@ module clk_valid_pattern_detection (
 
     
     // Each bit asserts independently after 16 consecutive correct 48-bit windows
-    assign w_clk_result_q[0] = (counter_correct_p_q     == 15) ? 1 : 0; // clk_p
-    assign w_clk_result_q[1] = (counter_correct_n_q     == 15) ? 1 : 0; // clk_n
-    assign w_clk_result_q[2] = (counter_correct_track_q == 15) ? 1 : 0; // track
+    assign w_clk_result_q[0] = (counter_correct_p_q     == 16) ? 1 : 0; // clk_p
+    assign w_clk_result_q[1] = (counter_correct_n_q     == 16) ? 1 : 0; // clk_n
+    assign w_clk_result_q[2] = (counter_correct_track_q == 16) ? 1 : 0; // track
 
 
     // =========================================================================
