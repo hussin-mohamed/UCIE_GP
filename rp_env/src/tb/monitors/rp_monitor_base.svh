@@ -22,7 +22,7 @@
 //
 //-----------------------------------------------------------------------------
 
-virtual class rp_monitor_base #(type ITEM_T, type INTF_T) extends uvm_monitor;
+virtual class rp_monitor_base #(type ITEM_T, type INTF_T, parameterw is_reactive=0) extends uvm_monitor;
   // `uvm_component_param_utils(rp_monitor_base #(ITEM_T, INTF_T))
   
   INTF_T bfm;
@@ -31,7 +31,6 @@ virtual class rp_monitor_base #(type ITEM_T, type INTF_T) extends uvm_monitor;
   int unsigned txn_out_cnt = 0;
   int unsigned txn_in_cnt = 0;
   int unsigned txn_out_id = 0;
-  bit is_reactive;
 
 
   // Function: new

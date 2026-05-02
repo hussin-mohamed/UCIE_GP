@@ -28,7 +28,12 @@ interface rp_rmblink_bfm(
   input logic clk
  ,input logic reset
 );
- // ...
+
+  logic                  i_clk_p;
+  logic                  i_clk_n;
+  logic                  i_track;
+  logic [pNUM_LANES-1:0] i_data;
+  logic                  i_valid;
 
   //============================================================================
   // Methods
@@ -36,4 +41,71 @@ interface rp_rmblink_bfm(
   task clear();
     // ...
   endtask : clear
+
+  //============================================================================
+  // Amr
+  //============================================================================
+
+  task serialize_data(
+     input logic [pDATA_WIDTH-1:0] _data  [pNUM_LANES]
+    ,input logic [7:0]             _valid
+  );
+    // ...
+  endtask : serialize_data
+
+  task serialize_data_pattern(
+     input logic [pDATA_WIDTH-1:0] _data  [pNUM_LANES]
+    ,input rate_mode_t _rate_mode
+    ,input logic       _valid
+    ,input int         _dat_iter_cnt
+  );
+    // ...
+  endtask : serialize_data_pattern
+
+  task deserialize_data(
+     input logic [pDATA_WIDTH-1:0] _data  [pNUM_LANES]
+    ,input logic [7:0]             _valid
+  );
+    // ...
+  endtask : deserialize_data
+
+  task deserialize_data_pattern(
+     input logic [pDATA_WIDTH-1:0] _data  [pNUM_LANES]
+    ,input rate_mode_t _rate_mode
+    ,input logic       _valid
+    ,input int         _dat_iter_cnt
+  );
+    // ...
+  endtask : deserialize_data_pattern
+
+  
+  //============================================================================
+  // Araby
+  //============================================================================
+
+  task serialize_valid_pattern(
+     // ...
+  );
+    // ...
+  endtask : serialize_valid_pattern
+
+  task serialize_clk_pattern(
+     // ...
+  );
+    // ...
+  endtask : serialize_clk_pattern
+  
+  task deserialize_valid_pattern(
+     // ...
+  );
+    // ...
+  endtask : deserialize_valid_pattern
+
+   task deserialize_clk_pattern(
+     // ...
+  );
+    // ...
+  endtask : deserialize_clk_pattern
+
+
 endinterface : rp_rmblink_bfm

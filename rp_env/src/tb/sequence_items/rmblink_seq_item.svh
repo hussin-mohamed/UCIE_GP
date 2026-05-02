@@ -20,14 +20,33 @@
 //
 // RX-Path LTSM sequence item containing transaction data exchanged between
 // the TX and RX LTSM-side agents during ACTIVE-mode operation.
+//
 //-----------------------------------------------------------------------------
 
 class rmblink_seq_item extends uvm_sequence_item;
 
-  // ...
+  rand logic          [7:0]             val_pattern;
+  rand logic          [31:0]            clk_pattern;
+  rand logic          [pDATA_WIDTH-1:0] clk_fwd_p;
+  rand logic          [pDATA_WIDTH-1:0] clk_fwd_n;
+  rand int unsigned                     idle_ui_cnt;
+  rand int unsigned                     clk_iter_cnt;
+  rand int unsigned                     val_iter_cnt;
+  rand int unsigned                     dat_iter_cnt;
+  rand pattern_type_t                   pattern_type;
+  rand rate_mode_t                      rate_mode;           // HR/QR
+  rand logic          [pDATA_WIDTH-1:0] data [pNUM_LANES];   // pNUM_LANES lanes, each is a pDATA_WIDTH width bus
 
   `uvm_object_utils_begin(rmblink_seq_item)
-    // ...
+    `uvm_field_int        (valid_pattern,                UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (clk_pattern,                  UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (idle_ui_cnt,                  UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (clk_iter_cnt,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (val_iter_cnt,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (dat_iter_cnt,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_enum       (rate_mode_t, rate_mode,       UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
+    `uvm_field_enum       (pattern_type_t, pattern_type, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
+    `uvm_field_sarray_int (data,                         UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
   `uvm_object_utils_end
 
   // Function: new

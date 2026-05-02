@@ -190,7 +190,6 @@ task rp_test_base::main_phase(uvm_phase phase);
     phase.jump(uvm_pre_reset_phase::get());
     hit_reset = 0;
   end
-
 endtask : main_phase
 
 // phase_ready_to_end

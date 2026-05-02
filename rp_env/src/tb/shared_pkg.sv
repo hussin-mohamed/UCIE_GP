@@ -20,6 +20,8 @@ package shared_pkg;
   parameter T_CLK_P = 4;
   parameter T_CLK_N = 8;
 
+  parameter pNUM_LANES  = 16;
+  parameter pDATA_WIDTH = 64;
 
   parameter T_CLK = 32ns;
   parameter UI    = 4ns;
@@ -33,29 +35,16 @@ package shared_pkg;
   parameter DATA_MAX = 64'hFFFF_FFFF_FFFF_FFFF;
   parameter INFO_MAX = 16'hFFFF;
 
-  typedef enum logic [1:0] { 
-    START,
-    T1MS,
-    WAIT_FOR_READY
-  } sbinit_mode_t;
+  typedef enum bit { 
+     QR
+    ,HR
+  } rate_mode_t;
 
-  typedef enum logic[1:0] {
-    REQ_MSG,
-    RSP_MSG,
-    NO_TYPE
-  } msgtype_t;
-  
-  typedef enum logic { 
-    SBINIT,
-    ACTIVE
-  } operation_t;
-
-  typedef enum logic [1:0] {
-    MSG_FROM_TX  = 2'b00,
-    MSG_FROM_RX  = 2'b01,
-    MSG_TO_TX    = 2'b10,
-    MSG_TO_RX    = 2'b11
-  } msg_dir_t;
+  typedef enum bit { 
+     CLK_PATTERN
+    ,VAL_PATTERN
+    ,DATA_PATTERN
+  } pattern_type_t;
 
   typedef enum logic [8:0] {
   // ==========================================
