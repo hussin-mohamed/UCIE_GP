@@ -187,7 +187,7 @@ module clk_valid_pattern_generation (
 
         if(i_reset)begin
 
-            counter_h<=0;
+            counter_h_2<=0;
 
         end
         else if (counter_h_2 == 23 || i_pattern_type != 2'b01) begin
@@ -415,5 +415,6 @@ module clk_valid_pattern_generation (
     // o_valid is only asserted when both i_valid and the valid enable are high
     //-------------------------------------------------------------------------
     assign o_valid = i_valid & w_venable;
+
 
 endmodule
