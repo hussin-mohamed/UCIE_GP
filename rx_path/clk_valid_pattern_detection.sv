@@ -647,5 +647,4 @@ module clk_valid_pattern_detection (
             o_clk_result   = w_clk_result_q;  // Quadrature clock result [track|n|p]
         end
     end
-
 endmodule
