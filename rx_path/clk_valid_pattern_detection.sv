@@ -72,7 +72,7 @@ module clk_valid_pattern_detection (
 
 
     // Serialize i_valid into shift register; evaluate pattern every 8 samples
-    always_ff @(i_clk_p or posedge i_reset) begin : valid_detector_per_lane_h
+    always_ff @(i_clk_p or posedge i_reset) begin : valid_detector_active_h
         if (i_reset) begin
             w_serialized_active_h    <= 0;
             counter_v_active_h       <= 0;
@@ -130,7 +130,7 @@ module clk_valid_pattern_detection (
 
 
     // Serialize i_valid into shift register; evaluate pattern every 8 samples
-    always_ff @(i_clk_p or i_clk_n or posedge i_reset) begin : valid_detector_per_lane_h
+    always_ff @(i_clk_p or i_clk_n or posedge i_reset) begin : valid_active_per_lane_q
         if (i_reset) begin
             w_serialized_active_q    <= 0;
             counter_v_active_q       <= 0;
