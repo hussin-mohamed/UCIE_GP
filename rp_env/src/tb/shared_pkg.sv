@@ -35,6 +35,7 @@ package shared_pkg;
   parameter DATA_MAX = 64'hFFFF_FFFF_FFFF_FFFF;
   parameter INFO_MAX = 16'hFFFF;
 
+
   typedef enum bit { 
      QR
     ,HR
@@ -45,6 +46,7 @@ package shared_pkg;
     ,VAL_PATTERN
     ,DATA_PATTERN
   } pattern_type_t;
+
 
   typedef enum logic [8:0] {
   // ==========================================
