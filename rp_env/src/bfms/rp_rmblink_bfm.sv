@@ -26,8 +26,8 @@ import uvm_pkg::*;
 
 interface rp_rmblink_bfm(
   input logic clk
-  input logic i_hclk
-  input logic i_dclk
+ ,input logic i_hclk
+ ,input logic i_dclk
  ,input logic reset
 );
 
@@ -49,10 +49,41 @@ interface rp_rmblink_bfm(
   //============================================================================
 
   task serialize_data(
-     input logic [pDATA_WIDTH-1:0] _data  [pNUM_LANES]
-    ,input logic [7:0]             _valid
+     input logic [pDATA_WIDTH-1:0] _data         [pNUM_LANES]
+    ,input logic [7:0]             _val_stream   []
+    ,input logic                   _clk_stream_p []
+    ,input logic                   _clk_stream_n []
+    ,input int                     _idle_ui_cnt
   );
-    // ...
+    bit [2:0] val_byte_idx, val_bit_idx;
+
+    // Iterate through each bit position (Time dimension)
+    for (int dat_bit_idx = 0; dat_bit_idx < pDATA_WIDTH; dat_bit_idx++) begin
+      
+      @(posedge i_dclk);
+
+      // At this specific time instant, iterate through all lanes (Space dimension)
+      for (int lane_idx = 0; lane_idx < pNUM_LANES; lane_idx++) begin
+        i_data[lane_idx] <= _data[lane_idx][dat_bit_idx];
+      end
+
+      i_clk_p <= _clk_stream_p[dat_bit_idx];
+      i_clk_n <= _clk_stream_n[dat_bit_idx];
+
+      val_byte_idx = dat_bit_index / 8;
+      i_valid      <= _valid[val_byte_idx][val_bit_idx];
+      val_bit_idx++;
+    end
+
+    // Deassert everything during the idle period
+    @(posedge i_dclk);
+    i_clk_p <= 1'b0;
+    i_clk_n <= 1'b0;
+    i_data  <= '0;
+    i_valid <= 1'b0;
+    
+    // Wait for _idle_ui_cnt UI
+    repeat(_idle_ui_cnt) @(posedge i_dclk);
   endtask : serialize_data
 
   task serialize_data_pattern(
