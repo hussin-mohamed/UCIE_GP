@@ -14,12 +14,14 @@ interface ltsm_if (
   input logic rst_n
 );
 
+  import tx_defs_pkg::*;
+
   // -------------------------------------------------------------------------
   //  Signals driven TO the DUT
   // -------------------------------------------------------------------------
 
   // 9-bit state encoding — selects the active LTSM state/substate
-  logic [8:0] tx_encoding;
+  ltsm_encoding_e tx_encoding;
 
   // 3-bit lane map configuration for width degradation/reversal
   //   000 = Degrade not possible
