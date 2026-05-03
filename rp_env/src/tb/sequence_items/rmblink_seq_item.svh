@@ -26,10 +26,8 @@
 class rmblink_seq_item extends uvm_sequence_item;
 
   rand logic          [7:0]             val_pattern;        // Serialized 8-bit pattern representing the Valid signal used during link training or active phases.
-  rand logic          [31:0]            clk_pattern_p;      // Serialized 32-bit pattern representing the positive Clock signal used for clock training.
-  rand logic          [31:0]            clk_pattern_n;      // Serialized 32-bit pattern representing the negative Clock signal used for clock training.
-  rand logic          [pDATA_WIDTH-1:0] clk_fwd_p;          // Serialized positive forwarded clock pattern used by the remote die for data sampling.
-  rand logic          [pDATA_WIDTH-1:0] clk_fwd_n;          // Serialized negative forwarded clock pattern used by the remote die for data sampling.
+  rand logic                            clk_stream_p [];    // Serialized 32-bit pattern representing the positive Clock signal used for clock training.
+  rand logic                            clk_stream_n [];    // Serialized 32-bit pattern representing the negative Clock signal used for clock training.
   rand int unsigned                     idle_ui_cnt_dat;    // Specifies the number of idle Unit Intervals (UIs) to inject before or after the active/training Data transmission.
   rand int unsigned                     idle_ui_cnt_val;    // Specifies the number of idle Unit Intervals (UIs) to inject before or after the active/training Valid transmission.
   rand int unsigned                     idle_ui_cnt_clk;    // Specifies the number of idle Unit Intervals (UIs) to inject before or after the active/training Clok transmission.
@@ -42,11 +40,11 @@ class rmblink_seq_item extends uvm_sequence_item;
 
   `uvm_object_utils_begin(rmblink_seq_item)
     `uvm_field_int        (val_pattern,                  UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_int        (clk_pattern_p,                UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_int        (clk_pattern_n,                UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_int        (clk_fwd_p,                    UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_int        (clk_fwd_n,                    UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_int        (idle_ui_cnt,                  UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_array_int  (clk_stream_p,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_array_int  (clk_stream_n,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (idle_ui_cnt_dat,              UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (idle_ui_cnt_val,              UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (idle_ui_cnt_clk,              UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_int        (clk_iter_cnt,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_int        (val_iter_cnt,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_int        (dat_iter_cnt,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
@@ -56,9 +54,6 @@ class rmblink_seq_item extends uvm_sequence_item;
   `uvm_object_utils_end
 
   // Function: new
-  //
-  // Creates a new LTSM sequence item and initializes the supported encoding
-  // lists from the shared message tables when needed.
   
   extern function new(string name = "");
 
