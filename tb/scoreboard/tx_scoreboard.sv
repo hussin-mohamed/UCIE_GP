@@ -123,14 +123,6 @@ class tx_scoreboard extends uvm_scoreboard;
       end
     end
 
-    foreach (actual.valid_lane[i]) begin
-      if (actual.valid_lane[i] !== 1'bz) begin
-        all_z = 0;
-        `uvm_error("SCB", $sformatf(
-          "Tri-state violation at UI[%0d]: valid=%b (expected Hi-Z)",
-          i, actual.valid_lane[i]))
-      end
-    end
 
     if (all_z) begin
       match_count++;

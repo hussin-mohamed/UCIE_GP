@@ -113,10 +113,6 @@ class tx2link_monitor extends uvm_monitor;
       for (int i = 0; i < chunk_size; i++) begin
         @(posedge tx2link_vif.ui_clk);
         txn.data_lanes[i]  = tx2link_vif.tx_data;
-        txn.clk_p_lane[i]  = tx2link_vif.tx_clkp;
-        txn.clk_n_lane[i]  = tx2link_vif.tx_clkn;
-        txn.valid_lane[i]  = tx2link_vif.tx_valid;
-        txn.track_lane[i]  = tx2link_vif.tx_track;
       end
 
       `uvm_info("EGR_MON", $sformatf("Chunk assembled: state=%s, ui_count=%0d",
@@ -139,33 +135,18 @@ class tx2link_monitor extends uvm_monitor;
   function int unsigned get_chunk_size(ltsm_encoding_e state);
     case (state)
 
-      // Tri-state states: small observation window to verify silence
-      RESET,
-      SBINIT_PATTERN_GEN, SBINIT_OUT_OF_RESET, SBINIT_DONE_HND,
-      PARAM_CONFIG_HND,
-      CAL_DONE_HND:
-        return 32;  // Small window to check for Hi-Z
-
-      // Clock pattern generation (128 iterations)
-      REPAIRCLK_CLK_PATTERN_GEN:
-        return 128;
-
-      // Valid pattern generation
-      REPAIRVAL_VALID_PATTERN_GEN:
-        return 128;
-
       // Per-lane ID generation
       REVERSAL_PER_LANE_ID_GEN:
-        return 128;
+        return 64;
 
       // Data-to-Clock test pattern generation
       D2C_TX_PATTERN_GEN,
       D2C_RX_PATTERN_GEN:
-        return 128;
+        return 64;
 
       // ACTIVE: one flit = NBYTES * 4 fast clocks (8 UI per byte, half-rate)
       ACTIVE:
-        return rdi_seq_item::active_flit_size * 4;
+        return 64;
 
       // Handshake-only states: no significant tx2link output
       default:

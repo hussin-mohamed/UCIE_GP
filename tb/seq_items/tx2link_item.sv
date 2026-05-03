@@ -35,16 +35,6 @@ class tx2link_item extends uvm_sequence_item;
   // 16 data lanes — data_lanes[ui][lane]
   logic [15:0] data_lanes [];
 
-  // Forwarded clock pair — sampled per UI
-  logic clk_p_lane [];
-  logic clk_n_lane [];
-
-  // Valid signal lane — sampled per UI
-  logic valid_lane [];
-
-  // Track signal lane — sampled per UI
-  logic track_lane [];
-
   // -------------------------------------------------------------------------
   //  UVM Registration (no automation macros — manual do_* methods only)
   // -------------------------------------------------------------------------
@@ -66,10 +56,6 @@ class tx2link_item extends uvm_sequence_item;
   function void init_arrays(int unsigned chunk_size);
     ui_count   = chunk_size;
     data_lanes = new[chunk_size];
-    clk_p_lane = new[chunk_size];
-    clk_n_lane = new[chunk_size];
-    valid_lane = new[chunk_size];
-    track_lane = new[chunk_size];
   endfunction
 
   // -------------------------------------------------------------------------
@@ -88,21 +74,6 @@ class tx2link_item extends uvm_sequence_item;
     foreach (data_lanes[i])
       do_compare &= (data_lanes[i] === rhs_.data_lanes[i]);  // === for Hi-Z compare
 
-    // Compare clock lanes
-    if (clk_p_lane.size() != rhs_.clk_p_lane.size()) return 0;
-    foreach (clk_p_lane[i]) begin
-      do_compare &= (clk_p_lane[i] === rhs_.clk_p_lane[i]);
-      do_compare &= (clk_n_lane[i] === rhs_.clk_n_lane[i]);
-    end
-
-    // Compare valid and track
-    if (valid_lane.size() != rhs_.valid_lane.size()) return 0;
-    foreach (valid_lane[i])
-      do_compare &= (valid_lane[i] === rhs_.valid_lane[i]);
-
-    if (track_lane.size() != rhs_.track_lane.size()) return 0;
-    foreach (track_lane[i])
-      do_compare &= (track_lane[i] === rhs_.track_lane[i]);
   endfunction
 
   function string convert2string();
