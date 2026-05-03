@@ -17,8 +17,8 @@
 package shared_pkg;
   
   parameter T_CLK_L = 4;
-  parameter T_CLK_P = 4;
-  parameter T_CLK_N = 8;
+  parameter T_CLK_H = 8;
+  parameter T_CLK_D = 4;
 
   parameter pNUM_LANES  = 16;
   parameter pDATA_WIDTH = 64;

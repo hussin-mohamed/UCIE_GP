@@ -28,14 +28,14 @@ module rp_tb_top;
   // Clock and Reset Generation (Testbench Infrastructure)
   //============================================================================
   bit   clk;
-  bit   clk_p = 1;
-  bit   clk_n = 0;
+  bit   hclk;
+  bit   dclk;
   logic reset_wire;
 
   // Clock generation
   initial forever #(T_CLK_L) clk   = ~clk;
-  initial forever #(T_CLK_P) clk_p = ~clk_p;
-  initial forever #(T_CLK_N) clk_n = ~clk_n;
+  initial forever #(T_CLK_H) hclk = ~hclk;
+  initial forever #(T_CLK_D) dclk = ~dclk;
 
   //============================================================================
   // Interface Instantiations
@@ -62,6 +62,8 @@ module rp_tb_top;
   rp_rmblink_bfm rmblink_bfm(
      .clk(clk)
     ,.reset(reset_wire)
+    ,.i_hclk(hclk)
+    ,.i_dclk(dclk)
   );
 
   //============================================================================

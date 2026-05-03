@@ -26,6 +26,8 @@ import uvm_pkg::*;
 
 interface rp_rmblink_bfm(
   input logic clk
+  input logic i_hclk
+  input logic i_dclk
  ,input logic reset
 );
 
@@ -84,7 +86,7 @@ interface rp_rmblink_bfm(
   //============================================================================
 
   task serialize_valid_pattern(
-     // ...
+      input logic [7:0] _valid
   );
     // ...
   endtask : serialize_valid_pattern
