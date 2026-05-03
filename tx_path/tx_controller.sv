@@ -53,7 +53,7 @@ module tx_controller #(
         ENC_MBTRAIN_SPEEDIDLE        = 9'h0C8,
         ENC_MBTRAIN_TXSELFCAL        = 9'h0D0,
         ENC_PHYRETRAIN               = 9'h0D8,
-        ENC_TRAINERROR               = 9'h0E0,
+        ENC_TRAINERROR               = 9'h040,
         ENC_MBTRAIN_VALTRAINCENTER   = 9'h0E8,
         ENC_MBTRAIN_DATATRAINVREF    = 9'h0F0,
         ENC_LINKINIT                 = 9'h100,
@@ -236,6 +236,12 @@ module tx_controller #(
         if (i_tx_encoding == ENC_ACTIVE) begin
             o_tx_lfsr_enable = 1'b1;
             o_tx_lfsr_train  = 1'b0;
+            // Pattern type in ACTIVE depends on RDI inputs
+            if (i_lp_irdy && i_lp_valid) begin
+                o_pattern_type = PATTERN_ACTIVE_DATA;
+            end else begin
+                o_pattern_type = PATTERN_CLOCK_ONLY;
+            end
         end
 
         // Per-lane ID generation used in reversal/repairmb pattern substates.
