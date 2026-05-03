@@ -39,6 +39,25 @@ module tx_sva (
 
   import tx_defs_pkg::*;
 
+    // ---- Per-state tx_done timing ----
+  localparam int REPAIRCLK_ITERATIONS      = 128;
+  localparam int REPAIRCLK_CYCLES_PER_ITER = 24;
+  localparam int REPAIRCLK_TOTAL_CYCLES    = REPAIRCLK_ITERATIONS * REPAIRCLK_CYCLES_PER_ITER;
+
+  localparam int REPAIRVAL_ITERATIONS      = 128;
+  localparam int REPAIRVAL_CYCLES_PER_ITER = 8;
+  localparam int REPAIRVAL_TOTAL_CYCLES    = REPAIRVAL_ITERATIONS * REPAIRVAL_CYCLES_PER_ITER;
+
+  localparam int REVERSAL_ID_ITERATIONS      = 128;
+  localparam int REVERSAL_ID_CYCLES_PER_ITER = 16;
+  localparam int REVERSAL_ID_TOTAL_CYCLES    = REVERSAL_ID_ITERATIONS * REVERSAL_ID_CYCLES_PER_ITER;
+
+  localparam int D2C_TX_ITERATIONS      = 128;
+  localparam int D2C_TX_CYCLES_PER_ITER = 8;
+  localparam int D2C_TX_TOTAL_CYCLES    = D2C_TX_ITERATIONS * D2C_TX_CYCLES_PER_ITER;
+
+  localparam int D2C_RX_TOTAL_CYCLES = 4000;
+
   // =========================================================================
   //  Helpers — use package functions for state classification
   // =========================================================================
@@ -128,71 +147,70 @@ module tx_sva (
   assert_tx_done_valid_state: assert property (p_tx_done_only_in_op_states)
     else `uvm_error("SVA", $sformatf("tx_done asserted in non-operation state (enc=9'h%03h)", tx_encoding))
 
-  // ---- Per-state tx_done timing (128 cycles placeholder — update per spec) ----
 
   property p_tx_done_repairclk_clk;
     @(posedge clk) disable iff (!rst_n)
-    $rose(tx_encoding == REPAIRCLK_CLK_PATTERN_GEN) |-> ##128 tx_done;
+    $rose(tx_encoding == REPAIRCLK_CLK_PATTERN_GEN) |=> ##(REPAIRCLK_TOTAL_CYCLES) tx_done;
   endproperty
 
   assert_tx_done_repairclk: assert property (p_tx_done_repairclk_clk)
-    else `uvm_error("SVA", "tx_done not asserted 128 cycles after REPAIRCLK_CLK_PATTERN_GEN")
+    else `uvm_error("SVA", $sformatf("tx_done not asserted %0d cycles after REPAIRCLK_CLK_PATTERN_GEN", REPAIRCLK_TOTAL_CYCLES))
 
   property p_tx_done_repairval_valid;
     @(posedge clk) disable iff (!rst_n)
-    $rose(tx_encoding == REPAIRVAL_VALID_PATTERN_GEN) |-> ##128 tx_done;
+    $rose(tx_encoding == REPAIRVAL_VALID_PATTERN_GEN) |=> ##(REPAIRVAL_TOTAL_CYCLES) tx_done;
   endproperty
 
   assert_tx_done_repairval: assert property (p_tx_done_repairval_valid)
-    else `uvm_error("SVA", "tx_done not asserted 128 cycles after REPAIRVAL_VALID_PATTERN_GEN")
+    else `uvm_error("SVA", $sformatf("tx_done not asserted %0d cycles after REPAIRVAL_VALID_PATTERN_GEN", REPAIRVAL_TOTAL_CYCLES))
 
   property p_tx_done_reversal_id;
     @(posedge clk) disable iff (!rst_n)
-    $rose(tx_encoding == REVERSAL_PER_LANE_ID_GEN) |-> ##128 tx_done;
+    $rose(tx_encoding == REVERSAL_PER_LANE_ID_GEN) |=> ##(REVERSAL_ID_TOTAL_CYCLES) tx_done;
   endproperty
 
   assert_tx_done_reversal_id: assert property (p_tx_done_reversal_id)
-    else `uvm_error("SVA", "tx_done not asserted 128 cycles after REVERSAL_PER_LANE_ID_GEN")
+    else `uvm_error("SVA", $sformatf("tx_done not asserted %0d cycles after REVERSAL_PER_LANE_ID_GEN", REVERSAL_ID_TOTAL_CYCLES))
 
   property p_tx_done_d2c_tx;
     @(posedge clk) disable iff (!rst_n)
-    $rose(tx_encoding == D2C_TX_PATTERN_GEN) |-> ##128 tx_done;
+    $rose(tx_encoding == D2C_TX_PATTERN_GEN) |=> ##(D2C_TX_TOTAL_CYCLES) tx_done;
   endproperty
 
   assert_tx_done_d2c_tx: assert property (p_tx_done_d2c_tx)
-    else `uvm_error("SVA", "tx_done not asserted 128 cycles after D2C_TX_PATTERN_GEN")
+    else `uvm_error("SVA", $sformatf("tx_done not asserted %0d cycles after D2C_TX_PATTERN_GEN", D2C_TX_TOTAL_CYCLES))
 
   property p_tx_done_d2c_rx;
     @(posedge clk) disable iff (!rst_n)
-    $rose(tx_encoding == D2C_RX_PATTERN_GEN) |-> ##128 tx_done;
+    $rose(tx_encoding == D2C_RX_PATTERN_GEN) |=> ##(D2C_RX_TOTAL_CYCLES) tx_done;
   endproperty
 
   assert_tx_done_d2c_rx: assert property (p_tx_done_d2c_rx)
-    else `uvm_error("SVA", "tx_done not asserted 128 cycles after D2C_RX_PATTERN_GEN")
+    else `uvm_error("SVA", $sformatf("tx_done not asserted %0d cycles after D2C_RX_PATTERN_GEN", D2C_RX_TOTAL_CYCLES))
 
   property p_tx_done_reversal_apply;
     @(posedge clk) disable iff (!rst_n)
-    $rose(tx_encoding == REVERSAL_APPLY) |-> ##128 tx_done;
+    $rose(tx_encoding == REVERSAL_APPLY) |=> tx_done;
   endproperty
 
   assert_tx_done_reversal_apply: assert property (p_tx_done_reversal_apply)
-    else `uvm_error("SVA", "tx_done not asserted 128 cycles after REVERSAL_APPLY")
+    else `uvm_error("SVA", "tx_done not asserted 1 cycle after REVERSAL_APPLY")
 
   property p_tx_done_repairmb_degrade;
     @(posedge clk) disable iff (!rst_n)
-    $rose(tx_encoding == REPAIRMB_APPLY_DEGRADE_HND) |-> ##128 tx_done;
+    $rose(tx_encoding == REPAIRMB_APPLY_DEGRADE_HND) |=> tx_done;
   endproperty
 
   assert_tx_done_repairmb: assert property (p_tx_done_repairmb_degrade)
-    else `uvm_error("SVA", "tx_done not asserted 128 cycles after REPAIRMB_APPLY_DEGRADE_HND")
+    else `uvm_error("SVA", "tx_done not asserted 1 cycle after REPAIRMB_APPLY_DEGRADE_HND")
 
   property p_tx_done_repair_degrade;
     @(posedge clk) disable iff (!rst_n)
-    $rose(tx_encoding == REPAIR_APPLY_DEGRADE_HND) |-> ##128 tx_done;
+    $rose(tx_encoding == REPAIR_APPLY_DEGRADE_HND) |=> tx_done;
   endproperty
 
   assert_tx_done_repair: assert property (p_tx_done_repair_degrade)
-    else `uvm_error("SVA", "tx_done not asserted 128 cycles after REPAIR_APPLY_DEGRADE_HND")
+    else `uvm_error("SVA", "tx_done not asserted 1 cycle after REPAIR_APPLY_DEGRADE_HND")
 
   // =========================================================================
   //  Cover Properties
