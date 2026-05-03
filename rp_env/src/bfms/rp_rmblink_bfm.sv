@@ -86,10 +86,65 @@ interface rp_rmblink_bfm(
   //============================================================================
 
   task serialize_valid_pattern(
-      input logic [7:0] _valid
+      input logic [7:0]                      _valid
+     ,input logic                            _clk_stream_p [];
+     ,input logic                            _clk_stream_n []; 
+     ,input pattern_type_t                   _pattern;        
   );
-    // ...
+    if (_clk_stream_p.size() != _clk_stream_n.size()) begin
+      `uvm_error("CLK_STREAM_SIZE_MISMATCH", "Clock stream arrays must be of the same size in serialize_valid_pattern.")
+    end
+
+    if (_clk_stream_p.size() != STREAM_LEN_HR_VALID_PAT || _clk_stream_n.size() != STREAM_LEN_HR_VALID_PAT) begin
+        `uvm_error("CLK_STREAM_SIZE_HR", "Clock stream arrays must have exactly {STREAM_LEN_HR_VALID_PAT} elements for Half Rate (HR) mode in serialize_valid_pattern.")
+    end
+
+   if (_pattern != VAL_PATTERN) begin
+      `uvm_error("INVALID_PATTERN_TYPE", "Pattern type must be VAL_PATTERN for serialize_valid_pattern.")
+    end
+    else begin
+        `uvm_info("SERIALIZE_VALID_PATTERN", $sformatf("Serializing valid pattern with rate mode: %s, idle UI count: %0d, iteration count: %0d", (_rate == HR) ? "HR" : "QR", _idle_ui_cnt_val, _val_iter_cnt), UVM_MEDIUM)
+      
+      for (int t = 0; t < _val_iter_cnt; t++) begin
+          for (int i = 0; i < _clk_stream_p.size(); i++) begin
+            @(posedge i_dclk)
+            i_clk_p    <= _clk_stream_p[i];
+            i_clk_n    <= _clk_stream_n[i];
+            i_valid    <= _valid[i];
+          end
+        end
+    end
   endtask : serialize_valid_pattern
+
+  task deserialize_valid_pattern(
+      output logic [7:0]                      _valid
+     ,input  int unsigned                     _val_iter_cnt;   
+     ,input  pattern_type_t                   _pattern;        
+  );
+
+   if (_pattern != VAL_PATTERN) begin
+      `uvm_error("INVALID_PATTERN_TYPE", "Pattern type must be VAL_PATTERN for deserialize_valid_pattern.")
+    end
+    else begin
+        `uvm_info("DESERIALIZE_VALID_PATTERN", $sformatf("Deserializing valid pattern with rate mode: %s, idle UI count: %0d, iteration count: %0d", (_rate == HR) ? "HR" : "QR", _idle_ui_cnt_val, _val_iter_cnt), UVM_MEDIUM)
+      
+      for (int t = 0; t < _val_iter_cnt; t++) begin
+          for (int i = 0; i < _clk_stream_p.size(); i++) begin
+            @(posedge i_dclk)
+            _valid[i]  = i_valid; // Capture valid bits from the clock stream
+          end
+
+          for (int j = 0; j < _idle_ui_cnt_val; j++) begin
+            @(posedge i_dclk)
+            i_clk_p[i] <= 0; // Drive idle (non-clock) for specified number of UIs
+            i_clk_n[i] <= 0; // Drive idle (non-clock) for specified number of UIs
+            i_valid <= 0; // Drive idle (non-valid) for specified number of UIs
+          end
+        end
+    end
+  endtask : deserialize_valid_pattern
+
+
 
   task serialize_clk_pattern(
      // ...
@@ -97,11 +152,6 @@ interface rp_rmblink_bfm(
     // ...
   endtask : serialize_clk_pattern
   
-  task deserialize_valid_pattern(
-     // ...
-  );
-    // ...
-  endtask : deserialize_valid_pattern
 
    task deserialize_clk_pattern(
      // ...
