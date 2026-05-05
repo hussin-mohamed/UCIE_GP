@@ -342,9 +342,6 @@ module tx_controller #(
         end else begin
             enc_q     <= ltsm_states_e'(i_tx_encoding);
             o_tx_done <= 1'b0;
-            o_tx_reverse_q <= is_main_reset_like ? 1'b0 :
-                              (i_tx_encoding == ENC_MBINIT_REVERSAL_APPLY ? 1'b1 : o_tx_reverse_q);
-            o_tx_reverse   <= o_tx_reverse_q;
 
             i_lp_valid_d1 <= i_lp_valid;
             i_lp_valid_d2 <= i_lp_valid_d1;
@@ -352,6 +349,10 @@ module tx_controller #(
             // Track parent main-state context (substate 000) except module 11 eye-test encodings.
             if ((i_tx_encoding[8:7] != 2'b11) && (i_tx_encoding[2:0] == 3'b000)) begin
                 ltsm_current_state_q <= ltsm_states_e'(i_tx_encoding);
+            end
+
+            if(enc_q == ENC_RESET) begin
+                o_tx_reverse <= 1'b0;
             end
 
             // Per LTSM MBINIT.REPAIRMB sequence, sample lane map code during
@@ -379,7 +380,7 @@ module tx_controller #(
 
             // Update reversal register only on apply-reversal state entry.
             if (i_tx_encoding == ENC_MBINIT_REVERSAL_APPLY) begin
-                o_tx_reverse_q <= 1'b1;
+                o_tx_reverse <= 1'b1;
             end
 
             // RDI data transmission readiness and enable control
@@ -394,3 +395,6 @@ module tx_controller #(
     end
 
 endmodule
+
+
+// reversal register update on reversal apply state entry.
