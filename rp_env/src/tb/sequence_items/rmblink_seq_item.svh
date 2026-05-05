@@ -26,25 +26,21 @@
 class rmblink_seq_item extends uvm_sequence_item;
 
   rand logic          [7:0]             val_stream   [];    // Serialized 8-bit valid stream representing the Valid signal used during link training or active phases.
-  rand logic                            clk_stream_p [];    // Serialized positive clock stream used for clock training as well as data and valid sampling.
-  rand logic                            clk_stream_n [];    // Serialized negative clock stream used for clock training as well as data and valid sampling.
+  rand logic                            clk_stream_p [];    // Serialized positive clock stream used for clock training as well as data and valid sampling by the partner.
+  rand logic                            clk_stream_n [];    // Serialized negative clock stream used for clock training as well as data and valid samplingby the partner.
+  rand logic                            track_stream [];    // Serialized track stream.
   rand int unsigned                     idle_ui_cnt;        // Specifies the number of idle Unit Intervals (UIs) to inject before or after the active/training transmission.
   rand pattern_type_t                   pattern_type;       // Selects the specific physical training or test pattern format (CLK_PATTERN, VAL_PATTERN, or DATA_PATTERN).
   rand logic          [pDATA_WIDTH-1:0] data [pNUM_LANES];  // Two-dimensional array storing the explicit per-lane data payload to be driven across the physical link.
 
   `uvm_object_utils_begin(rmblink_seq_item)
-    `uvm_field_int        (val_pattern,                  UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (val_stream,                   UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_array_int  (clk_stream_p,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_array_int  (clk_stream_n,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_int        (idle_ui_cnt_dat,              UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_int        (idle_ui_cnt_val,              UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_int        (idle_ui_cnt_clk,              UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_int        (clk_iter_cnt,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_int        (val_iter_cnt,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_int        (dat_iter_cnt,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_enum       (rate_mode_t, rate_mode,       UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
-    `uvm_field_enum       (pattern_type_t, pattern_type, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
-    `uvm_field_sarray_int (data,                         UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
+    `uvm_field_array_int  (track_stream,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (idle_ui_cnt,                  UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_enum       (pattern_type_t, pattern_type, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_sarray_int (data,                         UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
   `uvm_object_utils_end
 
   // Function: new

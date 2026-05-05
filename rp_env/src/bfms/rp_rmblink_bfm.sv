@@ -40,45 +40,65 @@ interface rp_rmblink_bfm(
   //============================================================================
   // Methods
   //============================================================================
-  task clear();
-    // ...
-  endtask : clear
+  always @(posedge reset) begin
+    i_clk_p <= 0;
+    i_clk_n <= 1;
+    i_track <= 0;
+    i_data  <= 0;
+    i_valid <= 0;
+  end
 
   //============================================================================
   // Amr
   //============================================================================
-
   task serialize_data(
      input logic [pDATA_WIDTH-1:0] _data         [pNUM_LANES]
     ,input logic [7:0]             _val_stream   []
     ,input logic                   _clk_stream_p []
     ,input logic                   _clk_stream_n []
+    ,input logic                   _track_stream []
     ,input int                     _idle_ui_cnt
   );
     bit [2:0] val_byte_idx, val_bit_idx;
+    int val_num_bytes;
+
+    val_num_bytes = pDATA_WIDTH / 8;
+    
+    if (_val_stream.size() != val_num_bytes) begin
+      `uvm_fatal("RMBLINK_BFM", $sformatf("Invalid val_stream size: %0d, valid size must be: %0d", _val_stream.size(), val_num_bytes))
+    end
+    if (_clk_stream_p.size() != pDATA_WIDTH) begin
+      `uvm_fatal("RMBLINK_BFM", $sformatf("Invalid clk_stream_p size: %0d, valid size must be: %0d", _clk_stream_p.size(), pDATA_WIDTH))
+    end
+    if (_clk_stream_n.size() != pDATA_WIDTH) begin
+      `uvm_fatal("RMBLINK_BFM", $sformatf("Invalid clk_stream_n size: %0d, valid size must be: %0d", _clk_stream_n.size(), pDATA_WIDTH))
+    end
+    if (_track_stream.size() != pDATA_WIDTH) begin
+      `uvm_fatal("RMBLINK_BFM", $sformatf("Invalid track_stream size: %0d, valid size must be: %0d", _track_stream.size(), pDATA_WIDTH))
+    end
 
     // Iterate through each bit position (Time dimension)
     for (int dat_bit_idx = 0; dat_bit_idx < pDATA_WIDTH; dat_bit_idx++) begin
       
       @(posedge i_dclk);
-
       // At this specific time instant, iterate through all lanes (Space dimension)
       for (int lane_idx = 0; lane_idx < pNUM_LANES; lane_idx++) begin
         i_data[lane_idx] <= _data[lane_idx][dat_bit_idx];
       end
+      val_byte_idx = dat_bit_idx / 8;
+      i_valid      <= _val_stream[val_byte_idx][val_bit_idx];
+      val_bit_idx++;
 
+      @(negedge i_dclk);
       i_clk_p <= _clk_stream_p[dat_bit_idx];
       i_clk_n <= _clk_stream_n[dat_bit_idx];
-
-      val_byte_idx = dat_bit_index / 8;
-      i_valid      <= _valid[val_byte_idx][val_bit_idx];
-      val_bit_idx++;
+      i_track <= _track_stream[dat_bit_idx];
     end
 
     // Deassert everything during the idle period
-    @(posedge i_dclk);
+    @(negedge i_dclk);
     i_clk_p <= 1'b0;
-    i_clk_n <= 1'b0;
+    i_clk_n <= 1'b1;
     i_data  <= '0;
     i_valid <= 1'b0;
     
@@ -86,41 +106,50 @@ interface rp_rmblink_bfm(
     repeat(_idle_ui_cnt) @(posedge i_dclk);
   endtask : serialize_data
 
-  task serialize_data_pattern(
-     input logic [pDATA_WIDTH-1:0] _data  [pNUM_LANES]
-    ,input rate_mode_t _rate_mode
-    ,input logic       _valid
-    ,input int         _dat_iter_cnt
-  );
-    // ...
-  endtask : serialize_data_pattern
-
   task deserialize_data(
-     input logic [pDATA_WIDTH-1:0] _data  [pNUM_LANES]
-    ,input logic [7:0]             _valid
+     output logic [pDATA_WIDTH-1:0] _data [pNUM_LANES]
+    ,output logic [7:0]             _val_stream   []
   );
-    // ...
+    bit [2:0] val_byte_idx, val_bit_idx;
+
+    while (!i_valid) begin
+      @(posedge i_clk_p);
+    end
+
+    _val_stream = new[pDATA_WIDTH/8];
+    
+    // Iterate through each bit position (Time dimension)
+    for (int dat_bit_idx = 0; dat_bit_idx < pDATA_WIDTH; dat_bit_idx++) begin
+
+      val_byte_idx = dat_bit_idx / 8;
+        
+      // At this specific time instant, iterate through all lanes (Space dimension)
+      for (int lane_idx = 0; lane_idx < pNUM_LANES; lane_idx++) begin
+        _data[lane_idx][dat_bit_idx] = i_data[lane_idx];
+      end
+      _val_stream[val_byte_idx][val_bit_idx] = i_valid;
+      val_bit_idx++;
+      
+      if (dat_bit_idx == 63) begin
+        break;
+      end
+
+      if (dat_bit_idx%2 == 0) begin
+        @(posedge i_clk_n);
+      end else begin
+        @(posedge i_clk_p);
+      end
+    end
   endtask : deserialize_data
 
-  task deserialize_data_pattern(
-     input logic [pDATA_WIDTH-1:0] _data  [pNUM_LANES]
-    ,input rate_mode_t _rate_mode
-    ,input logic       _valid
-    ,input int         _dat_iter_cnt
-  );
-    // ...
-  endtask : deserialize_data_pattern
-
-  
   //============================================================================
   // Araby
   //============================================================================
-
   task serialize_valid_pattern(
       input logic [7:0]                      _valid
-     ,input logic                            _clk_stream_p [];
-     ,input logic                            _clk_stream_n []; 
-     ,input pattern_type_t                   _pattern;        
+     ,input logic                            _clk_stream_p []
+     ,input logic                            _clk_stream_n []
+     ,input pattern_type_t                   _pattern
   );
     if (_clk_stream_p.size() != _clk_stream_n.size()) begin
       `uvm_error("CLK_STREAM_SIZE_MISMATCH", "Clock stream arrays must be of the same size in serialize_valid_pattern.")
@@ -143,7 +172,7 @@ interface rp_rmblink_bfm(
             i_clk_n    <= _clk_stream_n[i];
             i_valid    <= _valid[i];
           end
-        end
+      end
     end
   endtask : serialize_valid_pattern
 
