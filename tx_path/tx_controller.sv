@@ -7,7 +7,7 @@ module tx_controller #(
     input  logic [2:0]            i_lane_map_code,
     input  logic                  i_lp_irdy,
     input  logic                  i_lp_valid,
-    output logic                  o_tx_lfsr_enable,
+    output logic[MB_LANES-1:0]    o_tx_lfsr_enable,
     output logic                  o_tx_lfsr_load,
     output logic                  o_tx_lfsr_train,
     output logic                  o_data_pattern_type,
@@ -21,7 +21,9 @@ module tx_controller #(
     output logic                  mb_clk_n_en,
     output logic                  mb_valid_en,
     output logic                  mb_track_en,
-    output logic [MB_LANES-1:0]   mb_lanes_en
+    output logic [MB_LANES-1:0]   mb_lanes_en,
+
+    output logic [MB_LANES-1:0]   fifo_wr_en
 );
 
     // Encodings observed on i_tx_encoding from the LTSM TX FSM.
@@ -68,16 +70,19 @@ module tx_controller #(
     // Pattern generator mode selection:
     // - NONE: hold pattern path idle
     // - CLOCK_ONLY: MBINIT.REPAIRCLK waveform
+    // - DATA: LFSR-based or valid-data-based pattern depending on context
     // - ACTIVE_DATA: valid/data/track active patterning
-    localparam logic [1:0] PATTERN_NONE        = 2'b00;
-    localparam logic [1:0] PATTERN_CLOCK_ONLY  = 2'b01;
-    localparam logic [1:0] PATTERN_ACTIVE_DATA = 2'b10;
+    localparam logic [1:0] PATTERN_NONE              = 2'b00;
+    localparam logic [1:0] PATTERN_CLOCK_ONLY        = 2'b01;
+    localparam logic [1:0] PATTERN_DATA              = 2'b10;
+    localparam logic [1:0] PATTERN_ACTIVE_DATA       = 2'b11;
+
 
     // Required pattern durations (in TX controller clock cycles) before asserting o_tx_done.
-    localparam int unsigned DONE_CYCLES_LFSR       = 128;
-    localparam int unsigned DONE_CYCLES_VALID      = 8 * 128;
-    localparam int unsigned DONE_CYCLES_CLOCK      = 24 * 128;
-    localparam int unsigned DONE_CYCLES_PER_LANEID = 128;
+    localparam int unsigned DONE_CYCLES_LFSR       = 31; // 2000 clk form the fast clk , 31 from mine
+    localparam int unsigned DONE_CYCLES_VALID      = 16;
+    localparam int unsigned DONE_CYCLES_CLOCK      = 48;
+    localparam int unsigned DONE_CYCLES_PER_LANEID = 32;
 
     // Registered copy of the previous encoding is used to detect state entry
     // and restart the done counter for each new pattern-generation state.
@@ -90,6 +95,9 @@ module tx_controller #(
     logic                eye_rx_uses_lfsr;
     logic                eye_uses_per_lane_id;
     logic                eye_uses_valid_pattern;
+    logic                o_tx_reverse_q;
+    logic                i_lp_valid_d1;
+    logic                i_lp_valid_d2;
     logic [11:0] done_cnt_q;
     logic [11:0] done_target;
     logic        done_state;
@@ -200,13 +208,13 @@ module tx_controller #(
     // 2) Select AFE tri-state enables according to current LTSM state/substate
     // 3) Program done counter behavior (enable + target cycles)
     always_comb begin
-        o_tx_lfsr_enable         = 1'b0;
+        o_tx_lfsr_enable         = 'b0;
+        fifo_wr_en               = 'b0;
         o_tx_lfsr_load           = 1'b0;
         o_tx_lfsr_train          = 1'b0;
         o_data_pattern_type      = 1'b0;
         o_pattern_type           = PATTERN_NONE;
         o_per_lane_id_gen_enable = 1'b0;
-        o_tx_reverse             = 1'b0;
 
         mb_clk_p_en = 1'b0;
         mb_clk_n_en = 1'b0;
@@ -219,10 +227,12 @@ module tx_controller #(
 
         // LFSR pattern generation for eye sweep pattern-generation substates.
         if (eye_tx_uses_lfsr || eye_rx_uses_lfsr) begin
-            o_tx_lfsr_enable    = 1'b1;
+            o_tx_lfsr_enable    = '1;
+            // activate the wr_en
+            fifo_wr_en          = '1;
             o_tx_lfsr_train     = 1'b1;
             o_data_pattern_type = 1'b1;
-            o_pattern_type      = PATTERN_ACTIVE_DATA;
+            o_pattern_type      = PATTERN_DATA;
             done_state          = 1'b1;
             done_target         = DONE_CYCLES_LFSR[11:0];
         end
@@ -230,32 +240,28 @@ module tx_controller #(
         // Reload LFSR seed during explicit clear substate and on LINKINIT entry behavior.
         if ((i_tx_encoding == ENC_TX_EYE_LFSR_CLEAR) || (i_tx_encoding == ENC_RX_EYE_LFSR_CLEAR) || (i_tx_encoding == ENC_LINKINIT)) begin
             o_tx_lfsr_load = 1'b1;
+            o_tx_lfsr_enable = '1;
         end
 
         // ACTIVE keeps LFSR enabled for scrambling but disables train mode.
         if (i_tx_encoding == ENC_ACTIVE) begin
-            o_tx_lfsr_enable = 1'b1;
+            // o_tx_lfsr_enable must be a 2 cycle delayed version of the valid
+            o_tx_lfsr_enable = {MB_LANES{i_lp_valid_d2}};
+            // wr_en the same as o_tx_lfsr_enable
+            fifo_wr_en = o_tx_lfsr_enable;
             o_tx_lfsr_train  = 1'b0;
             // Pattern type in ACTIVE depends on RDI inputs
-            if (i_lp_irdy && i_lp_valid) begin
-                o_pattern_type = PATTERN_ACTIVE_DATA;
-            end else begin
-                o_pattern_type = PATTERN_CLOCK_ONLY;
-            end
+            o_pattern_type = PATTERN_ACTIVE_DATA;
         end
 
         // Per-lane ID generation used in reversal/repairmb pattern substates.
         if ((i_tx_encoding == ENC_MBINIT_REVERSAL_PER_LANE) || eye_uses_per_lane_id) begin
             o_per_lane_id_gen_enable = 1'b1;
+            fifo_wr_en               = '1;
             o_data_pattern_type      = 1'b0;
-            o_pattern_type           = PATTERN_ACTIVE_DATA;
+            o_pattern_type           = PATTERN_DATA;
             done_state               = 1'b1;
             done_target              = DONE_CYCLES_PER_LANEID[11:0];
-        end
-
-        // Assert reversal control only during MBINIT.REVERSAL apply state.
-        if (i_tx_encoding == ENC_MBINIT_REVERSAL_APPLY) begin
-            o_tx_reverse = 1'b1;
         end
 
         // REPAIRCLK pattern substate drives clock-only generator profile.
@@ -267,7 +273,7 @@ module tx_controller #(
 
         // REPAIRVAL and eye-sweep pattern states use active/data pattern profile.
         if ((i_tx_encoding == ENC_MBINIT_REPAIRVAL_PAT_GEN) || eye_uses_valid_pattern) begin
-            o_pattern_type = PATTERN_ACTIVE_DATA;
+            o_pattern_type = PATTERN_DATA;
             done_state  = 1'b1;
             done_target = DONE_CYCLES_VALID[11:0];
         end
@@ -327,11 +333,21 @@ module tx_controller #(
             lane_mask_q <= {MB_LANES{1'b1}};
             done_cnt_q <= 12'd0;
             o_tx_done  <= 1'b0;
+            o_tx_reverse_q <= 1'b0;
+            o_tx_reverse <= 1'b0;
+            i_lp_valid_d1 <= 1'b0;
+            i_lp_valid_d2 <= 1'b0;
             o_pl_trdy  <= 1'b0;
             o_b2l_enable <= 1'b0;
         end else begin
             enc_q     <= ltsm_states_e'(i_tx_encoding);
             o_tx_done <= 1'b0;
+            o_tx_reverse_q <= is_main_reset_like ? 1'b0 :
+                              (i_tx_encoding == ENC_MBINIT_REVERSAL_APPLY ? 1'b1 : o_tx_reverse_q);
+            o_tx_reverse   <= o_tx_reverse_q;
+
+            i_lp_valid_d1 <= i_lp_valid;
+            i_lp_valid_d2 <= i_lp_valid_d1;
 
             // Track parent main-state context (substate 000) except module 11 eye-test encodings.
             if ((i_tx_encoding[8:7] != 2'b11) && (i_tx_encoding[2:0] == 3'b000)) begin
@@ -359,6 +375,11 @@ module tx_controller #(
             end else begin
                 // Not in a pattern state: hold counter at zero
                 done_cnt_q <= 12'd0;
+            end
+
+            // Update reversal register only on apply-reversal state entry.
+            if (i_tx_encoding == ENC_MBINIT_REVERSAL_APPLY) begin
+                o_tx_reverse_q <= 1'b1;
             end
 
             // RDI data transmission readiness and enable control
