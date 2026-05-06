@@ -146,16 +146,9 @@ interface rp_rmblink_bfm(
   // Araby
   //============================================================================
   task serialize_valid_pattern(
-<<<<<<< Updated upstream
-      input logic [7:0]                      _valid
-     ,input logic                            _clk_stream_p []
-     ,input logic                            _clk_stream_n []
-     ,input pattern_type_t                   _pattern
-=======
       input logic  logic [7:0]               _val_stream   []
      ,input logic                            _clk_stream_p []
      ,input logic                            _clk_stream_n []      
->>>>>>> Stashed changes
   );
     if (_clk_stream_p.size() != _clk_stream_n.size()) begin
       `uvm_fatal("CLK_STREAM_SIZE_MISMATCH", "Clock stream arrays must be of the same size in serialize_valid_pattern.")
@@ -177,12 +170,7 @@ interface rp_rmblink_bfm(
             i_clk_p    <= _clk_stream_p[i];
             i_clk_n    <= _clk_stream_n[i];
           end
-<<<<<<< Updated upstream
-      end
-    end
-=======
         end
->>>>>>> Stashed changes
   endtask : serialize_valid_pattern
 
 

@@ -20,13 +20,6 @@ package shared_pkg;
   parameter pNUM_LANES  = 16;
   parameter pDATA_WIDTH = 64;
 
-<<<<<<< Updated upstream
-  // --- Timing Parameters ---
-  parameter T_CLK_L = 4;
-  parameter T_CLK_H = 8;
-  parameter T_CLK_D = 4;
-  parameter UI      = T_CLK_D;
-=======
   parameter T_CLK = 32ns;
   parameter UI    = 4ns;
 
@@ -46,7 +39,6 @@ package shared_pkg;
   parameter CLK_STROBE_CLK_PAT = 32;
 
 
->>>>>>> Stashed changes
 
   // --- Type Definitions ---
   typedef enum bit { 
