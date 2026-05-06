@@ -20,11 +20,33 @@ package shared_pkg;
   parameter pNUM_LANES  = 16;
   parameter pDATA_WIDTH = 64;
 
+<<<<<<< Updated upstream
   // --- Timing Parameters ---
   parameter T_CLK_L = 4;
   parameter T_CLK_H = 8;
   parameter T_CLK_D = 4;
   parameter UI      = T_CLK_D;
+=======
+  parameter T_CLK = 32ns;
+  parameter UI    = 4ns;
+
+  parameter LINK2LTSM_RTL_LATENCY = 11 * T_CLK;
+  parameter LTSM2LINK_RTL_LATENCY = (8 * T_CLK) + (0.5 * UI);
+  parameter HEADER_SER_LATENCY    = 64 * UI;
+  parameter DATA_SER_LATENCY      = 64 * UI;
+  parameter IDLE_LATENCY          = 32 * UI;
+
+  parameter DATA_MAX = 64'hFFFF_FFFF_FFFF_FFFF;
+  parameter INFO_MAX = 16'hFFFF;
+
+  parameter VALID_CLK_PATTERN_STREAM_LEN = 128;
+  parameter CLK_STREAM_LEN_CLK_PAT = 4096;  
+  parameter CLK_STREAM_LEN_VALID_PAT = 1024;
+  parameter CLK_STROBE_VALID_PAT = 8;
+  parameter CLK_STROBE_CLK_PAT = 32;
+
+
+>>>>>>> Stashed changes
 
   // --- Type Definitions ---
   typedef enum bit { 
