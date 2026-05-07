@@ -35,8 +35,7 @@ class rmblink_driver extends rp_driver_base #(rmblink_seq_item, virtual rp_rmbli
 
   // Task: drive_item
   //
-  // Drives a rmblink item either as an SBINIT pattern exchange or as an
-  // ACTIVE serialized sideband message.
+  // ...
 
   extern virtual task drive_item(inout rmblink_seq_item req, output rmblink_seq_item rsp);
 
@@ -65,5 +64,26 @@ endfunction : new
 // -----
 
 task rmblink_driver::drive_item(inout rmblink_seq_item req, output rmblink_seq_item rsp);
-  // driving logic
+  if (req.pattern_type == CLK_PATTERN) begin // CLK_PATTERN
+    bfm.serialize_clk_pattern(
+       ._clk_stream_p(req.clk_stream_p)
+      ,._clk_stream_n(req.clk_stream_n)
+      ,._idle_ui_cnt(req.idle_ui_cnt)
+    );
+  end else if (req.pattern_type == VAL_PATTERN) begin // VAL_PATTERN
+    bfm.serialize_valid_pattern(
+       ._val_stream(req.val_stream)
+      ,._clk_stream_p(req.clk_stream_p)
+      ,._clk_stream_n(req.clk_stream_n)
+    );
+  end else begin // DATA_PATTERN
+    bfm.serialize_data(
+       ._data(req.data)
+      ,._val_stream(req.val_stream)
+      ,._clk_stream_p(req.clk_stream_p)
+      ,._clk_stream_n(req.clk_stream_n)
+      ,._track_stream(req.track_stream)
+      ,._idle_ui_cnt(req.idle_ui_cnt)
+    );
+  end
 endtask : drive_item
