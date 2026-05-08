@@ -12,22 +12,33 @@ module rx_path#(
     logic sel_demux;
     logic sel_reverse;
     logic halfrate;
-    logic clk_result,valid_result;
+    logic reset;
+    logic [2:0] clk_result;
+    logic [2:0] clk_result_sync;
+    logic valid_result;
+    logic valid_result_sync;
     logic clk_p,clk_n,track,valid;
     logic enable_clk_drive,enable_valid_drive,enable_data_drive;
     logic [2:0] lane_map;
     logic [pNUM_LANES-1:0] w_en,rd_en;
     logic [pNUM_LANES-1:0] full,empty;
     logic [1:0] pattern_type;
+    logic [1:0] pattern_type_sync;
     logic detection_type;
     logic [pNUM_LANES-1:0] deserializer_in;
 
     per_lane_id_detector_top per_lane_id(
         .i_clk(i_clk_l),
-        .i_reset(i_reset),
+        .i_reset(reset),
         .i_enable(enable_laneid),
         .i_data_in(lane_id_in),
         .o_laneid_success(lane_id_success)
+    );
+
+    synchonizer sync (
+        .i_clk(i_dclk),
+        .data_in(pattern_type),
+        .data_out(pattern_type_sync)
     );
 
     rx_LFSR_top LFSR(
@@ -36,7 +47,7 @@ module rx_path#(
         .i_clk(i_clk_l),
         .i_load(load),
         .i_train(train),
-        .i_reset(i_reset),
+        .i_reset(reset),
         .i_enable(enable_lfsr),
         .i_data_in(lane_LFSR_in),
         .i_error_threshhold(error_threshhold)
@@ -73,22 +84,35 @@ module rx_path#(
         .i_track(track),
         .i_hclk(i_hclk),
         .i_dclk(i_dclk),
-        .i_reset(i_reset),
+        .i_reset(reset),
         .i_halfrate(halfrate),
-        .i_pattern_type(pattern_type),
+        .i_pattern_type(pattern_type_sync),
         .i_detection_type(detection_type),
         .i_error_threshhold(error_threshhold),
         .o_clk_result(clk_result),
         .o_valid_result(valid_result)
     );
-
+    synchonizer #(
+        .width(3)
+    ) clk_result_sync (
+        .i_clk(i_clk_l),
+        .data_in(clk_result),
+        .data_out(clk_result_sync)
+    );
+    synchonizer #(
+        .width(1)
+    ) valid_result_sync (
+        .i_clk(i_clk_l),
+        .data_in(valid_result),
+        .data_out(valid_result_sync)
+    );
     genvar i;
     generate 
         for (i = 0; i < pNUM_LANES; i++) begin : gen_lane
             fifo fif (
                 .i_clk_wr  (i_hclk),
                 .i_clk_rd  (i_clk_l),
-                .i_reset   (i_reset),
+                .i_reset   (reset),
                 .i_wr_en   (w_en[i]),
                 .i_rd_en   (rd_en[i]),
                 .i_data_in (deserializer_out[i]),
@@ -101,9 +125,10 @@ module rx_path#(
                 .pDESER_WIDTH(pDATA_WIDTH)
             ) deser (
                 .i_clk_p(clk_p),
+                .i_clk_n(clk_n),
                 .i_hclk(i_hclk),
-                .i_reset(i_reset),
-                .i_rx_data(deserializer_in[i]),
+                .i_reset(reset),
+                .i_rx_data(i_lanes[i]),
                 .i_fifo_full(full[i]),
                 .o_fifo_deser_msg(deserializer_out[i]),
                 .o_fifo_wr_en(w_en[i])
