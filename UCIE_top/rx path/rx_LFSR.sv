@@ -1,0 +1,53 @@
+module rx_LFSR #(
+    parameter int pLANE_ID_SEED = 23'h1DBFBC,
+    parameter int pDATA_WIDTH = 64
+) (
+    input i_clk,i_enable,i_reset,i_load,i_train,
+    input [pDATA_WIDTH-1:0] i_data_in,
+    input [15:0] i_error_threshhold,
+    output logic o_lane_success,
+    output logic [pDATA_WIDTH-1:0]o_data_out
+);
+    wire pclk,lclk;
+    logic [pDATA_WIDTH-1:0] scrambled_data,pattern_out,pattern_tobechecked;
+    
+    logic l_enable,p_enable;
+    always @(*) begin
+        if (!i_clk) begin
+            p_enable=i_enable & o_lane_success;
+        end
+        if(!pclk)begin
+            l_enable=i_train;
+        end
+    end
+
+    assign pclk = i_clk & p_enable ;
+    assign lclk = pclk  & l_enable;
+
+    assign scrambled_data = pattern_out ^ i_data_in ;
+    always @(*) begin
+        if(i_train)begin
+            pattern_tobechecked=scrambled_data;
+            o_data_out=0;
+        end
+        else begin
+            o_data_out=scrambled_data;
+            pattern_tobechecked=0;
+        end
+    end
+    LFSR_pattern_generator
+    #(
+        .pLANE_ID_SEED (pLANE_ID_SEED)
+    ) gen(
+        .pclk(pclk),
+        .i_load(i_load),
+        .pattern(pattern_out)
+    );
+    rx_LFSR_detection det (
+        .pclk(lclk),
+        .i_reset(i_reset),
+        .pattern(pattern_tobechecked),
+        .i_error_threshhold(i_error_threshhold),
+        .o_lane_success(o_lane_success)
+    );
+endmodule
