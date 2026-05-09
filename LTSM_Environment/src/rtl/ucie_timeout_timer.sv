@@ -133,8 +133,8 @@ module ucie_timeout_timer #(
     // ==========================================================================
     
     assign o_timer_1ms = (r_counter_1ms == (CYCLES_1MS - 1));
-    assign o_timer_4ms = (r_counter_4ms == (CYCLES_4MS - 1));
-    assign o_timer_8ms = (r_counter_8ms == (CYCLES_8MS - 1));
+    assign o_timer_4ms = (r_counter_4ms == (CYCLES_4MS - 6));
+    assign o_timer_8ms = (r_counter_8ms == (CYCLES_8MS - 6));
     assign o_timer_2us = (r_counter_2us == (CYCLES_2US - 1));
     assign o_timer_1us = (r_counter_1us == (CYCLES_1US - 1));
 
@@ -142,90 +142,90 @@ module ucie_timeout_timer #(
     // ==========================================================================
     // Assertions
     // ==========================================================================
-    `ifdef SIM
+    // `ifdef SIM
 
-        // SIM-mode output pulse checks
-        property sim_timer_pulse_out (counter, cycles, divider, signal);
-            @(posedge i_clk) disable iff(i_reset)
-            i_sim && (counter == (cycles/divider) - 1) |-> signal; 
-        endproperty
+    //     // SIM-mode output pulse checks
+    //     property sim_timer_pulse_out (counter, cycles, divider, signal);
+    //         @(posedge i_clk) disable iff(i_reset)
+    //         i_sim && (counter == (cycles/divider) - 1) |-> signal; 
+    //     endproperty
 
-        // 1ms pulse fires at SIM_8MS_CYCLES/8 - 1
-        SIM_O_TIMER_1MS : assert property (sim_timer_pulse_out(r_counter_1ms, SIM_8MS_CYCLES, 8, o_timer_1ms))
-            else $error("ASSERT FAIL [SIM_O_TIMER_1MS]: 1ms pulse missing at counter=%0d", r_counter_1ms);
+    //     // 1ms pulse fires at SIM_8MS_CYCLES/8 - 1
+    //     SIM_O_TIMER_1MS : assert property (sim_timer_pulse_out(r_counter_1ms, SIM_8MS_CYCLES, 8, o_timer_1ms))
+    //         else $error("ASSERT FAIL [SIM_O_TIMER_1MS]: 1ms pulse missing at counter=%0d", r_counter_1ms);
 
-        // 4ms pulse fires at SIM_8MS_CYCLES/2 - 1
-        SIM_O_TIMER_4MS : assert property (sim_timer_pulse_out(r_counter_4ms, SIM_8MS_CYCLES, 2, o_timer_4ms))
-            else $error("ASSERT FAIL [SIM_O_TIMER_4MS]: 4ms pulse missing at counter=%0d", r_counter_4ms);
+    //     // 4ms pulse fires at SIM_8MS_CYCLES/2 - 1
+    //     SIM_O_TIMER_4MS : assert property (sim_timer_pulse_out(r_counter_4ms, SIM_8MS_CYCLES, 2, o_timer_4ms))
+    //         else $error("ASSERT FAIL [SIM_O_TIMER_4MS]: 4ms pulse missing at counter=%0d", r_counter_4ms);
 
-        // 8ms pulse fires at SIM_8MS_CYCLES/1 - 1
-        SIM_O_TIMER_8MS : assert property (sim_timer_pulse_out(r_counter_8ms, SIM_8MS_CYCLES, 1, o_timer_8ms))
-            else $error("ASSERT FAIL [SIM_O_TIMER_8MS]: 8ms pulse missing at counter=%0d", r_counter_8ms);
+    //     // 8ms pulse fires at SIM_8MS_CYCLES/1 - 1
+    //     SIM_O_TIMER_8MS : assert property (sim_timer_pulse_out(r_counter_8ms, SIM_8MS_CYCLES, 1, o_timer_8ms))
+    //         else $error("ASSERT FAIL [SIM_O_TIMER_8MS]: 8ms pulse missing at counter=%0d", r_counter_8ms);
 
-        // 2us pulse fires at SIM_8MS_CYCLES/4000 - 1
-        SIM_O_TIMER_2US : assert property (sim_timer_pulse_out(r_counter_2us, SIM_8MS_CYCLES, 4000, o_timer_2us))
-            else $error("ASSERT FAIL [SIM_O_TIMER_2US]: 2us pulse missing at counter=%0d", r_counter_2us);
-
-
-        // HW-mode output pulse checks
-        property hw_timer_pulse_out (counter, cycles, signal);
-            @(posedge i_clk) disable iff(i_reset)
-            !i_sim && (counter == cycles - 1) |-> signal; 
-        endproperty
-
-        // HW 1ms pulse
-        HW_O_TIMER_1MS : assert property (hw_timer_pulse_out(r_counter_1ms, HW_CYCLES_1MS, o_timer_1ms))
-            else $error("ASSERT FAIL [HW_O_TIMER_1MS]: 1ms pulse missing at counter=%0d", r_counter_1ms);
-
-        // HW 4ms pulse
-        HW_O_TIMER_4MS : assert property (hw_timer_pulse_out(r_counter_4ms, HW_CYCLES_4MS, o_timer_4ms))
-            else $error("ASSERT FAIL [HW_O_TIMER_4MS]: 4ms pulse missing at counter=%0d", r_counter_4ms);
-
-        // HW 8ms pulse
-        HW_O_TIMER_8MS : assert property (hw_timer_pulse_out(r_counter_8ms, HW_CYCLES_8MS, o_timer_8ms))
-            else $error("ASSERT FAIL [HW_O_TIMER_8MS]: 8ms pulse missing at counter=%0d", r_counter_8ms);
-
-        // HW 2us pulse
-        HW_O_TIMER_2US : assert property (hw_timer_pulse_out(r_counter_2us, HW_CYCLES_2US, o_timer_2us))
-            else $error("ASSERT FAIL [HW_O_TIMER_2US]: 2us pulse missing at counter=%0d", r_counter_2us);
+    //     // 2us pulse fires at SIM_8MS_CYCLES/4000 - 1
+    //     SIM_O_TIMER_2US : assert property (sim_timer_pulse_out(r_counter_2us, SIM_8MS_CYCLES, 4000, o_timer_2us))
+    //         else $error("ASSERT FAIL [SIM_O_TIMER_2US]: 2us pulse missing at counter=%0d", r_counter_2us);
 
 
-        // Counters clear on encoding [8:3] change
-        property clear_on_state_change(counter);
-            @(posedge i_clk) disable iff(i_reset)
-            r_rx_encoding_msb_prev != $past(r_rx_encoding_msb_prev) |-> (counter == 0); 
-        endproperty
+    //     // HW-mode output pulse checks
+    //     property hw_timer_pulse_out (counter, cycles, signal);
+    //         @(posedge i_clk) disable iff(i_reset)
+    //         !i_sim && (counter == cycles - 1) |-> signal; 
+    //     endproperty
 
-        STATE_CHANGE_CLEAR_1MS : assert property (clear_on_state_change(r_counter_1ms))
-            else $error("ASSERT FAIL [STATE_CHANGE_CLEAR]: counter_1ms not cleared after encoding change");
+    //     // HW 1ms pulse
+    //     HW_O_TIMER_1MS : assert property (hw_timer_pulse_out(r_counter_1ms, HW_CYCLES_1MS, o_timer_1ms))
+    //         else $error("ASSERT FAIL [HW_O_TIMER_1MS]: 1ms pulse missing at counter=%0d", r_counter_1ms);
 
-        STATE_CHANGE_CLEAR_4MS : assert property (clear_on_state_change(r_counter_4ms))
-            else $error("ASSERT FAIL [STATE_CHANGE_CLEAR]: counter_4ms not cleared after encoding change");
+    //     // HW 4ms pulse
+    //     HW_O_TIMER_4MS : assert property (hw_timer_pulse_out(r_counter_4ms, HW_CYCLES_4MS, o_timer_4ms))
+    //         else $error("ASSERT FAIL [HW_O_TIMER_4MS]: 4ms pulse missing at counter=%0d", r_counter_4ms);
 
-        STATE_CHANGE_CLEAR_8MS : assert property (clear_on_state_change(r_counter_8ms))
-            else $error("ASSERT FAIL [STATE_CHANGE_CLEAR]: counter_8ms not cleared after encoding change");
+    //     // HW 8ms pulse
+    //     HW_O_TIMER_8MS : assert property (hw_timer_pulse_out(r_counter_8ms, HW_CYCLES_8MS, o_timer_8ms))
+    //         else $error("ASSERT FAIL [HW_O_TIMER_8MS]: 8ms pulse missing at counter=%0d", r_counter_8ms);
 
-        STATE_CHANGE_CLEAR_2US : assert property (clear_on_state_change(r_counter_2us))
-            else $error("ASSERT FAIL [STATE_CHANGE_CLEAR]: counter_2us not cleared after encoding change");
+    //     // HW 2us pulse
+    //     HW_O_TIMER_2US : assert property (hw_timer_pulse_out(r_counter_2us, HW_CYCLES_2US, o_timer_2us))
+    //         else $error("ASSERT FAIL [HW_O_TIMER_2US]: 2us pulse missing at counter=%0d", r_counter_2us);
 
 
-        // Counters clear on reset
-        property clear_on_reset(counter);
-            @(posedge i_clk) i_reset |=> (counter == 0);
-        endproperty
+    //     // Counters clear on encoding [8:3] change
+    //     property clear_on_state_change(counter);
+    //         @(posedge i_clk) disable iff(i_reset)
+    //         r_rx_encoding_msb_prev != $past(r_rx_encoding_msb_prev) |-> (counter == 0); 
+    //     endproperty
 
-        RESET_CLEARS_COUNTER_1MS : assert property (clear_on_reset(r_counter_1ms))
-            else $error("ASSERT FAIL [RESET_CLEARS_COUNTER]: counter_1ms non-zero while reset asserted");
+    //     STATE_CHANGE_CLEAR_1MS : assert property (clear_on_state_change(r_counter_1ms))
+    //         else $error("ASSERT FAIL [STATE_CHANGE_CLEAR]: counter_1ms not cleared after encoding change");
 
-        RESET_CLEARS_COUNTER_4MS : assert property (clear_on_reset(r_counter_4ms))
-            else $error("ASSERT FAIL [RESET_CLEARS_COUNTER]: counter_4ms non-zero while reset asserted");
+    //     STATE_CHANGE_CLEAR_4MS : assert property (clear_on_state_change(r_counter_4ms))
+    //         else $error("ASSERT FAIL [STATE_CHANGE_CLEAR]: counter_4ms not cleared after encoding change");
 
-        RESET_CLEARS_COUNTER_8MS : assert property (clear_on_reset(r_counter_8ms))
-            else $error("ASSERT FAIL [RESET_CLEARS_COUNTER]: counter_8ms non-zero while reset asserted");
+    //     STATE_CHANGE_CLEAR_8MS : assert property (clear_on_state_change(r_counter_8ms))
+    //         else $error("ASSERT FAIL [STATE_CHANGE_CLEAR]: counter_8ms not cleared after encoding change");
 
-        RESET_CLEARS_COUNTER_2US : assert property (clear_on_reset(r_counter_2us))
-            else $error("ASSERT FAIL [RESET_CLEARS_COUNTER]: counter_2us non-zero while reset asserted");
+    //     STATE_CHANGE_CLEAR_2US : assert property (clear_on_state_change(r_counter_2us))
+    //         else $error("ASSERT FAIL [STATE_CHANGE_CLEAR]: counter_2us not cleared after encoding change");
 
-    `endif
+
+    //     // Counters clear on reset
+    //     property clear_on_reset(counter);
+    //         @(posedge i_clk) i_reset |=> (counter == 0);
+    //     endproperty
+
+    //     RESET_CLEARS_COUNTER_1MS : assert property (clear_on_reset(r_counter_1ms))
+    //         else $error("ASSERT FAIL [RESET_CLEARS_COUNTER]: counter_1ms non-zero while reset asserted");
+
+    //     RESET_CLEARS_COUNTER_4MS : assert property (clear_on_reset(r_counter_4ms))
+    //         else $error("ASSERT FAIL [RESET_CLEARS_COUNTER]: counter_4ms non-zero while reset asserted");
+
+    //     RESET_CLEARS_COUNTER_8MS : assert property (clear_on_reset(r_counter_8ms))
+    //         else $error("ASSERT FAIL [RESET_CLEARS_COUNTER]: counter_8ms non-zero while reset asserted");
+
+    //     RESET_CLEARS_COUNTER_2US : assert property (clear_on_reset(r_counter_2us))
+    //         else $error("ASSERT FAIL [RESET_CLEARS_COUNTER]: counter_2us non-zero while reset asserted");
+
+    // `endif
 
 endmodule

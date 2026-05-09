@@ -10,6 +10,31 @@ module ucie_RX_Data_to_Clock_eye_sweep #(
     parameter DATA_WIDTH = 64,       // Width of data input/output
     parameter INFO_WIDTH = 16,      // Width of info/control output
     parameter ERROR_THRESHOLD = 1,   // Error threshold for test pass/fail
+
+    parameter logic [63:0] data_DATA_FIELD = {
+        4'b0000,       // [63:60] Reserved
+        1'b0,          // [59]    Comparison Mode (Per Lane)
+        16'd1,         // [58:43] Iteration Count
+        16'd0,         // [42:27] Idle Count
+        16'd4000,      // [26:11] Burst Count
+        1'b0,          // [10]    Pattern Mode (Continuous)
+        4'h0,          // [9:6]   Clock Phase (Clock PI Center)
+        3'h0,          // [5:3]   Valid Pattern (Functional)
+        3'h0           // [2:0]   Data Pattern (LFSR)
+    },
+
+    parameter logic [63:0] valid_DATA_FIELD = {
+        4'b0000,       // [63:60] Reserved
+        1'b0,          // [59]    Comparison Mode (Per Lane)
+        16'd1,         // [58:43] Iteration Count
+        16'd0,         // [42:27] Idle Count
+        16'd128,       // [26:11] Burst Count
+        1'b0,          // [10]    Pattern Mode (Continuous)
+        4'h0,          // [9:6]   Clock Phase (Clock PI Center)
+        3'h0,          // [5:3]   Valid Pattern (Functional)
+        3'h0           // [2:0]   Data Pattern (LFSR)
+    },
+
     parameter MAXIMUM_ITERATIONS = 4 // Maximum retry attempts before train_error
 ) (
     // Clock and reset
@@ -19,6 +44,7 @@ module ucie_RX_Data_to_Clock_eye_sweep #(
     // Interface inputs - from remote TX
     input [DECODING_WIDTH-1:0] i_xx_decoding,  // Decoded command from TX
     input [DATA_WIDTH-1:0] i_xx_data,          // Data from TX
+    input [INFO_WIDTH-1:0] i_xx_info,          // Data from TX
     
     // Sideband control inputs
     input i_sb_xx_req,     // Sideband request from TX
@@ -30,7 +56,9 @@ module ucie_RX_Data_to_Clock_eye_sweep #(
     input done_ack,        // Acknowledgement of done signal
     input init,            // Initialize mode flag
     input no_retry,        // Disable retry on test failure
-    input [DATA_WIDTH-1 : 0]result,          // Test result from pattern detector
+    input comparison_type,        // 0:data, 1:valid
+    input [DATA_WIDTH-1 : 0] data_result,          // Test data_result from pattern detector
+    input valid_result,          // Test data_result from pattern detector
     
     // Interface outputs - to remote TX
     output logic [DECODING_WIDTH-1:0] o_xx_encoding,  // Encoded command to send
@@ -57,7 +85,7 @@ localparam REQ_HANDSHAKE = 3'b000;            // Initial request handshake
 localparam LFSR_HANDSHAKE = 3'b001;           // LFSR (pseudo-random) setup handshake
 localparam DATA_DETECTION = 3'b010;           // Data pattern detection state
 localparam RESULT_HANDSHAKE = 3'b011;         // Result reporting handshake
-localparam SWEEP_RESULT_HANDSHAKE = 3'b100;   // Sweep parameter result handshake
+localparam SWEEP_RESULT_HANDSHAKE = 3'b100;   // Sweep parameter data_result handshake
 localparam END_HANDSHAKE = 3'b101;            // Final completion handshake
 
 // State registers
@@ -71,8 +99,8 @@ logic [1:0] count_reg;
 // Combinational Logic
 //================================================================================
 
-// Test fails if any bit in result is 0 (all bits should be 1 for pass)
-assign failed_test = !(&result);
+// Test fails if any bit in data_result is 0 (all bits should be 1 for pass)
+assign failed_test = !(&data_result);
 
 //================================================================================
 // State Machine Sequential Logic
@@ -93,7 +121,17 @@ end
 // Main State Machine Combinational Logic
 //================================================================================
 always @(*) begin
-    // Two different sequences based on init flag
+        o_xx_sb_req = 0;
+        o_xx_sb_rsp = 0;
+        done = 0;
+        train_error = 0;
+        o_xx_sb_rsp = 0;
+        o_xx_info = 0;
+        o_xx_data = 0;
+        o_xx_sweep_result = 0;
+        count_reg = count;
+        NS = CS;
+        o_xx_encoding = 0;
     if (init) begin
         //====================================================================
         // INITIALIZATION MODE - RX initiates the test
@@ -112,9 +150,14 @@ always @(*) begin
 
                 o_xx_info = ERROR_THRESHOLD;  // Send error threshold parameter
 
+                if (comparison_type) begin
+                    o_xx_data = valid_DATA_FIELD;  // Send error threshold parameter
+                end else begin
+                    o_xx_data = data_DATA_FIELD;  // Send data pattern parameters
+                end
+                
                 // Wait for matching response
-                if (i_sb_xx_req && i_xx_decoding == 'h189)
-                begin
+                if (i_sb_xx_req && i_xx_decoding == 'h189) begin
                     NS = LFSR_HANDSHAKE;
                     o_xx_encoding = 'h189;  // LFSR setup encoding
                     o_xx_sb_req = 0;
@@ -127,6 +170,7 @@ always @(*) begin
             LFSR_HANDSHAKE: begin
                 o_xx_encoding = 'h189;  // LFSR setup encoding
                 done = 0;
+                o_xx_info = 0;
 
                 // Response handshake
                 if (done_ack) o_xx_sb_rsp = 0;
@@ -162,7 +206,8 @@ always @(*) begin
             RESULT_HANDSHAKE: begin
                 o_xx_encoding = 'h18B;  // Result reporting encoding
                 done = 0;
-                o_xx_data = result;     // Send detection result
+                o_xx_data = data_result;     // Send detection data_result
+                o_xx_info = {'b0,valid_result,!failed_test,4'b0000};     // Send detection data_result
 
                 // Response handshake
                 if (done_ack) o_xx_sb_rsp = 0;
@@ -176,7 +221,7 @@ always @(*) begin
                     o_xx_sb_rsp = 0;
                     train_error = 0;  // Clear training error for retry
                 end else if (i_sb_xx_req && i_xx_decoding == 'h18C)  begin
-                    o_xx_encoding = 'h18C;  // Sweep result encoding
+                    o_xx_encoding = 'h18C;  // Sweep data_result encoding
                     NS = SWEEP_RESULT_HANDSHAKE;
                     o_xx_sb_req = 0;
                     o_xx_sb_rsp = 0;
@@ -186,7 +231,7 @@ always @(*) begin
 
             // State 4: Receive sweep parameter results from TX
             SWEEP_RESULT_HANDSHAKE: begin
-                o_xx_encoding = 'h18D;  // Sweep result encoding
+                o_xx_encoding = 'h18D;  // Sweep data_result encoding
                 done = 0;
                 o_xx_sweep_result = i_xx_data[7:0];  // Extract sweep measurement data
                 NS = END_HANDSHAKE;
@@ -224,6 +269,7 @@ always @(*) begin
 
                 // Wait for done signal
                 if (i_sb_xx_req && i_xx_decoding == 'h181) begin
+                    o_xx_info = i_xx_info;  // Send error threshold parameter
                     NS = LFSR_HANDSHAKE;
                     o_xx_encoding = 'h181;  // LFSR setup encoding
                     o_xx_sb_req = 0;
@@ -271,7 +317,8 @@ always @(*) begin
             RESULT_HANDSHAKE: begin
                 o_xx_encoding = 'h183;  // Result reporting encoding
                 done = 0;
-                o_xx_data = result;     // Send detection result
+                o_xx_data = data_result;     // Send detection data_result
+                o_xx_info = {'b0,valid_result,!failed_test,4'b0000};     // Send detection data_result
 
                 // Response handshake
                 if (done_ack) o_xx_sb_rsp = 0;
@@ -284,7 +331,7 @@ always @(*) begin
                     o_xx_sb_rsp = 0;
                     train_error = 0;  // Clear training error for retry
                 end else if (i_sb_xx_req && i_xx_decoding == 'h184)  begin
-                    o_xx_encoding = 'h184;  // Sweep result encoding
+                    o_xx_encoding = 'h184;  // Sweep data_result encoding
                     NS = END_HANDSHAKE;
                     o_xx_sb_req = 0;
                     o_xx_sb_rsp = 0;
@@ -332,7 +379,7 @@ end
 
     property pass_test_combinational_property;
         @(posedge i_clk) disable iff (i_reset)
-        (&result) |-> !failed_test;
+        (&data_result) |-> !failed_test;
     endproperty
 
     property init_req_to_lfsr_property;
@@ -467,7 +514,7 @@ end
 
     property init_result_data_property;
         @(posedge i_clk) disable iff (i_reset)
-        (init && CS == RESULT_HANDSHAKE) |-> (o_xx_data == result);
+        (init && CS == RESULT_HANDSHAKE) |-> (o_xx_data == data_result);
     endproperty
 
     property init_sweep_result_data_property;
@@ -572,7 +619,7 @@ end
     cover property (state_transition_property);
 
     pass_test_combinational_assertion: assert property (pass_test_combinational_property)
-        else $error("Assertion failed: failed_test should be low when result is all ones");
+        else $error("Assertion failed: failed_test should be low when data_result is all ones");
     cover property (pass_test_combinational_property);
 
     init_req_to_lfsr_assertion: assert property (init_req_to_lfsr_property)
@@ -680,7 +727,7 @@ end
     cover property (init_info_threshold_property);
 
     init_result_data_assertion: assert property (init_result_data_property)
-        else $error("Assertion failed: o_xx_data should be result at RESULT_HANDSHAKE in init mode");
+        else $error("Assertion failed: o_xx_data should be data_result at RESULT_HANDSHAKE in init mode");
     cover property (init_result_data_property);
 
     init_sweep_result_data_assertion: assert property (init_sweep_result_data_property)

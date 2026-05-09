@@ -24,15 +24,20 @@
 //
 //------------------------------------------------------------------------------
 
-class mbtrain_linkspeed_phyretrain_lanepossible_txfail extends virtual_sequence_base;
-    `uvm_object_utils(mbtrain_linkspeed_phyretrain_lanepossible_txfail)
-
+class mbtrain_linkspeed_phyretrain_lanepossible_rxfail extends virtual_sequence_base;
+    `uvm_object_utils(mbtrain_linkspeed_phyretrain_lanepossible_rxfail)
+    mbtrain_linkspeed_tx_starthandshake          start_tx;
+    mbtrain_linkspeed_tx_phyretrainreq           phyretrain_req;
+    mbtrain_linkspeed_rx_starthandshake          start_rx;
+    mbtrain_linkspeed_rx_error_req               error_req;
+    mbtrain_linkspeed_phyretrain_rx              end_state;
+    mbtrain_txinit_datasweep_txpass_rxfail_0_7   data_sweep;
 
     // Function: new
     //
     // Creates a new virtual_sequence instance with the given name.
 
-    extern function new(string name = "mbtrain_linkspeed_phyretrain_lanepossible_txfail");
+    extern function new(string name = "mbtrain_linkspeed_phyretrain_lanepossible_rxfail");
 
 
     // Task: pre_body
@@ -49,7 +54,7 @@ class mbtrain_linkspeed_phyretrain_lanepossible_txfail extends virtual_sequence_
 
     extern task body();
 
-endclass : mbtrain_linkspeed_phyretrain_lanepossible_txfail
+endclass : mbtrain_linkspeed_phyretrain_lanepossible_rxfail
 
 
 //------------------------------------------------------------------------------
@@ -66,14 +71,14 @@ endclass : mbtrain_linkspeed_phyretrain_lanepossible_txfail
 // new
 // ---
 
-function mbtrain_linkspeed_phyretrain_lanepossible_txfail::new(string name = "mbtrain_linkspeed_phyretrain_lanepossible_txfail");
+function mbtrain_linkspeed_phyretrain_lanepossible_rxfail::new(string name = "mbtrain_linkspeed_phyretrain_lanepossible_rxfail");
     super.new(name);
 endfunction : new
 
 // pre_body
 // --------
 
-task mbtrain_linkspeed_phyretrain_lanepossible_txfail::pre_body();
+task mbtrain_linkspeed_phyretrain_lanepossible_rxfail::pre_body();
     // tx sequences
     start_tx=mbtrain_linkspeed_tx_starthandshake::type_id::create("start_tx");
     phyretrain_req=mbtrain_linkspeed_tx_phyretrainreq::type_id::create("phyretrain_req");
@@ -88,7 +93,7 @@ endtask
 // body
 // ----
 
-task mbtrain_linkspeed_phyretrain_lanepossible_txfail::body();
+task mbtrain_linkspeed_phyretrain_lanepossible_rxfail::body();
     super.body();
     fork
         // tx thread

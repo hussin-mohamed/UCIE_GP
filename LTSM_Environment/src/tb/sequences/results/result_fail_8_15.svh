@@ -22,11 +22,11 @@ class result_fail_8_15 extends uvm_sequence#(LTSM_controllers_seq_item);
         super.new(name);
     endfunction //new()
     task body();
-        item = seq_item::type_id::create("item");
+        item = LTSM_controllers_seq_item::type_id::create("item");
         start_item(item);
         item.i_rx_error=1'b0;
-        item.i_lane_error = 64'hFFFF_FFFF_FFFF_00FF;
-        item.i_val_error =1'b1
+        item.i_rx_data_results = 64'hFFFF_FFFF_FFFF_00FF;
+        item.i_rx_valid_results =1'b0;
         finish_item(item);
     endtask 
 endclass //className extends superClass

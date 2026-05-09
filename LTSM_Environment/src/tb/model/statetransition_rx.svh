@@ -15,14 +15,16 @@
 // ****************************************************************************
 
 import shared_ltsm_pkg::*;
-class StateTransitionUtil_rx extends state;
+class StateTransitionUtil_rx extends State;
  local static State validStateTransitions[State][$];
+ static bit firsttime;
 
-
- function new(string name = "StateTransitionUtil_rx" );
-        super.new(name);
-        init();
- endfunction
+//  function new();
+        
+//         `uvm_info("StateTransitionUtil_rx", "initializing StateTransitionUtil_rx object", UVM_LOW)
+//         init();
+//         `uvm_info("StateTransitionUtil_rx", "finished initializing StateTransitionUtil_rx object", UVM_LOW)
+//  endfunction
 
  static function void init();
 
@@ -64,43 +66,50 @@ class StateTransitionUtil_rx extends state;
     
     validStateTransitions[mbtrain_rx_dtc2::Instance()] = { mbtrain_rx_dtc2::Instance(), mbtrain_rx_linkspeed::Instance(), trainerror_rx::Instance(), ResetState_rx::Instance()};
     
-    validStateTransitions[mbtrain_rx_linkspeed::Instance()] = { mbtrain_rx_linkspeed::Instance(), mbtrain_rx_repair::Instance(), phyretrain_rx::Instance(), linkinit_state_rx::Instance(), trainerror_rx::Instance(), ResetState_rx::Instance()};
+    validStateTransitions[mbtrain_rx_linkspeed::Instance()] = { mbtrain_rx_linkspeed::Instance(), mbtrain_rx_speedidle::Instance(),  mbtrain_rx_repair::Instance(), phyretrain_rx::Instance(), linkinit_state_rx::Instance(), trainerror_rx::Instance(), ResetState_rx::Instance()};
     
     validStateTransitions[mbtrain_rx_repair::Instance()] = { mbtrain_rx_repair::Instance(), mbtrain_rx_txselfcal::Instance(), trainerror_rx::Instance(), ResetState_rx::Instance()};
     
     validStateTransitions[phyretrain_rx::Instance()] = { phyretrain_rx::Instance(), mbtrain_rx_txselfcal::Instance(), mbtrain_rx_speedidle::Instance(), mbtrain_rx_repair::Instance() , trainerror_rx::Instance(), ResetState_rx::Instance()};
     
-    validStateTransitions[linkinit_state_rx::Instance()] = { linkinit_state_rx::Instance(), active_rx::Instance(), trainerror_rx::Instance(), ResetState_rx::Instance()};
+    validStateTransitions[linkinit_state_rx::Instance()] = { linkinit_state_rx::Instance(), active_state_rx::Instance(), trainerror_rx::Instance(), ResetState_rx::Instance()};
     
-  validStateTransitions[active_rx::Instance()] = { active_rx::Instance(), trainerror_rx::Instance(), ResetState_rx::Instance(),l1_state_rx::Instance()};
+    validStateTransitions[active_state_rx::Instance()] = { active_state_rx::Instance(), trainerror_rx::Instance(), ResetState_rx::Instance(),l1_state_rx::Instance()};
 
     validStateTransitions[l1_state_rx::Instance()] = { l1_state_rx::Instance(), mbtrain_rx_speedidle::Instance(), ResetState_rx::Instance()};
 
     validStateTransitions[trainerror_rx::Instance()] = { trainerror_rx::Instance(), ResetState_rx::Instance()};
 
-    cgWrapper = new();
  endfunction
 
- static function State calculate(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in);
+ static function State calculate(FSMContext cntxt,LTSM_controllers_seq_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in);
  State nextState = null;
+ 
  State nextValid[$];
+  //`uvm_info("StateTransitionUtil_rx", $sformatf("Calculating next state for current RX state: %s", cntxt.currentstate_rx.getStateId()), UVM_LOW)
 
+ if (!firsttime) begin
+   init();
+   firsttime = 1'b1;
+ end
  nextState = calculateNextState(cntxt,item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in);
+//`uvm_info("state transition", $sformatf("Current State: TX: %s, RX: %s, Next State: TX: %s", cntxt.currentstate_tx.getStateId(), cntxt.currentstate_rx.getStateId(), nextState.getStateId()), UVM_MEDIUM)
 
- nextValid = validStateTransitions[cntxt.currentState_rx].find(x) with ( x == nextState );
+ nextValid = validStateTransitions[cntxt.currentstate_rx].find(x) with ( x == nextState );
  if (nextValid.size() != 0) begin
- cgWrapper.sample(cntxt.currentState_rx.getStateId(), nextState.getStateId());
  return nextState;
  end
  else begin
- `uvm_error($sformatf("Invalid state transition from state %0d to state %0d", cntxt.currentState_rx.getStateId(), nextState.getStateId()));
+   $display("Invalid state transition from state %0s to state %0s", cntxt.currentstate_rx.getStateId(), nextState.getStateId());
+ //`uvm_error($sformatf("Invalid state transition from state %0d to state %0d", cntxt.currentstate_rx.getStateId(), nextState.getStateId()));
  end
  endfunction
 
-  static function State calculateNextState(FSMContext cntxt,LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in);
-        case (cntxt.currentState_rx.getStateId())
+  static function State calculateNextState(FSMContext cntxt,LTSM_controllers_seq_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in);
+        case (cntxt.currentstate_rx.getStateId())
             fsm_rx_reset: begin
-               if (item_controllers_in.i_power && item_controllers_in.i_pll_stable && !item_controllers_in.i_reset) begin
+               //`uvm_info("l1_state_rx", $sformatf("i_reset: %0b, counter = %0d ", item_controllers_in.i_reset,counter), UVM_LOW);
+               if (item_controllers_in.i_supply_stable===1'b1 && item_controllers_in.i_pll_stable===1'b1 && item_controllers_in.i_reset===1'b0 && counter > ((((timeout/2))))) begin
                   return SbInitState_rx::Instance();
                end
                else begin
@@ -111,7 +120,7 @@ class StateTransitionUtil_rx extends state;
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if(item_controllers_in.i_rx_decoding == RX_SBINIT_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1)begin
+               else if(item_rx_fsm_sb_in.i_rx_decoding == RX_SBINIT_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1)begin
                   return MbInitParamState_rx::Instance();
                end
 
@@ -123,7 +132,7 @@ class StateTransitionUtil_rx extends state;
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (item_controllers_in.i_rx_decoding == RX_MBINIT_PARAM_Send_RESP && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+               else if (item_rx_fsm_sb_in.i_rx_decoding == 9'h11 && item_rx_fsm_sb_in.i_sb_rx_done==1'b1) begin
                   return MbInitCalState_rx::Instance();
                end
 
@@ -135,7 +144,7 @@ class StateTransitionUtil_rx extends state;
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (item_controllers_in.i_rx_decoding == RX_MBINIT_CAL_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBINIT_CAL_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
                   return MbInitRepairClkState_rx::Instance();
                end
 
@@ -147,7 +156,7 @@ class StateTransitionUtil_rx extends state;
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (item_controllers_in.i_rx_decoding == RX_MBINIT_REPAIRCLK_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBINIT_REPAIRCLK_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
                   return MbInitRepairValState_rx::Instance();
                end
 
@@ -159,7 +168,7 @@ class StateTransitionUtil_rx extends state;
               if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (item_controllers_in.i_rx_decoding == RX_MBINIT_REPAIRVAL_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBINIT_REPAIRVAL_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
                   return MbInitReversalMbState_rx::Instance();
                end
 
@@ -171,7 +180,7 @@ class StateTransitionUtil_rx extends state;
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (item_controllers_in.i_rx_decoding == RX_MBINIT_REVERSAL_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+               else if (item_rx_fsm_sb_in.i_rx_decoding == 9'h35 && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
                   return MbInitRepairMbState_rx::Instance();
                end
 
@@ -183,8 +192,9 @@ class StateTransitionUtil_rx extends state;
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (item_controllers_in.i_rx_decoding == RX_MBINIT_REPAIRMB_Done_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_VALVREF_Start_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
                   return mbtrain_rx_valvref::Instance();
+                  state_done = 1;
                end
 
                else begin
@@ -192,11 +202,12 @@ class StateTransitionUtil_rx extends state;
                end
             end
             fsm_rx_trainerror : begin
-               if (item_controllers_in.i_reset || item_controllers_in.i_sb_cur_msg_done)begin
+               // `uvm_info("l1_state_rx", $sformatf("i_reset: %0b, i_sb_cur_msg_done = %0b , i_lp_linkerror = %0b ", item_controllers_in.i_reset,item_controllers_in.i_sb_cur_msg_done, item_rdi_in.i_lp_linkerror), UVM_LOW);
+               if (item_controllers_in.i_reset || (item_controllers_in.i_sb_cur_msg_done && !item_rdi_in.i_lp_linkerror))begin
                   return ResetState_rx::Instance();
                end
                else begin
-                  return trainerror_tx::Instance();
+                  return trainerror_rx::Instance();
                end 
             end
             fsm_mbtrain_rx_valvref : begin
@@ -207,7 +218,7 @@ class StateTransitionUtil_rx extends state;
                   return mbtrain_rx_datavref::Instance();
                end
                else begin
-                  return mbtrain_rx_valvref::Instance()
+                  return mbtrain_rx_valvref::Instance();
                end
             end
             fsm_mbtrain_rx_datavref : begin
@@ -218,7 +229,7 @@ class StateTransitionUtil_rx extends state;
                   return mbtrain_rx_speedidle::Instance();
                end
                else begin
-                  return mbtrain_rx_valvref::Instance()
+                  return mbtrain_rx_datavref::Instance();
                end
             end
             fsm_mbtrain_rx_dtc1 : begin
@@ -303,7 +314,7 @@ class StateTransitionUtil_rx extends state;
                   return ResetState_rx::Instance();
                end
                // speedidle
-               else if (state_done && item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_LINKSPEED_TX_Exit_SpeedDegrade_Hnd) begin
+               else if (state_done && item_tx_fsm_sb_in.i_tx_decoding == 'hbe && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
                   return mbtrain_rx_speedidle::Instance();
                end
                // repair
@@ -311,7 +322,7 @@ class StateTransitionUtil_rx extends state;
                   return mbtrain_rx_repair::Instance();
                end
                // done 
-               else if (state_done && item_rx_fsm_sb_in.i_tx_decoding == RX_MBTRAIN_LINKSPEED_Send_Done_RESP && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+               else if (state_done && item_tx_fsm_sb_in.i_tx_decoding == RX_MBTRAIN_LINKSPEED_Send_Done_RESP && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
                   return linkinit_state_rx::Instance();
                end
                // phyretrain
@@ -326,7 +337,7 @@ class StateTransitionUtil_rx extends state;
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_TXSELFCAL_End_Handshake && item_rx_fsm_sb_in.i_sb_tx_req==1'b1) begin
+               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_TXSELFCAL_End_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
                   return mbtrain_rx_txselfcal::Instance();
                end
                else begin
@@ -334,10 +345,12 @@ class StateTransitionUtil_rx extends state;
                end
             end
             fsm_mbtrain_rx_speedidle : begin
-               if (item_controllers_in.i_reset)begin
+            //    `uvm_info("l1_state_rx", $sformatf("i_reset: %0b ", item_controllers_in.i_reset), UVM_LOW);
+            //   `uvm_info("l1_state_rx", $sformatf("i_reset_1: %0b ", item_rx_fsm_sb_in.i_reset), UVM_LOW);  
+               if (item_rx_fsm_sb_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_TXSELFCAL_End_Handshake && item_rx_fsm_sb_in.i_sb_tx_req==1'b1) begin
+               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_TXSELFCAL_End_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
                   return mbtrain_rx_txselfcal::Instance();
                end
                else begin
@@ -359,33 +372,58 @@ class StateTransitionUtil_rx extends state;
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
+               if(item_tx_fsm_sb_in.i_tx_decoding == PHYRETRAIN_TX_Start_Req_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1)begin
+                  if(item_tx_fsm_sb_in.i_tx_info[2:0] == 3'b010) // SPEEDIDLE
+                  return mbtrain_rx_speedidle::Instance() ;
+               else if(item_tx_fsm_sb_in.i_tx_info[2:0] == 3'b100) // REPAIR
+                  return mbtrain_rx_repair::Instance() ;
+               else if(item_tx_fsm_sb_in.i_tx_info[2:0] == 3'b001) // TXSELFCAL
+                  return mbtrain_rx_txselfcal::Instance() ;
+               end
             end
             fsm_rx_l1 : begin
                 if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (rdi_item.i_lp_state_req == state_req_active || rx_sb_item.i_rx_decoding == ACTIVE_EXIT_HS_TX_Exit_Handshake && rx_sb_item.i_sb_rx_req)begin
-                  return mbtrain_rx_speedidle::instance();
+               else if (item_rdi_in.i_lp_state_req == state_req_active || item_rx_fsm_sb_in.i_rx_decoding == ACTIVE_EXIT_HS_TX_Exit_Handshake && item_rx_fsm_sb_in.i_sb_rx_req)begin
+                  return mbtrain_rx_speedidle::Instance();
+               end
+               else begin
+                  return l1_state_rx::Instance();
                end
             end
             fsm_rx_linkinit : begin
                 if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_ACTIVE_LINKINIT_State_Rsp_Handshake && item_rx_fsm_sb_in.i_sb_rx_done ==1'b1)begin
-                  return active_state_rx::instance();
+               else if ((rx_handshake_done == 1'b1) && (tx_handshake_done == 1'b1))begin
+                  return active_state_rx::Instance();
+               end
+               else begin
+                  return linkinit_state_rx::Instance();
                end
             end
             fsm_rx_active : begin
                 if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_ACTIVE_Active && rdi_item.i_lp_state_req == state_req_l1)begin
+               else if ((item_rx_fsm_sb_in.i_rx_decoding == RX_ACTIVE_Active && item_rx_fsm_sb_in.i_sb_rx_req == 1'b1) || (item_rdi_in.i_lp_state_req == state_req_l1))begin
                   return l1_state_rx::Instance();
                end
-            end
-            default: 
+               else begin
+                  return active_state_rx::Instance();
+               end
+            end 
         endcase
   endfunction
- endclass
 
+  virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_seq_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
+                                              LTSM_controllers_seq_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
+   return 0; // dummmy value, no specific action in this state
+   
+  endfunction
+   virtual function fsm_t getStateId();
+        return fsm_mbtrain_rx_datatrainvref; // dummy value, not used
+    endfunction
+
+ endclass

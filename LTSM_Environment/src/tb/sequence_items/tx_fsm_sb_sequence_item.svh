@@ -28,20 +28,18 @@ class tx_fsm_sb_sequence_item extends uvm_sequence_item;
         logic [8:0] i_tx_decoding,o_tx_encoding;
         logic [63:0] i_tx_data,o_tx_data;
         logic [15:0] i_tx_info,o_tx_info;
-        msgtype_t i_msgtype,o_msgtype;
+        logic i_reset;
         logic i_sb_tx_req, i_sb_tx_rsp, i_sb_tx_done;
-        logic o_sb_tx_req, o_sb_tx_rsp, o_sb_tx_done;
+        logic o_tx_sb_req, o_tx_sb_rsp, o_tx_sb_done;
         
 
     `uvm_object_utils_begin(tx_fsm_sb_sequence_item)
-        `uvm_field_enum(i_tx_decoding, encoding_tx_t, UVM_NORECORD)
-        `uvm_field_enum(o_tx_encoding, encoding_tx_t, UVM_NORECORD)
+        `uvm_field_int(i_tx_decoding, UVM_NORECORD)
+        `uvm_field_int(o_tx_encoding, UVM_NORECORD)
         `uvm_field_int(i_tx_data,            UVM_NORECORD)
         `uvm_field_int(o_tx_data,            UVM_NORECORD)
         `uvm_field_int(i_tx_info,            UVM_NORECORD)
         `uvm_field_int(o_tx_info,            UVM_NORECORD)
-        `uvm_field_enum(i_msgtype, msgtype_t, UVM_NORECORD)
-        `uvm_field_enum(o_msgtype, msgtype_t, UVM_NORECORD)
     `uvm_object_utils_end
         
 

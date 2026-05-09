@@ -33,8 +33,8 @@ virtual class LTSM_monitor_base #(type ITEM_T, type INTF_T) extends uvm_monitor;
     `uvm_component_param_utils(LTSM_monitor_base #(ITEM_T, INTF_T))
     
     INTF_T vif;
-    ITEM_T item;
-    uvm_analysis_port #(ITEM_T) ap;
+    ITEM_T item_in,item_out;
+    uvm_analysis_port #(ITEM_T) ap_in,ap_out;
     int unsigned transaction_count = 0;
 
 
@@ -100,7 +100,8 @@ endfunction : new
 
 function void LTSM_monitor_base::build_phase(uvm_phase phase);
     super.build_phase(phase);
-    ap = new("ap", this);
+    ap_in = new("ap_in", this);
+    ap_out = new("ap_out", this);
 endfunction
 
 // run_phase

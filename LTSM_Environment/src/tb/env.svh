@@ -41,6 +41,8 @@ class LTSM_env extends uvm_env;
     rdi_agent_cfg_type #(virtual ltsm_rdi_if) rdi_cfg;
     env_config env_cfg;
 
+    scoreboard score;
+
     virtual_sequencer v_seqr;
 
 
@@ -135,7 +137,8 @@ function void LTSM_env::build_phase(uvm_phase phase);
     tx_cfg           = agent_config #(virtual TX_FSM_SB)::type_id::create("tx_cfg");
     LTSM_ctrl_cfg     = LTSM_controllers_agent_cfg #(virtual LTSM_controllers_if)::type_id::create("LTSM_ctrl_cfg");
     rdi_cfg            = rdi_agent_cfg_type #(virtual ltsm_rdi_if)::type_id::create("rdi_cfg");
-    //rdi_cfg            = new("rdi_cfg");
+    score              = scoreboard::type_id::create("score", this);
+    rdi_cfg            = new("rdi_cfg");
 
 
     v_seqr = virtual_sequencer::type_id::create("v_seqr", this);
@@ -157,11 +160,24 @@ endfunction : build_phase
 
 function void LTSM_env::connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-
+    `uvm_info("connect_phase", "Connecting LTSM_env components and virtual sequencer", UVM_LOW)
     v_seqr.tx_seqr = tx_agent.seqr;
     v_seqr.rx_seqr = rx_agent.seqr;
     v_seqr.LTSM_ctrl_seqr = LTSM_ctrl_agt.seqr;
     v_seqr.ltsm_rdi_seqr = rdi_agt.seqr;
+
+    rx_agent.ap_in.connect(score.ap_rx_fsm_sb_in);
+    rx_agent.ap_out.connect(score.ap_rx_fsm_sb_out);
+
+    tx_agent.ap_in.connect(score.ap_tx_fsm_sb_in);
+    tx_agent.ap_out.connect(score.ap_tx_fsm_sb_out);
+
+    LTSM_ctrl_agt.ap_in.connect(score.ap_controllers_in);
+    LTSM_ctrl_agt.ap_out.connect(score.ap_controllers_out);
+
+    rdi_agt.ap_in.connect(score.ap_rdi_in);
+    rdi_agt.ap_out.connect(score.ap_rdi_out);
+    `uvm_info("connect_phase", "Connecting LTSM_env components and virtual sequencer has finished", UVM_LOW)
 endfunction : connect_phase
 
 // configure_agents

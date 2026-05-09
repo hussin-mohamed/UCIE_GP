@@ -1,66 +1,45 @@
-package shared_ltsm_pkg
- typedef class State ;
-  typedef class ResetState_rx;
-  typedef class SbInitState_rx;
-  typedef class MbInitParamState_rx;
-  typedef class MbInitCalState_rx;
-  typedef class MbInitRepairClkState_rx;
-  typedef class MbInitRepairValState_rx;
-  typedef class MbInitReversalMbState_rx;
-  typedef class MbInitRepairMbState_rx;
-  typedef class mbtrain_rx_valvref;
-  typedef class mbtrain_rx_datavref;
-  typedef class mbtrain_rx_speedidle;
-  typedef class mbtrain_rx_txselfcal;
-  typedef class mbtrain_rx_rxclkcal;
-  typedef class mbtrain_rx_valtraincenter;
-  typedef class mbtrain_rx_valtrainvref;
-  typedef class mbtrain_rx_dtc1;
-  typedef class mbtrain_rx_datatrainvref;
-  typedef class mbtrain_rx_rxdeskew;
-  typedef class mbtrain_rx_dtc2;
-  typedef class mbtrain_rx_linkspeed;
-  typedef class mbtrain_rx_repair;
-  typedef class phyretrain_rx;
-  typedef class linkinit_state_rx;
-  typedef class active_rx;
-  typedef class l1_state_rx;
-  typedef class trainerror_rx;
-  typedef class ResetState_tx;
-  typedef class SbInitState_tx;
-  typedef class MbInitParamState_tx;
-  typedef class MbInitCalState_tx;
-  typedef class MbInitRepairClkState_tx;
-  typedef class MbInitRepairValState_tx;
-  typedef class MbInitReversalMbState_tx;
-  typedef class MbInitRepairMbState_tx;
-  typedef class mbtrain_tx_valvref;
-  typedef class mbtrain_tx_datavref;
-  typedef class mbtrain_tx_speedidle;
-  typedef class mbtrain_tx_txselfcal;
-  typedef class mbtrain_tx_rxclkcal;
-  typedef class mbtrain_tx_valtraincenter;
-  typedef class mbtrain_tx_valtrainvref;
-  typedef class mbtrain_tx_dtc1;
-  typedef class mbtrain_tx_datatrainvref;
-  typedef class mbtrain_tx_rxdeskew;
-  typedef class mbtrain_tx_dtc2;
-  typedef class mbtrain_tx_linkspeed;
-  typedef class mbtrain_tx_repair;
-  typedef class phyretrain_tx;
-  typedef class linkinit_state_tx;
-  typedef class active_tx;
-  typedef class l1_state_tx;
-  typedef class trainerror_tx;
-    
-  parameter timeout = 1000; // number of cycles to wait for a response before declaring a timeout will be provided by design team in the future
-  typedef enum logic {
-        req,
-        rsp,
-        done
-        } msgtype_t;
-
-`define RESULT_THRESHOLD 16'b0000000011111111
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
+package shared_ltsm_pkg;
+  
+  parameter logic [63:0] data_DATA_FIELD = {
+    4'b0000,       // [63:60] Reserved
+    1'b0,          // [59]    Comparison Mode (Per Lane)
+    16'd1,         // [58:43] Iteration Count
+    16'd0,         // [42:27] Idle Count
+    16'd4000,      // [26:11] Burst Count
+    1'b0,          // [10]    Pattern Mode (Continuous)
+    4'h0,          // [9:6]   Clock Phase (Clock PI Center)
+    3'h0,          // [5:3]   Valid Pattern (Functional)
+    3'h0           // [2:0]   Data Pattern (LFSR)
+};
+  parameter logic [63:0] valid_DATA_FIELD = {
+    4'b0000,       // [63:60] Reserved
+    1'b0,          // [59]    Comparison Mode (Per Lane)
+    16'd1,         // [58:43] Iteration Count
+    16'd0,         // [42:27] Idle Count
+    16'd128,       // [26:11] Burst Count
+    1'b0,          // [10]    Pattern Mode (Continuous)
+    4'h0,          // [9:6]   Clock Phase (Clock PI Center)
+    3'h0,          // [5:3]   Valid Pattern (Functional)
+    3'h0           // [2:0]   Data Pattern (LFSR)
+};
+  parameter timeout = 80000; // number of cycles to wait for a response before declaring a timeout will be provided by design team in the future
+  
+  `define RESULT_THRESHOLD 16'b0000000111111111
 `define LANE_MAP_CODE 3'b011 // all lanes are functional    
 
 typedef enum logic [2:0] {PASS = 3'b111 , FAIL_RTRK_L = 3'b011 , FAIL_RCKN_L = 3'b101,
@@ -76,10 +55,9 @@ typedef enum logic[15:0] {
   LANES_0_TO_3           = 16'h000F, // Logical lanes 0 to 3
   LANES_4_TO_7           = 16'h00F0  // Logical lanes 4 to 7
 } lane_results_t;
-
+  bit enter_speeddegrade;
+ bit state_done;
 typedef enum logic [2:0] { NOT_POSSIBLE = 3'b0 , MATCHED = `LANE_MAP_CODE } degrade_t;
-
-        
 typedef enum logic [8:0] {
  // =========================================================
   // 00: INITIALIZATION PHASE
@@ -168,8 +146,8 @@ typedef enum logic [8:0] {
   RX_MBTRAIN_RXDESKEW_TX_EQ_Preset_Handshake  = 9'b01_0101_001,
   RX_MBTRAIN_RXDESKEW_Deskew_Operation        = 9'b01_0101_010,
   RX_MBTRAIN_RXDESKEW_Datacenter_Handshake    = 9'b01_0101_011,
-  RX_MBTRAIN_RXDESKEW_Train_Error_Handshake   = 9'b01_0101_100,
-  RX_MBTRAIN_RXDESKEW_End_Handshake           = 9'b01_0101_101,
+  RX_MBTRAIN_RXDESKEW_Train_Error_Handshake   = 9'b01_0101_101,
+  RX_MBTRAIN_RXDESKEW_End_Handshake           = 9'b01_0101_100,
 
   // 7. MBTRAIN DATATRAINCENTER2
   RX_MBTRAIN_DTC2_Start_Handshake             = 9'b01_0110_000,
@@ -179,7 +157,7 @@ typedef enum logic [8:0] {
   // 8. MBTRAIN LINKSPEED
   RX_MBTRAIN_LINKSPEED_Start_Handshake        = 9'b01_0111_000,
   RX_MBTRAIN_LINKSPEED_Data_Clock_Test_Det    = 9'b01_0111_001,
-  RX_MBTRAIN_LINKSPEED_Send_SpeedDegrade_RESP = 9'b01_0111_011,
+  RX_MBTRAIN_LINKSPEED_Send_SpeedDegrade_RESP = 9'b01_0111_110,
   RX_MBTRAIN_LINKSPEED_Send_PhyRetrain_RESP   = 9'b01_0111_100,
   RX_MBTRAIN_LINKSPEED_Send_Repair_RESP       = 9'b01_0111_101,
   RX_MBTRAIN_LINKSPEED_Send_Done_RESP         = 9'b01_0111_010,
@@ -326,9 +304,9 @@ typedef enum logic [8:0] {
   MBTRAIN_RXCLKCAL_TX_End_Handshake        = 9'b01_0011_010,
 
   // 5. MBTRAIN VALTRAINVREF
-  MBTRAIN_VALTRAINVREF_TX_Start_Handshake  = 9'b01_0100_000,
-  MBTRAIN_VALTRAINVREF_TX_Pattern_Generation = 9'b01_0100_001,
-  MBTRAIN_VALTRAINVREF_TX_End_Handshake    = 9'b01_0100_010,
+  MBTRAIN_VALTRAINCENTER_TX_Start_Handshake  = 9'b01_0100_000,
+  MBTRAIN_VALTRAINCENTER_TX_Pattern_Generation = 9'b01_0100_001,
+  MBTRAIN_VALTRAINCENTER_TX_End_Handshake    = 9'b01_0100_010,
 
   // 6. MBTRAIN RXDESKEW
   MBTRAIN_RXDESKEW_TX_Start_Handshake      = 9'b01_0101_000,
@@ -359,8 +337,8 @@ typedef enum logic [8:0] {
 
   // 10. MBTRAIN SPEEDIDLE
   MBTRAIN_SPEEDIDLE_TX_Speed_Transition    = 9'b01_1001_000,
-  MBTRAIN_SPEEDIDLE_TX_End_Handshake       = 9'b01_1001_001,
-  MBTRAIN_SPEEDIDLE_TX_TrainError_Handshake = 9'b01_1001_010,
+  MBTRAIN_SPEEDIDLE_TX_End_Handshake       = 9'b01_1001_010,
+  MBTRAIN_SPEEDIDLE_TX_TrainError_Handshake = 9'b01_1001_001,
 
   // 11. MBTRAIN TXSELFCAL
   MBTRAIN_TXSELFCAL_TX_Calibration         = 9'b01_1010_000,
@@ -372,9 +350,9 @@ typedef enum logic [8:0] {
   PHYRETRAIN_TX_Start_Req_Handshake        = 9'b01_1011_010,
 
   // 14. VALTRAINCENTER
-  MBTRAIN_VALTRAINCENTER_TX_Start_Handshake     = 9'b01_1101_000,
-  MBTRAIN_VALTRAINCENTER_TX_Pattern_Generation  = 9'b01_1101_001,
-  MBTRAIN_VALTRAINCENTER_TX_End_Handshake       = 9'b01_1101_010,
+  MBTRAIN_VALTRAINVREF_TX_Start_Handshake     = 9'b01_1101_000,
+  MBTRAIN_VALTRAINVREF_TX_Pattern_Generation  = 9'b01_1101_001,
+  MBTRAIN_VALTRAINVREF_TX_End_Handshake       = 9'b01_1101_010,
 
   // 15. DATATRAINVREF
   MBTRAIN_DATATRAINVREF_TX_Start_Handshake      = 9'b01_1110_000,
@@ -396,23 +374,8 @@ typedef enum logic [8:0] {
   // 3. L1 / Exit HS
   ACTIVE_L1_TX_handshake                    = 9'b10_0010_000,
   ACTIVE_L1_TX_L1_State                     = 9'b10_0010_001,
-  ACTIVE_EXIT_HS_TX_Exit_Handshake          = 9'b10_0011_000,
-  // =========================================================
-  // 11: DATA_SWEEP PHASE
-  // =========================================================	
-  DATA_TO_CLOCK_TX_RX_INIT_HANDSHAKE         = 9'b110000000,  // 11 0000 000
-  DATA_TO_CLOCK_TX_RX_LFSR_CLEAR_HANDSHAKE   = 9'b110000001,  // 11 0000 001
-  DATA_TO_CLOCK_TX_RX_PATTERN_GENERATION     = 9'b110000010,  // 11 0000 010
-  DATA_TO_CLOCK_TX_RX_RESULT_HANDSHAKE       = 9'b110000011,  // 11 0000 011
-  DATA_TO_CLOCK_TX_RX_END_INIT_HANDSHAKE     = 9'b110000100,  // 11 0000 100
-
-    // RX Initiated
-  DATA_TO_CLOCK_RX_RX_INIT_HANDSHAKE         = 9'b110001000,  // 11 0001 000
-  DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE   = 9'b110001001,  // 11 0001 001
-  DATA_TO_CLOCK_RX_RX_PATTERN_GENERATION     = 9'b110001010,  // 11 0001 010
-  DATA_TO_CLOCK_RX_RX_RESULT_HANDSHAKE       = 9'b110001011,  // 11 0001 011
-  DATA_TO_CLOCK_RX_RX_SWEEP_RESULT_HANDSHAKE = 9'b110001100,  // 11 0001 100
-  DATA_TO_CLOCK_RX_RX_END_INIT_HANDSHAKE     = 9'b110001101
+  ACTIVE_EXIT_HS_TX_Exit_Handshake          = 9'b10_0011_000
+  
 } encoding_tx_t;
 typedef enum logic [5:0] { 
   fsm_tx_reset,
@@ -455,6 +418,7 @@ typedef enum logic [5:0] {
   fsm_mbtrain_rx_dtc1,
   fsm_mbtrain_rx_rxclkcal,
   fsm_mbtrain_rx_valtraincenter,
+  fsm_mbtrain_rx_valtrainvref,
   fsm_mbtrain_rx_rxdeskew,
   fsm_mbtrain_rx_dtc2,
   fsm_mbtrain_rx_datatrainvref,
@@ -465,6 +429,7 @@ typedef enum logic [5:0] {
   fsm_rx_phyretrain,
   fsm_rx_linkinit,
   fsm_rx_active,
+  fsm_rx_l1
  } fsm_t;
  typedef enum logic[3:0]{
     state_req_NOP       =     4'b0000  ,
@@ -472,6 +437,6 @@ typedef enum logic [5:0] {
     state_req_l1        =     4'b0100  ,
     state_req_linkReset =     4'b1001  ,
     state_req_retrain   =     4'b1011  ,
-    state_req_disabled  =     4'b1100  ,
-  } lp_state_req_t
+    state_req_disabled  =     4'b1100  
+  } lp_state_req_t;
 endpackage : shared_ltsm_pkg

@@ -26,7 +26,21 @@
 
 class mbtrain_linkspeed_repair_trainerror extends virtual_sequence_base;
     `uvm_object_utils(mbtrain_linkspeed_repair_trainerror)
-
+    mbtrain_linkspeed_tx_starthandshake       start_tx;
+    mbtrain_linkspeed_tx_error_rsp            error_rsp;
+    mbtrain_repair_tx_starthandshake          end_linkspeed_tx;
+    mbtrain_repair_tx_applydegrade            apply_tx;
+    trainerror_tx_rsp                         error_tx_rsp;
+    mbtrain_linkspeed_rx_starthandshake       start_rx;
+    mbtrain_linkspeed_rx_error_req            error_req;
+    mbtrain_linkspeed_rx_repair               repair_req;
+    mbtrain_repair_rx_starthandshake          end_linkspeed_rx;
+    mbtrain_repair_rx_degrade_0               apply_rx;
+    trainerror_rx_starthandshake              error_rx;
+    trainerror_rx_rsp                         error_rx_rsp;
+    mbtrain_txinit_datasweep_fail_8_15        data_sweep;
+    trainerror_exitreset                      exit_to_reset;
+    trainerror_rdiexit                       rdiexit;
 
     // Function: new
     //
@@ -91,6 +105,7 @@ task mbtrain_linkspeed_repair_trainerror::pre_body();
     // datasweep sequence  
     data_sweep=mbtrain_txinit_datasweep_fail_8_15::type_id::create("data_sweep");
     exit_to_reset=trainerror_exitreset::type_id::create("exit_to_reset"); // controller
+    rdiexit=trainerror_rdiexit::type_id::create("rdiexit");
 endtask
 
 // body
@@ -144,5 +159,12 @@ task mbtrain_linkspeed_repair_trainerror::body();
             error_rx_rsp.start(rx_fsm_sb_seqr);
         end
     join
-    exit_to_reset.start(LTSM_ctrl_seqr);
+    fork
+        begin
+            exit_to_reset.start(LTSM_ctrl_seqr);
+        end
+        begin
+            rdiexit.start(ltsm_rdi_seqr);
+        end
+    join
 endtask : body

@@ -26,8 +26,16 @@
 
 class mbtrain_datatrainvref_success extends virtual_sequence_base;
     `uvm_object_utils(mbtrain_datatrainvref_success)
-
-
+    mbtrain_datatrainvref_tx_starthandshake    start_tx;
+    trainerror_tx_rsp                          error_tx_rsp;
+    mbtrain_datatrainvref_rx_starthandshake    start_rx;
+    trainerror_rx_starthandshake               error_rx;
+    trainerror_rx_rsp                          error_rx_rsp;
+    trainerror_exitreset                       exit_to_reset;
+    mbtrain_rxinit_datasweep_success           data_sweep;
+    controllers_done                           done;
+    mbtrain_datatrainvref_tx_endhandshake      end_handshake_tx;
+    mbtrain_datatrainvref_rx_endhandshake      end_handshake_rx;
     // Function: new
     //
     // Creates a new virtual_sequence instance with the given name.
@@ -82,6 +90,7 @@ task mbtrain_datatrainvref_success::pre_body();
     end_handshake_rx=mbtrain_datatrainvref_rx_endhandshake::type_id::create("end_handshake_rx");
     // datasweep sequence  
     data_sweep=mbtrain_rxinit_datasweep_success::type_id::create("data_sweep");
+    done=controllers_done::type_id::create("done");
 endtask
 
 // body
@@ -109,7 +118,10 @@ task mbtrain_datatrainvref_success::body();
         end
         // rx thread
         begin
-            end_handshake_rx.start(rx_fsm_sb_seqr);
+            fork
+                done.start(LTSM_ctrl_seqr);
+                end_handshake_rx.start(rx_fsm_sb_seqr);
+            join
         end
     join
 endtask : body

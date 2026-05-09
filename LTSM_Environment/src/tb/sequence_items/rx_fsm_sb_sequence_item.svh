@@ -28,20 +28,18 @@ class rx_fsm_sb_sequence_item extends uvm_sequence_item;
         logic [8:0] i_rx_decoding,o_rx_encoding;
         logic [63:0] i_rx_data,o_rx_data;
         logic [15:0] i_rx_info,o_rx_info;
-        msgtype_t i_msgtype,o_msgtype;
+        logic i_reset;
         logic i_sb_rx_req, i_sb_rx_rsp, i_sb_rx_done;
-        logic o_sb_rx_req, o_sb_rx_rsp, o_sb_rx_done;
+        logic o_rx_sb_req, o_rx_sb_rsp, o_rx_sb_done;
         
 
     `uvm_object_utils_begin(rx_fsm_sb_sequence_item)
-        `uvm_field_enum(i_rx_decoding, encoding_rx_t, UVM_NORECORD)
-        `uvm_field_enum(o_rx_encoding, encoding_rx_t, UVM_NORECORD)
+        `uvm_field_int(i_rx_decoding, UVM_NORECORD)
+        `uvm_field_int(o_rx_encoding, UVM_NORECORD)
         `uvm_field_int(i_rx_data,            UVM_NORECORD)
         `uvm_field_int(o_rx_data,            UVM_NORECORD)
         `uvm_field_int(i_rx_info,            UVM_NORECORD)
         `uvm_field_int(o_rx_info,            UVM_NORECORD)
-        `uvm_field_enum(i_msgtype, msgtype_t, UVM_NORECORD)
-        `uvm_field_enum(o_msgtype, msgtype_t, UVM_NORECORD)
     `uvm_object_utils_end
         
 

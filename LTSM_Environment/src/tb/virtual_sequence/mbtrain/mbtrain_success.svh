@@ -26,7 +26,25 @@
 
 class mbtrain_success extends virtual_sequence_base;
     `uvm_object_utils(mbtrain_success)
-
+    mbtrain_valvref_success                  valvref;
+    mbtrain_datavref_success                 datavref;
+    mbtrain_datavref_speedidle_tx            speedidle_start;
+    mbtrain_speedidle_tx_endhandshake        speedidle_tx_end;
+    mbtrain_speedidle_rx_endhandshake        speedidle_rx_end;
+    mbtrain_txselfcal_calibration_tx         txselfcal_start_tx;
+    mbtrain_txselfcal_tx_endhandshake        txselfcal_end_tx;
+    mbtrain_txselfcal_rx_endhandshake        txselfcal_rx_end;
+    mbtrain_rxclkcal_success                 rxclkcal;
+    mbtrain_valtraincenter_success           valtraincenter;
+    mbtrain_valtrainvref_success             valtrainvref;
+    mbtrain_dtc1_success                     dtc1;
+    mbtrain_datatrainvref_success            datatrainvref;
+    mbtrain_dtc2_success                     dtc2;
+    mbtrain_rxdeskew_success                 rxdeskew;
+    mbtrain_linkspeed_success                linkspeed;
+    controllers_done                         done;
+    tx_done                                  done_tx;
+    rx_done                                  done_rx;
 
     // Function: new
     //
@@ -91,6 +109,9 @@ task mbtrain_success::pre_body();
     dtc2=mbtrain_dtc2_success::type_id::create("dtc2");
     rxdeskew=mbtrain_rxdeskew_success::type_id::create("rxdeskew");
     linkspeed=mbtrain_linkspeed_success::type_id::create("linkspeed");
+    done=controllers_done::type_id::create("done");
+    done_tx=tx_done::type_id::create("done_tx");
+    done_rx=rx_done::type_id::create("done_rx");
 endtask
 
 // body
@@ -104,12 +125,14 @@ task mbtrain_success::body();
     fork
         // tx thread
         begin
-            speedidle_tx_end.start(tx_fsm_sb_seqr);
-                  
+            //done_tx.start(tx_fsm_sb_seqr);      
         end
         // rx thread
         begin
+            fork
+            done.start(LTSM_ctrl_seqr);    
             speedidle_rx_end.start(rx_fsm_sb_seqr);
+            join
         end
     join
 
@@ -118,12 +141,14 @@ task mbtrain_success::body();
     fork
         // tx thread
         begin
-            txselfcal_end_tx.start(tx_fsm_sb_seqr);
-                  
+            //done_tx.start(tx_fsm_sb_seqr);      
         end
         // rx thread
         begin
+            fork
+            done.start(LTSM_ctrl_seqr);    
             txselfcal_rx_end.start(rx_fsm_sb_seqr);
+            join
         end
     join
 

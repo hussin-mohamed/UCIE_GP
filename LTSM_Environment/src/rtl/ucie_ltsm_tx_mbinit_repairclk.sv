@@ -4,186 +4,164 @@ module ucie_ltsm_tx_mbinit_repairclk #(
     parameter INFO_WIDTH = 16
 ) (
 
-    input                           i_clk,
-    input                           i_reset,
-    input   [DECODING_WIDTH-1:0]    i_tx_decoding,
-    input   [DATA_WIDTH-1:0]        i_tx_data,
-    input   [INFO_WIDTH-1:0]        i_tx_info,
-    input                           i_sb_tx_req,
-    input                           i_sb_tx_rsp,
-    input                           i_sb_tx_done,
-    input                           i_tx_done,
-    input   [3:0]                   i_current_state,
-    input                           o_timer_8ms,
+    input                      i_clk,
+    input                      i_reset,
+    input [DECODING_WIDTH-1:0] i_tx_decoding,
+    input [    DATA_WIDTH-1:0] i_tx_data,
+    input [    INFO_WIDTH-1:0] i_tx_info,
+    input                      i_sb_tx_req,
+    input                      i_sb_tx_rsp,
+    input                      i_sb_tx_done,
+    input                      i_tx_done,
+    input [               3:0] i_current_state,
+    input                      o_timer_8ms,
 
-    output  logic [DECODING_WIDTH-1:0]  o_tx_encoding,
-    output  logic [DATA_WIDTH-1:0]      o_tx_data,
-    output  logic [INFO_WIDTH-1:0]      o_tx_info,
-    output  logic                       o_tx_sb_req, 
-    output  logic                       o_tx_sb_rsp,
-    output  logic                       o_tx_sb_done,
-    output  logic                       o_train_error,
-    output  logic                       o_done_mbinit_repairclk_tx
+    output logic [DECODING_WIDTH-1:0] o_tx_encoding,
+    output logic [    DATA_WIDTH-1:0] o_tx_data,
+    output logic [    INFO_WIDTH-1:0] o_tx_info,
+    output logic                      o_tx_sb_req,
+    output logic                      o_tx_sb_rsp,
+    output logic                      o_tx_sb_done,
+    output logic                      o_train_error,
+    output logic                      o_done_mbinit_repairclk_tx
 
 
 );
 
-            
-logic [2:0] current_substate;                   // current substate 
-logic [2:0] next_substate;                      // next substate
 
-logic done_ack;
-logic substates_done;
+  logic [2:0] current_substate;  // current substate 
+  logic [2:0] next_substate;  // next substate
 
-// Local Parameters for states names
-localparam MBINIT_REPAIRCLK     = 4'b0100;
- 
+  logic       done_ack;
+  logic       substates_done;
 
-// Local Parameters for states names (REAPIRCLK)
-localparam INIT_HANDSHAKE       = 3'b000;
-localparam PATTERN_GENERATION   = 3'b001;
-localparam RESULT_HANDSHAKE     = 3'b010;
-localparam DONE_HANDSHAKE       = 3'b011;
-    
+  // Local Parameters for states names
+  localparam MBINIT_REPAIRCLK = 4'b0100;
 
-// State Memory Logic
-always_ff @(posedge i_clk or posedge i_reset) begin
-    if (i_reset || i_current_state != MBINIT_REPAIRCLK) begin
-        current_substate <= INIT_HANDSHAKE;
-        substates_done   <= 0;
+
+  // Local Parameters for states names (REAPIRCLK)
+  localparam INIT_HANDSHAKE = 3'b000;
+  localparam PATTERN_GENERATION = 3'b001;
+  localparam RESULT_HANDSHAKE = 3'b010;
+  localparam DONE_HANDSHAKE = 3'b011;
+
+
+  // State Memory Logic
+  always_ff @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) begin
+      current_substate <= INIT_HANDSHAKE;
+      substates_done   <= 0;
+    end else if (i_current_state != MBINIT_REPAIRCLK) begin
+      current_substate <= INIT_HANDSHAKE;
+      substates_done   <= 0;
     end else begin
+      // Park in DONE_HANDSHAKE after local completion so encoding stays 0x23
+      // until parent leaves MBINIT_REPAIRCLK (partner may still be finishing).
+      if (current_substate == DONE_HANDSHAKE && i_sb_tx_rsp && i_tx_decoding == 9'h23) begin
+        substates_done   <= 1;
+        current_substate <= DONE_HANDSHAKE;
+      end else begin
         current_substate <= next_substate;
-        if (current_substate == DONE_HANDSHAKE && i_sb_tx_rsp && i_tx_decoding == 9'h23)
-            substates_done <= 1;
+      end
     end
-end
+  end
 
 
-always @(posedge i_clk or posedge i_reset) begin
+  always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) done_ack <= 0;
     else if (i_sb_tx_done) begin
-        done_ack <= 1;
-    end else if (i_sb_tx_rsp) begin 
-        done_ack <= 0;
+      done_ack <= 1;
+    end else  begin
+      done_ack <= 0;
     end
-end
+  end
 
-always_comb begin 
+  always_comb begin
     o_tx_encoding = 9'h20;
     o_tx_sb_req = 0;
     o_tx_sb_rsp = 0;
     o_tx_sb_done = 0;
     o_train_error = 0;
     o_done_mbinit_repairclk_tx = 0;
+    o_tx_info = 0;
     next_substate = INIT_HANDSHAKE;
 
     // TIMEOUT
-    if(o_timer_8ms == 1) begin 
-        o_train_error = 1;
-        next_substate = INIT_HANDSHAKE;
-    end 
-    else if(i_current_state == MBINIT_REPAIRCLK && substates_done == 0) begin 
-        case(current_substate) 
-            INIT_HANDSHAKE: begin 
-                o_tx_encoding = 9'h20;
+    if (!substates_done && o_timer_8ms == 1) begin
+      o_train_error = 1;
+      next_substate = INIT_HANDSHAKE;
+    end else if (i_current_state == MBINIT_REPAIRCLK) begin
+      case (current_substate)
+        INIT_HANDSHAKE: begin
+          o_tx_encoding = 9'h20;
+          o_tx_info = 0;  // added
 
-                // TX Sending REQ Handshake
-                if (done_ack) begin 
-                    o_tx_sb_req = 0;
-                end
-                else begin 
-                    o_tx_sb_req = 1;
-                end
+          if (!substates_done) begin
+            // TX Sending REQ Handshake
+            if (done_ack) o_tx_sb_req = 0;
+            else o_tx_sb_req = 1;
 
-                // Next State Logic
-                if(i_sb_tx_rsp && i_tx_decoding == 9'h20) begin 
-                    next_substate = PATTERN_GENERATION;
-                end 
-                else begin 
-                    next_substate = INIT_HANDSHAKE;
-                end 
+            // Next State Logic
+            if (i_sb_tx_rsp && i_tx_decoding == 9'h20) next_substate = PATTERN_GENERATION;
+            else next_substate = INIT_HANDSHAKE;
+          end
+        end
 
-            end 
+        PATTERN_GENERATION: begin
+          // Output State Encoding
+          o_tx_encoding = 9'h21;
 
-            PATTERN_GENERATION: begin 
-                // Output State Encoding
-                o_tx_encoding = 9'h21;
+          if (!substates_done) begin
+            if (done_ack) o_tx_sb_req = 0;
+            else o_tx_sb_req = 1;
 
-                // TX Sending REQ Handshake
-                if (done_ack) begin 
-                    o_tx_sb_req = 0;
-                end
-                else begin 
-                    o_tx_sb_req = 1;
-                end
+            if (i_tx_done) next_substate = RESULT_HANDSHAKE;
+            else next_substate = PATTERN_GENERATION;
+          end
+        end
 
-                // Next State Logic
-                if(i_tx_done) begin 
-                    next_substate = RESULT_HANDSHAKE;
-                end 
-                else begin 
-                    next_substate = PATTERN_GENERATION;
-                end 
+        RESULT_HANDSHAKE: begin
+          // Output State Encoding
+          o_tx_encoding = 9'h22;
 
-            end 
+          if (!substates_done) begin
+            if (done_ack) o_tx_sb_req = 0;
+            else o_tx_sb_req = 1;
 
-            RESULT_HANDSHAKE: begin 
-                // Output State Encoding
-                o_tx_encoding = 9'h22;
+            if (i_sb_tx_rsp && i_tx_decoding == 9'h22) begin
+              if (!(&i_tx_info[2:0])) begin
+                o_train_error = 1;
+                next_substate = INIT_HANDSHAKE;
+              end else begin
+                o_train_error = 0;
+                next_substate = DONE_HANDSHAKE;
+              end
+            end else next_substate = RESULT_HANDSHAKE;
+          end
+        end
 
-                // TX Sending REQ Handshake
-                if (done_ack) begin 
-                    o_tx_sb_req = 0;
-                end
-                else begin 
-                    o_tx_sb_req = 1;
-                end
- 
-                // Next State Logic
-                if(i_sb_tx_rsp && i_tx_decoding == 9'h22) begin 
-                    if(!(&i_tx_info[2:0])) begin 
-                        o_train_error = 1;
-                        next_substate = INIT_HANDSHAKE;
-                    end 
-                    else begin 
-                        o_train_error = 0;
-                        next_substate = DONE_HANDSHAKE;
-                    end 
-                end 
-                else begin 
-                    next_substate = RESULT_HANDSHAKE;
-                end 
-            end 
+        DONE_HANDSHAKE: begin
+          // Output State Encoding
+          o_tx_encoding = 9'h23;
 
-            DONE_HANDSHAKE: begin 
-                // Output State Encoding
-                o_tx_encoding = 9'h23;
+          if (!substates_done) begin
+            if (done_ack) o_tx_sb_req = 0;
+            else o_tx_sb_req = 1;
 
-                // TX Sending REQ Handshake
-                if (done_ack) begin 
-                    o_tx_sb_req = 0;
-                end
-                else begin 
-                    o_tx_sb_req = 1;
-                end
+            if (i_sb_tx_rsp && i_tx_decoding == 9'h23) begin
+              next_substate              = INIT_HANDSHAKE;
+              o_done_mbinit_repairclk_tx = 1;
+            end else next_substate = DONE_HANDSHAKE;
+          end
+        end
 
-                // Next State Logic
-                if(i_sb_tx_rsp && i_tx_decoding == 9'h23) begin 
-                    next_substate = INIT_HANDSHAKE;
-                    o_done_mbinit_repairclk_tx = 1;
-                end 
-                else begin 
-                    next_substate = DONE_HANDSHAKE;
-                end 
+      endcase
+    end
 
-            end 
+  end
 
-        endcase
-    end 
-
-end
-
-    // Assertions
+  // Assertions
+  /*
 `ifdef SIM
 
     // --------------------------------------------------------------------------
@@ -290,4 +268,5 @@ end
         else $error("ASSERT FAIL [DONE_ONLY_IN_STATE]: done asserted outside MBINIT_REPAIRCLK");
 
 `endif
+*/
 endmodule

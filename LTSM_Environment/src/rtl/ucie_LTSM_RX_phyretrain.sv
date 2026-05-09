@@ -52,6 +52,9 @@ logic idle_reg;
 
 logic done_ack;
 logic [DECODING_WIDTH-1:0] o_rx_encoding_old;
+logic tx_self_cal_state_enable_old;
+logic speed_idle_state_enable_old;
+logic repair_state_enable_old;
 
 logic [2:0] Retrain_encoding;
 
@@ -71,6 +74,7 @@ always_ff @(posedge i_clk or posedge i_reset) begin
             CS <= PL_STALL_HANDSHAKE;
             o_rx_encoding <= 0;
             o_rx_sb_req <= 0;
+            o_rx_sb_rsp <= 0;
             idle <= 1;
         end else begin
             CS <= NS;
@@ -87,8 +91,8 @@ end
 //================================================================================
 // Tracks when done signal has been acknowledged in handshake protocol
 always_comb begin
-    if (i_reset) done_ack = 0;
-    else if (o_rx_encoding[2:0] != o_rx_encoding_old[2:0]) done_ack = 0;
+    done_ack = 0;
+    if (o_rx_encoding[2:0] != o_rx_encoding_old[2:0]) done_ack = 0;
     else if (i_sb_rx_done) begin
         done_ack = 1;  // Set when done received
     end else if (i_sb_rx_rsp) begin
@@ -96,11 +100,21 @@ always_comb begin
     end
 end
 
-always_ff @(posedge i_clk) begin
-    o_rx_encoding_old <= o_rx_encoding;  // Register to track previous encoding for done_ack logic
+always_ff @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) begin
+        o_rx_encoding_old <= 0;
+        tx_self_cal_state_enable_old <= 0;
+        speed_idle_state_enable_old <= 0;
+        repair_state_enable_old <= 0;
+    end else begin
+        o_rx_encoding_old <= o_rx_encoding;  // Update previous encoding only when state is enabled
+        tx_self_cal_state_enable_old <= tx_self_cal_state_enable;  // Track previous state of TX self-cal enable for done_ack logic
+        speed_idle_state_enable_old <= speed_idle_state_enable;  // Track previous state of speed idle enable for done_ack logic
+        repair_state_enable_old <= repair_state_enable;  // Track previous state of repair enable for done_ack logic
+    end
 end
 
-assign previous_state_done = (i_reset)? 0 : (rsp_sent & rsp_received);
+assign previous_state_done = (rsp_sent & rsp_received);
 
 //================================================================================
 // Sideband Done Signal Logic
@@ -119,22 +133,23 @@ always @(posedge i_clk or posedge i_reset) begin
 end
 
 always_comb begin
-    if (i_reset) begin
         o_rx_sb_req_reg = 0;
         o_rx_sb_rsp_reg = 0;
         o_rx_encoding_reg = 0;
-        speed_idle_state_enable = 0;
-        repair_state_enable = 0;
-        tx_self_cal_state_enable = 0;
-        idle_reg = 1;
-    end else if (!(state_enable || link_speed_state_enable)) begin
+        idle_reg = idle;
+        o_rx_info = 0;
+        NS = CS;
+        tx_self_cal_state_enable = tx_self_cal_state_enable_old;
+        speed_idle_state_enable = speed_idle_state_enable_old;
+        repair_state_enable = repair_state_enable_old;
+    if (!(state_enable || link_speed_state_enable)) begin
             o_rx_encoding_reg = 0;
             o_rx_sb_req_reg = 0;
             o_rx_sb_rsp_reg = 0;
+            idle_reg = 1;
             tx_self_cal_state_enable = 0;
             speed_idle_state_enable = 0;
             repair_state_enable = 0;
-            idle_reg = 1;
             NS = PL_STALL_HANDSHAKE;
     end else begin
         case (CS)
@@ -222,23 +237,35 @@ always_comb begin
                 if (previous_state_done && encoding_rsp_sent == 'hDA && encoding_rsp_received == 'hDA) begin
                     if (i_rx_info[2:0] == 3'b010) begin
                         speed_idle_state_enable = 1;
+                        repair_state_enable = 0;
+                        tx_self_cal_state_enable = 0;
                         o_rx_encoding_reg = 'hC8;
                         o_rx_sb_req_reg = 0;
                         o_rx_sb_rsp_reg = 0;  
                     end else if (i_rx_info[2:0] == 3'b100) begin
                         if (i_sb_rx_req && i_rx_decoding == 'hC0 ) begin
                             repair_state_enable = 1;
+                            speed_idle_state_enable = 0;
+                            tx_self_cal_state_enable = 0;
                             o_rx_encoding_reg = 'hC0;
                             o_rx_sb_req_reg = 0;
                             o_rx_sb_rsp_reg = 0; 
                         end     
                     end else begin
                         tx_self_cal_state_enable = 1;
+                        speed_idle_state_enable = 0;
+                        repair_state_enable = 0;
                         o_rx_encoding_reg = 'hD0;
                         o_rx_sb_req_reg = 0;
                         o_rx_sb_rsp_reg = 0; 
                     end
                 end else NS = START_REQ_HANDSHAKE;
+            end
+
+            default: begin
+                tx_self_cal_state_enable = 0;
+                speed_idle_state_enable = 0;
+                repair_state_enable = 0;
             end
         endcase
     end 

@@ -71,13 +71,74 @@ endfunction : new
 task tx_fsm_sb_driver::drive(tx_fsm_sb_sequence_item item);
     item=tx_fsm_sb_sequence_item::type_id::create("item");
     seq_item_port.get_next_item(item);
-    vif.i_tx_decoding = item.i_tx_decoding;
-    vif.i_tx_data     = item.i_tx_data;
-    vif.i_sb_tx_req   = item.i_sb_tx_req;
-    vif.i_sb_tx_rsp   = item.i_sb_tx_rsp;
-    vif.i_sb_tx_done  = item.i_sb_tx_done;
-    vif.i_tx_info     = item.i_tx_info;
-    @(negedge vif.clk);
-    ap.write(item);
+    vif.i_tx_decoding <= item.i_tx_decoding;
+    vif.i_tx_data     <= item.i_tx_data;
+    vif.i_sb_tx_req   <= item.i_sb_tx_req;
+    vif.i_sb_tx_rsp   <= item.i_sb_tx_rsp;
+    vif.i_sb_tx_done  <= item.i_sb_tx_done;
+    vif.i_tx_info     <= item.i_tx_info;
+
+   repeat(2)
+        @(posedge vif.clk);
+        
+     vif.i_sb_tx_req   = 0;
+     vif.i_sb_tx_rsp   = 0;
+     vif.i_sb_tx_done  = 0;
     seq_item_port.item_done();
+    // item=tx_fsm_sb_sequence_item::type_id::create("item");
+    // seq_item_port.try_next_item(item);
+    
+    // if (item != null) begin
+    //     vif.i_tx_decoding = item.i_tx_decoding;
+    //     vif.i_tx_data     = item.i_tx_data;
+    //     vif.i_sb_tx_req   = item.i_sb_tx_req;
+    //     vif.i_sb_tx_rsp   = item.i_sb_tx_rsp;
+    //     vif.i_sb_tx_done  = item.i_sb_tx_done;
+    //     vif.i_tx_info     = item.i_tx_info;
+
+    //     repeat(2)
+    //         @(negedge vif.clk);
+        
+    //     ap.write(item);
+    //     vif.i_sb_tx_req   = 0;
+    //     vif.i_sb_tx_rsp   = 0;
+    //     vif.i_sb_tx_done  = 0;
+    //     seq_item_port.item_done();
+    // end
+    // else begin
+    //     item=tx_fsm_sb_sequence_item::type_id::create("item");
+    //     item.i_tx_decoding = 0;
+    //     item.i_tx_data     = 0;
+    //     item.i_sb_tx_req   = 0;
+    //     item.i_sb_tx_rsp   = 0;
+    //     item.i_sb_tx_done  = 0;
+    //     item.i_tx_info     = 0;
+
+    //     repeat(2)
+    //         @(negedge vif.clk);
+            
+    //     ap.write(item);
+
+    // end
+    
+    // fork
+    //     begin
+    //         item=tx_fsm_sb_sequence_item::type_id::create("item");
+    //         seq_item_port.get_next_item(item);
+    //         vif.i_tx_decoding = item.i_tx_decoding;
+    //         vif.i_tx_data     = item.i_tx_data;
+    //         vif.i_sb_tx_req   = item.i_sb_tx_req;
+    //         vif.i_sb_tx_rsp   = item.i_sb_tx_rsp;
+    //         vif.i_sb_tx_done  = item.i_sb_tx_done;
+    //         vif.i_tx_info     = item.i_tx_info;
+    //         repeat(2)
+    //             @(negedge vif.clk);
+    //         seq_item_port.item_done();
+    //     end
+    //     begin
+    //         repeat(2)
+    //             @(negedge vif.clk);
+    //         ap.write(item);
+    //     end
+    // join_any
 endtask

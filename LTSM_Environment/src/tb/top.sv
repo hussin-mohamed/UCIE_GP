@@ -23,23 +23,29 @@ module LTSM_top;
     bit clk ;
     initial begin
         forever begin
-            #10;
+            #1;
             clk=!clk;
         end
     end
    // instantite dut & interfaces
-
-   ltsm_rdi_if ltsm_rdi_if_inst(.clk(clk), .rst_n(rst_n));
+   //assign vif.i_speedreg = ltsm_rdi_if_inst.o_pl_speedmode;
+   ltsm_rdi_if ltsm_rdi_if_inst(.clk(clk));
    TX_FSM_SB tx_fsm_sb_if(clk);
    RX_FSM_SB rx_fsm_sb_if(clk);
    LTSM_controllers_if vif(clk);
-   regfile_interface regfile(clk);
-
-   assert (regfile.o_speedreg=ltsm_rdi_if_inst.o_pl_speedmode) ;
+   assign vif.i_clk = clk;
+   assign ltsm_rdi_if_inst.i_reset=vif.i_reset;
+   assign tx_fsm_sb_if.i_reset=vif.i_reset;
+   assign rx_fsm_sb_if.i_reset=vif.i_reset;
+   always_comb begin
+    assert (vif.o_speedreg == ltsm_rdi_if_inst.o_pl_speedmode)
+        else $error("ASSERTION FAILED: o_speedreg = %0b, o_pl_speedmode = %0b",
+                     vif.o_speedreg, ltsm_rdi_if_inst.o_pl_speedmode);
+end
 
    assign vif.o_rx_encoding = rx_fsm_sb_if.o_rx_encoding;
    assign vif.o_tx_encoding = tx_fsm_sb_if.o_tx_encoding;
-   ucie_LTSM DUT (.clk(clk),
+   ucie_LTSM DUT (.i_clk(clk),
              .i_tx_decoding         (tx_fsm_sb_if.i_tx_decoding),
              .o_tx_encoding         (tx_fsm_sb_if.o_tx_encoding),
              .i_tx_data             (tx_fsm_sb_if.i_tx_data),
@@ -64,45 +70,47 @@ module LTSM_top;
              .o_rx_sb_req           (rx_fsm_sb_if.o_rx_sb_req),
              .o_rx_sb_rsp           (rx_fsm_sb_if.o_rx_sb_rsp),
              .o_rx_sb_done          (rx_fsm_sb_if.o_rx_sb_done),
-             .i_power           (vif.i_power),
+             .i_supply_stable   (vif.i_supply_stable),
              .i_pll_stable      (vif.i_pll_stable),
              .i_rx_error        (vif.i_rx_error),
              .i_rx_done         (vif.i_rx_done),
              .i_tx_done         (vif.i_tx_done),
-             .i_val_error       (vif.i_val_error),
-             .i_lane_error      (vif.i_lane_error),
-             .o_sbinit_start    (vif.o_sbinit_start),
+             .i_rx_valid_results       (vif.i_rx_valid_results),
+             .i_rx_data_results (vif.i_rx_data_results),
+             .i_rx_clk_results     (vif.i_clk_results), // 1st iissue
+             .o_sb_init_start    (vif.o_sbinit_start),
              .i_sb_ready        (vif.i_sb_ready),
-             .o_t1_ms           (vif.o_t1_ms),
+             //.o_t1_ms           (vif.o_t1_ms),
              .i_reset           (vif.i_reset),
+             //.i_par_check_done  (vif.i_par_check_done), // needs to be fixed in the verification model and sequences 
              .i_sb_cur_msg_done (vif.i_sb_cur_msg_done),
              .o_lane_map_tx     (vif.o_lane_map_tx),
-             .o_lane_map_rx     (vif.o_lane_map_rx)
-             .pl_state_sts    (ltsm_rdi_if_inst.o_pl_state_sts),
-             .pl_inband_pres  (ltsm_rdi_if_inst.o_pl_inband_pres),
-             .pl_phyinrecenter(ltsm_rdi_if_inst.o_pl_phyinrecenter),
-             .pl_stallreq     (ltsm_rdi_if_inst.o_pl_stallreq),
-             .pl_clk_req      (ltsm_rdi_if_inst.o_pl_clk_req),
-             .pl_wake_ack     (ltsm_rdi_if_inst.o_pl_wake_ack),
-             .pl_lnk_cfg      (ltsm_rdi_if_inst.o_pl_lnk_cfg),
-             .pl_speedmode    (ltsm_rdi_if_inst.o_pl_speedmode),
-             .pl_max_speedmode(ltsm_rdi_if_inst.o_pl_max_speedmode),
-             .pl_error        (ltsm_rdi_if_inst.o_pl_error),
-             .pl_trainerror   (ltsm_rdi_if_inst.o_pl_trainerror),
-             .pl_cerror       (ltsm_rdi_if_inst.o_pl_cerror),
-             .pl_nferror      (ltsm_rdi_if_inst.o_pl_nferror),
-             .lp_state_req    (ltsm_rdi_if_inst.i_lp_state_req),
-             .lp_stallack     (ltsm_rdi_if_inst.i_lp_stallack),
-             .lp_clk_ack      (ltsm_rdi_if_inst.i_lp_clk_ack),
-             .lp_wake_req     (ltsm_rdi_if_inst.i_lp_wake_req),
-             .lp_linkerror    (ltsm_rdi_if_inst.i_lp_linkerror),
-             .i_speedreg                            (regfile.i_speedreg),
-             .o_speedreg                            (regfile.o_speedreg),
-             .i_local_cap                           (regfile.i_local_cap),
-             .i_Runtime_Link_Test_status_register   (regfile.i_Runtime_Link_Test_status_register),
-             .o_Runtime_Link_Test_status_register   (regfile.o_Runtime_Link_Test_status_register),
-             .i_Runtime_Link_Test_Control_register   (regfile.i_Runtime_Link_Test_Control_register),
-             .o_Runtime_Link_Test_Control_register   (regfile.o_Runtime_Link_Test_Control_register)
+             .o_lane_map_rx     (vif.o_lane_map_rx),
+             .o_pl_state_sts    (ltsm_rdi_if_inst.o_pl_state_sts),
+             .o_pl_inband_pres  (ltsm_rdi_if_inst.o_pl_inband_pres),
+             .o_pl_phyinrecenter(ltsm_rdi_if_inst.o_pl_phyinrecenter),
+             .o_pl_stallreq     (ltsm_rdi_if_inst.o_pl_stallreq),
+             .o_pl_clk_req      (ltsm_rdi_if_inst.o_pl_clk_req),
+             .o_pl_wake_ack     (ltsm_rdi_if_inst.o_pl_wake_ack),
+             .o_pl_lnk_cfg      (ltsm_rdi_if_inst.o_pl_lnk_cfg),
+             .o_pl_speedmode    (ltsm_rdi_if_inst.o_pl_speedmode),
+             .o_pl_max_speedmode(ltsm_rdi_if_inst.o_pl_max_speedmode),
+             .o_pl_error        (ltsm_rdi_if_inst.o_pl_error),
+             .o_pl_trainerror   (ltsm_rdi_if_inst.o_pl_trainerror),
+             .o_pl_cerror       (ltsm_rdi_if_inst.o_pl_cerror),
+             .o_pl_nferror      (ltsm_rdi_if_inst.o_pl_nferror),
+             .i_lp_state_req    (ltsm_rdi_if_inst.i_lp_state_req),
+             .i_lp_stallack     (ltsm_rdi_if_inst.i_lp_stallack),
+             .i_lp_clk_ack      (ltsm_rdi_if_inst.i_lp_clk_ack),
+             .i_lp_wake_req     (ltsm_rdi_if_inst.i_lp_wake_req),
+             .i_lp_linkerror    (ltsm_rdi_if_inst.i_lp_linkerror),
+             .i_speedreg                            (vif.i_speedreg),
+             .o_speedreg                            (vif.o_speedreg),
+             //.i_local_cap                           (vif.i_local_cap),
+             .i_Runtime_Link_Test_status_register   (vif.i_Runtime_Link_Test_status_register),
+             .o_Runtime_Link_Test_status_register   (vif.o_Runtime_Link_Test_status_register),
+             .i_Runtime_Link_Test_Control_register   (vif.i_Runtime_Link_Test_Control_register),
+             .o_Runtime_Link_Test_Control_register   (vif.o_Runtime_Link_Test_Control_register)
              );
 
     initial begin
@@ -112,6 +120,6 @@ module LTSM_top;
         uvm_config_db#(virtual LTSM_controllers_if)::set(null,     "uvm_test_top", "LTSM_CONTROLLERS_IF",   vif         );
         uvm_config_db#(virtual ltsm_rdi_if)::set(null,    "uvm_test_top", "ltsm_rdi_vif",   ltsm_rdi_if_inst );
 
-        run_test();
+        run_test("ACTIVE_test");
     end
 endmodule : LTSM_top

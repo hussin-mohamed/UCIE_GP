@@ -17,12 +17,11 @@
 
 interface ltsm_rdi_if(
    //--------------------- Clock & Reset ---------------------
-	input logic					clk,
-	input logic					rst_n
+	input logic					clk
 );
 	
 	//------------- Physical Layer to the Die-to-Die Adapter. ---------------
-	logic							o_pl_state_sts;
+	logic [3:0]						o_pl_state_sts;
 	logic							o_pl_inband_pres;
 	logic							o_pl_phyinrecenter;
 	logic							o_pl_stallreq;
@@ -37,11 +36,12 @@ interface ltsm_rdi_if(
 	logic							o_pl_nferror;
 
 	//------------- Die-to-Die Adapter to Physical Layer ---------------
-	logic							i_lp_state_req;
+	logic [3:0]						i_lp_state_req;
 	logic							i_lp_stallack;
 	logic							i_lp_clk_ack;
 	logic							i_lp_wake_req;
 	logic							i_lp_linkerror;
+	logic 							i_reset;
 
 	string if_name = "ltsm_rdi_if";
 

@@ -28,36 +28,46 @@ import uvm_pkg::*;
 import shared_ltsm_pkg::*;
 class LTSM_controllers_seq_item extends uvm_sequence_item;
   
-  logic i_power;
+  logic i_supply_stable;
   logic i_pll_stable;
   logic i_rx_error;
   logic i_rx_done;
   logic i_tx_done;
-  logic i_val_error;
+  static logic i_rx_valid_results;
   logic o_sbinit_start;
   logic i_sb_ready;
   logic o_t1_ms;
-  logic i_reset;
+  static logic i_reset;
   logic i_sb_cur_msg_done;
-  logic [63:0] i_lane_error;
   logic [8:0] o_tx_encoding;
   logic [8:0] o_rx_encoding;
   logic [3:0] o_lane_map_tx,o_lane_map_rx;
-  logic [2:0] i_speedreg,o_speedreg;
+  logic [15:0] o_error_threshhold;
+  static logic [2:0] i_speedreg,o_speedreg;
   logic [15:0] i_local_cap;
+  logic i_par_check_done;
+  static logic [63:0] i_rx_data_results; //i_rx_result
+  logic [2:0] i_clk_results; //i_clk_result
   logic i_Runtime_Link_Test_status_register,o_Runtime_Link_Test_status_register;
   logic [36:0] i_Runtime_Link_Test_Control_register,o_Runtime_Link_Test_Control_register;
 
     `uvm_object_utils_begin(LTSM_controllers_seq_item)
-        `uvm_field_int(i_power,  UVM_NORECORD)
+        `uvm_field_int(i_supply_stable,  UVM_NORECORD)
         `uvm_field_int(i_pll_stable, UVM_NORECORD)
         `uvm_field_int(i_rx_error, UVM_NORECORD)
         `uvm_field_int(i_rx_done, UVM_NORECORD)
         `uvm_field_int(i_tx_done, UVM_NORECORD)
-        `uvm_field_int(i_val_error, UVM_NORECORD)
-        `uvm_field_int(i_lane_error, UVM_NORECORD)
+        `uvm_field_int(i_rx_valid_results, UVM_NORECORD)
+        `uvm_field_int(i_rx_data_results, UVM_NORECORD)
         `uvm_field_int(o_tx_encoding, UVM_NORECORD)
         `uvm_field_int(o_rx_encoding, UVM_NORECORD)
+        `uvm_field_int(i_speedreg, UVM_NORECORD)
+        `uvm_field_int(o_speedreg, UVM_NORECORD)
+        `uvm_field_int(i_local_cap, UVM_NORECORD)
+        `uvm_field_int(i_Runtime_Link_Test_status_register, UVM_NORECORD)
+        `uvm_field_int(o_Runtime_Link_Test_status_register, UVM_NORECORD)
+        `uvm_field_int(i_Runtime_Link_Test_Control_register, UVM_NORECORD)
+        `uvm_field_int(o_Runtime_Link_Test_Control_register, UVM_NORECORD)
     `uvm_object_utils_end
 
 

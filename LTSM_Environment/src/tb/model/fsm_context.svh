@@ -15,21 +15,29 @@
 // ****************************************************************************
 
 import shared_ltsm_pkg::*;
-class FSMContext;
-    local state_t currentState_tx, currentState_rx;
+  
+class FSMContext extends uvm_object;
+    
+    `uvm_object_utils(FSMContext)
+    State currentstate_tx, currentstate_rx;
     bit  match;
-    function new(state_t initialState);
-        currentState_tx = initialState;
-        currentState_rx = initialState;
+    function new( string name = "FSMContext" );
+        super.new(name);
+        `uvm_info("FSMContext", "Creating FSMContext object", UVM_LOW)
+        //currentstate_tx = new();
+        currentstate_tx = ResetState_tx::Instance();
+        currentstate_rx = ResetState_rx::Instance();
+        `uvm_info("FSMContext", "Initialized current states to ResetState_rx", UVM_LOW)
     endfunction
 
-    function void setState(state_t s_tx, state_t s_rx);
-        currentState_tx = s_tx;
-        currentState_rx = s_rx;
+    function void setState(State s_tx, State s_rx);
+        currentstate_tx = s_tx;
+        currentstate_rx = s_rx;
     endfunction
 
-    function bit doAction(LTSM_controllers_sequence_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,LTSM_controllers_sequence_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
-        match = currentState_tx.doAction(this, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in,item_controllers_out,item_rdi_out,item_rx_fsm_sb_out,item_tx_fsm_sb_out);
+    function bit doAction(LTSM_controllers_seq_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,LTSM_controllers_seq_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
+        //`uvm_info("FSMContext", $sformatf("Performing action for current state: TX: %s, RX: %s", currentstate_tx.getStateId(), currentstate_rx.getStateId()), UVM_LOW)
+        match = currentstate_tx.doAction(this, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in,item_controllers_out,item_rdi_out,item_rx_fsm_sb_out,item_tx_fsm_sb_out);
         return match;
     endfunction
  endclass

@@ -16,9 +16,9 @@
 
 //------------------------------------------------------------------------------
 //
-// CLASS: scoreboard_base
+// CLASS: scoreboard
 //
-// The scoreboard_base class provides a parameterized base implementation for 
+// The scoreboard class provides a parameterized base implementation for 
 // scoreboards in UVM testbenches. It includes analysis ports for receiving
 // input and output transactions, automatic comparison capabilities using
 // uvm_comparer, and built-in error tracking with summary reporting.
@@ -34,11 +34,11 @@ class scoreboard extends uvm_scoreboard;
     FSMContext cntxt;
     // Analysis infrastructure
     // (Export <-> FIFO) for transactions fed to the block as controllers transactions
-    uvm_analysis_export #(LTSM_controllers_sequence_item) ap_controllers_in;
-    uvm_tlm_analysis_fifo #(LTSM_controllers_sequence_item) fifo_controllers_in;
+    uvm_analysis_export #(LTSM_controllers_seq_item) ap_controllers_in;
+    uvm_tlm_analysis_fifo #(LTSM_controllers_seq_item) fifo_controllers_in;
     // (Export <-> FIFO) for transactions produced by the block as rdi transactions
-    uvm_analysis_export #(LTSM_rdi_sequence_item) ap_rdi_in;
-    uvm_tlm_analysis_fifo #(LTSM_rdi_sequence_item) fifo_rdi_in;
+    uvm_analysis_export #(ltsm_rdi_sequence_item) ap_rdi_in;
+    uvm_tlm_analysis_fifo #(ltsm_rdi_sequence_item) fifo_rdi_in;
     // (Export <-> FIFO) for transactions produced by the block as rx FSM sideband transactions
     uvm_analysis_export #(rx_fsm_sb_sequence_item) ap_rx_fsm_sb_in;
     uvm_tlm_analysis_fifo #(rx_fsm_sb_sequence_item) fifo_rx_fsm_sb_in;
@@ -47,11 +47,11 @@ class scoreboard extends uvm_scoreboard;
     uvm_tlm_analysis_fifo #(tx_fsm_sb_sequence_item) fifo_tx_fsm_sb_in;
 
 
-     uvm_analysis_export #(LTSM_controllers_sequence_item) ap_controllers_out;
-    uvm_tlm_analysis_fifo #(LTSM_controllers_sequence_item) fifo_controllers_out;
+     uvm_analysis_export #(LTSM_controllers_seq_item) ap_controllers_out;
+    uvm_tlm_analysis_fifo #(LTSM_controllers_seq_item) fifo_controllers_out;
     // (Export <-> FIFO) for transactions produced by the block as rdi transactions
-    uvm_analysis_export #(LTSM_rdi_sequence_item) ap_rdi_out;
-    uvm_tlm_analysis_fifo #(LTSM_rdi_sequence_item) fifo_rdi_out;
+    uvm_analysis_export #(ltsm_rdi_sequence_item) ap_rdi_out;
+    uvm_tlm_analysis_fifo #(ltsm_rdi_sequence_item) fifo_rdi_out;
     // (Export <-> FIFO) for transactions produced by the block as rx FSM sideband transactions
     uvm_analysis_export #(rx_fsm_sb_sequence_item) ap_rx_fsm_sb_out;
     uvm_tlm_analysis_fifo #(rx_fsm_sb_sequence_item) fifo_rx_fsm_sb_out;
@@ -61,10 +61,7 @@ class scoreboard extends uvm_scoreboard;
 
     // Transaction handles
     // Transactions received by the driver and the monitor
-    LTSM_controllers_sequence_item item_controllers_in,item_controllers_out;
-    ltsm_rdi_sequence_item item_rdi_in,item_rdi_out;
-    rx_fsm_sb_sequence_item item_rx_fsm_sb_in,item_rx_fsm_sb_out;
-    tx_fsm_sb_sequence_item item_tx_fsm_sb_in,item_tx_fsm_sb_out;
+    
     // Statistics tracking
     // Error and correct counts
     bit match;
@@ -74,14 +71,17 @@ class scoreboard extends uvm_scoreboard;
     string summary_msg;
     string status_msg;
     uvm_severity test_severity;
-    
+    LTSM_controllers_seq_item item_controllers_in,item_controllers_out;
+        ltsm_rdi_sequence_item item_rdi_in,item_rdi_out;
+        rx_fsm_sb_sequence_item item_rx_fsm_sb_in,item_rx_fsm_sb_out;
+        tx_fsm_sb_sequence_item item_tx_fsm_sb_in,item_tx_fsm_sb_out;
     
 
     // Function: new
     //
-    // Creates a new scoreboard_base instance with the given name and parent.
+    // Creates a new scoreboard instance with the given name and parent.
 
-    extern function new(string name = "scoreboard_base", uvm_component parent = null);
+    extern function new(string name = "scoreboard", uvm_component parent = null);
 
 
     // Function: build_phase
@@ -114,9 +114,9 @@ class scoreboard extends uvm_scoreboard;
     // the UVM comparer. Updates error_count on mismatch, correct_count on match.
     // Prints mismatch details when comparison fails.
 
-    extern virtual function void run_phase();
+    extern virtual task run_phase(uvm_phase phase);
 
-endclass : scoreboard_base
+endclass : scoreboard
 
 
 //------------------------------------------------------------------------------
@@ -125,7 +125,7 @@ endclass : scoreboard_base
 
 //------------------------------------------------------------------------------
 //
-// CLASS- scoreboard_base
+// CLASS- scoreboard
 //
 //------------------------------------------------------------------------------
 
@@ -133,16 +133,17 @@ endclass : scoreboard_base
 // new
 // ---
 
-function scoreboard_base::new(string name = "scoreboard_base", uvm_component parent = null);
+function scoreboard::new(string name = "scoreboard", uvm_component parent = null);
     super.new(name, parent);
 endfunction : new
 
 // build_phase
 // -----------
 
-function void scoreboard_base::build_phase(uvm_phase phase);
+function void scoreboard::build_phase(uvm_phase phase);
     super.build_phase(phase);
-    ab_controllers_in = new("ab_controllers_in", this);
+    `uvm_info("build_phase", "Building scoreboard and creating analysis ports and FIFOs", UVM_LOW)
+    ap_controllers_in = new("ap_controllers_in", this);
     fifo_controllers_in = new("fifo_controllers_in", this);
     ap_rdi_in = new("ap_rdi_in", this);
     fifo_rdi_in = new("fifo_rdi_in", this);
@@ -158,19 +159,22 @@ function void scoreboard_base::build_phase(uvm_phase phase);
     fifo_rx_fsm_sb_out = new("fifo_rx_fsm_sb_out", this);
     ap_tx_fsm_sb_out = new("ap_tx_fsm_sb_out", this);
     fifo_tx_fsm_sb_out = new("fifo_tx_fsm_sb_out", this);
-    cntxt = new(reset::instance(), "FSMContext");
+    `uvm_info("build_phase", "finished building scoreboard", UVM_LOW)
+    cntxt = FSMContext::type_id::create("FSMContext");
+    
 endfunction : build_phase
 
 // connect_phase
 // -------------
 
-function void scoreboard_base::connect_phase(uvm_phase phase);
+function void scoreboard::connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    ab_controllers_in.connect(fifo_controllers_in.analysis_export);
+    `uvm_info("connect_phase", "Connecting LTSM_env components and virtual sequencer", UVM_LOW)
+    ap_controllers_in.connect(fifo_controllers_in.analysis_export);
     ap_rdi_in.connect(fifo_rdi_in.analysis_export);
     ap_rx_fsm_sb_in.connect(fifo_rx_fsm_sb_in.analysis_export);
     ap_tx_fsm_sb_in.connect(fifo_tx_fsm_sb_in.analysis_export);
-    ab_controllers_out.connect(fifo_controllers_out.analysis_export);
+    ap_controllers_out.connect(fifo_controllers_out.analysis_export);
     ap_rdi_out.connect(fifo_rdi_out.analysis_export);
     ap_rx_fsm_sb_out.connect(fifo_rx_fsm_sb_out.analysis_export);
     ap_tx_fsm_sb_out.connect(fifo_tx_fsm_sb_out.analysis_export);
@@ -179,7 +183,7 @@ endfunction : connect_phase
 // report_phase
 // ------------
 
-function void scoreboard_base::report_phase(uvm_phase phase);
+function void scoreboard::report_phase(uvm_phase phase);
     super.report_phase(phase);
 
     // Calculate totals
@@ -223,23 +227,44 @@ endfunction : report_phase
 // compare
 // -------
 
-function void scoreboard_base::run_phase();
-    super.run_phase();
+task scoreboard::run_phase(uvm_phase phase);
+    super.run_phase(phase);
+    
     forever begin
-        fifo_controllers_in.get(item_controllers_in);
-        fifo_rdi_in.get(item_rdi_in);
-        fifo_rx_fsm_sb_in.get(item_rx_fsm_sb_in);
-        fifo_tx_fsm_sb_in.get(item_tx_fsm_sb_in);
-        fifo_controllers_out.get(item_controllers_out);
-        fifo_rdi_out.get(item_rdi_out);
-        fifo_rx_fsm_sb_out.get(item_rx_fsm_sb_out);
-        fifo_tx_fsm_sb_out.get(item_tx_fsm_sb_out);
-
+        
+        fork
+            // Wait for transactions to arrive on all input FIFOs
+            fifo_controllers_in.get(item_controllers_in);
+            fifo_rdi_in.get(item_rdi_in);
+            fifo_rx_fsm_sb_in.get(item_rx_fsm_sb_in);
+            fifo_tx_fsm_sb_in.get(item_tx_fsm_sb_in);
+            fifo_controllers_out.get(item_controllers_out);
+            fifo_rdi_out.get(item_rdi_out);
+            fifo_rx_fsm_sb_out.get(item_rx_fsm_sb_out);
+            fifo_tx_fsm_sb_out.get(item_tx_fsm_sb_out);            
+        join
+        //`uvm_info("scoreboard", $sformatf("Received item from fifo_controllers_in"), UVM_LOW)
+        // fifo_rdi_in.get(item_rdi_in);
+        // //`uvm_info("scoreboard", $sformatf("Received item from fifo_rdi_in"), UVM_LOW)
+        // fifo_rx_fsm_sb_in.get(item_rx_fsm_sb_in);
+        // //`uvm_info("scoreboard", $sformatf("Received item from fifo_rx_fsm_sb_in"), UVM_LOW)
+        // fifo_tx_fsm_sb_in.get(item_tx_fsm_sb_in);
+        // //`uvm_info("scoreboard", $sformatf("Received item from fifo_tx_fsm_sb_in"), UVM_LOW)
+        // fifo_controllers_out.get(item_controllers_out);
+        // //`uvm_info("scoreboard", $sformatf("Received item from fifo_controllers_out"), UVM_LOW)
+        // fifo_rdi_out.get(item_rdi_out);
+        // //`uvm_info("scoreboard", $sformatf("Received item from fifo_rdi_out"), UVM_LOW)
+        // fifo_rx_fsm_sb_out.get(item_rx_fsm_sb_out);
+        // //`uvm_info("scoreboard", $sformatf("Received item from fifo_rx_fsm_sb_out"), UVM_LOW)
+        // fifo_tx_fsm_sb_out.get(item_tx_fsm_sb_out);
+        //`uvm_info("scoreboard", $sformatf("Received item from fifo_tx_fsm_sb_out"), UVM_LOW)
+        //`uvm_info("scoreboard", $sformatf("finished getting items from fifos and begining the do action"), UVM_LOW)
         match = cntxt.doAction(item_controllers_in, item_rdi_in, item_rx_fsm_sb_in, item_tx_fsm_sb_in, item_controllers_out, item_rdi_out, item_rx_fsm_sb_out, item_tx_fsm_sb_out);
         if (match) begin
             correct_count++;
         end else begin
             error_count++;
         end
+       // `uvm_info("scoreboard", $sformatf("Current Transaction Result: %s, Total Correct: %0d, Total Errors: %0d", (match ? "MATCH" : "MISMATCH"), correct_count, error_count), UVM_LOW)
     end
-endfunction : run_phase
+endtask : run_phase

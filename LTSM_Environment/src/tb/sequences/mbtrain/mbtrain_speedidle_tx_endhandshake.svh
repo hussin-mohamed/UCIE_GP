@@ -22,9 +22,16 @@ class mbtrain_speedidle_tx_endhandshake extends uvm_sequence#(LTSM_controllers_s
         super.new(name);
     endfunction //new()
     task body();
-        item = seq_item::type_id::create("item");
+        item = LTSM_controllers_seq_item::type_id::create("item");
         start_item(item);
         item.i_tx_done=1'b1;
+        item.i_rx_done=1'b1;
+        finish_item(item);
+        
+        start_item(item);
+        item.i_tx_done=1'b0;
+        item.i_rx_done=1'b0;
+        item.i_speedreg = item.o_speedreg;
         finish_item(item);
     endtask 
 endclass //className extends superClass

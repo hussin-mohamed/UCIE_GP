@@ -26,7 +26,12 @@
 
 class mbtrain_linkspeed_phyretrain_nolanepossible_txfail extends virtual_sequence_base;
     `uvm_object_utils(mbtrain_linkspeed_phyretrain_nolanepossible_txfail)
-
+    mbtrain_linkspeed_tx_starthandshake       start_tx;
+    mbtrain_linkspeed_tx_phyretrainreq        phyretrain_req;
+    mbtrain_linkspeed_rx_starthandshake       start_rx;
+    mbtrain_linkspeed_rx_endhandshake         done_req;
+    mbtrain_linkspeed_phyretrain_rx           end_state;
+    mbtrain_txinit_datasweep_txallfail_rxpass data_sweep;
 
     // Function: new
     //

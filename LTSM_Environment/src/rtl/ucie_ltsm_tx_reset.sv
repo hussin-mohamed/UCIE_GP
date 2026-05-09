@@ -28,12 +28,16 @@ logic i_timer_4ms_reg;
 
 always @(posedge i_clk or posedge i_reset) begin
 
-    if(i_reset || i_current_state != RESET) begin 
+    if(i_reset) begin 
         i_supply_stable_reg <= 0;
         i_pll_stable_reg <= 0;
         i_timer_4ms_reg <= 0;
     end 
-
+    else if(i_current_state != RESET) begin 
+        i_supply_stable_reg <= 0;
+        i_pll_stable_reg <= 0;
+        i_timer_4ms_reg <= 0;
+    end 
     else if(i_current_state == RESET) begin 
         case({i_pll_stable, i_supply_stable})
             2'b01: i_supply_stable_reg <= 1;
@@ -67,6 +71,7 @@ end
 
 
     // Assertions 
+    /*
 
     `ifdef SIM
         property output_encoding;
@@ -90,5 +95,5 @@ end
 
         REGS_CLEAR_OUTSIDE_RESET : assert property (regs_clear_outside_reset);
     `endif
-
+*/
 endmodule

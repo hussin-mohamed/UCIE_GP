@@ -22,15 +22,38 @@ class mbtrain_rxinit_datasweep_tx_result_rsp_success extends uvm_sequence#(tx_fs
         super.new(name);
     endfunction //new()
     task body();
-        item = seq_item::type_id::create("item");
+        item = tx_fsm_sb_sequence_item::type_id::create("item");
+        start_item(item);
+        item.i_sb_tx_rsp=1'b0;
+        item.i_sb_tx_req=1'b0;
+        item.i_sb_tx_done=1'b0;
+        finish_item(item);
+        start_item(item);
+        item.i_sb_tx_rsp=1'b0;
+        item.i_sb_tx_req=1'b0;
+        item.i_sb_tx_done=1'b1;
+        finish_item(item);
         start_item(item);
         item.i_tx_decoding=DATA_TO_CLOCK_RX_RX_RESULT_HANDSHAKE;
+        item.i_tx_info=0;
         item.i_tx_info[4]=1'b1;
         item.i_tx_info[5]=1'b1;
         item.i_tx_data=64'hFFFF_FFFF_FFFF_FFFF;
         item.i_sb_tx_rsp=1'b1;
         item.i_sb_tx_req=1'b0;
         item.i_sb_tx_done=1'b0;
+        finish_item(item);
+       start_item(item);
+        item.i_tx_info=0;
+        item.i_tx_decoding=0;
+        item.i_sb_tx_rsp=1'b0;
+        item.i_sb_tx_req=1'b0;
+        item.i_sb_tx_done=1'b0;
+        finish_item(item);
+        start_item(item);
+        item.i_sb_tx_rsp=1'b0;
+        item.i_sb_tx_req=1'b0;
+        item.i_sb_tx_done=1'b1;
         finish_item(item);
     endtask 
 endclass //className extends superClass

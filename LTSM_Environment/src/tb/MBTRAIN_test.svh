@@ -34,7 +34,7 @@ class MBTRAIN_test extends uvm_test;
     env_config env_cfg;
     uvm_factory factory;
     // sequences to end mbinit
-
+    initialization_success ready;
     // valvref virtual sequences
     mbtrain_valvref_success vref_success;
     mbtrain_valvref_timeout vref_timeout;
@@ -116,6 +116,8 @@ class MBTRAIN_test extends uvm_test;
     // mbtrain success
     mbtrain_success success;
 
+    
+
     // sequences to exit phyretrain
 
     // Function: new
@@ -188,7 +190,9 @@ endfunction : new
 
 function void MBTRAIN_test::build_phase(uvm_phase phase);
     super.build_phase(phase);
+    `uvm_info("build_phase", "Building MBTRAIN_test and creating environment", UVM_LOW)
     // sequences to end mbinit
+    ready =initialization_success::type_id::create("ready", this);
     // Create all virtual sequences
     // valvref virtual sequences
     vref_success = mbtrain_valvref_success::type_id::create("vref_success", this);
@@ -305,6 +309,7 @@ function void MBTRAIN_test::build_phase(uvm_phase phase);
         `uvm_fatal("build_phase", "TEST - Unable to get the ltsm_rdi_vif from the uvm_config_db")
 
     uvm_config_db#(env_config)::set(this, "env", "ENV_CFG", env_cfg);
+    `uvm_info("build_phase", "Building MBTRAIN_test and creating environment has finished", UVM_LOW)
 endfunction : build_phase
 
 // end_of_elaboration_phase
@@ -312,8 +317,7 @@ endfunction : build_phase
 
 function void MBTRAIN_test::end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
-    
-    v_seq = virtual_sequence::type_id::create("v_seq", this);
+    `uvm_info("end_of_elaboration_phase", "Creating virtual sequence instances and printing testbench topology", UVM_LOW)
     uvm_top.print_topology(); // Prints entire testbench hierarchy 
 endfunction : end_of_elaboration_phase
 
@@ -335,7 +339,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     phase.raise_objection(this);
     
     // from reset to mbinit
-
+     ready.start(env.v_seqr);
     // mbtrain sequences
 
     `uvm_info(get_type_name(), $sformatf("mbrain sequences have started"), UVM_MEDIUM)
@@ -346,7 +350,8 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     vref_timeout.start(env.v_seqr);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", vref_timeout.get_type_name()), UVM_MEDIUM)
 
-    // from reset to mbinit 
+    // from reset to mbinit
+     ready.start(env.v_seqr); 
 
     
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_trainerror.get_type_name()), UVM_MEDIUM)
@@ -354,12 +359,14 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", vref_trainerror.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valvref_looptillerror.get_type_name()), UVM_MEDIUM)
     valvref_looptillerror.start(env.v_seqr);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valvref_looptillerror.get_type_name()), UVM_MEDIUM)
 
-    // from reset to mbinit 
+    // from reset to mbinit
+     ready.start(env.v_seqr); 
 
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
     vref_success.start(env.v_seqr);
@@ -371,7 +378,8 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     datavref_timeout.start(env.v_seqr);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datavref_timeout.get_type_name()), UVM_MEDIUM)
 
-    // from reset to mbinit 
+    // from reset to mbinit
+     ready.start(env.v_seqr); 
 
 
     // reenter datavref
@@ -384,7 +392,8 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     datavref_trainerror.start(env.v_seqr);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datavref_trainerror.get_type_name()), UVM_MEDIUM)
 
-    // from reset to mbinit 
+    // from reset to mbinit
+     ready.start(env.v_seqr); 
 
 
     // reenter datavref
@@ -397,7 +406,8 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     datavref_looptillerror.start(env.v_seqr);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datavref_looptillerror.get_type_name()), UVM_MEDIUM)
 
-    // from reset to mbinit 
+    // from reset to mbinit
+     ready.start(env.v_seqr); 
 
     // reenter datavref
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -417,13 +427,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -436,7 +448,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -460,6 +471,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxclkcal_timeout.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter rxclkcal
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -477,13 +489,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -495,7 +509,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -518,6 +531,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxclkcal_trainerror.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter rxclkcal
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -535,13 +549,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -553,7 +569,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -582,6 +597,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtraincenter_timeout.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter valtraincenter
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -599,13 +615,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -617,7 +635,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -644,6 +661,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtraincenter_trainerror.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter valtraincenter
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -661,13 +679,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -679,7 +699,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -712,6 +731,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtrainvref_timeout.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter valtrainvref
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -729,13 +749,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -747,7 +769,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -778,6 +799,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtrainvref_trainerror.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter valtrainvref
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -795,13 +817,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -813,7 +837,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -844,6 +867,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtrainvref_looptillerror.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter valtrainvref
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -861,13 +885,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -879,7 +905,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -916,6 +941,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc1_timeout.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter dtc1
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -933,13 +959,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -951,7 +979,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -986,6 +1013,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc1_trainerror.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter dtc1
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -1003,13 +1031,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -1021,7 +1051,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -1062,6 +1091,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datatrainvref_timeout.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter datatrainvref
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -1079,13 +1109,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -1097,7 +1129,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -1138,6 +1169,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datatrainvref_trainerror.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter datatrainvref
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -1155,13 +1187,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -1173,7 +1207,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -1214,6 +1247,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datatrainvref_looptillerror.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter datatrainvref
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -1231,13 +1265,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -1249,7 +1285,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -1296,6 +1331,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxdeskew_timeout.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter rxdeskew
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -1313,13 +1349,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -1331,7 +1369,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -1378,6 +1415,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxdeskew_trainerror.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter rxdeskew
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -1395,13 +1433,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -1413,7 +1453,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -1467,6 +1506,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_timeout.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter dtc2
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -1484,13 +1524,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -1502,7 +1544,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -1556,6 +1597,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_trainerror.get_type_name()), UVM_MEDIUM)
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     // re enter dtc2
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vref_success.get_type_name()), UVM_MEDIUM)
@@ -1573,13 +1615,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -1591,7 +1635,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -1642,349 +1685,351 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
     dtc2_success.start(env.v_seqr);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
+    
+    // uncomment from 1647 to 1987
 
     // linkspeed to phyretrain sequences
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_phyretrain_lanepossible_rxfail.get_type_name()), UVM_MEDIUM)
-    linkspeed_phyretrain_lanepossible_rxfail.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", linkspeed_phyretrain_lanepossible_rxfail.get_type_name()), UVM_MEDIUM)
-    // sequences to exit phyretrain
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_phyretrain_lanepossible_rxfail.get_type_name()), UVM_MEDIUM)
+//     linkspeed_phyretrain_lanepossible_rxfail.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", linkspeed_phyretrain_lanepossible_rxfail.get_type_name()), UVM_MEDIUM)
+//     // sequences to exit phyretrain
 
-    // repair sequences
-    // el rx haygilh degrade b 8 15
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_rx_starthandshake.get_type_name()), UVM_MEDIUM)
-     repair_rx_starthandshake.start(env.rx_agent.seqr);
-     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_rx_starthandshake.get_type_name()), UVM_MEDIUM)
-     fork
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_tx_applydegrade.get_type_name()), UVM_MEDIUM)
-             repair_tx_applydegrade.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_tx_applydegrade.get_type_name()), UVM_MEDIUM)
+//     // repair sequences
+//     // el rx haygilh degrade b 8 15
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_rx_starthandshake.get_type_name()), UVM_MEDIUM)
+//      repair_rx_starthandshake.start(env.rx_agent.seqr);
+//      `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_rx_starthandshake.get_type_name()), UVM_MEDIUM)
+//      fork
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_tx_applydegrade.get_type_name()), UVM_MEDIUM)
+//              repair_tx_applydegrade.start(env.tx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_tx_applydegrade.get_type_name()), UVM_MEDIUM)
 
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_tx_endhandshake.get_type_name()), UVM_MEDIUM)
-             repair_tx_endhandshake.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_tx_endhandshake.get_type_name()), UVM_MEDIUM)
-        end
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_rx_degrade_8_15.get_type_name()), UVM_MEDIUM)
-             repair_rx_degrade_8_15.start(env.rx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_rx_degrade_8_15.get_type_name()), UVM_MEDIUM)
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_tx_endhandshake.get_type_name()), UVM_MEDIUM)
+//              repair_tx_endhandshake.start(env.tx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_tx_endhandshake.get_type_name()), UVM_MEDIUM)
+//         end
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_rx_degrade_8_15.get_type_name()), UVM_MEDIUM)
+//              repair_rx_degrade_8_15.start(env.rx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_rx_degrade_8_15.get_type_name()), UVM_MEDIUM)
 
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_rx_endhandshake.get_type_name()), UVM_MEDIUM)
-             repair_rx_endhandshake.start(env.rx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_rx_endhandshake.get_type_name()), UVM_MEDIUM)
-        end
-    join
-    repair_txselfcal.start(env.tx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_rx_endhandshake.get_type_name()), UVM_MEDIUM)
+//              repair_rx_endhandshake.start(env.rx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_rx_endhandshake.get_type_name()), UVM_MEDIUM)
+//         end
+//     join
+//     repair_txselfcal.start(env.tx_agent.seqr);
      
 
-    // tx selfcal to linkspeed
-    fork
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
-             done_tx.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-        end
-        begin
-          fork
-               begin
-                    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-                    txselfcal_rx_end.start(env.rx_agent.seqr);
-                    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-               end
-               begin
-               done.start(env.LTSM_ctrl_agt.seqr);
-               end
-          join
-        end
-    join
+//     // tx selfcal to linkspeed
+//     fork
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
+//              txselfcal_tx_end.start(env.tx_agent.seqr);
+//              done_tx.start(env.tx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
+//         end
+//         begin
+//           fork
+//                begin
+//                     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
+//                     txselfcal_rx_end.start(env.rx_agent.seqr);
+//                     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
+//                end
+//                begin
+//                done.start(env.LTSM_ctrl_agt.seqr);
+//                end
+//           join
+//         end
+//     join
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
-    rxclkcal_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
+//     rxclkcal_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM)
-    valtraincenter_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM) 
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM)
+//     valtraincenter_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM) 
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
-    valtrainvref_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
+//     valtrainvref_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
-    dtc1_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
+//     dtc1_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
  
  
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
-    datatrainvref_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
+//     datatrainvref_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
  
 
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
-    rxdeskew_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
+//     rxdeskew_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
 
  
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
-    dtc2_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
+//     dtc2_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
 
 
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_phyretrain_lanepossible_txfail.get_type_name()), UVM_MEDIUM)
-    linkspeed_phyretrain_lanepossible_txfail.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", linkspeed_phyretrain_lanepossible_txfail.get_type_name()), UVM_MEDIUM)
-    // sequences to exit phyretrain
-    // repair sequences
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_rx_starthandshake.get_type_name()), UVM_MEDIUM)
-     repair_rx_starthandshake.start(env.rx_agent.seqr);
-     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_rx_starthandshake.get_type_name()), UVM_MEDIUM)
-     fork
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_tx_applydegrade.get_type_name()), UVM_MEDIUM)
-             repair_tx_applydegrade.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_tx_applydegrade.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_phyretrain_lanepossible_txfail.get_type_name()), UVM_MEDIUM)
+//     linkspeed_phyretrain_lanepossible_txfail.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", linkspeed_phyretrain_lanepossible_txfail.get_type_name()), UVM_MEDIUM)
+//     // sequences to exit phyretrain
+//     // repair sequences
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_rx_starthandshake.get_type_name()), UVM_MEDIUM)
+//      repair_rx_starthandshake.start(env.rx_agent.seqr);
+//      `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_rx_starthandshake.get_type_name()), UVM_MEDIUM)
+//      fork
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_tx_applydegrade.get_type_name()), UVM_MEDIUM)
+//              repair_tx_applydegrade.start(env.tx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_tx_applydegrade.get_type_name()), UVM_MEDIUM)
 
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_tx_endhandshake.get_type_name()), UVM_MEDIUM)
-             repair_tx_endhandshake.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_tx_endhandshake.get_type_name()), UVM_MEDIUM)
-        end
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_rx_degrade_0_15.get_type_name()), UVM_MEDIUM)
-             repair_rx_degrade_0_15.start(env.rx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_rx_degrade_0_15.get_type_name()), UVM_MEDIUM)
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_tx_endhandshake.get_type_name()), UVM_MEDIUM)
+//              repair_tx_endhandshake.start(env.tx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_tx_endhandshake.get_type_name()), UVM_MEDIUM)
+//         end
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_rx_degrade_0_15.get_type_name()), UVM_MEDIUM)
+//              repair_rx_degrade_0_15.start(env.rx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_rx_degrade_0_15.get_type_name()), UVM_MEDIUM)
 
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_rx_endhandshake.get_type_name()), UVM_MEDIUM)
-             repair_rx_endhandshake.start(env.rx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_rx_endhandshake.get_type_name()), UVM_MEDIUM)
-        end
-    join
-    repair_txselfcal.start(env.tx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", repair_rx_endhandshake.get_type_name()), UVM_MEDIUM)
+//              repair_rx_endhandshake.start(env.rx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", repair_rx_endhandshake.get_type_name()), UVM_MEDIUM)
+//         end
+//     join
+//     repair_txselfcal.start(env.tx_agent.seqr);
      
 
-    // tx selfcal to linkspeed
-    fork
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
-             done_tx.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-        end
-        begin
-          fork
-               begin
-                    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-                    txselfcal_rx_end.start(env.rx_agent.seqr);
-                    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-               end
-               begin
-               done.start(env.LTSM_ctrl_agt.seqr);
-               end
-          join
-        end
-    join
+//     // tx selfcal to linkspeed
+//     fork
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
+//              txselfcal_tx_end.start(env.tx_agent.seqr);
+//              done_tx.start(env.tx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
+//         end
+//         begin
+//           fork
+//                begin
+//                     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
+//                     txselfcal_rx_end.start(env.rx_agent.seqr);
+//                     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
+//                end
+//                begin
+//                done.start(env.LTSM_ctrl_agt.seqr);
+//                end
+//           join
+//         end
+//     join
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
-    rxclkcal_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
+//     rxclkcal_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM)
-    valtraincenter_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM) 
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM)
+//     valtraincenter_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM) 
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
-    valtrainvref_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
+//     valtrainvref_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
-    dtc1_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
+//     dtc1_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
  
  
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
-    datatrainvref_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
+//     datatrainvref_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
  
 
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
-    rxdeskew_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
+//     rxdeskew_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
 
  
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
-    dtc2_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
+//     dtc2_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
 
 
 
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_phyretrain_nolanepossible_rxfail.get_type_name()), UVM_MEDIUM)
-    linkspeed_phyretrain_nolanepossible_rxfail.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", linkspeed_phyretrain_nolanepossible_rxfail.get_type_name()), UVM_MEDIUM)
-    // sequences to exit phyretrain
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_phyretrain_nolanepossible_rxfail.get_type_name()), UVM_MEDIUM)
+//     linkspeed_phyretrain_nolanepossible_rxfail.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", linkspeed_phyretrain_nolanepossible_rxfail.get_type_name()), UVM_MEDIUM)
+//     // sequences to exit phyretrain
     
-    // speedidle to linkspeed
-    fork
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
-             done_tx.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-        end
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-        end
-    join
+//     // speedidle to linkspeed
+//     fork
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
+//              speedidle_tx_end.start(env.tx_agent.seqr);
+//              done_tx.start(env.tx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
+//         end
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
+//              speedidle_rx_end.start(env.rx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
+//         end
+//     join
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_txselfcal.get_type_name()), UVM_MEDIUM)
-    speedidle_txselfcal.start(env.tx_agent.seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_txselfcal.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_txselfcal.get_type_name()), UVM_MEDIUM)
+//     speedidle_txselfcal.start(env.tx_agent.seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_txselfcal.get_type_name()), UVM_MEDIUM)
 
-    fork
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
-             done_tx.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-        end
-        begin
-          fork
-               begin
-                    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-                    txselfcal_rx_end.start(env.rx_agent.seqr);
-                    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-               end
-               begin
-               done.start(env.LTSM_ctrl_agt.seqr);
-               end
-          join
-        end
-    join
+//     fork
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
+//              txselfcal_tx_end.start(env.tx_agent.seqr);
+//              done_tx.start(env.tx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
+//         end
+//         begin
+//           fork
+//                begin
+//                     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
+//                     txselfcal_rx_end.start(env.rx_agent.seqr);
+//                     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
+//                end
+//                begin
+//                done.start(env.LTSM_ctrl_agt.seqr);
+//                end
+//           join
+//         end
+//     join
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
-    rxclkcal_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
+//     rxclkcal_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM)
-    valtraincenter_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM) 
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM)
+//     valtraincenter_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM) 
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
-    valtrainvref_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
+//     valtrainvref_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
-    dtc1_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
+//     dtc1_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
  
  
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
-    datatrainvref_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
+//     datatrainvref_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
  
 
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
-    rxdeskew_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
+//     rxdeskew_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
 
  
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
-    dtc2_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
+//     dtc2_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
 
 
 
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_phyretrain_nolanepossible_txfail.get_type_name()), UVM_MEDIUM)
-    linkspeed_phyretrain_nolanepossible_txfail.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", linkspeed_phyretrain_nolanepossible_txfail.get_type_name()), UVM_MEDIUM)
-    // sequences to exit phyretrain
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_phyretrain_nolanepossible_txfail.get_type_name()), UVM_MEDIUM)
+//     linkspeed_phyretrain_nolanepossible_txfail.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", linkspeed_phyretrain_nolanepossible_txfail.get_type_name()), UVM_MEDIUM)
+//     // sequences to exit phyretrain
     
-    // speedidle to linkspeed
-    fork
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
-             done_tx.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-        end
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-        end
-    join
+//     // speedidle to linkspeed
+//     fork
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
+//              speedidle_tx_end.start(env.tx_agent.seqr);
+//              done_tx.start(env.tx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
+//         end
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
+//              speedidle_rx_end.start(env.rx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
+//         end
+//     join
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_txselfcal.get_type_name()), UVM_MEDIUM)
-    speedidle_txselfcal.start(env.tx_agent.seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_txselfcal.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_txselfcal.get_type_name()), UVM_MEDIUM)
+//     speedidle_txselfcal.start(env.tx_agent.seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_txselfcal.get_type_name()), UVM_MEDIUM)
 
-    fork
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
-             done_tx.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-        end
-        begin
-          fork
-               begin
-                    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-                    txselfcal_rx_end.start(env.rx_agent.seqr);
-                    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-               end
-               begin
-               done.start(env.LTSM_ctrl_agt.seqr);
-               end
-          join
-        end
-    join
+//     fork
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
+//              txselfcal_tx_end.start(env.tx_agent.seqr);
+//              done_tx.start(env.tx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
+//         end
+//         begin
+//           fork
+//                begin
+//                     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
+//                     txselfcal_rx_end.start(env.rx_agent.seqr);
+//                     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
+//                end
+//                begin
+//                done.start(env.LTSM_ctrl_agt.seqr);
+//                end
+//           join
+//         end
+//     join
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
-    rxclkcal_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
+//     rxclkcal_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM)
-    valtraincenter_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM) 
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM)
+//     valtraincenter_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM) 
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
-    valtrainvref_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
+//     valtrainvref_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
-    dtc1_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
+//     dtc1_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
  
  
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
-    datatrainvref_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
+//     datatrainvref_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
  
 
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
-    rxdeskew_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
+//     rxdeskew_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
 
  
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
-    dtc2_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
+//     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
+//     dtc2_success.start(env.v_seqr);
+//     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
 
 
 
@@ -1996,26 +2041,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     linkspeed_repair_fail_8_15.start(env.v_seqr);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", linkspeed_repair_fail_8_15.get_type_name()), UVM_MEDIUM)
     // txslefcal to linkspeed
-    fork
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
-             done_tx.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-        end
-        begin
-          fork
-               begin
-                    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-                    txselfcal_rx_end.start(env.rx_agent.seqr);
-                    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-               end
-               begin
-               done.start(env.LTSM_ctrl_agt.seqr);
-               end
-          join
-        end
-    join
+    
 
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
     rxclkcal_success.start(env.v_seqr);
@@ -2056,70 +2082,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
 
 
 
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_repair_fail_4_15.get_type_name()), UVM_MEDIUM)
-    linkspeed_repair_fail_4_15.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", linkspeed_repair_fail_4_15.get_type_name()), UVM_MEDIUM)
-    // txslefcal to linkspeed
-    fork
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
-             done_tx.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-        end
-        begin
-          fork
-               begin
-                    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-                    txselfcal_rx_end.start(env.rx_agent.seqr);
-                    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-               end
-               begin
-               done.start(env.LTSM_ctrl_agt.seqr);
-               end
-          join
-        end
-    join
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
-    rxclkcal_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM)
-    valtraincenter_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM) 
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
-    valtrainvref_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
-    dtc1_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
- 
- 
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
-    datatrainvref_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
- 
-
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
-    rxdeskew_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
-
- 
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
-    dtc2_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
-
-
-
-
-
-
+    
     
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_repair_fail_0_7.get_type_name()), UVM_MEDIUM)
     linkspeed_repair_fail_0_7.start(env.v_seqr);
@@ -2127,26 +2090,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     // txslefcal to linkspeed
 
 
-    fork
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
-             done_tx.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-        end
-        begin
-          fork
-               begin
-                    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-                    txselfcal_rx_end.start(env.rx_agent.seqr);
-                    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-               end
-               begin
-               done.start(env.LTSM_ctrl_agt.seqr);
-               end
-          join
-        end
-    join
+    
 
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
     rxclkcal_success.start(env.v_seqr);
@@ -2184,72 +2128,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
 
 
     
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_repair_fail_0_3_8_15.get_type_name()), UVM_MEDIUM)
-    linkspeed_repair_fail_0_3_8_15.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", linkspeed_repair_fail_0_3_8_15.get_type_name()), UVM_MEDIUM)
-    // txslefcal to linkspeed
-    fork
-        begin
-             `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
-             done_tx.start(env.tx_agent.seqr);
-             `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-        end
-        begin
-          fork
-               begin
-                    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-                    txselfcal_rx_end.start(env.rx_agent.seqr);
-                    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_rx_end.get_type_name()), UVM_MEDIUM)
-               end
-               begin
-               done.start(env.LTSM_ctrl_agt.seqr);
-               end
-          join
-        end
-    join
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
-    rxclkcal_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxclkcal_success.get_type_name()), UVM_MEDIUM)
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM)
-    valtraincenter_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtraincenter_success.get_type_name()), UVM_MEDIUM) 
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
-    valtrainvref_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", valtrainvref_success.get_type_name()), UVM_MEDIUM)
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
-    dtc1_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc1_success.get_type_name()), UVM_MEDIUM)
- 
- 
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
-    datatrainvref_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", datatrainvref_success.get_type_name()), UVM_MEDIUM)
- 
-
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
-    rxdeskew_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", rxdeskew_success.get_type_name()), UVM_MEDIUM)
-
- 
-
-    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
-    dtc2_success.start(env.v_seqr);
-    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
-
-
-
-
-
-
-
-
     // linkspeed to speedidle sequences
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_speeddegrade_rxinit.get_type_name()), UVM_MEDIUM)
     linkspeed_speeddegrade_rxinit.start(env.v_seqr);
@@ -2258,13 +2136,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -2276,7 +2156,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -2330,7 +2209,7 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
 
 
 
-    repeat(3)begin
+    repeat(4)begin
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_speeddegrade_txinit.get_type_name()), UVM_MEDIUM)
     linkspeed_speeddegrade_txinit.start(env.v_seqr);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", linkspeed_speeddegrade_txinit.get_type_name()), UVM_MEDIUM)
@@ -2338,13 +2217,15 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
         end
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
-             speedidle_rx_end.start(env.rx_agent.seqr);
+             fork
+               speedidle_rx_end.start(env.rx_agent.seqr);
+               done.start(env.LTSM_ctrl_agt.seqr);
+             join
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
         end
     join
@@ -2356,7 +2237,6 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     fork
         begin
              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
-             txselfcal_tx_end.start(env.tx_agent.seqr);
              done_tx.start(env.tx_agent.seqr);
              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", txselfcal_tx_end.get_type_name()), UVM_MEDIUM)
         end
@@ -2408,6 +2288,27 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     dtc2_success.start(env.v_seqr);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", dtc2_success.get_type_name()), UVM_MEDIUM)
     end
+    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkspeed_speeddegrade_txinit.get_type_name()), UVM_MEDIUM)
+    linkspeed_speeddegrade_txinit.start(env.v_seqr);
+    `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", linkspeed_speeddegrade_txinit.get_type_name()), UVM_MEDIUM)
+    // speedidle to linkspeed
+    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
+             speedidle_tx_end.start(env.LTSM_ctrl_agt.seqr);
+     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
+//     fork
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
+//              speedidle_tx_end.start(env.LTSM_ctrl_agt.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_tx_end.get_type_name()), UVM_MEDIUM)
+//         end
+//         begin
+//              `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
+//              speedidle_rx_end.start(env.rx_agent.seqr);
+//              `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", speedidle_rx_end.get_type_name()), UVM_MEDIUM)
+//         end
+//     join
+
+
     error_rx.start(env.rx_agent.seqr);
     fork
         // tx thread
@@ -2422,12 +2323,13 @@ task MBTRAIN_test::run_phase(uvm_phase phase);
     exit_to_reset.start(env.LTSM_ctrl_agt.seqr);
 
     // from reset to mbinit
+     ready.start(env.v_seqr);
 
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", success.get_type_name()), UVM_MEDIUM)
     success.start(env.v_seqr);
     `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", success.get_type_name()), UVM_MEDIUM)
     
-    `uvm_info(get_type_name(), $sformatf("mbrain sequences have started"), UVM_MEDIUM)
+    `uvm_info(get_type_name(), $sformatf("mbrain sequences have finished"), UVM_MEDIUM)
 
     phase.drop_objection(this);
 endtask : run_phase

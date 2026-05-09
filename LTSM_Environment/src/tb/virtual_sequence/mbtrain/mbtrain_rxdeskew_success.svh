@@ -24,15 +24,20 @@
 //
 //------------------------------------------------------------------------------
 
-class mbtrain_rsdeskew_success extends virtual_sequence_base;
-    `uvm_object_utils(mbtrain_rsdeskew_success)
-
+class mbtrain_rxdeskew_success extends virtual_sequence_base;
+    `uvm_object_utils(mbtrain_rxdeskew_success)
+    mbtrain_rxdeskew_tx_starthandshake        start_tx;
+    mbtrain_rxdeskew_tx_endhandshake          end_handshake_tx;
+    mbtrain_rxdeskew_rx_starthandshake        start_rx;
+    mbtrain_rxdeskew_rx_endhandshake          end_handshake_rx;
+    mbtrain_rxinit_datasweep_success          data_sweep;
+    controllers_done                          done;
 
     // Function: new
     //
     // Creates a new virtual_sequence instance with the given name.
 
-    extern function new(string name = "mbtrain_rsdeskew_success");
+    extern function new(string name = "mbtrain_rxdeskew_success");
 
 
     // Task: pre_body
@@ -49,7 +54,7 @@ class mbtrain_rsdeskew_success extends virtual_sequence_base;
 
     extern task body();
 
-endclass : mbtrain_rsdeskew_success
+endclass : mbtrain_rxdeskew_success
 
 
 //------------------------------------------------------------------------------
@@ -66,28 +71,29 @@ endclass : mbtrain_rsdeskew_success
 // new
 // ---
 
-function mbtrain_rsdeskew_success::new(string name = "mbtrain_rsdeskew_success");
+function mbtrain_rxdeskew_success::new(string name = "mbtrain_rxdeskew_success");
     super.new(name);
 endfunction : new
 
 // pre_body
 // --------
 
-task mbtrain_rsdeskew_success::pre_body();
+task mbtrain_rxdeskew_success::pre_body();
     // tx sequences
-    start_tx=mbtrain_rsdeskew_tx_starthandshake::type_id::create("start_tx");
-    end_handshake_tx=mbtrain_rsdeskew_tx_endhandshake::type_id::create("end_handshake_tx");
+    start_tx=mbtrain_rxdeskew_tx_starthandshake::type_id::create("start_tx");
+    end_handshake_tx=mbtrain_rxdeskew_tx_endhandshake::type_id::create("end_handshake_tx");
     // rx sequences
-    start_rx=mbtrain_rsdeskew_rx_starthandshake::type_id::create("start_rx");
-    end_handshake_rx=mbtrain_rsdeskew_rx_endhandshake::type_id::create("end_handshake_rx");
+    start_rx=mbtrain_rxdeskew_rx_starthandshake::type_id::create("start_rx");
+    end_handshake_rx=mbtrain_rxdeskew_rx_endhandshake::type_id::create("end_handshake_rx");
     // datasweep sequence  
     data_sweep=mbtrain_rxinit_datasweep_success::type_id::create("data_sweep");
+    done=controllers_done::type_id::create("done");
 endtask
 
 // body
 // ----
 
-task mbtrain_rsdeskew_success::body();
+task mbtrain_rxdeskew_success::body();
     super.body();
     fork
         // tx thread
@@ -98,7 +104,10 @@ task mbtrain_rsdeskew_success::body();
         // rx thread
         begin
             start_rx.start(rx_fsm_sb_seqr);
-            end_handshake_rx.start(rx_fsm_sb_seqr);
+            fork
+                done.start(LTSM_ctrl_seqr);
+                end_handshake_rx.start(rx_fsm_sb_seqr);
+            join
         end
     join
 endtask : body

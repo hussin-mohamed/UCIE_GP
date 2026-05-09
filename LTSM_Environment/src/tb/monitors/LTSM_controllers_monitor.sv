@@ -73,19 +73,50 @@ endfunction : new
 // -------------------
 
 task LTSM_controllers_monitor::collect_transaction();
-    item = ITEM_T::type_id::create("item");
-    forever begin
-    @(negedge vif.clk);
-    forever begin
-        @(negedge vif.clk);
-        item.o_tx_encoding  = vif.o_tx_encoding;
-        item.o_rx_encoding     = vif.o_rx_encoding;
-        item.o_sbinit_start = vif.o_sbinit_start;
-        item.o_t1_ms        = vif.o_t1_ms;
-        ap.write(item);
-        if (vif.i_reset) begin
-            break;
+    
+    fork
+        // output thread
+        begin
+            item_out = ITEM_T::type_id::create("item_out");
+                forever begin
+                    @(negedge vif.clk);
+                    item_out.o_tx_encoding                           = vif.o_tx_encoding;
+                    item_out.o_rx_encoding                           = vif.o_rx_encoding;
+                    item_out.o_sbinit_start                          = vif.o_sbinit_start;
+                    item_out.o_t1_ms                                 = vif.o_t1_ms;
+                    item_out.o_lane_map_tx                           = vif.o_lane_map_tx;
+                    item_out.o_lane_map_rx                           = vif.o_lane_map_rx;
+                    item_out.o_error_threshhold                      = vif.o_error_threshhold;
+                    item_out.o_speedreg                              = vif.o_speedreg;
+                    item_out.o_Runtime_Link_Test_status_register     = vif.o_Runtime_Link_Test_status_register;
+                    item_out.o_Runtime_Link_Test_Control_register    = vif.o_Runtime_Link_Test_Control_register;
+                    ap_out.write(item_out);
+                end 
         end
-    end 
-    end
+        // input thread
+        begin
+            item_in = ITEM_T::type_id::create("item_in");
+            forever begin
+                @(posedge vif.clk);
+                item_in.i_supply_stable                              = vif.i_supply_stable;
+                item_in.i_pll_stable                         = vif.i_pll_stable;
+                item_in.i_rx_error                           = vif.i_rx_error;
+                item_in.i_rx_done                            = vif.i_rx_done;
+                item_in.i_tx_done                            = vif.i_tx_done;
+                item_in.i_rx_valid_results                          = vif.i_rx_valid_results;
+                item_in.i_sb_ready                           = vif.i_sb_ready;
+                item_in.i_reset                              = vif.i_reset;
+                item_in.i_sb_cur_msg_done                    = vif.i_sb_cur_msg_done;
+                item_in.i_speedreg                           = vif.i_speedreg;
+                item_in.i_local_cap                          = vif.i_local_cap;
+                item_in.i_par_check_done                     = vif.i_par_check_done;
+                item_in.i_rx_data_results                    = vif.i_rx_data_results;
+                item_in.i_clk_results                        = vif.i_clk_results;
+                item_in.i_Runtime_Link_Test_status_register  = vif.i_Runtime_Link_Test_status_register;
+                item_in.i_Runtime_Link_Test_Control_register = vif.i_Runtime_Link_Test_Control_register;
+                ap_in.write(item_in);
+            end
+        end
+    join_any
+    
 endtask : collect_transaction

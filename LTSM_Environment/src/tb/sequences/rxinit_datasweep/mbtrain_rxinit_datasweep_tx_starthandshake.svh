@@ -22,12 +22,23 @@ class mbtrain_rxinit_datasweep_tx_starthandshake extends uvm_sequence#(tx_fsm_sb
         super.new(name);
     endfunction //new()
     task body();
-        item = seq_item::type_id::create("item");
+        item = tx_fsm_sb_sequence_item::type_id::create("item");
         start_item(item);
         item.i_tx_decoding=DATA_TO_CLOCK_RX_RX_INIT_HANDSHAKE;
+        item.i_tx_info=16'h0001;
         item.i_sb_tx_rsp=1'b0;
         item.i_sb_tx_req=1'b1;
         item.i_sb_tx_done=1'b0;
+        finish_item(item);
+        start_item(item);
+        item.i_sb_tx_rsp=1'b0;
+        item.i_sb_tx_req=1'b0;
+        item.i_sb_tx_done=1'b0;
+        finish_item(item);
+        start_item(item);
+        item.i_sb_tx_rsp=1'b0;
+        item.i_sb_tx_req=1'b0;
+        item.i_sb_tx_done=1'b1;
         finish_item(item);
     endtask 
 endclass //className extends superClass

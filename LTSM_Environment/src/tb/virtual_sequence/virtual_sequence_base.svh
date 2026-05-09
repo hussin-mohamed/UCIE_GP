@@ -74,6 +74,7 @@ endfunction : new
 // ----
 
 task virtual_sequence_base::body();
+    pre_body();
     $cast(v_seqr, m_sequencer);
     rx_fsm_sb_seqr = v_seqr.rx_seqr;
     tx_fsm_sb_seqr = v_seqr.tx_seqr;

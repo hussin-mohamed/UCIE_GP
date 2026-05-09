@@ -17,16 +17,26 @@
 import shared_ltsm_pkg::*;
 class mbtrain_linkspeed_rx_error_req extends uvm_sequence#(rx_fsm_sb_sequence_item);
     `uvm_object_utils(mbtrain_linkspeed_rx_error_req)
-    tx_fsm_sb_sequence_item item;
+    rx_fsm_sb_sequence_item item;
     function new(string name = "mbtrain_linkspeed_rx_error_req");
         super.new(name);
     endfunction //new()
     task body();
-        item = seq_item::type_id::create("item");
+        item = rx_fsm_sb_sequence_item::type_id::create("item");
         start_item(item);
         item.i_rx_decoding=MBTRAIN_LINKSPEED_TX_Error_Hnd;
         item.i_sb_rx_done=1'b0;
         item.i_sb_rx_req=1'b1;
+        item.i_sb_rx_rsp=1'b0;
+        finish_item(item);
+        start_item(item);
+        item.i_sb_rx_done=1'b0;
+        item.i_sb_rx_req=1'b0;
+        item.i_sb_rx_rsp=1'b0;
+        finish_item(item);
+        start_item(item);
+        item.i_sb_rx_done=1'b1;
+        item.i_sb_rx_req=1'b0;
         item.i_sb_rx_rsp=1'b0;
         finish_item(item);
     endtask 

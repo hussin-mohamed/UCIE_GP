@@ -26,7 +26,14 @@
 
 class mbtrain_valvref_trainerror extends virtual_sequence_base;
     `uvm_object_utils(mbtrain_valvref_trainerror)
-
+    mbtrain_valvref_tx_starthandshake        start_tx;
+    trainerror_tx_rsp                        error_tx_rsp;
+    mbtrain_valvref_rx_starthandshake        start_rx;
+    trainerror_rx_starthandshake             error_rx;
+    trainerror_rx_rsp                        error_rx_rsp;
+    trainerror_exitreset                     exit_to_reset;
+    mbtrain_rxinit_datasweep_success         data_sweep;
+    trainerror_rdiexit                       rdiexit;
 
     // Function: new
     //
@@ -80,10 +87,11 @@ task mbtrain_valvref_trainerror::pre_body();
     // rx sequences
     start_rx=mbtrain_valvref_rx_starthandshake::type_id::create("start_rx");
     error_rx=trainerror_rx_starthandshake::type_id::create("start_rx");
-    error_rx_rsp=trainerror_rx_rsp::type_id::create("error_tx_rsp");
+    error_rx_rsp=trainerror_rx_rsp::type_id::create("error_rx_rsp");
     // datasweep sequence  
     exit_to_reset=trainerror_exitreset::type_id::create("exit_to_reset"); // controller
     data_sweep=mbtrain_rxinit_datasweep_success::type_id::create("data_sweep"); // virtualsequencer
+    rdiexit=trainerror_rdiexit::type_id::create("rdiexit");
 endtask
 
 // body
@@ -114,5 +122,13 @@ task mbtrain_valvref_trainerror::body();
             error_rx_rsp.start(rx_fsm_sb_seqr);
         end
     join
-    exit_to_reset.start(LTSM_ctrl_seqr);
+    fork
+        begin
+            exit_to_reset.start(LTSM_ctrl_seqr);
+        end
+        begin
+            rdiexit.start(ltsm_rdi_seqr);
+        end
+    join
+    
 endtask : body

@@ -22,12 +22,22 @@ class mbtrain_linkspeed_tx_starthandshake extends uvm_sequence#(tx_fsm_sb_sequen
         super.new(name);
     endfunction //new()
     task body();
-        item = seq_item::type_id::create("item");
+        item = tx_fsm_sb_sequence_item::type_id::create("item");
         start_item(item);
         item.i_tx_decoding=MBTRAIN_DTC2_TX_End_Handshake;
         item.i_sb_tx_rsp=1'b1;
         item.i_sb_tx_req=1'b0;
         item.i_sb_tx_done=1'b0;
+        finish_item(item);
+        start_item(item);
+        item.i_sb_tx_rsp=1'b0;
+        item.i_sb_tx_req=1'b0;
+        item.i_sb_tx_done=1'b0;
+        finish_item(item);
+        start_item(item);
+        item.i_sb_tx_rsp=1'b0;
+        item.i_sb_tx_req=1'b0;
+        item.i_sb_tx_done=1'b1;
         finish_item(item);
     endtask 
 endclass //className extends superClass

@@ -71,14 +71,78 @@ endfunction : new
 
 task rx_fsm_sb_driver::drive(rx_fsm_sb_sequence_item item);
     item=rx_fsm_sb_sequence_item::type_id::create("item");
+    
+    
     seq_item_port.get_next_item(item);
-    vif.i_rx_decoding = item.i_rx_decoding;
-    vif.i_rx_data     = item.i_rx_data;
-    vif.i_sb_rx_req   = item.i_sb_rx_req;
-    vif.i_sb_rx_rsp   = item.i_sb_rx_rsp;
-    vif.i_sb_rx_done  = item.i_sb_rx_done;
-    vif.i_rx_info     = item.i_rx_info;
-    @(negedge vif.clk);
-    ap.write(item);
+    vif.i_rx_decoding <= item.i_rx_decoding;
+    vif.i_rx_data     <= item.i_rx_data;
+    vif.i_sb_rx_req   <= item.i_sb_rx_req;
+    vif.i_sb_rx_rsp   <= item.i_sb_rx_rsp;
+    vif.i_sb_rx_done  <= item.i_sb_rx_done;
+    vif.i_rx_info     <= item.i_rx_info;
+
+    repeat(2)
+        @(posedge vif.clk);
+        
+    vif.i_sb_rx_req   = 0;
+    vif.i_sb_rx_rsp   = 0;
+    vif.i_sb_rx_done  = 0;
     seq_item_port.item_done();
+    // item=rx_fsm_sb_sequence_item::type_id::create("item");
+    
+    
+    // seq_item_port.try_next_item(item);
+    
+    // if (item != null) begin
+    //     vif.i_rx_decoding = item.i_rx_decoding;
+    //     vif.i_rx_data     = item.i_rx_data;
+    //     vif.i_sb_rx_req   = item.i_sb_rx_req;
+    //     vif.i_sb_rx_rsp   = item.i_sb_rx_rsp;
+    //     vif.i_sb_rx_done  = item.i_sb_rx_done;
+    //     vif.i_rx_info     = item.i_rx_info;
+
+    //     repeat(2)
+    //         @(negedge vif.clk);
+            
+    //     ap.write(item);
+    //     vif.i_sb_rx_req   = 0;
+    //     vif.i_sb_rx_rsp   = 0;
+    //     vif.i_sb_rx_done  = 0;
+    //     seq_item_port.item_done();
+    // end
+    // else begin
+    //     item=rx_fsm_sb_sequence_item::type_id::create("item");
+    //     item.i_rx_decoding = 0;
+    //     item.i_rx_data     = 0;
+    //     item.i_sb_rx_req   = 0;
+    //     item.i_sb_rx_rsp   = 0;
+    //     item.i_sb_rx_done  = 0;
+    //     item.i_rx_info     = 0;
+
+    //     repeat(2)
+    //         @(negedge vif.clk);
+            
+    //     ap.write(item);
+    // end
+    
+    // fork
+    //     begin
+    //         item=rx_fsm_sb_sequence_item::type_id::create("item");
+    //         seq_item_port.get_next_item(item);
+    //         vif.i_rx_decoding = item.i_rx_decoding;
+    //         vif.i_rx_data     = item.i_rx_data;
+    //         vif.i_sb_rx_req   = item.i_sb_rx_req;
+    //         vif.i_sb_rx_rsp   = item.i_sb_rx_rsp;
+    //         vif.i_sb_rx_done  = item.i_sb_rx_done;
+    //         vif.i_rx_info     = item.i_rx_info;
+    //         repeat(2)
+    //             @(negedge vif.clk);
+    //         seq_item_port.item_done();
+    //     end
+    //     begin
+    //         repeat(2)
+    //             @(negedge vif.clk);
+    //         ap.write(item);
+    //     end
+    // join_any
 endtask

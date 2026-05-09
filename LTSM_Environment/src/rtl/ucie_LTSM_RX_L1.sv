@@ -10,6 +10,7 @@ module ucie_LTSM_rx_L1 #(
     input i_clk,
     input i_reset,
     input [DECODING_WIDTH-1:0] i_rx_decoding,
+    input [DECODING_WIDTH-1:0] i_rx_decoding_old,
     input [3:0] i_lp_state_req,
     input i_sb_rx_req,
     input i_sb_rx_rsp,
@@ -42,7 +43,10 @@ logic idle;
 logic idle_reg;
 
 logic done_ack;
+logic done_ack_old;
 logic [DECODING_WIDTH-1:0] o_rx_encoding_old;
+logic speed_idle_state_enable_old;
+logic active_state_enable_old;
 
 logic [1:0] CS, NS;  // Current State, Next State
 
@@ -50,7 +54,7 @@ always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
         CS <= WAIT_1US;
         idle <= 1;
-        o_rx_encoding <= 0;
+        o_rx_encoding <= 'h110;
         o_rx_sb_req <= 0;
         o_rx_sb_rsp <= 0;
     end else begin
@@ -63,10 +67,24 @@ always_ff @(posedge i_clk or posedge i_reset) begin
         end else begin
             CS <= WAIT_1US;
             idle <= 1;
-            o_rx_encoding <= 0;
+            o_rx_encoding <= 'h108;
             o_rx_sb_req <= 0;
             o_rx_sb_rsp <= 0;
         end
+    end
+end
+
+always @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) begin
+        o_rx_encoding_old <= 0;
+        done_ack_old <= 0;
+        speed_idle_state_enable_old <= 0;
+        active_state_enable_old <= 0;
+    end else begin
+        o_rx_encoding_old <= o_rx_encoding;  // Register to track previous encoding for done_ack logic
+        done_ack_old <= done_ack;
+        speed_idle_state_enable_old <= speed_idle_state_enable;
+        active_state_enable_old <= active_state_enable;
     end
 end
 
@@ -75,17 +93,13 @@ end
 //================================================================================
 // Tracks when done signal has been acknowledged in handshake protocol
 always_comb begin
-    if (i_reset) done_ack = 0;
-    else if ((o_rx_encoding_reg[2:0] != o_rx_encoding_old[2:0]) || !state_enable) done_ack = 0;
+    done_ack = done_ack_old;
+    if ((o_rx_encoding_reg != o_rx_encoding_old)) done_ack = 0;
     else if (i_sb_rx_done) begin
         done_ack = 1;  // Set when done received
     end else if (i_sb_rx_rsp) begin
         done_ack = 0;  // Clear on response to allow next transaction
     end
-end
-
-always_ff @(posedge i_clk) begin
-    o_rx_encoding_old <= o_rx_encoding_reg;  // Register to track previous encoding for done_ack logic
 end
 
 //================================================================================
@@ -105,21 +119,24 @@ always @(posedge i_clk or posedge i_reset) begin
 end
 
 always_comb begin
-    if (i_reset) begin
-        o_rx_encoding_reg = WAIT_1US;
-        o_rx_sb_req_reg = 0;
-        o_rx_sb_rsp_reg = 0;
-        o_rx_sb_done_reg = 0;
-        idle_reg = 1;
-        speed_idle_state_enable = 0;
+        o_rx_encoding_reg = o_rx_encoding;
+        o_rx_sb_req_reg = o_rx_sb_req;
+        o_rx_sb_rsp_reg = o_rx_sb_rsp;
+        o_rx_sb_done_reg = o_rx_sb_done;
+        idle_reg = idle;
+        speed_idle_state_enable = speed_idle_state_enable_old;
+        active_state_enable = active_state_enable_old;
         wait_1us_en = 0;
-    end else if (!state_enable) begin
-        o_rx_encoding_reg = WAIT_1US;
+        NS = CS;
+        o_pl_state_sts = 'b0001;  // Default to IDLE state status
+    if (!state_enable) begin
+        o_rx_encoding_reg = 'h108;
         o_rx_sb_req_reg = 0;
         o_rx_sb_rsp_reg = 0;
         o_rx_sb_done_reg = 0;
         idle_reg = 1;
         speed_idle_state_enable = 0;
+        active_state_enable = 0;
         wait_1us_en = 0;
     end else begin
         case (CS)
@@ -161,8 +178,9 @@ always_comb begin
                             wait_1us_en = 0;
                         end
                     end else begin
-                        NS = WAIT_1US;  // NOTE: original used '<=' in always_comb; corrected to '=' â€” behaviour is identical in simulation but '<=' is illegal in synthesis-clean always_comb
+                        NS = WAIT_1US;  // NOTE: original used '<=' in always_comb; corrected to '=' — behaviour is identical in simulation but '<=' is illegal in synthesis-clean always_comb
                         idle_reg = 1;
+                        o_rx_encoding_reg = i_rx_decoding_old;
                     end 
                 end
             end 

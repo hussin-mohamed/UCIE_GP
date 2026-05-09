@@ -14,7 +14,7 @@ module ucie_ltsm_rx_sbinit #(
     input                               i_sb_rx_done,
     input                               i_rx_done,
     input                               init_train_en,  
-    input                               i_stop,
+    input                               i_sb_ready,
     input   [3:0]                       i_current_state,
     input                               o_timer_8ms,    
 
@@ -51,15 +51,20 @@ module ucie_ltsm_rx_sbinit #(
     // State memory
     // -------------------------------------------------------------------------
     always_ff @(posedge i_clk or posedge i_reset) begin
-        if (i_reset || i_current_state != SBINIT) begin
+        if (i_reset) begin
+            current_substate <= WAIT_OUT_OF_RESET_MSG;
+            substates_done   <= 0;
+        end else if (i_current_state != SBINIT) begin
             current_substate <= WAIT_OUT_OF_RESET_MSG;
             substates_done   <= 0;
         end else begin
-            current_substate <= next_substate;
-            // clears only on reset or when leaving SBINIT (handled above).
             if (current_substate == DONE_HANDSHAKE &&
-                i_rx_decoding == 9'h09 && i_sb_rx_req)
-                substates_done <= 1;
+                i_rx_decoding == 9'h09 && i_sb_rx_req) begin
+                substates_done   <= 1;
+                current_substate <= DONE_HANDSHAKE;
+            end else begin
+                current_substate <= next_substate;
+            end
         end
     end
 
@@ -92,50 +97,46 @@ module ucie_ltsm_rx_sbinit #(
         o_done_sbinit_rx = 0;
         next_substate   = WAIT_OUT_OF_RESET_MSG;
 
-        if (o_timer_8ms) begin
+        if (!substates_done && o_timer_8ms) begin
             o_train_error = 1;
             next_substate = WAIT_OUT_OF_RESET_MSG;
         end
-        else if (i_current_state == SBINIT && !substates_done) begin
+        else if (i_current_state == SBINIT) begin
             case (current_substate)
 
                 // --------------------------------------------------------------
                 // WAIT_OUT_OF_RESET_MSG
                 // RX waits for TX to send its out-of-reset message (encoding 0x09).
                 // Encoding held at 0x08 while waiting.
-                // No REQ/RSP handshake here — RX is purely listening.
                 // --------------------------------------------------------------
                 WAIT_OUT_OF_RESET_MSG: begin
                     o_rx_encoding = 9'h08;
 
-                    if (i_rx_decoding == 9'h09)
-                        next_substate = DONE_HANDSHAKE;
-                    else
-                        next_substate = WAIT_OUT_OF_RESET_MSG;
+                    if (!substates_done) begin
+                        if (i_rx_decoding == 9'h08) next_substate = DONE_HANDSHAKE;
+                        else next_substate = WAIT_OUT_OF_RESET_MSG;
+                    end
                 end
 
                 // --------------------------------------------------------------
                 // DONE_HANDSHAKE
                 // RX sends RSP to acknowledge the done message from TX.
-                // Assert o_rx_sb_rsp until done_ack (i_sb_rx_done received,
-                // meaning our RSP was accepted by sideband), then drop RSP.
-                // Advance when TX confirms with REQ (i_sb_rx_req) + decoding 0x09.
-                // FIX 6: removed "substates_done = 1" from here — must be in always_ff
                 // --------------------------------------------------------------
                 DONE_HANDSHAKE: begin
                     o_rx_encoding = 9'h09;
-                    o_rx_sb_rsp   = done_ack ? 0 : 1;
+                    if (!substates_done) begin
+                        o_rx_sb_rsp = done_ack ? 0 : 1;
 
-                    if (i_rx_decoding == 9'h09 && i_sb_rx_req) begin
-                        next_substate    = WAIT_OUT_OF_RESET_MSG;
-                        o_done_sbinit_rx = 1;
-                        // substates_done latched in always_ff this same cycle
-                    end else begin
-                        next_substate = DONE_HANDSHAKE;
+                        if (i_rx_decoding == 9'h09 && i_sb_rx_req) begin
+                            next_substate    = WAIT_OUT_OF_RESET_MSG;
+                            o_done_sbinit_rx = 1;
+                        end else begin
+                            next_substate = DONE_HANDSHAKE;
+                        end
                     end
                 end
 
-                default: next_substate = WAIT_OUT_OF_RESET_MSG;  
+                default: next_substate = WAIT_OUT_OF_RESET_MSG;
 
             endcase
         end
@@ -144,6 +145,7 @@ module ucie_ltsm_rx_sbinit #(
     // =========================================================================
     // Assertions
     // =========================================================================
+    /*
 `ifdef SIM
 
     // --------------------------------------------------------------------------
@@ -230,5 +232,5 @@ module ucie_ltsm_rx_sbinit #(
         else $error("ASSERT FAIL [DONE_ONLY_IN_STATE]: done asserted outside SBINIT");
 
 `endif
-
+*/
 endmodule

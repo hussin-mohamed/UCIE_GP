@@ -26,7 +26,12 @@
 
 class mbtrain_rxclkcal_success extends virtual_sequence_base;
     `uvm_object_utils(mbtrain_rxclkcal_success)
-
+    mbtrain_rxclkcal_tx_starthandshake        start_tx;
+    mbtrain_rxclkcal_tx_endhandshake          end_handshake_tx;
+    mbtrain_rxclkcal_rx_starthandshake        start_rx;
+    mbtrain_rxclkcal_rx_endhandshake          end_handshake_rx;
+    mbtrain_rxinit_datasweep_success          data_sweep;
+    controllers_done                          done;
 
     // Function: new
     //
@@ -82,6 +87,7 @@ task mbtrain_rxclkcal_success::pre_body();
     end_handshake_rx=mbtrain_rxclkcal_rx_endhandshake::type_id::create("end_handshake_rx");
     // datasweep sequence  
     data_sweep=mbtrain_rxinit_datasweep_success::type_id::create("data_sweep");
+    done=controllers_done::type_id::create("done");
 endtask
 
 // body
@@ -98,7 +104,10 @@ task mbtrain_rxclkcal_success::body();
         // rx thread
         begin
             start_rx.start(rx_fsm_sb_seqr);
-            end_handshake_rx.start(rx_fsm_sb_seqr);
+            fork
+                done.start(LTSM_ctrl_seqr);
+                end_handshake_rx.start(rx_fsm_sb_seqr);
+            join
         end
     join
 endtask : body

@@ -73,12 +73,54 @@ endfunction : new
 task ltsm_rdi_driver::drive(ltsm_rdi_sequence_item item);
     item=ltsm_rdi_sequence_item::type_id::create("item");
     seq_item_port.get_next_item(item);
-    vif.i_lp_state_req = item.i_lp_state_req;
-    vif.i_lp_stallack = item.i_lp_stallack;
-    vif.i_lp_clk_ack = item.i_lp_clk_ack;
-    vif.i_lp_wake_req = item.i_wake_req;
-    vif.i_lp_linkerror = item.i_lp_linkerror;
-    @(negedge vif.clk);
-    ap.write(item);
+    vif.i_lp_state_req <= item.i_lp_state_req;
+    vif.i_lp_stallack <= item.i_lp_stallack;
+    vif.i_lp_clk_ack <= item.i_lp_clk_ack;
+    vif.i_lp_wake_req <= item.i_lp_wake_req;
+    vif.i_lp_linkerror <= item.i_lp_linkerror;
+    vif.i_reset <= item.i_reset;
+    repeat(2)
+        @(posedge vif.clk);
+        
     seq_item_port.item_done();
+    // item=ltsm_rdi_sequence_item::type_id::create("item");
+    // seq_item_port.try_next_item(item);
+    
+    // if (item != null) begin
+    //     vif.i_lp_state_req = item.i_lp_state_req;
+    //     vif.i_lp_stallack = item.i_lp_stallack;
+    //     vif.i_lp_clk_ack = item.i_lp_clk_ack;
+    //     vif.i_lp_wake_req = item.i_lp_wake_req;
+    //     vif.i_lp_linkerror = item.i_lp_linkerror;
+    //     @(negedge vif.clk);
+    //     ap.write(item);
+    //     seq_item_port.item_done();
+    // end
+    // else begin
+    //     item=ltsm_rdi_sequence_item::type_id::create("item");
+    //     item.i_lp_state_req = 0;
+    //     item.i_lp_stallack = 0;
+    //     item.i_lp_clk_ack = 0;
+    //     item.i_lp_wake_req = 0;
+    //     item.i_lp_linkerror = 0;
+    //     ap.write(item);
+    // end
+    
+    // fork
+    //     begin
+    //         item=ltsm_rdi_sequence_item::type_id::create("item");
+    //         seq_item_port.get_next_item(item);
+    //         vif.i_lp_state_req = item.i_lp_state_req;
+    //         vif.i_lp_stallack = item.i_lp_stallack;
+    //         vif.i_lp_clk_ack = item.i_lp_clk_ack;
+    //         vif.i_lp_wake_req = item.i_lp_wake_req;
+    //         vif.i_lp_linkerror = item.i_lp_linkerror;
+    //         @(negedge vif.clk);
+    //         seq_item_port.item_done();
+    //     end
+    //     begin
+    //         @(negedge vif.clk);
+    //         ap.write(item);
+    //     end
+    // join_any
 endtask

@@ -68,22 +68,46 @@ endfunction : new
 // -------------------
 
 task tx_fsm_sb_monitor::collect_transaction();
-    item = ITEM_T::type_id::create("item");
-    forever begin
-    @(negedge vif.clk);
-    forever begin
-        @(negedge vif.clk);
-        item.o_tx_encoding = vif.o_tx_encoding;
-        item.o_tx_data = vif.o_tx_data;
-        item.o_sb_tx_req = vif.o_sb_tx_req;
-        item.o_sb_tx_rsp = vif.o_sb_tx_rsp;
-        item.o_sb_tx_done = vif.o_sb_tx_done;
-        item.o_tx_info = vif.o_tx_info;
-        ap.write(item);
-        if (vif.i_reset) begin
-            break;
+    fork
+        // output thread
+        begin
+            item_out = ITEM_T::type_id::create("item_out");
+               forever begin
+                // @(negedge vif.clk);
+                // if (vif.i_reset) begin
+                //     //@(negedge vif.clk);
+                // end
+                // else begin
+                    @(negedge vif.clk);
+                    item_out.o_tx_encoding = vif.o_tx_encoding;
+                    item_out.o_tx_data = vif.o_tx_data;
+                    item_out.o_tx_sb_req = vif.o_tx_sb_req;
+                    item_out.o_tx_sb_rsp = vif.o_tx_sb_rsp;
+                    item_out.o_tx_sb_done = vif.o_tx_sb_done;
+                    item_out.o_tx_info = vif.o_tx_info;
+                    ap_out.write(item_out);
+                // end
+                
+                
+            end    
+            
+            end
+        // input thread
+        begin
+            item_in = ITEM_T::type_id::create("item_in");
+            forever begin
+               @(posedge vif.clk);
+                item_in.i_tx_decoding = vif.i_tx_decoding;
+                item_in.i_tx_data     = vif.i_tx_data;
+                item_in.i_sb_tx_req   = vif.i_sb_tx_req;
+                item_in.i_sb_tx_rsp   = vif.i_sb_tx_rsp;
+                item_in.i_sb_tx_done  = vif.i_sb_tx_done;
+                item_in.i_tx_info     = vif.i_tx_info;
+                item_in.i_reset       = vif.i_reset;
+                ap_in.write(item_in);
+            end
         end
-    end
-        
-    end
+    join_any
+    
+    
 endtask : collect_transaction

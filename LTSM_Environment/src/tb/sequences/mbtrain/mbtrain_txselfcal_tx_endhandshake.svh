@@ -17,14 +17,24 @@
 import shared_ltsm_pkg::*;
 class mbtrain_txselfcal_tx_endhandshake extends uvm_sequence#(LTSM_controllers_seq_item);
     `uvm_object_utils(mbtrain_txselfcal_tx_endhandshake)
-    tx_fsm_sb_sequence_item item;
+    LTSM_controllers_seq_item item;
     function new(string name = "mbtrain_txselfcal_tx_endhandshake");
         super.new(name);
     endfunction //new()
     task body();
-        item = seq_item::type_id::create("item");
+        item = LTSM_controllers_seq_item::type_id::create("item");
         start_item(item);
         item.i_tx_done=1'b1;
+        item.i_rx_done=1'b1;
+        finish_item(item);
+        start_item(item);
+        item.i_tx_done=1'b1;
+        item.i_rx_done=1'b1;
+        finish_item(item);
+        
+        start_item(item);
+        item.i_tx_done=1'b0;
+        item.i_rx_done=1'b0;
         finish_item(item);
     endtask 
 endclass //className extends superClass

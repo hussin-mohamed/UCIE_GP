@@ -26,7 +26,13 @@
 
 class mbtrain_linkspeed_speeddegrade_txinit extends virtual_sequence_base;
     `uvm_object_utils(mbtrain_linkspeed_speeddegrade_txinit)
-
+    mbtrain_linkspeed_tx_starthandshake       start_tx;
+    mbtrain_linkspeed_tx_error_rsp            error_rsp;
+    mbtrain_linkspeed_speedidle_tx            end_state;
+    mbtrain_linkspeed_rx_starthandshake       start_rx;
+    mbtrain_linkspeed_rx_error_req            error_req;
+    mbtrain_linkspeed_rx_speeddegrade         speeddegrade_req;
+    mbtrain_txinit_datasweep_allfail          data_sweep;
 
     // Function: new
     //

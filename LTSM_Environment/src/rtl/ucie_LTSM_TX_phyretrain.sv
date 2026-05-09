@@ -60,6 +60,9 @@ logic idle_reg;
 
 logic done_ack;
 logic [DECODING_WIDTH-1:0] o_tx_encoding_old;
+logic tx_self_cal_state_enable_old;
+logic speed_idle_state_enable_old;
+logic repair_state_enable_old;
 
 logic [1:0] CS, NS;  // Current State, Next State
 
@@ -94,8 +97,8 @@ end
 //================================================================================
 // Tracks when done signal has been acknowledged in handshake protocol
 always_comb begin
-    if (i_reset) done_ack = 0;
-    else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;
+    done_ack = 0;
+    if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;
     else if (i_sb_tx_done) begin
         done_ack = 1;  // Set when done received
     end else if (i_sb_tx_rsp) begin
@@ -103,11 +106,21 @@ always_comb begin
     end
 end
 
-always_ff @(posedge i_clk) begin
-    o_tx_encoding_old <= o_tx_encoding;  // Register to track previous encoding for done_ack logic
+always_ff @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) begin
+        o_tx_encoding_old <= 0;
+        tx_self_cal_state_enable_old <= 0;
+        speed_idle_state_enable_old <= 0;
+        repair_state_enable_old <= 0;
+    end else begin
+        o_tx_encoding_old <= o_tx_encoding_reg;  // Register to track previous encoding for done_ack logic
+        tx_self_cal_state_enable_old <= tx_self_cal_state_enable;
+        speed_idle_state_enable_old <= speed_idle_state_enable;
+        repair_state_enable_old <= repair_state_enable;
+    end
 end
 
-assign previous_state_done = (i_reset)? 0 : (rsp_sent & rsp_received);
+assign previous_state_done = (rsp_sent & rsp_received);
 
 //================================================================================
 // Sideband Done Signal Logic
@@ -128,18 +141,19 @@ end
 assign o_pl_state_sts = 4'b1011;
 
 always @(*) begin
-    if (i_reset) begin
         o_tx_sb_req_reg = 0;
         o_tx_sb_rsp_reg = 0;
         o_tx_encoding_reg = 0;
         o_pl_stallreq = 0;
         o_Runtime_Link_Test_Control_register = 0;
         o_Runtime_Link_Test_status_register = 0;
-        speed_idle_state_enable = 0;
-        repair_state_enable = 0;
-        tx_self_cal_state_enable = 0;
-        idle_reg = 1;
-    end else if (!(state_enable || link_speed_state_enable)) begin
+        idle_reg = idle;
+        o_tx_info = 0;
+        NS = CS;
+        tx_self_cal_state_enable = tx_self_cal_state_enable_old;
+        speed_idle_state_enable = speed_idle_state_enable_old;
+        repair_state_enable = repair_state_enable_old;
+    if (!(state_enable || link_speed_state_enable)) begin
             o_tx_encoding_reg = 0;
             o_tx_sb_req_reg = 0;
             o_tx_sb_rsp_reg = 0;
@@ -244,6 +258,11 @@ always @(*) begin
                         o_tx_sb_rsp_reg = 0; 
                     end
                 end else NS = START_REQ_HANDSHAKE;
+            end
+            default: begin
+                tx_self_cal_state_enable = 0;
+                speed_idle_state_enable = 0;
+                repair_state_enable = 0;
             end
         endcase
     end 

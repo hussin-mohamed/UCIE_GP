@@ -26,7 +26,12 @@
 
 class mbtrain_linkspeed_success extends virtual_sequence_base;
     `uvm_object_utils(mbtrain_linkspeed_success)
-
+    mbtrain_linkspeed_tx_starthandshake       start_tx;
+    mbtrain_linkspeed_linkinit_tx             end_state;
+    mbtrain_linkspeed_rx_starthandshake       start_rx;
+    mbtrain_linkspeed_rx_endhandshake         end_handshake_rx;
+    mbtrain_txinit_datasweep_success          data_sweep;
+    controllers_done                          done;
 
     // Function: new
     //
@@ -82,6 +87,7 @@ task mbtrain_linkspeed_success::pre_body();
     end_handshake_rx=mbtrain_linkspeed_rx_endhandshake::type_id::create("end_handshake_rx");
     // datasweep sequence  
     data_sweep=mbtrain_txinit_datasweep_success::type_id::create("data_sweep");
+    done=controllers_done::type_id::create("done");
 endtask
 
 // body
@@ -101,6 +107,9 @@ task mbtrain_linkspeed_success::body();
         end
     join
     data_sweep.start(v_seqr);
-    end_handshake_rx.start(rx_fsm_sb_seqr);
+        fork
+            done.start(LTSM_ctrl_seqr);
+            end_handshake_rx.start(rx_fsm_sb_seqr);
+        join
     end_state.start(tx_fsm_sb_seqr);
 endtask : body

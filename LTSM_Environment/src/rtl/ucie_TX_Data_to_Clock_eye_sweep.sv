@@ -10,6 +10,31 @@ module ucie_TX_Data_to_Clock_eye_sweep # (
     parameter DATA_WIDTH = 64,       // Width of data input/output
     parameter INFO_WIDTH = 16,      // Width of info/control output
     parameter MAXIMUM_ITERATIONS = 4,      // Maximum number of test retry iterations
+
+    parameter logic [63:0] data_DATA_FIELD = {
+        4'b0000,       // [63:60] Reserved
+        1'b0,          // [59]    Comparison Mode (Per Lane)
+        16'd1,         // [58:43] Iteration Count
+        16'd0,         // [42:27] Idle Count
+        16'd4000,      // [26:11] Burst Count
+        1'b0,          // [10]    Pattern Mode (Continuous)
+        4'h0,          // [9:6]   Clock Phase (Clock PI Center)
+        3'h0,          // [5:3]   Valid Pattern (Functional)
+        3'h0           // [2:0]   Data Pattern (LFSR)
+    },
+
+    parameter logic [63:0] valid_DATA_FIELD = {
+        4'b0000,       // [63:60] Reserved
+        1'b0,          // [59]    Comparison Mode (Per Lane)
+        16'd1,         // [58:43] Iteration Count
+        16'd0,         // [42:27] Idle Count
+        16'd128,       // [26:11] Burst Count
+        1'b0,          // [10]    Pattern Mode (Continuous)
+        4'h0,          // [9:6]   Clock Phase (Clock PI Center)
+        3'h0,          // [5:3]   Valid Pattern (Functional)
+        3'h0           // [2:0]   Data Pattern (LFSR)
+    },
+
     parameter ERROR_THRESHOLD = 1   // Error threshold for test pass/fail
 ) (
     // Clock and reset
@@ -19,6 +44,7 @@ module ucie_TX_Data_to_Clock_eye_sweep # (
     // Interface inputs - from remote side
     input [DECODING_WIDTH-1:0] i_xx_decoding,  // Decoded command from remote
     input [DATA_WIDTH-1:0] i_xx_data,          // Data from remote
+    input [INFO_WIDTH-1:0] i_xx_info,          // Data from remote
     input [7:0] i_xx_sweep_result,             // Eye sweep results from remote
     
     // Sideband control inputs
@@ -31,6 +57,7 @@ module ucie_TX_Data_to_Clock_eye_sweep # (
     input done_ack,        // Acknowledgement of done signal
     input init,            // Initialize mode flag
     input no_retry,        // Disable retry on test failure
+    input comparison_type,        // 0:data, 1:valid
     
     // Interface outputs - to remote side
     output logic [DECODING_WIDTH-1:0] o_xx_encoding,  // Encoded command to send
@@ -64,8 +91,11 @@ localparam END_HANDSHAKE = 3'b101;            // Final completion handshake
 logic [2:0] CS;  // Current state
 logic [2:0] NS;  // Next state
 
-logic [1:0] count;
-logic [1:0] count_reg;
+logic [2:0] count;
+logic [2:0] count_reg;
+
+logic [DATA_WIDTH-1:0] per_lane_result_old;
+logic failed_test_old;
 
 //================================================================================
 // State Machine Sequential Logic
@@ -82,18 +112,28 @@ always @(posedge i_clk or posedge i_reset) begin
     end
 end
 
+always @(posedge i_clk) begin
+    per_lane_result_old <= per_lane_result;  // Capture previous per-lane result for reporting
+    failed_test_old <= failed_test;          // Capture previous test result for reporting
+end
+
+
 //================================================================================
 // Main State Machine Combinational Logic
 //================================================================================
 always @(*) begin
-    if (i_reset) begin
         o_xx_sb_req = 0;
         o_xx_sb_rsp = 0;
         done = 0;
-        count_reg = 0;  // Reset retry count
         train_error = 0;
         o_xx_sb_rsp = 0;
-    end else begin
+        o_xx_info = 0;
+        o_xx_data = 0;
+        per_lane_result = per_lane_result_old;
+        count_reg = count;
+        failed_test = failed_test_old;
+        NS = CS;
+        o_xx_encoding = 0;
         // Two different sequences based on init flag
         if (init) begin
             //====================================================================
@@ -113,6 +153,12 @@ always @(*) begin
                     else o_xx_sb_req = 1;
 
                     o_xx_info = ERROR_THRESHOLD;  // Send error threshold parameter
+
+                    if (comparison_type) begin
+                        o_xx_data = valid_DATA_FIELD;  // Send error threshold parameter
+                    end else begin
+                        o_xx_data = data_DATA_FIELD;  // Send data pattern parameters
+                    end
 
                     // Wait for matching response
                     if (i_sb_xx_rsp && i_xx_decoding == 'h180) begin
@@ -171,8 +217,8 @@ always @(*) begin
                         failed_test = !(&i_xx_data);  // Test fails if any bit is 0
                         per_lane_result = i_xx_data;  // Capture per-lane results for reporting
                         // Retry if failed and retries allowed, otherwise complete
-                        if (failed_test && !no_retry)
-                            if (count == MAXIMUM_ITERATIONS-1) begin
+                        if (failed_test && !no_retry) begin
+                            if (count == MAXIMUM_ITERATIONS) begin
                                 train_error = 1;  // Mark training error if max retries reached
                             end else begin
                                 o_xx_encoding = 'h181;  // LFSR setup encoding
@@ -181,7 +227,7 @@ always @(*) begin
                                 o_xx_sb_rsp = 0;
                                 train_error = 0;  // Clear training error for retry
                             end 
-                        else begin
+                        end else begin
                             o_xx_encoding = 'h184;  // End encoding
                             NS = END_HANDSHAKE;
                             o_xx_sb_req = 0;
@@ -221,6 +267,7 @@ always @(*) begin
 
                     // Wait for done signal
                     if (i_sb_xx_done) begin
+                        o_xx_info = i_xx_info;  // Send error threshold parameter
                         o_xx_encoding = 'h189;  // LFSR setup encoding
                         NS = LFSR_HANDSHAKE;
                         o_xx_sb_req = 0;
@@ -268,13 +315,14 @@ always @(*) begin
 
                     if (done_ack) o_xx_sb_req = 0;
                     else o_xx_sb_req = 1;
+                    
 
                     // Check result and decide on retry
                     if (i_sb_xx_rsp && i_xx_decoding == 'h18B) begin
                         failed_test = !(&i_xx_data);  // Test fails if any bit is 0
                         // Retry if failed and retries allowed, otherwise get sweep result
-                        if (failed_test && !no_retry) 
-                            if (count == MAXIMUM_ITERATIONS-1) begin
+                        if (failed_test && !no_retry) begin
+                            if (count == MAXIMUM_ITERATIONS) begin
                                 train_error = 1;  // Mark training error if max retries reached
                             end else begin
                                 o_xx_encoding = 'h189;  // LFSR setup encoding
@@ -283,7 +331,7 @@ always @(*) begin
                                 o_xx_sb_rsp = 0;
                                 train_error = 0;  // Clear training error for retry
                             end
-                        else begin
+                        end else begin
                             o_xx_encoding = 'h18C;  // Sweep result encoding
                             o_xx_sb_req = 0;
                             o_xx_sb_rsp = 0;
@@ -327,7 +375,6 @@ always @(*) begin
             endcase
         end
     end
-end
 
 `ifdef ASSERT_ON
 

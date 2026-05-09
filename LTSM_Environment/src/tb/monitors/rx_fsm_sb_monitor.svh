@@ -68,23 +68,53 @@ endfunction : new
 // -------------------
 
 task rx_fsm_sb_monitor::collect_transaction();
-    item = ITEM_T::type_id::create("item");
-    forever begin
-    @(negedge vif.clk);
-    forever begin
-        @(negedge vif.clk);
-        item.o_rx_encoding = vif.o_rx_encoding;
-        item.o_rx_data = vif.o_rx_data;
-        item.o_sb_rx_req = vif.o_sb_rx_req;
-        item.o_sb_rx_rsp = vif.o_sb_rx_rsp;
-        item.o_sb_rx_done = vif.o_sb_rx_done;
-        item.o_rx_info = vif.o_rx_info;
-        ap.write(item);
-        if (vif.i_reset) begin
-            break;
+    fork
+        // output thread
+            begin
+            item_out = ITEM_T::type_id::create("item_out");
+              
+            forever begin
+                // @(negedge vif.clk);
+                //`uvm_info("rx_fsm_sb_monitor", $sformatf("i_reset=%b", vif.i_reset), UVM_LOW);
+                // if (vif.i_reset) begin
+                //     @(negedge vif.clk);
+                // end
+                // else begin
+                //     // @(negedge vif.clk);
+                    @(negedge vif.clk);
+                    item_out.o_rx_encoding = vif.o_rx_encoding;
+                    item_out.o_rx_data = vif.o_rx_data;
+                    item_out.o_rx_sb_req = vif.o_rx_sb_req;
+                    item_out.o_rx_sb_rsp = vif.o_rx_sb_rsp;
+                    item_out.o_rx_sb_done = vif.o_rx_sb_done;
+                    item_out.o_rx_info = vif.o_rx_info;
+                    ap_out.write(item_out);
+                    //`uvm_info("rx_fsm_sb_monitor", $sformatf("Captured RX FSM SB transaction: o_rx_encoding=%0b, o_rx_data=%0h, o_rx_sb_req=%b, o_rx_sb_rsp=%b, o_rx_sb_done=%b, o_rx_info=%h",
+                    //    item_out.o_rx_encoding, item_out.o_rx_data, item_out.o_rx_sb_req, item_out.o_rx_sb_rsp, item_out.o_rx_sb_done, item_out.o_rx_info), UVM_LOW);
+                    // `uvm_info("rx_fsm_sb_monitor", $sformatf("i_reset=%b", vif.i_reset), UVM_LOW);
+                end
+                
+                
+            end   
+            // end
+        // input thread
+        begin
+            item_in = ITEM_T::type_id::create("item_in");
+            forever begin
+                @(posedge vif.clk);
+                item_in.i_rx_decoding = vif.i_rx_decoding;
+                item_in.i_rx_data     = vif.i_rx_data;
+                item_in.i_sb_rx_req   = vif.i_sb_rx_req;
+                item_in.i_sb_rx_rsp   = vif.i_sb_rx_rsp;
+                item_in.i_sb_rx_done  = vif.i_sb_rx_done;
+                item_in.i_rx_info     = vif.i_rx_info;
+                item_in.i_reset       = vif.i_reset;
+                ap_in.write(item_in);
+                //`uvm_info("rx_fsm_sb_monitor", $sformatf("Captured RX FSM SB input transaction: i_rx_decoding=%0b, i_rx_data=%0h, i_sb_rx_req=%b, i_sb_rx_rsp=%b, i_sb_rx_done=%b, i_rx_info=%h",
+                    //item_in.i_rx_decoding, item_in.i_rx_data, item_in.i_sb_rx_req, item_in.i_sb_rx_rsp, item_in.i_sb_rx_done, item_in.i_rx_info), UVM_LOW);
+            end
         end
-    end
-        
-    end
+    join_any
+    
     
 endtask : collect_transaction

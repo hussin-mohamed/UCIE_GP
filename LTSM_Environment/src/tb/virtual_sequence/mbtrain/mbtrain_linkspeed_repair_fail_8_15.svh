@@ -26,7 +26,23 @@
 
 class mbtrain_linkspeed_repair_fail_8_15 extends virtual_sequence_base;
     `uvm_object_utils(mbtrain_linkspeed_repair_fail_8_15)
-
+    mbtrain_linkspeed_tx_starthandshake       start_tx;
+    mbtrain_linkspeed_tx_error_rsp            error_rsp;
+    mbtrain_repair_tx_starthandshake          end_linkspeed_tx;
+    mbtrain_repair_tx_applydegrade            apply_tx;
+    mbtrain_repair_tx_endhandshake            end_handshake_tx;
+    mbtrain_repair_txselfcal                  end_repair_tx;
+    mbtrain_txselfcal_tx_endhandshake         txselfcal_end_tx;
+    mbtrain_linkspeed_rx_starthandshake       start_rx;
+    mbtrain_linkspeed_rx_error_req            error_req;
+    mbtrain_linkspeed_rx_repair               repair_req;
+    mbtrain_repair_rx_starthandshake          end_linkspeed_rx;
+    mbtrain_repair_rx_degrade_0_7             apply_rx;
+    mbtrain_repair_rx_endhandshake            end_handshake_rx;
+    mbtrain_txselfcal_rx_endhandshake         end_repair_rx;
+    mbtrain_txinit_datasweep_fail_8_15        data_sweep;
+    rx_done done_rx;
+    tx_done done_tx;
 
     // Function: new
     //
@@ -82,6 +98,7 @@ task mbtrain_linkspeed_repair_fail_8_15::pre_body();
     end_handshake_tx=mbtrain_repair_tx_endhandshake::type_id::create("end_handshake_tx");
     end_repair_tx=mbtrain_repair_txselfcal::type_id::create("end_repair_tx");
     txselfcal_end_tx=mbtrain_txselfcal_tx_endhandshake::type_id::create("txselfcal_end_tx");
+    done_tx=tx_done::type_id::create("txselfcal_end_tx");
     // rx sequences
     start_rx=mbtrain_linkspeed_rx_starthandshake::type_id::create("start_rx");
     error_req=mbtrain_linkspeed_rx_error_req::type_id::create("error_req");
@@ -140,11 +157,12 @@ task mbtrain_linkspeed_repair_fail_8_15::body();
     fork
         // tx thread
         begin
-            txselfcal_end_tx.start(tx_fsm_sb_seqr);
+            txselfcal_end_tx.start(LTSM_ctrl_seqr);
         end
         // rx thread
         begin
             end_repair_rx.start(rx_fsm_sb_seqr);
         end
     join
+    done_tx.start(tx_fsm_sb_seqr);
 endtask : body

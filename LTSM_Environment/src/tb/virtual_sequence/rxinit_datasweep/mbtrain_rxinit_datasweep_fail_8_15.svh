@@ -26,7 +26,20 @@
 
 class mbtrain_rxinit_datasweep_fail_8_15 extends virtual_sequence_base;
     `uvm_object_utils(mbtrain_rxinit_datasweep_fail_8_15)
-
+    mbtrain_rxinit_datasweep_tx_starthandshake        start_tx;
+    mbtrain_rxinit_datasweep_tx_lfsrclear             lfsr_clear_tx;
+    mbtrain_rxinit_datasweep_tx_pattern               pattern_tx;
+    mbtrain_rxinit_datasweep_tx_result                result_tx;
+    mbtrain_rxinit_datasweep_tx_result_rsp_fai_8_15  sweep_tx;
+    mbtrain_rxinit_datasweep_tx_end                   end_handshake_tx;
+    mbtrain_rxinit_datasweep_rx_starthandshake        start_rx;
+    mbtrain_rxinit_datasweep_rx_lfsrclear             lfsr_clear_rx;
+    mbtrain_rxinit_datasweep_rx_pattern               pattern_rx;
+    result_fail_8_15                              result_rx;
+    result_success                                    clean_error;
+    mbtrain_rxinit_datasweep_rx_result                result_req;
+    mbtrain_rxinit_datasweep_rx_sweep                 sweep_rx;
+    nothing_rx                                        end_handshake_rx;
 
     // Function: new
     //
@@ -109,7 +122,6 @@ task mbtrain_rxinit_datasweep_fail_8_15::body();
         end
         // rx thread
         begin
-            start_rx.start(rx_fsm_sb_seqr);
             lfsr_clear_rx.start(rx_fsm_sb_seqr);
             fork
                 begin
@@ -124,7 +136,7 @@ task mbtrain_rxinit_datasweep_fail_8_15::body();
                     result_rx.start(LTSM_ctrl_seqr);
                 end
                 begin
-                    result_req.start(rx_fsm_sb_seqr)
+                    result_req.start(rx_fsm_sb_seqr);
                 end
             join
             sweep_rx.start(rx_fsm_sb_seqr);

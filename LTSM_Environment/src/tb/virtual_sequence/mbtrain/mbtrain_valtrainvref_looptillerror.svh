@@ -26,7 +26,15 @@
 
 class mbtrain_valtrainvref_looptillerror extends virtual_sequence_base;
     `uvm_object_utils(mbtrain_valtrainvref_looptillerror)
-
+   mbtrain_valtrainvref_tx_starthandshake        start_tx;
+    trainerror_tx_rsp                        error_tx_rsp;
+    mbtrain_valtrainvref_rx_starthandshake        start_rx;
+    trainerror_rx_starthandshake             error_rx;
+    trainerror_rx_rsp                        error_rx_rsp;
+    trainerror_exitreset                     exit_to_reset;
+    mbtrain_rxinit_datasweep_loop         data_sweep;
+    trainerror_rdiexit                       rdiexit;
+    result_success                              result_rx;
 
     // Function: new
     //
@@ -73,7 +81,7 @@ endfunction : new
 // pre_body
 // --------
 
-task mbtrain_valtrainvref_trainerror::pre_body();
+task mbtrain_valtrainvref_looptillerror::pre_body();
     // tx sequences
     start_tx=mbtrain_valtrainvref_tx_starthandshake::type_id::create("start_tx");
     error_tx_rsp=trainerror_tx_rsp::type_id::create("error_tx_rsp");
@@ -83,7 +91,9 @@ task mbtrain_valtrainvref_trainerror::pre_body();
     error_rx_rsp=trainerror_rx_rsp::type_id::create("error_tx_rsp");
     // datasweep sequence  
     exit_to_reset=trainerror_exitreset::type_id::create("exit_to_reset"); // controller
-    data_sweep=mbtrain_rxinit_datasweep_success::type_id::create("data_sweep"); // virtualsequencer
+    data_sweep=mbtrain_rxinit_datasweep_loop::type_id::create("data_sweep"); // virtualsequencer
+    rdiexit=trainerror_rdiexit::type_id::create("rdiexit");
+    result_rx=result_success::type_id::create("result_rx");
 endtask
 
 // body
@@ -102,10 +112,13 @@ task mbtrain_valtrainvref_looptillerror::body();
             start_rx.start(rx_fsm_sb_seqr);
         end
     join
-    repeat(4)begin
     data_sweep.start(v_seqr);
-    end
-    error_rx.start(rx_fsm_sb_seqr);
+    fork
+        error_rx.start(rx_fsm_sb_seqr);
+        result_rx.start(LTSM_ctrl_seqr);    
+    join
+    
+
     fork
         // tx thread
         begin
@@ -116,5 +129,12 @@ task mbtrain_valtrainvref_looptillerror::body();
             error_rx_rsp.start(rx_fsm_sb_seqr);
         end
     join
-    exit_to_reset.start(LTSM_ctrl_seqr);
+    fork
+        begin
+            exit_to_reset.start(LTSM_ctrl_seqr);
+        end
+        begin
+            rdiexit.start(ltsm_rdi_seqr);
+        end
+    join
 endtask : body

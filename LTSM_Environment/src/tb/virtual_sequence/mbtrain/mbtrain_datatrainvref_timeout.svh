@@ -26,8 +26,14 @@
 import shared_ltsm_pkg::*;
 class mbtrain_datatrainvref_timeout extends virtual_sequence_base;
     `uvm_object_utils(mbtrain_datatrainvref_timeout)
-
-
+    mbtrain_datatrainvref_tx_starthandshake    start_tx;
+    mbtrain_datatrainvref_rx_starthandshake    start_rx;
+    trainerror_tx_rsp                          error_tx_rsp;
+    trainerror_rx_starthandshake               error_rx;
+    trainerror_rx_rsp                          error_rx_rsp;
+    trainerror_exitreset                       exit_to_reset;
+    nothing_tx                                 nothing;
+    trainerror_rdiexit                       rdiexit;
     // Function: new
     //
     // Creates a new virtual_sequence instance with the given name.
@@ -49,7 +55,7 @@ class mbtrain_datatrainvref_timeout extends virtual_sequence_base;
 
     extern task body();
 
-endclass : mbtrain_datatrainvref_trainerror
+endclass : mbtrain_datatrainvref_timeout
 
 
 //------------------------------------------------------------------------------
@@ -77,12 +83,14 @@ task mbtrain_datatrainvref_timeout::pre_body();
     // tx sequences
     start_tx=mbtrain_datatrainvref_tx_starthandshake::type_id::create("start_tx");
     nothing=nothing_tx::type_id::create("nothing");
+    error_tx_rsp=trainerror_tx_rsp::type_id::create("error_tx_rsp");
     // rx sequences
     start_rx=mbtrain_datatrainvref_rx_starthandshake::type_id::create("start_rx");
-    error_rx_rsp=trainerror_rx_rsp::type_id::create("error_tx_rsp");
+    error_rx=trainerror_rx_starthandshake::type_id::create("error_rx");
+    error_rx_rsp=trainerror_rx_rsp::type_id::create("error_rx_rsp");
     // datasweep sequence  
     exit_to_reset=trainerror_exitreset::type_id::create("exit_to_reset"); // controller
-    data_sweep=mbtrain_rxinit_datasweep_success::type_id::create("data_sweep"); // virtualsequencer
+    rdiexit=trainerror_rdiexit::type_id::create("rdiexit");
 endtask
 
 // body
@@ -115,5 +123,12 @@ task mbtrain_datatrainvref_timeout::body();
             error_rx_rsp.start(rx_fsm_sb_seqr);
         end
     join
-    exit_to_reset.start(LTSM_ctrl_seqr);
+    fork
+        begin
+            exit_to_reset.start(LTSM_ctrl_seqr);
+        end
+        begin
+            rdiexit.start(ltsm_rdi_seqr);
+        end
+    join
 endtask : body

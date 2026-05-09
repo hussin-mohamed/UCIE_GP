@@ -17,16 +17,26 @@
 import shared_ltsm_pkg::*;
 class mbtrain_dtc1_rx_starthandshake extends uvm_sequence#(rx_fsm_sb_sequence_item);
     `uvm_object_utils(mbtrain_dtc1_rx_starthandshake)
-    tx_fsm_sb_sequence_item item;
+    rx_fsm_sb_sequence_item item;
     function new(string name = "mbtrain_dtc1_rx_starthandshake");
         super.new(name);
     endfunction //new()
     task body();
-        item = seq_item::type_id::create("item");
+        item = rx_fsm_sb_sequence_item::type_id::create("item");
         start_item(item);
-        item.i_rx_decoding=RX_MBTRAIN_DTC1_START_Handshake;
+        item.i_rx_decoding=RX_MBTRAIN_DTC1_Start_Handshake;
         item.i_sb_rx_done=1'b0;
         item.i_sb_rx_req=1'b1;
+        item.i_sb_rx_rsp=1'b0;
+        finish_item(item);
+        start_item(item);
+        item.i_sb_rx_done=1'b0;
+        item.i_sb_rx_req=1'b0;
+        item.i_sb_rx_rsp=1'b0;
+        finish_item(item);
+        start_item(item);
+        item.i_sb_rx_done=1'b1;
+        item.i_sb_rx_req=1'b0;
         item.i_sb_rx_rsp=1'b0;
         finish_item(item);
     endtask 

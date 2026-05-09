@@ -34,7 +34,6 @@ virtual class LTSM_driver_base #(type ITEM_T, type INTF_T) extends uvm_driver #(
 
     INTF_T  vif;
     ITEM_T  item;
-    uvm_analysis_port #(ITEM_T) ap;
     string item_type_name;
 
 
@@ -93,7 +92,6 @@ endfunction : new
 
 function void LTSM_driver_base::build_phase(uvm_phase phase);
     super.build_phase(phase);
-    ap = new("ap", this);
 endfunction : build_phase
 
 // run_phase

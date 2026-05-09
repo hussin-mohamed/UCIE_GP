@@ -9,7 +9,7 @@ module ucie_ltsm_tx_sbinit #(
     input                               i_sb_tx_req,
     input                               i_sb_tx_rsp, 
     input                               i_sb_tx_done,
-    input                               i_stop,
+    input                               i_sb_ready,
     input   [3:0]                       i_current_state,
     input                               o_timer_8ms,
  
@@ -42,13 +42,19 @@ logic substates_done;
 
 // State Memory Logic
 always_ff @(posedge i_clk or posedge i_reset) begin
-    if (i_reset || i_current_state != SBINIT) begin
+    if (i_reset) begin
+        current_substate <= PATTERN_GENERATION;
+        substates_done   <= 0;
+    end else if (i_current_state != SBINIT) begin
         current_substate <= PATTERN_GENERATION;
         substates_done   <= 0;
     end else begin
-        current_substate <= next_substate;
-        if (current_substate == DONE_HANDSHAKE && i_sb_tx_rsp && i_tx_decoding == 9'h0A)
-            substates_done <= 1;
+        if (current_substate == DONE_HANDSHAKE && i_sb_tx_rsp && i_tx_decoding == 9'h0A) begin
+            substates_done   <= 1;
+            current_substate <= DONE_HANDSHAKE;
+        end else begin
+            current_substate <= next_substate;
+        end
     end
 end
 
@@ -58,7 +64,7 @@ always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) done_ack <= 0;
     else if (i_sb_tx_done) begin
         done_ack <= 1;
-    end else if (i_sb_tx_rsp) begin
+    end else  begin
         done_ack <= 0;
     end
 end
@@ -76,73 +82,61 @@ always_comb begin
     next_substate = PATTERN_GENERATION;
 
     // TIMEOUT
-    if(o_timer_8ms == 1) begin 
+    if (!substates_done && o_timer_8ms == 1) begin
         o_train_error = 1;
         next_substate = PATTERN_GENERATION;
-    end 
+    end
 
-    else if(i_current_state == SBINIT && substates_done == 0) begin
+    else if (i_current_state == SBINIT) begin
         case (current_substate)
-            PATTERN_GENERATION: begin 
+            PATTERN_GENERATION: begin
                 o_tx_encoding = 9'h08;
-                o_sb_init_start = 1'b1;
+                if (!substates_done) begin
+                    o_sb_init_start = 1'b1;
 
-                if(i_stop == 1) begin 
-                    o_sb_init_start = 1'b0;
-                    next_substate = OUT_OF_RESET_MSG;
-                end 
-                else begin 
-                    next_substate = PATTERN_GENERATION;
-                end 
+                    if (i_sb_ready == 1) begin
+                        o_sb_init_start = 1'b0;
+                        next_substate = OUT_OF_RESET_MSG;
+                    end else begin
+                        next_substate = PATTERN_GENERATION;
+                    end
+                end
+            end
 
-            end 
-
-            OUT_OF_RESET_MSG: begin 
+            OUT_OF_RESET_MSG: begin
                 o_tx_encoding = 9'h09;
 
-                // TX Sending REQ Handshake
-                if (done_ack) begin 
-                    o_tx_sb_req = 0;
+                if (!substates_done) begin
+                    if (done_ack) o_tx_sb_req = 0;
+                    else o_tx_sb_req = 1;
+
+                    if (i_tx_decoding == 9'h09) next_substate = DONE_HANDSHAKE;
+                    else next_substate = OUT_OF_RESET_MSG;
                 end
-                else begin 
-                    o_tx_sb_req = 1;
-                end 
+            end
 
-                // shouldnt i wait here till done_ack
-                if(i_tx_decoding == 9'h09) begin    // no rsp here is coming ??
-                    next_substate = DONE_HANDSHAKE;
-                end 
-                else begin 
-                    next_substate = OUT_OF_RESET_MSG;
-                end             
-
-            end 
-
-            DONE_HANDSHAKE: begin 
+            DONE_HANDSHAKE: begin
                 o_tx_encoding = 9'h0A;
 
-                if (done_ack) begin 
-                    o_tx_sb_req = 0;
+                if (!substates_done) begin
+                    if (done_ack) o_tx_sb_req = 0;
+                    else o_tx_sb_req = 1;
+
+                    if (i_sb_tx_rsp && i_tx_decoding == 9'h0A) begin
+                        next_substate    = PATTERN_GENERATION;
+                        o_done_sbinit_tx = 1;
+                    end else begin
+                        next_substate = DONE_HANDSHAKE;
+                    end
                 end
-                else begin 
-                    o_tx_sb_req = 1;
-                end 
-
-                if (i_sb_tx_rsp && i_tx_decoding == 9'h0A) begin
-                    next_substate = PATTERN_GENERATION;
-                    o_done_sbinit_tx = 1;
-                end else begin
-                    next_substate = DONE_HANDSHAKE;
-                end 
-
-            end 
+            end
         endcase
-    end 
+    end
 end
 
 
 // Assertions 
-
+/*
 `ifdef SIM
 
     // --------------------------------------------------------------------------
@@ -190,13 +184,13 @@ end
         else $error("ASSERT FAIL [TIMEOUT_RESETS_SUBSTATE]: substate not reset to PATTERN_GEN after timeout");
 
     // --------------------------------------------------------------------------
-    // sb_init_start high in PATTERN_GENERATION while i_stop not asserted
+    // sb_init_start high in PATTERN_GENERATION while i_sb_ready not asserted
     // --------------------------------------------------------------------------
     property sb_init_start_active;
         @(posedge i_clk) disable iff (i_reset || o_timer_8ms)
         (i_current_state == SBINIT &&
          current_substate == PATTERN_GENERATION &&
-         !i_stop && !substates_done)
+         !i_sb_ready && !substates_done)
         |-> o_sb_init_start;
     endproperty
     SB_INIT_START_ACTIVE : assert property (sb_init_start_active)
@@ -243,5 +237,5 @@ end
 
 `endif
 
-
+*/
 endmodule

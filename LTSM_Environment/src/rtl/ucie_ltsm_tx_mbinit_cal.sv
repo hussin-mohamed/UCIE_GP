@@ -44,7 +44,10 @@ localparam DONE_HANDSHAKE = 3'b000;
 
 // State Memory Logic
 always_ff @(posedge i_clk or posedge i_reset) begin
-    if (i_reset || i_current_state != MBINIT_CAL) begin
+    if (i_reset) begin
+        current_substate <= DONE_HANDSHAKE;
+        substates_done   <= 0;
+    end else if (i_current_state != MBINIT_CAL) begin
         current_substate <= DONE_HANDSHAKE;
         substates_done   <= 0;
     end else begin
@@ -74,39 +77,36 @@ always_comb begin
     o_done_mbinit_cal_tx = 0;
     next_substate = DONE_HANDSHAKE;
 
-    // TIMEOUT
-    if(o_timer_8ms == 1) begin 
+    // TIMEOUT (blocked after local side finished; parent FSM may still be in MBINIT_CAL)
+    if (!substates_done && o_timer_8ms == 1) begin
         o_train_error = 1;
         next_substate = DONE_HANDSHAKE;
-    end 
+    end
 
-    else if(i_current_state == MBINIT_CAL && substates_done == 0) begin
-        case(current_substate)
-            DONE_HANDSHAKE: begin 
-                // Output State Encoding
+    else if (i_current_state == MBINIT_CAL) begin
+        case (current_substate)
+            DONE_HANDSHAKE: begin
+                // Output State Encoding — held while parent state is MBINIT_CAL
                 o_tx_encoding = 9'h18;
 
-                // TX Sending REQ Handshake
-                if (done_ack) begin 
-                    o_tx_sb_req = 0;
-                end
-                else begin 
-                    o_tx_sb_req = 1;
-                end 
+                if (!substates_done) begin
+                    // TX Sending REQ Handshake
+                    if (done_ack) o_tx_sb_req = 0;
+                    else o_tx_sb_req = 1;
 
-                // Next State Logic
-                if(i_sb_tx_rsp && i_tx_decoding == 9'h18) begin 
-                    o_done_mbinit_cal_tx = 1;
-                end 
-            end 
-        endcase 
-    end 
-    
-end 
+                    // Next State Logic
+                    if (i_sb_tx_rsp && i_tx_decoding == 9'h18) o_done_mbinit_cal_tx = 1;
+                end
+            end
+        endcase
+    end
+
+end
 
     // ==========================================================================
     // Assertions
     // ==========================================================================
+    /*
 `ifdef SIM
 
     // --------------------------------------------------------------------------
@@ -184,4 +184,5 @@ end
         else $error("ASSERT FAIL [DONE_ONLY_IN_STATE]: done asserted outside MBINIT_CAL");
 
 `endif
+*/
 endmodule

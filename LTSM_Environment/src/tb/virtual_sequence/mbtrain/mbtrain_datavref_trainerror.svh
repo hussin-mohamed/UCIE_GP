@@ -26,7 +26,15 @@
 
 class mbtrain_datavref_trainerror extends virtual_sequence_base;
     `uvm_object_utils(mbtrain_datavref_trainerror)
-
+    mbtrain_datavref_tx_starthandshake        start_tx;
+    trainerror_tx_rsp                         error_tx_rsp;
+    mbtrain_datavref_rx_starthandshake        start_rx;
+    trainerror_rx_starthandshake              error_rx;
+    
+    trainerror_rx_rsp                         error_rx_rsp;
+    trainerror_exitreset                      exit_to_reset;
+    mbtrain_rxinit_datasweep_success          data_sweep;
+    trainerror_rdiexit                       rdiexit;
 
     // Function: new
     //
@@ -84,6 +92,7 @@ task mbtrain_datavref_trainerror::pre_body();
     // datasweep sequence  
     exit_to_reset=trainerror_exitreset::type_id::create("exit_to_reset"); // controller
     data_sweep=mbtrain_rxinit_datasweep_success::type_id::create("data_sweep"); // virtualsequencer
+    rdiexit=trainerror_rdiexit::type_id::create("rdiexit");
 endtask
 
 // body
@@ -114,5 +123,13 @@ task mbtrain_datavref_trainerror::body();
             error_rx_rsp.start(rx_fsm_sb_seqr);
         end
     join
-    exit_to_reset.start(LTSM_ctrl_seqr);
+    fork
+        begin
+            exit_to_reset.start(LTSM_ctrl_seqr);
+        end
+        begin
+            rdiexit.start(ltsm_rdi_seqr);
+        end
+    join
+    
 endtask : body
