@@ -1,11 +1,20 @@
-/***********************************************************************
- * Author : Amr El Batarny
- * File   : virtual_sequencer.svh
- * Brief  : Parent sequencer maintaining handles to child sequencers for
- *          coordinated multi-agent sequence execution.
- * Note   : Documentation comments generated with AI assistance using
- *          the same format found in UVM source code.
- **********************************************************************/
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
+
+
 
 //------------------------------------------------------------------------------
 //
@@ -27,9 +36,11 @@ class virtual_sequencer extends uvm_sequencer;
 
   extern function new(string name="virtual_sequencer", uvm_component parent=null);
 
-  APB_sequencer #(APB_sequence_item_1) apb_seqr_1;
-  APB_sequencer #(APB_sequence_item_2) apb_seqr_2;
-
+  rx_fsm_sb_sequencer #(rx_fsm_sb_sequence_item) rx_seqr;
+  tx_fsm_sb_sequencer #(tx_fsm_sb_sequence_item) tx_seqr;
+  LTSM_controllers_sqr #(LTSM_controllers_seq_item) LTSM_ctrl_seqr;
+  ltsm_rdi_sequencer #(ltsm_rdi_sequence_item) ltsm_rdi_seqr;
+  
 endclass : virtual_sequencer
 
 

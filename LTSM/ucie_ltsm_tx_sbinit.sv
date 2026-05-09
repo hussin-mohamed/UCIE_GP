@@ -64,7 +64,7 @@ always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) done_ack <= 0;
     else if (i_sb_tx_done) begin
         done_ack <= 1;
-    end else if (i_sb_tx_rsp) begin
+    end else  begin
         done_ack <= 0;
     end
 end

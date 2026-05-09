@@ -1,0 +1,822 @@
+# Compile of clk_valid_pattern_detection.sv was successful.
+# Compile of clk_valid_pattern_detection_tb.sv was successful.
+# Compile of clk_valid_pattern_generation.sv was successful.
+# Compile of clock_divider.sv was successful.
+# Compile of counter_compare.sv was successful.
+# Compile of demux_1_2.sv was successful with warnings.
+# Compile of deserializer_h.sv was successful.
+# Compile of deserializer_q.sv was successful.
+# Compile of drivers.sv was successful.
+# Compile of fifo.sv was successful.
+# Compile of lane_id_register.sv was successful.
+# Compile of LFSR_pattern_generator.sv was successful.
+# Compile of LFSR_tb.svh was successful.
+# Compile of mux_2_1.sv was successful with warnings.
+# Compile of pattern_generation_tb.sv was successful.
+# Compile of per_lane_id_detector.sv was successful.
+# Compile of per_lane_id_detector_tb.sv was successful.
+# Compile of per_lane_id_detector_top.svh was successful with warnings.
+# Compile of per_lane_id_generator_tb.sv was successful.
+# Compile of per_lane_id_generator_top.svh was successful.
+# Compile of reversal.sv was successful with warnings.
+# Compile of rx_LFSR.sv was successful.
+# Compile of rx_LFSR_detection.sv was successful.
+# Compile of rx_LFSR_tb.svh was successful.
+# Compile of rx_LFSR_top.sv was successful.
+# Compile of rx_path.sv was successful.
+# Compile of serializer.sv was successful.
+# Compile of tx_LFSR.sv was successful.
+# Compile of tx_LFSR_top.sv was successful.
+# Compile of tx_path.sv was successful.
+# 30 compiles, 0 failed with no errors.
+vsim -voptargs=+acc work.tb_clk_valid_pattern_detection
+# vsim -voptargs="+acc" work.tb_clk_valid_pattern_detection 
+# Start time: 23:02:20 on May 02,2026
+# ** Note: (vsim-3812) Design is being optimized...
+# ** Warning: (vopt-10587) Some optimizations are turned off because the +acc switch is in effect. This will cause your simulation to run slowly. Please use -access/-debug to maintain needed visibility.
+# Support of the MGLS_LICENSE_FILE and LM_LICENSE_FILE licensing environment variables will be discontinued starting with the 2025.1 release. Please update to using the SALT_LICENSE_SERVER variable.
+# Please contact Siemens EDA Customer Support (https://support.sw.siemens.com/) for assistance.
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
+# Loading sv_std.std
+# Loading work.tb_clk_valid_pattern_detection(fast)
+# Loading work.clk_valid_pattern_detection(fast)
+# Compile of clk_valid_pattern_detection.sv was successful.
+# Compile of clk_valid_pattern_detection_tb.sv failed with 1 errors.
+# Compile of clk_valid_pattern_generation.sv was successful.
+# Compile of clock_divider.sv was successful.
+# Compile of counter_compare.sv was successful.
+# Compile of demux_1_2.sv was successful with warnings.
+# Compile of deserializer_h.sv was successful.
+# Compile of deserializer_q.sv was successful.
+# Compile of drivers.sv was successful.
+# Compile of fifo.sv was successful.
+# Compile of lane_id_register.sv was successful.
+# Compile of LFSR_pattern_generator.sv was successful.
+# Compile of LFSR_tb.svh was successful.
+# Compile of mux_2_1.sv was successful with warnings.
+# Compile of pattern_generation_tb.sv was successful.
+# Compile of per_lane_id_detector.sv was successful.
+# Compile of per_lane_id_detector_tb.sv was successful.
+# Compile of per_lane_id_detector_top.svh was successful with warnings.
+# Compile of per_lane_id_generator_tb.sv was successful.
+# Compile of per_lane_id_generator_top.svh was successful.
+# Compile of reversal.sv was successful with warnings.
+# Compile of rx_LFSR.sv was successful.
+# Compile of rx_LFSR_detection.sv was successful.
+# Compile of rx_LFSR_tb.svh was successful.
+# Compile of rx_LFSR_top.sv was successful.
+# Compile of rx_path.sv was successful.
+# Compile of serializer.sv was successful.
+# Compile of tx_LFSR.sv was successful.
+# Compile of tx_LFSR_top.sv was successful.
+# Compile of tx_path.sv was successful.
+# 30 compiles, 1 failed with 1 error.
+# Compile of clk_valid_pattern_detection.sv was successful.
+# Compile of clk_valid_pattern_detection_tb.sv was successful.
+# Compile of clk_valid_pattern_generation.sv was successful.
+# Compile of clock_divider.sv was successful.
+# Compile of counter_compare.sv was successful.
+# Compile of demux_1_2.sv was successful with warnings.
+# Compile of deserializer_h.sv was successful.
+# Compile of deserializer_q.sv was successful.
+# Compile of drivers.sv was successful.
+# Compile of fifo.sv was successful.
+# Compile of lane_id_register.sv was successful.
+# Compile of LFSR_pattern_generator.sv was successful.
+# Compile of LFSR_tb.svh was successful.
+# Compile of mux_2_1.sv was successful with warnings.
+# Compile of pattern_generation_tb.sv was successful.
+# Compile of per_lane_id_detector.sv was successful.
+# Compile of per_lane_id_detector_tb.sv was successful.
+# Compile of per_lane_id_detector_top.svh was successful with warnings.
+# Compile of per_lane_id_generator_tb.sv was successful.
+# Compile of per_lane_id_generator_top.svh was successful.
+# Compile of reversal.sv was successful with warnings.
+# Compile of rx_LFSR.sv was successful.
+# Compile of rx_LFSR_detection.sv was successful.
+# Compile of rx_LFSR_tb.svh was successful.
+# Compile of rx_LFSR_top.sv was successful.
+# Compile of rx_path.sv was successful.
+# Compile of serializer.sv was successful.
+# Compile of tx_LFSR.sv was successful.
+# Compile of tx_LFSR_top.sv was successful.
+# Compile of tx_path.sv was successful.
+# 30 compiles, 0 failed with no errors.
+vsim -voptargs=+acc work.tb_clk_valid_pattern_detection
+# End time: 23:06:59 on May 02,2026, Elapsed time: 0:04:39
+# Errors: 0, Warnings: 8
+# vsim -voptargs="+acc" work.tb_clk_valid_pattern_detection 
+# Start time: 23:06:59 on May 02,2026
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# ** Warning: (vopt-10587) Some optimizations are turned off because the +acc switch is in effect. This will cause your simulation to run slowly. Please use -access/-debug to maintain needed visibility.
+# Support of the MGLS_LICENSE_FILE and LM_LICENSE_FILE licensing environment variables will be discontinued starting with the 2025.1 release. Please update to using the SALT_LICENSE_SERVER variable.
+# Please contact Siemens EDA Customer Support (https://support.sw.siemens.com/) for assistance.
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
+# Loading sv_std.std
+# Loading work.tb_clk_valid_pattern_detection(fast)
+# Loading work.clk_valid_pattern_detection(fast)
+add wave -position insertpoint  \
+sim:/tb_clk_valid_pattern_detection/dut/i_clk_n \
+sim:/tb_clk_valid_pattern_detection/dut/i_clk_p \
+sim:/tb_clk_valid_pattern_detection/dut/i_dclk \
+sim:/tb_clk_valid_pattern_detection/dut/i_detection_type \
+sim:/tb_clk_valid_pattern_detection/dut/i_error_threshhold \
+sim:/tb_clk_valid_pattern_detection/dut/i_halfrate \
+sim:/tb_clk_valid_pattern_detection/dut/i_hclk \
+sim:/tb_clk_valid_pattern_detection/dut/i_pattern_type \
+sim:/tb_clk_valid_pattern_detection/dut/i_reset \
+sim:/tb_clk_valid_pattern_detection/dut/i_track \
+sim:/tb_clk_valid_pattern_detection/dut/i_valid \
+sim:/tb_clk_valid_pattern_detection/dut/o_clk_result \
+sim:/tb_clk_valid_pattern_detection/dut/o_valid_result \
+sim:/tb_clk_valid_pattern_detection/dut/counter_correct_per_lane_h \
+sim:/tb_clk_valid_pattern_detection/dut/counter_v_per_lane_h \
+sim:/tb_clk_valid_pattern_detection/dut/w_valid_result_per_lane_h
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: husse  Hostname: HUSSIEN  ProcessID: 17520
+#           Attempting to use alternate WLF file "./wlftvgxnry".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlftvgxnry
+run -all
+# =============================================================
+#   Testbench: clk_valid_pattern_detection
+# =============================================================
+# 
+# [TC1] Reset behavior
+#   [PASS] TC1 o_clk_result == 3'b000 after reset
+#   [FAIL] TC1 o_valid_result == 0 after reset  (got o_clk=000 o_valid=1)
+# 
+# [TC2] Half-rate valid / per-lane: 16 correct windows assert result
+#   [PASS] TC2 result still 0 after 15 windows
+#   [PASS] TC2 result = 1 after 16 correct windows
+# 
+# [TC3] Half-rate valid / per-lane: wrong pattern stays low
+#   [PASS] TC3 result = 0 with wrong pattern
+# 
+# [TC4] Half-rate valid / per-lane: bad window resets consecutive count
+#   [PASS] TC4 result still 0 (count reset by bad window)
+#   [PASS] TC4 result = 1 after fresh 16 windows
+# 
+# [TC5] Half-rate valid / compare: stays high below threshold
+#   [PASS] TC5 compare result high with 0 errors
+# 
+# [TC6] Half-rate valid / compare: result falls above threshold
+#   [PASS] TC6 compare result low after exceeding threshold
+# 
+# [TC7] Half-rate valid: pattern_type[1]=0 keeps result zero
+#   [PASS] TC7 valid result = 0 when pattern_type[1]=0
+# 
+# [TC8] Half-rate clock: all bits assert after 16×48 correct windows
+#   [PASS] TC8 all bits zero after 15 windows
+#   [PASS] TC8 clk_p  bit asserts (bit 0)
+#   [PASS] TC8 clk_n  bit asserts (bit 1)
+#   [PASS] TC8 track  bit asserts (bit 2)
+# 
+# [TC9] Half-rate clock: clk_p mismatch resets only clk_p counter
+#   [PASS] TC9 clk_p still 0 after its count was reset
+#   [PASS] TC9 clk_n asserted independently
+#   [PASS] TC9 track asserted independently
+# 
+# [TC10] Half-rate clock: clk_n mismatch resets only clk_n counter
+#   [PASS] TC10 clk_p asserted independently
+#   [PASS] TC10 clk_n still 0 after its count reset
+#   [PASS] TC10 track asserted independently
+# 
+# [TC11] Half-rate clock: track mismatch resets only track counter
+#   [PASS] TC11 clk_p asserted independently
+#   [PASS] TC11 clk_n asserted independently
+#   [PASS] TC11 track still 0 after its count reset
+# 
+# [TC12] Half-rate clock: pattern_type[0]=0 keeps clock result zero
+#   [PASS] TC12 o_clk_result = 0 when pattern_type[0]=0
+# 
+# [TC17] Gate-off: valid result stays locked after assertion
+#   [PASS] TC17 result = 1 before extra edges
+#   [PASS] TC17 result still 1 after extra wrong edges (gate locked)
+# 
+# =============================================================
+#   Results: 25 PASS  |  1 FAIL  |  26 TOTAL
+# =============================================================
+#   *** 1 TEST(S) FAILED — review log above ***
+# ** Note: $finish    : C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv(642)
+#    Time: 29359500 ps  Iteration: 0  Instance: /tb_clk_valid_pattern_detection
+# 1
+# Break in Module tb_clk_valid_pattern_detection at C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv line 642
+# couldn't load library "C:/questasim64_2024.1/win64/ScintillaTk/ScintillaTk114.dll": this library or a dependent library could not be found in library path
+# list element in quotes followed by ":" instead of space
+# Compile of clk_valid_pattern_detection.sv was successful.
+# Compile of clk_valid_pattern_detection_tb.sv was successful.
+# Compile of clk_valid_pattern_generation.sv was successful.
+# Compile of clock_divider.sv was successful.
+# Compile of counter_compare.sv was successful.
+# Compile of demux_1_2.sv was successful with warnings.
+# Compile of deserializer_h.sv was successful.
+# Compile of deserializer_q.sv was successful.
+# Compile of drivers.sv was successful.
+# Compile of fifo.sv was successful.
+# Compile of lane_id_register.sv was successful.
+# Compile of LFSR_pattern_generator.sv was successful.
+# Compile of LFSR_tb.svh was successful.
+# Compile of mux_2_1.sv was successful with warnings.
+# Compile of pattern_generation_tb.sv was successful.
+# Compile of per_lane_id_detector.sv was successful.
+# Compile of per_lane_id_detector_tb.sv was successful.
+# Compile of per_lane_id_detector_top.svh was successful with warnings.
+# Compile of per_lane_id_generator_tb.sv was successful.
+# Compile of per_lane_id_generator_top.svh was successful.
+# Compile of reversal.sv was successful with warnings.
+# Compile of rx_LFSR.sv was successful.
+# Compile of rx_LFSR_detection.sv was successful.
+# Compile of rx_LFSR_tb.svh was successful.
+# Compile of rx_LFSR_top.sv was successful.
+# Compile of rx_path.sv was successful.
+# Compile of serializer.sv was successful.
+# Compile of tx_LFSR.sv was successful.
+# Compile of tx_LFSR_top.sv was successful.
+# Compile of tx_path.sv was successful.
+# 30 compiles, 0 failed with no errors.
+restart
+# ** Note: (vsim-12125) Error and warning message counts have been reset to '0' because of 'restart'.
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# ** Warning: (vopt-10587) Some optimizations are turned off because the +acc switch is in effect. This will cause your simulation to run slowly. Please use -access/-debug to maintain needed visibility.
+# Support of the MGLS_LICENSE_FILE and LM_LICENSE_FILE licensing environment variables will be discontinued starting with the 2025.1 release. Please update to using the SALT_LICENSE_SERVER variable.
+# Please contact Siemens EDA Customer Support (https://support.sw.siemens.com/) for assistance.
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
+# Loading sv_std.std
+# Loading work.tb_clk_valid_pattern_detection(fast)
+# Loading work.clk_valid_pattern_detection(fast)
+run -all
+# =============================================================
+#   Testbench: clk_valid_pattern_detection
+# =============================================================
+# 
+# [TC1] Reset behavior
+#   [PASS] TC1 o_clk_result == 3'b000 after reset
+#   [PASS] TC1 o_valid_result == 1 after reset
+# 
+# [TC2] Half-rate valid / per-lane: 16 correct windows assert result
+#   [PASS] TC2 result still 0 after 15 windows
+#   [PASS] TC2 result = 1 after 16 correct windows
+# 
+# [TC3] Half-rate valid / per-lane: wrong pattern stays low
+#   [PASS] TC3 result = 0 with wrong pattern
+# 
+# [TC4] Half-rate valid / per-lane: bad window resets consecutive count
+#   [PASS] TC4 result still 0 (count reset by bad window)
+#   [PASS] TC4 result = 1 after fresh 16 windows
+# 
+# [TC5] Half-rate valid / compare: stays high below threshold
+#   [PASS] TC5 compare result high with 0 errors
+# 
+# [TC6] Half-rate valid / compare: result falls above threshold
+#   [PASS] TC6 compare result low after exceeding threshold
+# 
+# [TC7] Half-rate valid: pattern_type[1]=0 keeps result zero
+#   [PASS] TC7 valid result = 0 when pattern_type[1]=0
+# 
+# [TC8] Half-rate clock: all bits assert after 16×48 correct windows
+#   [PASS] TC8 all bits zero after 15 windows
+#   [PASS] TC8 clk_p  bit asserts (bit 0)
+#   [PASS] TC8 clk_n  bit asserts (bit 1)
+#   [PASS] TC8 track  bit asserts (bit 2)
+# 
+# [TC9] Half-rate clock: clk_p mismatch resets only clk_p counter
+#   [PASS] TC9 clk_p still 0 after its count was reset
+#   [PASS] TC9 clk_n asserted independently
+#   [PASS] TC9 track asserted independently
+# 
+# [TC10] Half-rate clock: clk_n mismatch resets only clk_n counter
+#   [PASS] TC10 clk_p asserted independently
+#   [PASS] TC10 clk_n still 0 after its count reset
+#   [PASS] TC10 track asserted independently
+# 
+# [TC11] Half-rate clock: track mismatch resets only track counter
+#   [PASS] TC11 clk_p asserted independently
+#   [PASS] TC11 clk_n asserted independently
+#   [PASS] TC11 track still 0 after its count reset
+# 
+# [TC12] Half-rate clock: pattern_type[0]=0 keeps clock result zero
+#   [PASS] TC12 o_clk_result = 0 when pattern_type[0]=0
+# 
+# [TC17] Gate-off: valid result stays locked after assertion
+#   [PASS] TC17 result = 1 before extra edges
+#   [PASS] TC17 result still 1 after extra wrong edges (gate locked)
+# 
+# =============================================================
+#   Results: 26 PASS  |  0 FAIL  |  26 TOTAL
+# =============================================================
+#   ALL TESTS PASSED
+# ** Note: $finish    : C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv(642)
+#    Time: 29359500 ps  Iteration: 0  Instance: /tb_clk_valid_pattern_detection
+# 1
+# Break in Module tb_clk_valid_pattern_detection at C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv line 642
+# couldn't load library "C:/questasim64_2024.1/win64/ScintillaTk/ScintillaTk114.dll": this library or a dependent library could not be found in library path
+# list element in quotes followed by ":" instead of space
+# Compile of clk_valid_pattern_detection.sv was successful.
+# Compile of clk_valid_pattern_detection_tb.sv was successful.
+# Compile of clk_valid_pattern_generation.sv was successful.
+# Compile of clock_divider.sv was successful.
+# Compile of counter_compare.sv was successful.
+# Compile of demux_1_2.sv was successful with warnings.
+# Compile of deserializer_h.sv was successful.
+# Compile of deserializer_q.sv was successful.
+# Compile of drivers.sv was successful.
+# Compile of fifo.sv was successful.
+# Compile of lane_id_register.sv was successful.
+# Compile of LFSR_pattern_generator.sv was successful.
+# Compile of LFSR_tb.svh was successful.
+# Compile of mux_2_1.sv was successful with warnings.
+# Compile of pattern_generation_tb.sv was successful.
+# Compile of per_lane_id_detector.sv was successful.
+# Compile of per_lane_id_detector_tb.sv was successful.
+# Compile of per_lane_id_detector_top.svh was successful with warnings.
+# Compile of per_lane_id_generator_tb.sv was successful.
+# Compile of per_lane_id_generator_top.svh was successful.
+# Compile of reversal.sv was successful with warnings.
+# Compile of rx_LFSR.sv was successful.
+# Compile of rx_LFSR_detection.sv was successful.
+# Compile of rx_LFSR_tb.svh was successful.
+# Compile of rx_LFSR_top.sv was successful.
+# Compile of rx_path.sv was successful.
+# Compile of serializer.sv was successful.
+# Compile of tx_LFSR.sv was successful.
+# Compile of tx_LFSR_top.sv was successful.
+# Compile of tx_path.sv was successful.
+# 30 compiles, 0 failed with no errors.
+restart
+# ** Note: (vsim-12125) Error and warning message counts have been reset to '0' because of 'restart'.
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# ** Warning: (vopt-10587) Some optimizations are turned off because the +acc switch is in effect. This will cause your simulation to run slowly. Please use -access/-debug to maintain needed visibility.
+# Support of the MGLS_LICENSE_FILE and LM_LICENSE_FILE licensing environment variables will be discontinued starting with the 2025.1 release. Please update to using the SALT_LICENSE_SERVER variable.
+# Please contact Siemens EDA Customer Support (https://support.sw.siemens.com/) for assistance.
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
+# Loading sv_std.std
+# Loading work.tb_clk_valid_pattern_detection(fast)
+# Loading work.clk_valid_pattern_detection(fast)
+run -all
+# =============================================================
+#   Testbench: clk_valid_pattern_detection
+# =============================================================
+# 
+# [TC1] Reset behavior
+#   [PASS] TC1 o_clk_result == 3'b000 after reset
+#   [PASS] TC1 o_valid_result == 1 after reset
+# 
+# [TC2] Half-rate valid / per-lane: 16 correct windows assert result
+#   [PASS] TC2 result still 0 after 15 windows
+#   [PASS] TC2 result = 1 after 16 correct windows
+# 
+# [TC3] Half-rate valid / per-lane: wrong pattern stays low
+#   [PASS] TC3 result = 0 with wrong pattern
+# 
+# [TC4] Half-rate valid / per-lane: bad window resets consecutive count
+#   [FAIL] TC4 result still 0 (count reset by bad window)  (got o_clk=000 o_valid=1)
+#   [PASS] TC4 result = 1 after fresh 16 windows
+# 
+# [TC5] Half-rate valid / compare: stays high below threshold
+#   [PASS] TC5 compare result high with 0 errors
+# 
+# [TC6] Half-rate valid / compare: result falls above threshold
+#   [PASS] TC6 compare result low after exceeding threshold
+# 
+# [TC7] Half-rate valid: pattern_type[1]=0 keeps result zero
+#   [PASS] TC7 valid result = 0 when pattern_type[1]=0
+# 
+# [TC8] Half-rate clock: all bits assert after 16×48 correct windows
+#   [PASS] TC8 all bits zero after 15 windows
+#   [PASS] TC8 clk_p  bit asserts (bit 0)
+#   [PASS] TC8 clk_n  bit asserts (bit 1)
+#   [PASS] TC8 track  bit asserts (bit 2)
+# 
+# [TC9] Half-rate clock: clk_p mismatch resets only clk_p counter
+#   [FAIL] TC9 clk_p still 0 after its count was reset  (got o_clk=111 o_valid=0)
+#   [PASS] TC9 clk_n asserted independently
+#   [PASS] TC9 track asserted independently
+# 
+# [TC10] Half-rate clock: clk_n mismatch resets only clk_n counter
+#   [PASS] TC10 clk_p asserted independently
+#   [FAIL] TC10 clk_n still 0 after its count reset  (got o_clk=111 o_valid=0)
+#   [PASS] TC10 track asserted independently
+# 
+# [TC11] Half-rate clock: track mismatch resets only track counter
+#   [PASS] TC11 clk_p asserted independently
+#   [PASS] TC11 clk_n asserted independently
+#   [FAIL] TC11 track still 0 after its count reset  (got o_clk=111 o_valid=0)
+# 
+# [TC12] Half-rate clock: pattern_type[0]=0 keeps clock result zero
+#   [PASS] TC12 o_clk_result = 0 when pattern_type[0]=0
+# 
+# [TC17] Gate-off: valid result stays locked after assertion
+#   [PASS] TC17 result = 1 before extra edges
+#   [PASS] TC17 result still 1 after extra wrong edges (gate locked)
+# 
+# =============================================================
+#   Results: 22 PASS  |  4 FAIL  |  26 TOTAL
+# =============================================================
+#   *** 4 TEST(S) FAILED — review log above ***
+# ** Note: $finish    : C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv(642)
+#    Time: 31239500 ps  Iteration: 0  Instance: /tb_clk_valid_pattern_detection
+# 1
+# Break in Module tb_clk_valid_pattern_detection at C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv line 642
+# couldn't load library "C:/questasim64_2024.1/win64/ScintillaTk/ScintillaTk114.dll": this library or a dependent library could not be found in library path
+# list element in quotes followed by ":" instead of space
+# Compile of clk_valid_pattern_detection.sv was successful.
+# Compile of clk_valid_pattern_detection_tb.sv was successful.
+# Compile of clk_valid_pattern_generation.sv was successful.
+# Compile of clock_divider.sv was successful.
+# Compile of counter_compare.sv was successful.
+# Compile of demux_1_2.sv was successful with warnings.
+# Compile of deserializer_h.sv was successful.
+# Compile of deserializer_q.sv was successful.
+# Compile of drivers.sv was successful.
+# Compile of fifo.sv was successful.
+# Compile of lane_id_register.sv was successful.
+# Compile of LFSR_pattern_generator.sv was successful.
+# Compile of LFSR_tb.svh was successful.
+# Compile of mux_2_1.sv was successful with warnings.
+# Compile of pattern_generation_tb.sv was successful.
+# Compile of per_lane_id_detector.sv was successful.
+# Compile of per_lane_id_detector_tb.sv was successful.
+# Compile of per_lane_id_detector_top.svh was successful with warnings.
+# Compile of per_lane_id_generator_tb.sv was successful.
+# Compile of per_lane_id_generator_top.svh was successful.
+# Compile of reversal.sv was successful with warnings.
+# Compile of rx_LFSR.sv was successful.
+# Compile of rx_LFSR_detection.sv was successful.
+# Compile of rx_LFSR_tb.svh was successful.
+# Compile of rx_LFSR_top.sv was successful.
+# Compile of rx_path.sv was successful.
+# Compile of serializer.sv was successful.
+# Compile of tx_LFSR.sv was successful.
+# Compile of tx_LFSR_top.sv was successful.
+# Compile of tx_path.sv was successful.
+# 30 compiles, 0 failed with no errors.
+restart
+# ** Note: (vsim-12125) Error and warning message counts have been reset to '0' because of 'restart'.
+# ** Note: (vsim-8009) Loading existing optimized design _opt4
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
+# Loading work.tb_clk_valid_pattern_detection(fast)
+# Loading work.clk_valid_pattern_detection(fast)
+run -all
+# =============================================================
+#   Testbench: clk_valid_pattern_detection
+# =============================================================
+# 
+# [TC1] Reset behavior
+#   [PASS] TC1 o_clk_result == 3'b000 after reset
+#   [PASS] TC1 o_valid_result == 1 after reset
+# 
+# [TC2] Half-rate valid / per-lane: 16 correct windows assert result
+#   [PASS] TC2 result still 0 after 15 windows
+#   [PASS] TC2 result = 1 after 16 correct windows
+# 
+# [TC3] Half-rate valid / per-lane: wrong pattern stays low
+#   [PASS] TC3 result = 0 with wrong pattern
+# 
+# [TC4] Half-rate valid / per-lane: bad window resets consecutive count
+#   [FAIL] TC4 result still 0 (count reset by bad window)  (got o_clk=000 o_valid=1)
+#   [PASS] TC4 result = 1 after fresh 16 windows
+# 
+# [TC5] Half-rate valid / compare: stays high below threshold
+#   [PASS] TC5 compare result high with 0 errors
+# 
+# [TC6] Half-rate valid / compare: result falls above threshold
+#   [PASS] TC6 compare result low after exceeding threshold
+# 
+# [TC7] Half-rate valid: pattern_type[1]=0 keeps result zero
+#   [PASS] TC7 valid result = 0 when pattern_type[1]=0
+# 
+# [TC8] Half-rate clock: all bits assert after 16×48 correct windows
+#   [PASS] TC8 all bits zero after 15 windows
+#   [PASS] TC8 clk_p  bit asserts (bit 0)
+#   [PASS] TC8 clk_n  bit asserts (bit 1)
+#   [PASS] TC8 track  bit asserts (bit 2)
+# 
+# [TC9] Half-rate clock: clk_p mismatch resets only clk_p counter
+#   [FAIL] TC9 clk_p still 0 after its count was reset  (got o_clk=111 o_valid=0)
+#   [PASS] TC9 clk_n asserted independently
+#   [PASS] TC9 track asserted independently
+# 
+# [TC10] Half-rate clock: clk_n mismatch resets only clk_n counter
+#   [PASS] TC10 clk_p asserted independently
+#   [FAIL] TC10 clk_n still 0 after its count reset  (got o_clk=111 o_valid=0)
+#   [PASS] TC10 track asserted independently
+# 
+# [TC11] Half-rate clock: track mismatch resets only track counter
+#   [PASS] TC11 clk_p asserted independently
+#   [PASS] TC11 clk_n asserted independently
+#   [FAIL] TC11 track still 0 after its count reset  (got o_clk=111 o_valid=0)
+# 
+# [TC12] Half-rate clock: pattern_type[0]=0 keeps clock result zero
+#   [PASS] TC12 o_clk_result = 0 when pattern_type[0]=0
+# 
+# [TC17] Gate-off: valid result stays locked after assertion
+#   [PASS] TC17 result = 1 before extra edges
+#   [PASS] TC17 result still 1 after extra wrong edges (gate locked)
+# 
+# =============================================================
+#   Results: 22 PASS  |  4 FAIL  |  26 TOTAL
+# =============================================================
+#   *** 4 TEST(S) FAILED — review log above ***
+# ** Note: $finish    : C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv(642)
+#    Time: 31239500 ps  Iteration: 0  Instance: /tb_clk_valid_pattern_detection
+# 1
+# Break in Module tb_clk_valid_pattern_detection at C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv line 642
+# couldn't load library "C:/questasim64_2024.1/win64/ScintillaTk/ScintillaTk114.dll": this library or a dependent library could not be found in library path
+# list element in quotes followed by ":" instead of space
+# Compile of clk_valid_pattern_detection.sv was successful.
+# Compile of clk_valid_pattern_detection_tb.sv was successful.
+# Compile of clk_valid_pattern_generation.sv was successful.
+# Compile of clock_divider.sv was successful.
+# Compile of counter_compare.sv was successful.
+# Compile of demux_1_2.sv was successful with warnings.
+# Compile of deserializer_h.sv was successful.
+# Compile of deserializer_q.sv was successful.
+# Compile of drivers.sv was successful.
+# Compile of fifo.sv was successful.
+# Compile of lane_id_register.sv was successful.
+# Compile of LFSR_pattern_generator.sv was successful.
+# Compile of LFSR_tb.svh was successful.
+# Compile of mux_2_1.sv was successful with warnings.
+# Compile of pattern_generation_tb.sv was successful.
+# Compile of per_lane_id_detector.sv was successful.
+# Compile of per_lane_id_detector_tb.sv was successful.
+# Compile of per_lane_id_detector_top.svh was successful with warnings.
+# Compile of per_lane_id_generator_tb.sv was successful.
+# Compile of per_lane_id_generator_top.svh was successful.
+# Compile of reversal.sv was successful with warnings.
+# Compile of rx_LFSR.sv was successful.
+# Compile of rx_LFSR_detection.sv was successful.
+# Compile of rx_LFSR_tb.svh was successful.
+# Compile of rx_LFSR_top.sv was successful.
+# Compile of rx_path.sv was successful.
+# Compile of serializer.sv was successful.
+# Compile of tx_LFSR.sv was successful.
+# Compile of tx_LFSR_top.sv was successful.
+# Compile of tx_path.sv was successful.
+# 30 compiles, 0 failed with no errors.
+restart
+# ** Note: (vsim-12125) Error and warning message counts have been reset to '0' because of 'restart'.
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# ** Warning: (vopt-10587) Some optimizations are turned off because the +acc switch is in effect. This will cause your simulation to run slowly. Please use -access/-debug to maintain needed visibility.
+# Support of the MGLS_LICENSE_FILE and LM_LICENSE_FILE licensing environment variables will be discontinued starting with the 2025.1 release. Please update to using the SALT_LICENSE_SERVER variable.
+# Please contact Siemens EDA Customer Support (https://support.sw.siemens.com/) for assistance.
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
+# Loading sv_std.std
+# Loading work.tb_clk_valid_pattern_detection(fast)
+# Loading work.clk_valid_pattern_detection(fast)
+run -all
+# =============================================================
+#   Testbench: clk_valid_pattern_detection
+# =============================================================
+# 
+# [TC1] Reset behavior
+#   [PASS] TC1 o_clk_result == 3'b000 after reset
+#   [PASS] TC1 o_valid_result == 1 after reset
+# 
+# [TC2] Half-rate valid / per-lane: 16 correct windows assert result
+#   [PASS] TC2 result still 0 after 15 windows
+#   [PASS] TC2 result = 1 after 16 correct windows
+# 
+# [TC3] Half-rate valid / per-lane: wrong pattern stays low
+#   [PASS] TC3 result = 0 with wrong pattern
+# 
+# [TC4] Half-rate valid / per-lane: bad window resets consecutive count
+#   [PASS] TC4 result still 0 (count reset by bad window)
+#   [PASS] TC4 result = 1 after fresh 16 windows
+# 
+# [TC5] Half-rate valid / compare: stays high below threshold
+#   [PASS] TC5 compare result high with 0 errors
+# 
+# [TC6] Half-rate valid / compare: result falls above threshold
+#   [PASS] TC6 compare result low after exceeding threshold
+# 
+# [TC7] Half-rate valid: pattern_type[1]=0 keeps result zero
+#   [PASS] TC7 valid result = 0 when pattern_type[1]=0
+# 
+# [TC8] Half-rate clock: all bits assert after 16×48 correct windows
+#   [PASS] TC8 all bits zero after 15 windows
+#   [PASS] TC8 clk_p  bit asserts (bit 0)
+#   [PASS] TC8 clk_n  bit asserts (bit 1)
+#   [PASS] TC8 track  bit asserts (bit 2)
+# 
+# [TC9] Half-rate clock: clk_p mismatch resets only clk_p counter
+#   [PASS] TC9 clk_p still 0 after its count was reset
+#   [PASS] TC9 clk_n asserted independently
+#   [PASS] TC9 track asserted independently
+# 
+# [TC10] Half-rate clock: clk_n mismatch resets only clk_n counter
+#   [PASS] TC10 clk_p asserted independently
+#   [PASS] TC10 clk_n still 0 after its count reset
+#   [PASS] TC10 track asserted independently
+# 
+# [TC11] Half-rate clock: track mismatch resets only track counter
+#   [PASS] TC11 clk_p asserted independently
+#   [PASS] TC11 clk_n asserted independently
+#   [PASS] TC11 track still 0 after its count reset
+# 
+# [TC12] Half-rate clock: pattern_type[0]=0 keeps clock result zero
+#   [PASS] TC12 o_clk_result = 0 when pattern_type[0]=0
+# 
+# [TC17] Gate-off: valid result stays locked after assertion
+#   [PASS] TC17 result = 1 before extra edges
+#   [PASS] TC17 result still 1 after extra wrong edges (gate locked)
+# 
+# =============================================================
+#   Results: 26 PASS  |  0 FAIL  |  26 TOTAL
+# =============================================================
+#   ALL TESTS PASSED
+# ** Note: $finish    : C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv(642)
+#    Time: 30479500 ps  Iteration: 0  Instance: /tb_clk_valid_pattern_detection
+# 1
+# Break in Module tb_clk_valid_pattern_detection at C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv line 642
+# couldn't load library "C:/questasim64_2024.1/win64/ScintillaTk/ScintillaTk114.dll": this library or a dependent library could not be found in library path
+# list element in quotes followed by ":" instead of space
+# Compile of clk_valid_pattern_detection.sv was successful.
+# Compile of clk_valid_pattern_detection_tb.sv was successful.
+# Compile of clk_valid_pattern_generation.sv was successful.
+# Compile of clock_divider.sv was successful.
+# Compile of counter_compare.sv was successful.
+# Compile of demux_1_2.sv was successful with warnings.
+# Compile of deserializer_h.sv was successful.
+# Compile of deserializer_q.sv was successful.
+# Compile of drivers.sv was successful.
+# Compile of fifo.sv was successful.
+# Compile of lane_id_register.sv was successful.
+# Compile of LFSR_pattern_generator.sv was successful.
+# Compile of LFSR_tb.svh was successful.
+# Compile of mux_2_1.sv was successful with warnings.
+# Compile of pattern_generation_tb.sv was successful.
+# Compile of per_lane_id_detector.sv was successful.
+# Compile of per_lane_id_detector_tb.sv was successful.
+# Compile of per_lane_id_detector_top.svh was successful with warnings.
+# Compile of per_lane_id_generator_tb.sv was successful.
+# Compile of per_lane_id_generator_top.svh was successful.
+# Compile of reversal.sv was successful with warnings.
+# Compile of rx_LFSR.sv was successful.
+# Compile of rx_LFSR_detection.sv was successful.
+# Compile of rx_LFSR_tb.svh was successful.
+# Compile of rx_LFSR_top.sv was successful.
+# Compile of rx_path.sv was successful.
+# Compile of serializer.sv was successful.
+# Compile of tx_LFSR.sv was successful.
+# Compile of tx_LFSR_top.sv was successful.
+# Compile of tx_path.sv was successful.
+# 30 compiles, 0 failed with no errors.
+restart
+# ** Note: (vsim-12125) Error and warning message counts have been reset to '0' because of 'restart'.
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# ** Warning: (vopt-10587) Some optimizations are turned off because the +acc switch is in effect. This will cause your simulation to run slowly. Please use -access/-debug to maintain needed visibility.
+# Support of the MGLS_LICENSE_FILE and LM_LICENSE_FILE licensing environment variables will be discontinued starting with the 2025.1 release. Please update to using the SALT_LICENSE_SERVER variable.
+# Please contact Siemens EDA Customer Support (https://support.sw.siemens.com/) for assistance.
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
+# Loading sv_std.std
+# Loading work.tb_clk_valid_pattern_detection(fast)
+# Loading work.clk_valid_pattern_detection(fast)
+run -all
+# =============================================================
+#   Testbench: clk_valid_pattern_detection
+# =============================================================
+# 
+# [TC1] Reset behavior
+#   [PASS] TC1 o_clk_result == 3'b000 after reset
+#   [PASS] TC1 o_valid_result == 1 after reset
+# 
+# [TC2] Half-rate valid / per-lane: 16 correct windows assert result
+#   [PASS] TC2 result still 0 after 15 windows
+#   [PASS] TC2 result = 1 after 16 correct windows
+# 
+# [TC3] Half-rate valid / per-lane: wrong pattern stays low
+#   [PASS] TC3 result = 0 with wrong pattern
+# 
+# [TC4] Half-rate valid / per-lane: bad window resets consecutive count
+#   [PASS] TC4 result still 0 (count reset by bad window)
+#   [PASS] TC4 result = 1 after fresh 16 windows
+# 
+# [TC5] Half-rate valid / compare: stays high below threshold
+#   [PASS] TC5 compare result high with 0 errors
+# 
+# [TC6] Half-rate valid / compare: result falls above threshold
+#   [PASS] TC6 compare result low after exceeding threshold
+# 
+# [TC7] Half-rate valid: pattern_type[1]=0 keeps result zero
+#   [PASS] TC7 valid result = 0 when pattern_type[1]=0
+# 
+# [TC8] Half-rate clock: all bits assert after 16×48 correct windows
+#   [PASS] TC8 all bits zero after 15 windows
+#   [PASS] TC8 clk_p  bit asserts (bit 0)
+#   [PASS] TC8 clk_n  bit asserts (bit 1)
+#   [PASS] TC8 track  bit asserts (bit 2)
+# 
+# [TC9] Half-rate clock: clk_p mismatch resets only clk_p counter
+#   [PASS] TC9 clk_p still 0 after its count was reset
+#   [PASS] TC9 clk_n asserted independently
+#   [PASS] TC9 track asserted independently
+# 
+# [TC10] Half-rate clock: clk_n mismatch resets only clk_n counter
+#   [PASS] TC10 clk_p asserted independently
+#   [PASS] TC10 clk_n still 0 after its count reset
+#   [PASS] TC10 track asserted independently
+# 
+# [TC11] Half-rate clock: track mismatch resets only track counter
+#   [PASS] TC11 clk_p asserted independently
+#   [PASS] TC11 clk_n asserted independently
+#   [PASS] TC11 track still 0 after its count reset
+# 
+# [TC12] Half-rate clock: pattern_type[0]=0 keeps clock result zero
+#   [PASS] TC12 o_clk_result = 0 when pattern_type[0]=0
+# 
+# [TC17] Gate-off: valid result stays locked after assertion
+#   [PASS] TC17 result = 1 before extra edges
+#   [PASS] TC17 result still 1 after extra wrong edges (gate locked)
+# 
+# =============================================================
+#   Results: 26 PASS  |  0 FAIL  |  26 TOTAL
+# =============================================================
+#   ALL TESTS PASSED
+# ** Note: $finish    : C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv(642)
+#    Time: 30479500 ps  Iteration: 0  Instance: /tb_clk_valid_pattern_detection
+# 1
+# Break in Module tb_clk_valid_pattern_detection at C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv line 642
+# couldn't load library "C:/questasim64_2024.1/win64/ScintillaTk/ScintillaTk114.dll": this library or a dependent library could not be found in library path
+# list element in quotes followed by ":" instead of space
+add wave -position insertpoint  \
+sim:/tb_clk_valid_pattern_detection/dut/w_serialized_compare_h \
+sim:/tb_clk_valid_pattern_detection/dut/counter_v_compare_h \
+sim:/tb_clk_valid_pattern_detection/dut/counter_error_h \
+sim:/tb_clk_valid_pattern_detection/dut/w_clk_enable_valid_compare_h \
+sim:/tb_clk_valid_pattern_detection/dut/w_clk_compare_h \
+sim:/tb_clk_valid_pattern_detection/dut/w_valid_result_compare_h
+restart
+# ** Note: (vsim-12125) Error and warning message counts have been reset to '0' because of 'restart'.
+# ** Note: (vsim-8009) Loading existing optimized design _opt4
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=1.
+# Loading work.tb_clk_valid_pattern_detection(fast)
+# Loading work.clk_valid_pattern_detection(fast)
+run -all
+# =============================================================
+#   Testbench: clk_valid_pattern_detection
+# =============================================================
+# 
+# [TC1] Reset behavior
+#   [PASS] TC1 o_clk_result == 3'b000 after reset
+#   [PASS] TC1 o_valid_result == 1 after reset
+# 
+# [TC2] Half-rate valid / per-lane: 16 correct windows assert result
+#   [PASS] TC2 result still 0 after 15 windows
+#   [PASS] TC2 result = 1 after 16 correct windows
+# 
+# [TC3] Half-rate valid / per-lane: wrong pattern stays low
+#   [PASS] TC3 result = 0 with wrong pattern
+# 
+# [TC4] Half-rate valid / per-lane: bad window resets consecutive count
+#   [PASS] TC4 result still 0 (count reset by bad window)
+#   [PASS] TC4 result = 1 after fresh 16 windows
+# 
+# [TC5] Half-rate valid / compare: stays high below threshold
+#   [PASS] TC5 compare result high with 0 errors
+# 
+# [TC6] Half-rate valid / compare: result falls above threshold
+#   [PASS] TC6 compare result low after exceeding threshold
+# 
+# [TC7] Half-rate valid: pattern_type[1]=0 keeps result zero
+#   [PASS] TC7 valid result = 0 when pattern_type[1]=0
+# 
+# [TC8] Half-rate clock: all bits assert after 16×48 correct windows
+#   [PASS] TC8 all bits zero after 15 windows
+#   [PASS] TC8 clk_p  bit asserts (bit 0)
+#   [PASS] TC8 clk_n  bit asserts (bit 1)
+#   [PASS] TC8 track  bit asserts (bit 2)
+# 
+# [TC9] Half-rate clock: clk_p mismatch resets only clk_p counter
+#   [PASS] TC9 clk_p still 0 after its count was reset
+#   [PASS] TC9 clk_n asserted independently
+#   [PASS] TC9 track asserted independently
+# 
+# [TC10] Half-rate clock: clk_n mismatch resets only clk_n counter
+#   [PASS] TC10 clk_p asserted independently
+#   [PASS] TC10 clk_n still 0 after its count reset
+#   [PASS] TC10 track asserted independently
+# 
+# [TC11] Half-rate clock: track mismatch resets only track counter
+#   [PASS] TC11 clk_p asserted independently
+#   [PASS] TC11 clk_n asserted independently
+#   [PASS] TC11 track still 0 after its count reset
+# 
+# [TC12] Half-rate clock: pattern_type[0]=0 keeps clock result zero
+#   [PASS] TC12 o_clk_result = 0 when pattern_type[0]=0
+# 
+# [TC17] Gate-off: valid result stays locked after assertion
+#   [PASS] TC17 result = 1 before extra edges
+#   [PASS] TC17 result still 1 after extra wrong edges (gate locked)
+# 
+# =============================================================
+#   Results: 26 PASS  |  0 FAIL  |  26 TOTAL
+# =============================================================
+#   ALL TESTS PASSED
+# ** Note: $finish    : C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv(642)
+#    Time: 30479500 ps  Iteration: 0  Instance: /tb_clk_valid_pattern_detection
+# 1
+# Break in Module tb_clk_valid_pattern_detection at C:/Users/husse/Desktop/gp/design/clk_valid_pattern_detection_tb.sv line 642
+# couldn't load library "C:/questasim64_2024.1/win64/ScintillaTk/ScintillaTk114.dll": this library or a dependent library could not be found in library path
+# list element in quotes followed by ":" instead of space
