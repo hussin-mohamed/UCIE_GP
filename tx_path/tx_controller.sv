@@ -395,8 +395,3 @@ module tx_controller #(
     end
 
 endmodule
-
-
-
-
-// reversal register update on reversal apply state entry.
