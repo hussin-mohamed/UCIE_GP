@@ -1,6 +1,7 @@
 module rx_path#(
     parameter int pDATA_WIDTH = 64,
-    parameter int pNUM_LANES  = 16
+    parameter int pNUM_LANES  = 16,
+    parameter int pDATA_RDI_WIDTH   = 2048
     ) (
     input i_clk_l,i_reset,i_clk_p,i_clk_n,i_valid,i_track,i_hclk,i_dclk,
     input [pNUM_LANES-1:0] i_lanes
@@ -8,14 +9,17 @@ module rx_path#(
 );
     logic [pNUM_LANES-1:0][pDATA_WIDTH-1:0] lane_id_in,lane_LFSR_out,lane_LFSR_in,lane_demux_in,deserializer_out;
     logic [pNUM_LANES-1:0] enable_lfsr,enable_laneid,lane_id_success,lane_lfsr_succes,error_threshhold;
+    logic [pDATA_RDI_WIDTH-1:0] lane_byte_out;
     logic load,train;
     logic sel_demux;
+    logic data_valid;
     logic sel_reverse;
     logic halfrate;
     logic reset;
     logic [2:0] clk_result;
     logic [2:0] clk_result_sync;
     logic valid_result;
+    logic L2B_enable;
     logic valid_result_sync;
     logic clk_p,clk_n,track,valid;
     logic enable_clk_drive,enable_valid_drive,enable_data_drive;
@@ -135,4 +139,29 @@ module rx_path#(
             );
         end
     endgenerate
+
+    ucie_lane_to_byte L2B(
+        .i_clk(i_clk_l),
+        .i_reset(reset),
+        .i_enable(L2B_enable),
+        .i_lane_map_code(lane_map),
+        .i_lane_0(lane_LFSR_out[0]),
+        .i_lane_1(lane_LFSR_out[1]),
+        .i_lane_2(lane_LFSR_out[2]),
+        .i_lane_3(lane_LFSR_out[3]),
+        .i_lane_4(lane_LFSR_out[4]),
+        .i_lane_5(lane_LFSR_out[5]),
+        .i_lane_6(lane_LFSR_out[6]),
+        .i_lane_7(lane_LFSR_out[7]),
+        .i_lane_8(lane_LFSR_out[8]),
+        .i_lane_9(lane_LFSR_out[9]),
+        .i_lane_10(lane_LFSR_out[10]),
+        .i_lane_11(lane_LFSR_out[10]),
+        .i_lane_12(lane_LFSR_out[11]),
+        .i_lane_13(lane_LFSR_out[12]),
+        .i_lane_14(lane_LFSR_out[13]),
+        .i_lane_15(lane_LFSR_out[14]),
+        .o_data_out(lane_byte_out),
+        .o_data_valid(data_valid)
+    )
 endmodule
