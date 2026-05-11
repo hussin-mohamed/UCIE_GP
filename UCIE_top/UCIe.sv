@@ -152,10 +152,8 @@ module UCIe_phy #(
     assign o_pl_clk_req = ltsm_rdi_if_inst.o_pl_clk_req;
     assign o_pl_wake_ack = ltsm_rdi_if_inst.o_pl_wake_ack;
 
-   
-
-   assign LTSM_controllers_vif.o_rx_encoding = rx_fsm_sb_if.o_rx_encoding;
-   assign LTSM_controllers_vif.o_tx_encoding = tx_fsm_sb_if.o_tx_encoding;
+    assign LTSM_controllers_vif.o_rx_encoding = rx_fsm_sb_if.o_rx_encoding;
+    assign LTSM_controllers_vif.o_tx_encoding = tx_fsm_sb_if.o_tx_encoding;
 
     assign tx_bfm.i_tx_encoding = tx_fsm_sb_if.o_tx_encoding;
     assign tx_bfm.i_tx_data = tx_fsm_sb_if.o_tx_data;
@@ -174,7 +172,7 @@ module UCIe_phy #(
     assign rx_fsm_sb_if.i_sb_rx_done = rx_bfm.o_sb_rx_done;
 
     assign ltsm_ctrl_bfm.i_sb_init_start = LTSM_controllers_vif.o_sb_init_start;
-    assign sb_ready = LTSM_controllers_vif.i_sb_ready;
+    assign  LTSM_controllers_vif.i_sb_ready = sb_ready;
 
     assign o_tx_sb_data = phylink_bfm.o_tx_sb_data;
     assign o_tx_sb_clk = phylink_bfm.o_tx_sb_clk;
