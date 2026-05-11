@@ -162,7 +162,6 @@ module UCIe_phy #(
     assign tx_bfm.i_tx_info = tx_fsm_sb_if.o_tx_info;
     assign tx_bfm.i_sb_tx_req = tx_fsm_sb_if.o_tx_sb_req;
     assign tx_bfm.i_sb_tx_rsp = tx_fsm_sb_if.o_tx_sb_rsp;
-    assign tx_bfm.i_sb_tx_done = tx_fsm_sb_if.o_tx_sb_done;
 
     assign tx_fsm_sb_if.i_sb_tx_done = tx_bfm.o_sb_tx_done;
 
@@ -171,7 +170,6 @@ module UCIe_phy #(
     assign rx_bfm.i_rx_info = rx_fsm_sb_if.o_rx_info;
     assign rx_bfm.i_sb_rx_req = rx_fsm_sb_if.o_rx_sb_req;
     assign rx_bfm.i_sb_rx_rsp = rx_fsm_sb_if.o_rx_sb_rsp;
-    assign rx_bfm.i_sb_rx_done = rx_fsm_sb_if.o_rx_sb_done;
 
     assign rx_fsm_sb_if.i_sb_rx_done = rx_bfm.o_sb_rx_done;
 
@@ -185,32 +183,38 @@ module UCIe_phy #(
 
     valid_decoder decoder_rx
     (
+        .i_clk(clk_l),
         .i_valid(rx_bfm.o_rx_valid),
         .i_encoding(rx_bfm.o_rx_decoding),
         .i_req(rx_bfm.o_sb_rx_req),
         .i_rsp(rx_bfm.o_sb_rx_rsp),
         .i_data(rx_bfm.o_rx_data),
         .i_info(rx_bfm.o_rx_info),
+        .i_done(rx_fsm_sb_if.o_rx_sb_done),
         .o_decoding(rx_fsm_sb_if.i_rx_decoding),
         .o_data(rx_fsm_sb_if.i_rx_data),
         .o_info(rx_fsm_sb_if.i_rx_info),
         .o_req(rx_fsm_sb_if.i_sb_rx_req),
-        .o_rsp(rx_fsm_sb_if.i_sb_rx_rsp)
+        .o_rsp(rx_fsm_sb_if.i_sb_rx_rsp),
+        .o_done(rx_fsm_sb_if.i_sb_rx_done)
     );
 
     valid_decoder decoder_tx
     (
+        .i_clk(clk_l),
         .i_valid(tx_bfm.o_tx_valid),
         .i_encoding(tx_bfm.o_tx_decoding),
         .i_req(tx_bfm.o_sb_tx_req),
         .i_rsp(tx_bfm.o_sb_tx_rsp),
         .i_data(tx_bfm.o_tx_data),
         .i_info(tx_bfm.o_tx_info),
+        .i_done(tx_fsm_sb_if.o_tx_sb_done),
         .o_decoding(tx_fsm_sb_if.i_tx_decoding),
         .o_data(tx_fsm_sb_if.i_tx_data),
         .o_info(tx_fsm_sb_if.i_tx_info),
         .o_req(tx_fsm_sb_if.i_sb_tx_req),
-        .o_rsp(tx_fsm_sb_if.i_sb_tx_rsp)
+        .o_rsp(tx_fsm_sb_if.i_sb_tx_rsp),
+        .o_done(tx_fsm_sb_if.i_sb_tx_done)
     );
 
    // top instantiation of all blocks
@@ -283,11 +287,11 @@ module UCIe_phy #(
              .o_timer1ms (ltsm_ctrl_bfm.i_timer_1ms)
              );
 
-             ucie_sb_top #(
+    ucie_sb_top #(
             .pFIFO_DEPTH(TX_FIFO_SIZE)
-            )
-            sideband
-            (
+    )
+    sideband
+    (
             // Clock and reset
             .i_clk                 (i_clk_sb_100_m)
             ,.i_reset              (reset_wire)
@@ -333,5 +337,5 @@ module UCIe_phy #(
             ,.i_rx_sb_clk          (phylink_bfm.i_rx_sb_clk)
             ,.o_tx_sb_data         (phylink_bfm.o_tx_sb_data)
             ,.o_tx_sb_clk          (phylink_bfm.o_tx_sb_clk)
-        );
+    );
 endmodule

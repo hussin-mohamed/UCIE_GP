@@ -1,16 +1,28 @@
 module valid_decoder (
+    input i_clk,
     input i_valid,
     input [8:0] i_encoding,
     input i_req,
     input i_rsp,
     input [63:0] i_data,
     input i_info,
+    input i_done,
     output logic [8:0] o_decoding,
     output logic [63:0] o_data,
     output logic [7:0] o_info,
     output logic o_req,
     output logic o_rsp
+    output logic o_done
 );
+    logic done;
+    always_ff @(posedge i_clk) begin
+        if ( !i_valid && (i_req || i_rsp)) begin
+            done <= 1'b1;
+        end
+        else begin
+            done <= 1'b0;
+        end
+    end
     always @(*) begin
         if (i_valid) begin
             o_decoding = i_encoding;
@@ -18,6 +30,7 @@ module valid_decoder (
             o_info = i_info;
             o_req = i_req;
             o_rsp = i_rsp;
+            o_done = i_done;
         end
         else begin
             o_decoding = 9'b0;
@@ -25,6 +38,7 @@ module valid_decoder (
             o_info = 8'b0;
             o_req = 1'b0;
             o_rsp = 1'b0;
+            o_done = done;
         end
     end
 endmodule
