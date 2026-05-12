@@ -71,7 +71,7 @@ module ucie_ltsm_tx_mbinit_repairclk #(
     if (i_reset) done_ack <= 0;
     else if (i_sb_tx_done) begin
       done_ack <= 1;
-    end else if (i_sb_tx_rsp) begin
+    end else  begin
       done_ack <= 0;
     end
   end

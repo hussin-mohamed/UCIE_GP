@@ -117,6 +117,7 @@ logic [2:0] next_substate;     // Next substate
 // Handshake control signals
 logic state_enb;                  // Enable signal for current state operations
 logic done_ack;                   // Acknowledge that done was received
+logic done_ack_old;               // Previous value of done_ack
 logic substates_done;             // All substates completed
 logic substates_done_old;             // All substates completed
 logic previous_state_done;        // Previous state handshake complete
@@ -202,7 +203,7 @@ always @(posedge i_clk or posedge i_reset) begin
     end else if (!init_train_en) begin
         CS <= VALVREF;           // Reset to initial training state
         current_substate <= 0;   // Reset substate
-        o_rx_encoding <= 0;
+        o_rx_encoding <= 'h80;
         o_rx_data <= 0;
         o_rx_info <= 0;
         o_rx_sb_req <= 0;
@@ -232,7 +233,7 @@ assign r_eye_sweep_reset = !clock_to_test_enable && !i_reset;
 // done_ack is cleared whenever the encoding changes (new state/substate),
 // ensuring the handshake re-arms for each distinct transaction.
 always @(*) begin
-    done_ack = 0;
+    done_ack = done_ack_old;
     if (!init_train_en) done_ack = 0;
     else if (o_rx_encoding != o_rx_encoding_old) done_ack = 0;  // New encoding → reset ack
     else if (i_sb_rx_done) begin
@@ -245,6 +246,7 @@ end
 always @(posedge i_clk) begin
     o_rx_encoding_old <= o_rx_encoding;  // Register to track previous encoding for done_ack logic
     substates_done_old <= substates_done;  // Register to track previous substates_done for state transition logic
+    done_ack_old <= done_ack;  // Register to track previous substates_done for state transition logic
 end
 
 //================================================================================
@@ -306,7 +308,7 @@ always @(*) begin
     clock_to_test_enable = 0;
     train_link_init_en_reg = train_link_init_en;
     train_phyretrain_en_reg = train_phyretrain_en;
-    o_rx_encoding_reg = 0;
+    o_rx_encoding_reg = o_rx_encoding;
     NS = CS;
     substates_done = substates_done_old;
     next_substate = current_substate;

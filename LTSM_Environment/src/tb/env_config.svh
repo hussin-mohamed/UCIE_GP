@@ -1,11 +1,20 @@
-/***********************************************************************
- * Author : Amr El Batarny
- * File   : env_config.svh
- * Brief  : Environment configuration object containing virtual interfaces
- *          and agent activity settings for the bridge testbench.
- * Note   : Documentation comments generated with AI assistance using
- *          the same format found in UVM source code.
- **********************************************************************/
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
+
+
 
 //------------------------------------------------------------------------------
 //
@@ -19,29 +28,19 @@
 
 class env_config extends uvm_object;
 
-    virtual SYSCTRL_bfm         sysctrl_bfm;
-    virtual APB_bfm             apb_bfm_1;
-    virtual APB_bfm             apb_bfm_2;
-    virtual APB_controller_if   apb_controller_if_1;
-    virtual APB_controller_if   apb_controller_if_2;
-    virtual AES_if              aes_if;
+    virtual TX_FSM_SB         tx_fsm_sb_if;
+    virtual RX_FSM_SB         rx_fsm_sb_if;
+    virtual LTSM_controllers_if vif;
+    virtual ltsm_rdi_if         ltsm_rdi_vif;
 
-    bit disable_checking [5]; // Five flags for the five scoreboards
-
-    uvm_active_passive_enum is_active_sysctrl             = UVM_ACTIVE;
-    uvm_active_passive_enum is_active_apb_1               = UVM_ACTIVE;
-    uvm_active_passive_enum is_active_apb_2               = UVM_ACTIVE;
-    uvm_active_passive_enum is_active_apb_controller_1      = UVM_PASSIVE;
-    uvm_active_passive_enum is_active_apb_controller_2      = UVM_PASSIVE;
-    uvm_active_passive_enum is_active_aes                 = UVM_PASSIVE;
+    uvm_active_passive_enum is_active_rdi             = UVM_ACTIVE;
+    uvm_active_passive_enum is_active_LTSM_controllers      = UVM_ACTIVE;
+    uvm_active_passive_enum is_active_tx_fsm_sb             = UVM_ACTIVE;
+    uvm_active_passive_enum is_active_rx_fsm_sb             = UVM_ACTIVE;
 
     `uvm_object_utils_begin(env_config)
-        `uvm_field_enum(uvm_active_passive_enum, is_active_sysctrl, UVM_DEFAULT)
-        `uvm_field_enum(uvm_active_passive_enum, is_active_apb_1, UVM_DEFAULT)
-        `uvm_field_enum(uvm_active_passive_enum, is_active_apb_2, UVM_DEFAULT)
-        `uvm_field_enum(uvm_active_passive_enum, is_active_apb_controller_1, UVM_DEFAULT)
-        `uvm_field_enum(uvm_active_passive_enum, is_active_apb_controller_2, UVM_DEFAULT)
-        `uvm_field_enum(uvm_active_passive_enum, is_active_aes, UVM_DEFAULT)
+        `uvm_field_enum(uvm_active_passive_enum, is_active_tx_fsm_sb, UVM_DEFAULT)
+        `uvm_field_enum(uvm_active_passive_enum, is_active_rx_fsm_sb, UVM_DEFAULT)
     `uvm_object_utils_end
 
 

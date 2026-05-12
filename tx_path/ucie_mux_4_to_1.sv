@@ -29,8 +29,8 @@ module ucie_mux_4_to_1 (
     always_comb begin
         case (i_sel)
             2'b00:   o_lane  =   i_lane_x    ;                   // Select lane_x when i_sel is 0
-            2'b01:   o_lane  =   i_lane_y    ;                   // Select lane_y when i_sel is 1
-            2'b10:   o_lane  =   i_lane_z    ;                   // Select lane_z when i_sel is 2
+            2'b01:   o_lane  =   i_lane_z    ;                   // Select lane_y when i_sel is 1
+            2'b10:   o_lane  =   i_lane_y    ;                   // Select lane_z when i_sel is 2
             2'b11:   o_lane  =   {64{1'bz}}  ;                   // High impedance when i_sel is 3 (not used in this context)
             default: o_lane =   {64{1'bz}}   ;                   // Default case (should not occur)
         endcase

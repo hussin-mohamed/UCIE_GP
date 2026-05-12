@@ -41,14 +41,14 @@ module ucie_byte_to_lane_decoder (
     // =========================================================================
     always_comb begin
         case (lane_map)
-            LANE_MAP_NONE       : o_decoding    = 5'b00100    ; // No lane active
+            LANE_MAP_NONE       : o_decoding    = 5'b00100    ; // 16 lane active
             LANE_MAP_0_TO_7     : o_decoding    = 5'b10010    ; // Lanes 0-7 active
             LANE_MAP_8_TO_15    : o_decoding    = 5'b10010    ; // Lanes 8-15 active (not used in this context)
             LANE_MAP_0_TO_15    : o_decoding    = 5'b00100    ; // Lanes 0-15 active
             LANE_MAP_0_TO_3     : o_decoding    = 5'b01001    ; // Lanes 0-3 active
             LANE_MAP_4_TO_7     : o_decoding    = 5'b01001    ; // Lanes 4-7 active
             
-            default: o_decoding = 5'b00100                    ; // No lane active
+            default: o_decoding = 5'b00100                    ; // 16 lane active
         endcase
     end
     

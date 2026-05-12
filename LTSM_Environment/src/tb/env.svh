@@ -1,56 +1,56 @@
-/***********************************************************************
- * Author : Amr El Batarny
- * File   : env.svh
- * Brief  : Top-level verification environment containing agents, scoreboards,
- *          and configuration infrastructure for the bridge testbench.
- * Note   : Documentation comments generated with AI assistance using
- *          the same format found in UVM source code.
- **********************************************************************/
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
+
+
 
 //------------------------------------------------------------------------------
 //
-// CLASS: bridge_env
+// CLASS: LTSM_env
 //
-// The bridge_env class provides the top-level UVM environment for the bridge
+// The LTSM_env class provides the top-level UVM environment for the LTSM
 // testbench. It instantiates all agents, scoreboards, and the virtual sequencer,
 // manages configuration objects, and establishes all analysis port connections
 // for the verification infrastructure.
 //
 //------------------------------------------------------------------------------
 
-class bridge_env extends uvm_env;
-    `uvm_component_utils(bridge_env)
+class LTSM_env extends uvm_env;
+    `uvm_component_utils(LTSM_env)
 
-    APB_scoreboard            #(APB_sequence_item_1, APB_sequence_item_1)          apb_sb_1;
-    APB_scoreboard            #(APB_sequence_item_2, APB_sequence_item_2)          apb_sb_2;
-    APB_controller_scoreboard #(APB_sequence_item_1, APB_controller_sequence_item) apb_ctrl_sb_1;
-    APB_controller_scoreboard #(APB_sequence_item_2, APB_controller_sequence_item) apb_ctrl_sb_2;
-    AES_scoreboard                                                                 aes_sb;
+    tx_fsm_sb_agent               tx_agent;
+    rx_fsm_sb_agent               rx_agent;
+    LTSM_controllers_agent        LTSM_ctrl_agt;
+    ltsm_rdi_agent          rdi_agt;
 
-    sysctrl_agt_type          sysctrl_agt;
-    apb_agt_1_type            apb_agt_1;
-    apb_agt_2_type            apb_agt_2;
-    apb_controller_agt_1_type apb_controller_agt_1;
-    apb_controller_agt_2_type apb_controller_agt_2;
-    aes_agt_type              aes_agt;
-
+    agent_config #(virtual RX_FSM_SB) rx_cfg;
+    agent_config #(virtual TX_FSM_SB) tx_cfg;
+    LTSM_controllers_agent_cfg #(virtual LTSM_controllers_if) LTSM_ctrl_cfg;
+    rdi_agent_cfg_type #(virtual ltsm_rdi_if) rdi_cfg;
     env_config env_cfg;
 
-    sysctrl_cfg_type        sysctrl_cfg;
-    apb_cfg_1_type          apb_cfg_1;
-    apb_cfg_2_type          apb_cfg_2;
-    apb_controller_cfg_type apb_controller_cfg_1;
-    apb_controller_cfg_type apb_controller_cfg_2;
-    aes_cfg_type            aes_cfg;
+    scoreboard score;
 
     virtual_sequencer v_seqr;
 
 
     // Function: new
     //
-    // Creates a new bridge_env instance with the given name and parent.
+    // Creates a new LTSM_env instance with the given name and parent.
 
-    extern function new(string name = "bridge_env", uvm_component parent = null);
+    extern function new(string name = "LTSM_env", uvm_component parent = null);
 
 
     // Function: build_phase
@@ -81,44 +81,27 @@ class bridge_env extends uvm_env;
     //
     // Configures the system control agent with interface and activity settings.
 
-    extern function void configure_sysctrl_agent();
+    
+    extern function void configure_tx_agent();
 
 
-    // Function: configure_apb_agent_1
+    // Function: configure_rx_agent
     //
-    // Configures the first APB agent with interface and activity settings.
+    // Configures the RX FSM SB agent with interface and activity settings.
 
-    extern function void configure_apb_agent_1();
+    extern function void configure_rx_agent();
 
-
-    // Function: configure_apb_agent_2
+    // Function: configure_LTSM_controller_agent
     //
-    // Configures the second APB agent with interface and activity settings.
+    // Configures the LTSM controllers agent with interface and activity settings.
+    extern function void configure_LTSM_controller_agent();
 
-    extern function void configure_apb_agent_2();
-
-
-    // Function: configure_apb_controller_agent_1
+    // Function: configure_rdi_agent
     //
-    // Configures the first APB controller agent with interface and activity settings.
+    // Configures the RDI agent with interface and activity settings.
+    extern function void configure_rdi_agent();
 
-    extern function void configure_apb_controller_agent_1();
-
-
-    // Function: configure_apb_controller_agent_2
-    //
-    // Configures the second APB controller agent with interface and activity settings.
-
-    extern function void configure_apb_controller_agent_2();
-
-
-    // Function: configure_aes_agent
-    //
-    // Configures the AES agent with interface and activity settings.
-
-    extern function void configure_aes_agent();
-
-endclass : bridge_env
+endclass : LTSM_env
 
 
 //------------------------------------------------------------------------------
@@ -135,35 +118,28 @@ endclass : bridge_env
 // new
 // ---
 
-function bridge_env::new(string name = "bridge_env", uvm_component parent = null);
+function LTSM_env::new(string name = "LTSM_env", uvm_component parent = null);
     super.new(name, parent);
 endfunction : new
 
 // build_phase
 // -----------
 
-function void bridge_env::build_phase(uvm_phase phase);
+function void LTSM_env::build_phase(uvm_phase phase);
     super.build_phase(phase);
-    
-    apb_sb_1      = APB_scoreboard#(APB_sequence_item_1, APB_sequence_item_1)::type_id::create("apb_sb_1", this);
-    apb_sb_2      = APB_scoreboard#(APB_sequence_item_2, APB_sequence_item_2)::type_id::create("apb_sb_2", this);
-    apb_ctrl_sb_1 = APB_controller_scoreboard#(APB_sequence_item_1, APB_controller_sequence_item)::type_id::create("apb_ctrl_sb_1", this);
-    apb_ctrl_sb_2 = APB_controller_scoreboard#(APB_sequence_item_2, APB_controller_sequence_item)::type_id::create("apb_ctrl_sb_2", this);
-    aes_sb        = AES_scoreboard::type_id::create("aes_sb", this);
 
-    sysctrl_agt           = sysctrl_agt_type::type_id::create("sysctrl_agt", this);
-    apb_agt_1             = apb_agt_1_type::type_id::create("apb_agt_1", this);
-    apb_agt_2             = apb_agt_2_type::type_id::create("apb_agt_2", this);
-    apb_controller_agt_1  = apb_controller_agt_1_type::type_id::create("apb_controller_agt_1", this);
-    apb_controller_agt_2  = apb_controller_agt_2_type::type_id::create("apb_controller_agt_2", this);
-    aes_agt               = aes_agt_type::type_id::create("aes_agt", this);
+    tx_agent = tx_fsm_sb_agent::type_id::create("tx_agent", this);
+    rx_agent = rx_fsm_sb_agent::type_id::create("rx_agent", this);
+    LTSM_ctrl_agt         = LTSM_controllers_agent ::type_id::create("LTSM_ctrl_agt", this);
+    rdi_agt           = ltsm_rdi_agent::type_id::create("rdi_agt", this);
 
-    sysctrl_cfg           = sysctrl_cfg_type::type_id::create("sysctrl_cfg");
-    apb_cfg_1             = apb_cfg_1_type::type_id::create("apb_cfg_1");
-    apb_cfg_2             = apb_cfg_2_type::type_id::create("apb_cfg_2");
-    apb_controller_cfg_1  = apb_controller_cfg_type::type_id::create("apb_controller_cfg_1");
-    apb_controller_cfg_2  = apb_controller_cfg_type::type_id::create("apb_controller_cfg_2");
-    aes_cfg           = aes_cfg_type::type_id::create("aes_cfg");
+    rx_cfg           = agent_config #(virtual RX_FSM_SB)::type_id::create("rx_cfg");
+    tx_cfg           = agent_config #(virtual TX_FSM_SB)::type_id::create("tx_cfg");
+    LTSM_ctrl_cfg     = LTSM_controllers_agent_cfg #(virtual LTSM_controllers_if)::type_id::create("LTSM_ctrl_cfg");
+    rdi_cfg            = rdi_agent_cfg_type #(virtual ltsm_rdi_if)::type_id::create("rdi_cfg");
+    score              = scoreboard::type_id::create("score", this);
+    rdi_cfg            = new("rdi_cfg");
+
 
     v_seqr = virtual_sequencer::type_id::create("v_seqr", this);
 
@@ -172,94 +148,70 @@ function void bridge_env::build_phase(uvm_phase phase);
 
     configure_agents();
 
-    uvm_config_db#(sysctrl_cfg_type)::set(this, "sysctrl_agt", "SYSCTRL_AGT_CFG", sysctrl_cfg);
-    uvm_config_db#(apb_cfg_1_type)::set(this, "apb_agt_1", "APB_AGT_CFG_1", apb_cfg_1);
-    uvm_config_db#(apb_cfg_2_type)::set(this, "apb_agt_2", "APB_AGT_CFG_2", apb_cfg_2);
-    uvm_config_db#(apb_controller_cfg_type)::set(this, "apb_controller_agt_1", "APB_CTRL_OUT_AGT_CFG_1", apb_controller_cfg_1);
-    uvm_config_db#(apb_controller_cfg_type)::set(this, "apb_controller_agt_2", "APB_CTRL_OUT_AGT_CFG_2", apb_controller_cfg_2);
-    uvm_config_db#(aes_cfg_type)::set(this, "aes_agt", "AES_OUT_AGT_CFG", aes_cfg);
+    uvm_config_db#(agent_config#(virtual TX_FSM_SB))::set(this, "tx_agent", "tx_config", tx_cfg);
+    uvm_config_db#(agent_config#(virtual RX_FSM_SB))::set(this, "rx_agent", "rx_config", rx_cfg);
+    uvm_config_db#(LTSM_controllers_agent_cfg #(virtual LTSM_controllers_if))::set(this, "LTSM_ctrl_agt", "LTSM_CTRL_AGT_CFG", LTSM_ctrl_cfg);
+    uvm_config_db#(rdi_agent_cfg_type #(virtual ltsm_rdi_if))::set(this, "rdi_agt", "rdi_cfg", rdi_cfg);
+
 endfunction : build_phase
 
 // connect_phase
 // -------------
 
-function void bridge_env::connect_phase(uvm_phase phase);
+function void LTSM_env::connect_phase(uvm_phase phase);
     super.connect_phase(phase);
-    apb_agt_1.drvr_ap.connect(apb_sb_1.expt_in);
-    apb_agt_2.drvr_ap.connect(apb_sb_2.expt_in);
+    `uvm_info("connect_phase", "Connecting LTSM_env components and virtual sequencer", UVM_LOW)
+    v_seqr.tx_seqr = tx_agent.seqr;
+    v_seqr.rx_seqr = rx_agent.seqr;
+    v_seqr.LTSM_ctrl_seqr = LTSM_ctrl_agt.seqr;
+    v_seqr.ltsm_rdi_seqr = rdi_agt.seqr;
 
-    apb_agt_1.mntr_ap.connect(apb_ctrl_sb_1.expt_in);
-    apb_controller_agt_1.mntr_ap.connect(apb_ctrl_sb_1.expt_out);
-    
-    apb_controller_agt_2.mntr_ap.connect(apb_ctrl_sb_2.expt_out);
-    apb_agt_2.mntr_ap.connect(apb_ctrl_sb_2.expt_in);
+    rx_agent.ap_in.connect(score.ap_rx_fsm_sb_in);
+    rx_agent.ap_out.connect(score.ap_rx_fsm_sb_out);
 
-    apb_agt_1.mntr_ap.connect(apb_sb_1.expt_out);
-    apb_agt_2.mntr_ap.connect(apb_sb_2.expt_out);
+    tx_agent.ap_in.connect(score.ap_tx_fsm_sb_in);
+    tx_agent.ap_out.connect(score.ap_tx_fsm_sb_out);
 
-    apb_controller_agt_1.mntr_ap.connect(aes_sb.expt_in);
-    aes_agt.mntr_ap.connect(aes_sb.expt_out);
+    LTSM_ctrl_agt.ap_in.connect(score.ap_controllers_in);
+    LTSM_ctrl_agt.ap_out.connect(score.ap_controllers_out);
 
-    v_seqr.apb_seqr_1 = apb_agt_1.seqr;
-    v_seqr.apb_seqr_2 = apb_agt_2.seqr;
+    rdi_agt.ap_in.connect(score.ap_rdi_in);
+    rdi_agt.ap_out.connect(score.ap_rdi_out);
+    `uvm_info("connect_phase", "Connecting LTSM_env components and virtual sequencer has finished", UVM_LOW)
 endfunction : connect_phase
 
 // configure_agents
 // ----------------
 
-function void bridge_env::configure_agents();
-    configure_sysctrl_agent();
-    configure_apb_agent_1();
-    configure_apb_agent_2();
-    configure_apb_controller_agent_1();
-    configure_apb_controller_agent_2();
-    configure_aes_agent();
+function void LTSM_env::configure_agents();
+    configure_tx_agent();
+    configure_rx_agent();
+    configure_LTSM_controller_agent();
+    configure_rdi_agent();
 endfunction : configure_agents
 
-// configure_sysctrl_agent
-// -----------------------
+// configure_tx_agent
+// ------------------
 
-function void bridge_env::configure_sysctrl_agent();
-    sysctrl_cfg.bfm                 =   env_cfg.sysctrl_bfm;
-    sysctrl_cfg.is_active           =   env_cfg.is_active_sysctrl;
-endfunction : configure_sysctrl_agent
+function void LTSM_env::configure_tx_agent();
+    tx_cfg.vif                 =   env_cfg.tx_fsm_sb_if;
+    tx_cfg.is_active           =   env_cfg.is_active_tx_fsm_sb;
+endfunction : configure_tx_agent
 
-// configure_apb_agent_1
-// ---------------------
+// configure_rx_agent
+// ------------------
 
-function void bridge_env::configure_apb_agent_1();
-    apb_cfg_1.bfm                   =   env_cfg.apb_bfm_1;
-    apb_cfg_1.is_active             =   env_cfg.is_active_apb_1;
-endfunction : configure_apb_agent_1
+function void LTSM_env::configure_rx_agent();
+    rx_cfg.vif                 =   env_cfg.rx_fsm_sb_if;
+    rx_cfg.is_active           =   env_cfg.is_active_rx_fsm_sb;
+endfunction : configure_rx_agent
 
-// configure_apb_agent_2
-// ---------------------
+function void LTSM_env::configure_LTSM_controller_agent();
+    LTSM_ctrl_cfg.vif               =   env_cfg.vif;
+    LTSM_ctrl_cfg.is_active         =   env_cfg.is_active_LTSM_controllers;
+endfunction : configure_LTSM_controller_agent
 
-function void bridge_env::configure_apb_agent_2();
-    apb_cfg_2.bfm                   =   env_cfg.apb_bfm_2;
-    apb_cfg_2.is_active             =   env_cfg.is_active_apb_2;
-endfunction : configure_apb_agent_2
-
-// configure_apb_controller_agent_1
-// --------------------------------
-
-function void bridge_env::configure_apb_controller_agent_1();
-    apb_controller_cfg_1.bfm        =   env_cfg.apb_controller_if_1;
-    apb_controller_cfg_1.is_active  =   env_cfg.is_active_apb_controller_1;
-endfunction : configure_apb_controller_agent_1
-
-// configure_apb_controller_agent_2
-// --------------------------------
-
-function void bridge_env::configure_apb_controller_agent_2();
-    apb_controller_cfg_2.bfm        =   env_cfg.apb_controller_if_2;
-    apb_controller_cfg_2.is_active  =   env_cfg.is_active_apb_controller_2;
-endfunction : configure_apb_controller_agent_2
-
-// configure_aes_agent
-// -------------------
-
-function void bridge_env::configure_aes_agent();
-    aes_cfg.bfm                     =   env_cfg.aes_if;
-    aes_cfg.is_active               =   env_cfg.is_active_aes;
-endfunction : configure_aes_agent
+function void LTSM_env::configure_rdi_agent();
+    rdi_cfg.vif                     =   env_cfg.ltsm_rdi_vif;
+    rdi_cfg.is_active               =   env_cfg.is_active_rdi;
+endfunction : configure_rdi_agent
