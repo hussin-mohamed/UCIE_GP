@@ -1,9 +1,9 @@
 module clk_valid_pattern_generation (
-    input  logic        i_valid,       // Valid input signal
-    input  logic        i_hclk,        // Half-rate clock input
+    input  logic        i_dclk,        // Half-rate clock input
     input  logic        i_halfrate,    // Mode select: 1 = half-rate, 0 = quarter-rate
     input  logic        i_reset,       // reset for the clock divider
     input  logic [1:0]  i_pattern_type,// Pattern type selector
+    input  logic        i_no_data,        // System clock for tracking (can be same as i_dclk or a separate clock)
     output logic        o_clk_p,         // Gated output clock phase 1
     output logic        o_clk_n,       // Gated output clock phase 2
     output logic        o_valid,       // Gated output valid
@@ -11,14 +11,23 @@ module clk_valid_pattern_generation (
 );
     // generating the quadrature with phase difference of 90 degree
     wire w_qclk_1,w_qclk_2;
+    wire w_hclk_1;
+    parameter logic [15:0]p_VALID_PATTERN =16'b1111_1111_0000_0000; 
     clock_divider ca (
-        .i_clk(i_hclk),
+        .i_clk(!i_dclk),
+        .i_enable(1'b1),
+        .i_reset(i_reset),
+        .o_clk(w_hclk_1)
+    );
+    
+    clock_divider cc (
+        .i_clk(w_hclk_1),
         .i_enable(1'b1),
         .i_reset(i_reset),
         .o_clk(w_qclk_1)
     );
-    clock_divider cb (
-        .i_clk(!i_hclk),
+    clock_divider cd (
+        .i_clk(!w_hclk_1),
         .i_enable(1'b1),
         .i_reset(i_reset),
         .o_clk(w_qclk_2)
@@ -157,93 +166,144 @@ module clk_valid_pattern_generation (
 
     logic [4:0] counter_h;
 
-    wire w_enable_h;
+    logic w_enable_h;
+    logic w_enable_counting_h;
 
-    always_ff @( posedge i_hclk ) begin 
+    always_ff @( posedge w_hclk_1 or posedge i_reset ) begin 
 
         if(i_reset)begin
 
             counter_h<=0;
-
+            
         end
         else if (counter_h == 23 || i_pattern_type != 2'b01) begin
 
             counter_h <=0;
 
         end
-        else begin
+        
+        else if(w_enable_counting_h && counter_h !=23) begin
 
             counter_h <= counter_h + 1;
 
         end
     end
-    assign w_enable_h=(counter_h<16)?1:0;
-
-     logic [4:0] counter_h_2;
-
-    wire w_enable_h_2;
-
-    always_ff @( negedge i_hclk ) begin 
-
-        if(i_reset)begin
-
-            counter_h_2<=0;
-
+    always_ff @( posedge w_hclk_1 or posedge i_reset ) begin 
+        if (i_reset) begin
+            w_enable_h<=0;
         end
-        else if (counter_h_2 == 23 || i_pattern_type != 2'b01) begin
-
-            counter_h_2 <=0;
-
+        else if (i_pattern_type != 2'b01 || (counter_h >= 16)) begin
+            w_enable_h<=0;
         end
         else begin
-
-            counter_h_2 <= counter_h_2 + 1;
-
+            w_enable_h<=1;
+        end
+        
+        if (i_reset) begin
+            w_enable_counting_h<=0;
+        end
+        else if (i_pattern_type != 2'b01) begin
+            w_enable_counting_h<=0;
+        end
+        else begin
+            w_enable_counting_h<=1;
         end
     end
-    assign w_enable_h_2=(counter_h_2<16)?1:0;
 
+    
     // pwm to modify the duty cycle of the quartere rate clock to be 16 cycles high and 8 loww of the original clock
 
     logic [4:0] counter_q_1;
-    wire w_enable_q_1;
+    logic w_enable_q_1;
+    logic w_enable_counting_q_1;
     always_ff @( posedge w_qclk_1 ) begin 
+
         if(i_reset)begin
+
             counter_q_1<=0;
+            
         end
         else if (counter_q_1 == 23 || i_pattern_type != 2'b01) begin
+
             counter_q_1 <=0;
+
         end
-        else begin
+        
+        if(w_enable_counting_q_1 && counter_q_1 !=23) begin
+
             counter_q_1 <= counter_q_1 + 1;
+
         end
     end
-    assign w_enable_q_1=(counter_q_1<16)?1:0;
+    always_ff @( w_qclk_1 ) begin 
+        if (i_reset) begin
+            w_enable_q_1<=0;
+            w_enable_counting_q_1<=0;
+        end
+        else if (i_pattern_type != 2'b01 || (counter_q_1 >= 16)) begin
+            w_enable_q_1<=0;
+        end
+        else begin
+            w_enable_q_1<=1;
+        end
+        if (i_pattern_type != 2'b01) begin
+            w_enable_counting_q_1<=0;
+        end
+        else begin
+            w_enable_counting_q_1<=1;
+        end
+    end
 
     logic [4:0] counter_q_2;
-    wire w_enable_q_2;
+    logic w_enable_q_2;
+    logic w_enable_counting_q_2;
     always_ff @( posedge w_qclk_2 ) begin 
+
         if(i_reset)begin
+
             counter_q_2<=0;
+            
         end
         else if (counter_q_2 == 23 || i_pattern_type != 2'b01) begin
+
             counter_q_2 <=0;
+
         end
-        else begin
+        
+        if(w_enable_counting_q_2 && counter_q_2 !=23) begin
+
             counter_q_2 <= counter_q_2 + 1;
+
         end
     end
-    assign w_enable_q_2=(counter_q_2<16)?1:0;
+    always_ff @( w_qclk_2 ) begin : blockName
+        if (i_reset) begin
+            w_enable_q_2<=0;
+            w_enable_counting_q_2<=0;
+        end
+        else if (i_pattern_type != 2'b01 || (counter_q_2 >= 16)) begin
+            w_enable_q_2<=0;
+        end
+        else begin
+            w_enable_q_2<=1;
+        end
+        if (i_pattern_type != 2'b01) begin
+            w_enable_counting_q_2<=0;
+        end
+        else begin
+            w_enable_counting_q_2<=1;
+        end
+    end
 
 
     // pwm to modify the duty cycle of the result clock to be 16 cycles high and 8 loww of the original clock
 
     //-------------------------------------------------------------------------
     // Pattern Type Encoding
-    //  2'b00 : Valid only      (no clock output)
-    //  2'b01 : Clock only      (no valid output)
-    //  2'b10 : active          (both enabled)
-    //  2'b11 : Idle            (both disabled)
+    //  2'b00 : idle      
+    //  2'b01 : Clock only      
+    //  2'b10 : valid pattern          
+    //  2'b11 : Active/ data pattern            
     //-------------------------------------------------------------------------
 
     // Track mirrors the output clock per UCIe spec
@@ -272,7 +332,7 @@ module clk_valid_pattern_generation (
             w_qenable_2 =1'b0;
             // --- Half-Rate Path ---
             // Update enables only when half-rate clock is LOW (safe window)
-            if (!i_hclk) begin
+            if (!w_hclk_1) begin
                 case (i_pattern_type)
                     2'b00: begin
                         // Valid only: suppress clock, pass valid
@@ -292,31 +352,10 @@ module clk_valid_pattern_generation (
                     end
                 endcase
             end
-            if (i_hclk) begin
                 case (i_pattern_type)
                     2'b00: begin
                         // Valid only: suppress clock, pass valid
-                        w_henable_2 = 1'b0;
-                    end
-                    2'b01: begin
-                        // Clock only: pass clock, suppress valid
-                        w_henable_2 = w_enable_h_2;
-                    end
-                    2'b10: begin
-                        // Clock + Valid: pass both
-                        w_henable_2 = 1'b1;
-                    end
-                    default: begin
-                        // Idle: suppress both
-                        w_henable_2 = 1'b1;
-                    end
-                endcase
-            end
-            if(!i_valid)begin
-                case (i_pattern_type)
-                    2'b00: begin
-                        // Valid only: suppress clock, pass valid
-                        w_venable = 1'b1;
+                        w_venable = 1'b0;
                     end
                     2'b01: begin
                         // Clock only: pass clock, suppress valid
@@ -328,15 +367,14 @@ module clk_valid_pattern_generation (
                     end
                     default: begin
                         // Idle: suppress both
-                        w_venable = 1'b0;
+                        w_venable = i_no_data ? 1'b0 : 1'b1; // For idle pattern, valid is low if no_data is true, otherwise high
                     end
                 endcase
-            end
             // When i_hclk is HIGH: enables hold their latched value (latch transparent on LOW)
 
             // Gate the half-rate clock with its enable
-            o_clk_p = i_hclk & w_henable_1;
-            o_clk_n = ~i_hclk & w_henable_2; // to produce 180 phase difference
+            o_clk_p = w_hclk_1 & w_henable_1;
+            o_clk_n = ~o_clk_p ; // to produce 180 phase difference
         end else begin
 
             w_henable_1 = 1'b0;
@@ -359,7 +397,7 @@ module clk_valid_pattern_generation (
                     end
                     default: begin
                         // Idle: suppress both
-                        w_qenable_1 = 1'b0;
+                        w_qenable_1 = 1'b1;
                     end
                 endcase
             end
@@ -379,12 +417,11 @@ module clk_valid_pattern_generation (
                     end
                     default: begin
                         // Idle: suppress both
-                        w_qenable_2 = 1'b0;
+                        w_qenable_2 = 1'b1;
                     end
                 endcase
             end
             // When i_qclk is HIGH: enables hold their latched value (latch transparent on LOW)
-            if(!i_valid)begin
                 case (i_pattern_type)
                     2'b00: begin
                         // Valid only: suppress clock, pass valid
@@ -400,10 +437,9 @@ module clk_valid_pattern_generation (
                     end
                     default: begin
                         // Idle: suppress both
-                        w_venable = 1'b0;
+                        w_venable = i_no_data ? 1'b0 : 1'b1;;
                     end
                 endcase
-            end
             // Gate the quarter-rate clock with its enable
             o_clk_p = w_qclk_1 & w_qenable_1;
             o_clk_n = w_qclk_2 & w_qenable_2;
@@ -414,7 +450,22 @@ module clk_valid_pattern_generation (
     // Valid Output Gating
     // o_valid is only asserted when both i_valid and the valid enable are high
     //-------------------------------------------------------------------------
-    assign o_valid = i_valid & w_venable;
-
+    logic [3:0] valid_counter ;
+    reg [15:0] valid_pattern_reg;
+    always_ff @( i_dclk or posedge i_reset ) begin 
+        if (i_reset) begin
+            valid_pattern_reg<= p_VALID_PATTERN;
+        end
+        if (!w_venable) begin
+            valid_counter <= 15;
+        end
+        else if (valid_counter == 0) begin
+            valid_counter <= 15;
+        end
+        else begin
+            valid_counter <= valid_counter - 1;
+        end
+    end
+    assign o_valid = w_venable && valid_pattern_reg[valid_counter];
 
 endmodule

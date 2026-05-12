@@ -15,7 +15,7 @@ module counter_compare
     reg [4:0] counter;
     
     // Combinational logic
-  assign o_laneid_success = counter[2];           // Output MSB of counter
+    assign o_laneid_success = counter[2];           // Output MSB of counter
     //assign reset = i_reset_n & counter_reset;       // Combined reset signal
     
     // Sequential logic - counter increment

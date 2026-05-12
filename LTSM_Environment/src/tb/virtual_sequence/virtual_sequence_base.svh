@@ -1,11 +1,18 @@
-/***********************************************************************
- * Author : Amr El Batarny
- * File   : virtual_sequence_base.svh
- * Brief  : Base class for virtual sequences providing infrastructure
- *          for managing multiple child sequencers.
- * Note   : Documentation comments generated with AI assistance using
- *          the same format found in UVM source code.
- **********************************************************************/
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
 
 //------------------------------------------------------------------------------
 //
@@ -17,19 +24,16 @@
 //
 //------------------------------------------------------------------------------
 
-typedef class APB_reactive_sequence_1;
-typedef class APB_reactive_sequence_2;
+
 
 class virtual_sequence_base extends uvm_sequence;
     `uvm_object_utils(virtual_sequence_base)
 
     virtual_sequencer                    v_seqr;
-    APB_sequencer #(APB_sequence_item_1) apb_seqr_1;
-    APB_sequencer #(APB_sequence_item_2) apb_seqr_2;
-
-    APB_reactive_sequence_1 apb_seq_1;
-    APB_reactive_sequence_2 apb_seq_2;
-
+    rx_fsm_sb_sequencer #(rx_fsm_sb_sequence_item) rx_fsm_sb_seqr;
+    tx_fsm_sb_sequencer #(tx_fsm_sb_sequence_item) tx_fsm_sb_seqr;
+    LTSM_controllers_sqr #(LTSM_controllers_seq_item) LTSM_ctrl_seqr;
+    ltsm_rdi_sequencer #(ltsm_rdi_sequence_item) ltsm_rdi_seqr;
 
     // Function: new
     //
@@ -70,7 +74,10 @@ endfunction : new
 // ----
 
 task virtual_sequence_base::body();
+    pre_body();
     $cast(v_seqr, m_sequencer);
-    apb_seqr_1 = v_seqr.apb_seqr_1;
-    apb_seqr_2 = v_seqr.apb_seqr_2;
+    rx_fsm_sb_seqr = v_seqr.rx_seqr;
+    tx_fsm_sb_seqr = v_seqr.tx_seqr;
+    LTSM_ctrl_seqr = v_seqr.LTSM_ctrl_seqr;
+    ltsm_rdi_seqr = v_seqr.ltsm_rdi_seqr;
 endtask : body

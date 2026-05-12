@@ -7,6 +7,7 @@ module deser_h #(
   parameter pDESER_WIDTH = 64
 )(
   input  wire                    i_clk_p,
+  input  wire                    i_clk_n,
   input  wire                    i_hclk,
   input  wire                    i_reset,
   input  wire                    i_rx_data,
@@ -27,7 +28,7 @@ module deser_h #(
 
   //---- RX CLOCK DOMAIN (Strictly Input Clock Logic) --------------------------
 
-  always_ff @( i_clk_p or posedge i_reset) begin : blockName
+  always_ff @( posedge i_clk_p or posedge i_clk_n or posedge i_reset) begin : blockName
     if (i_reset) begin
       shift_reg         <= {pDESER_WIDTH{1'b0}};
       bit_counter       <= 6'd0;
@@ -45,9 +46,14 @@ module deser_h #(
       end
 
       if (bit_counter == 7'd63) begin
-        bit_counter      <= 6'd0;
-        enable           <= 1'b0;
-        o_fifo_deser_msg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]};
+        bit_counter      <= 'd0;
+        if (i_valid) begin
+          o_fifo_deser_msg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]};
+        end
+        else begin
+          enable<=0;
+        end
+        
         data_rdy_toggle  <= ~data_rdy_toggle;
       end 
       else begin

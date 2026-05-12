@@ -64,7 +64,7 @@ module ucie_byte_to_lane #(
     wire                                x8_clk                  ;
     wire                                x4_clk                  ;
     logic                               enable                  ;
-    logic   [4:0]                       decoding                ;
+    logic   [6:0]                       decoding                ;
     logic                               x8_mode                 ;
     logic                               x4_mode                 ;
     logic                               x16_en                  ;
@@ -203,12 +203,13 @@ module ucie_byte_to_lane #(
                 .i_lane_x(reg_x16_out[i]),  // X16 mode output
                 .i_lane_y(reg_x8_out[i % 8]), // X8 mode output (wrap around for 16 lanes)
                 .i_lane_z(reg_x4_out[i % 4]), // X4 mode output (wrap around for 16 lanes)
-                .i_sel({x8_mode, x4_mode}), // Select based on mode (X16 > X8 > X4)
+                .i_sel({x8_mode,x4_mode}), // Select based on mode (X16 > X8 > X4)
                 .o_lane(lane_out[i])         // Output to lane array
             );
             
         end
     endgenerate
+
 
     
     // =========================================================================
@@ -229,6 +230,7 @@ module ucie_byte_to_lane #(
     //Generate control signals for muxes and lane enables based on decoding output
     // =========================================================================
     // Determine mux selection based on decoding signals
+    
     assign x8_mode            =       decoding[4]               ;
     assign x4_mode            =       decoding[3]               ;
     assign x16_en             =       decoding[2]               ;
