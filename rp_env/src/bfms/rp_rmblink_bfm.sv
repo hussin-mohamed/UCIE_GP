@@ -146,9 +146,10 @@ interface rp_rmblink_bfm(
   // Araby
   //============================================================================
   task serialize_valid_pattern(
-      input logic  logic [7:0]               _val_stream   []
+      input logic        [7:0]               _val_stream   []
      ,input logic                            _clk_stream_p []
-     ,input logic                            _clk_stream_n []      
+     ,input logic                            _clk_stream_n []
+     ,input logic                            _track_stream []    
   );
     if (_clk_stream_p.size() != _clk_stream_n.size()) begin
       `uvm_fatal("CLK_STREAM_SIZE_MISMATCH", "Clock stream arrays must be of the same size in serialize_valid_pattern.")
@@ -165,10 +166,11 @@ interface rp_rmblink_bfm(
       for (int t = 0; t < $size(_val_stream , 1); t++) begin
           for (int i = 0; i < $size(_val_stream , 2); i++) begin
             @(posedge i_dclk)
-            i_valid    <= _valid[t][i];
+            i_valid    <= _val_stream[t][i];
             @(negedge i_dclk)
-            i_clk_p    <= _clk_stream_p[i];
-            i_clk_n    <= _clk_stream_n[i];
+            i_clk_p    <= _clk_stream_p[(t * 8) + i];
+            i_clk_n    <= _clk_stream_n[(t * 8) + i];
+            i_track    <= _track_stream[(t * 8) + i];
           end
         end
   endtask : serialize_valid_pattern
@@ -178,7 +180,8 @@ interface rp_rmblink_bfm(
   task serialize_clk_pattern(
       input logic                            _clk_stream_p []
      ,input logic                            _clk_stream_n []
-     ,input int unsigned                     idle_ui_cnt       
+     ,input logic                            _track_stream []
+     ,input int unsigned                     _idle_ui_cnt       
   );
     if (_clk_stream_p.size() != _clk_stream_n.size()) begin
       `uvm_fatal("CLK_STREAM_SIZE_MISMATCH", "Clock stream arrays must be of the same size in serialize_clk_pattern.")
@@ -191,15 +194,17 @@ interface rp_rmblink_bfm(
       for (int t = 0; t < VALID_CLK_PATTERN_STREAM_LEN; t++) begin
           for (int i = 0; i < CLK_STROBE_CLK_PAT; i++) begin
             @(posedge i_dclk)
-            i_clk_p    <= _clk_stream_p[i];
-            i_clk_n    <= _clk_stream_n[i];
+            i_clk_p    <= _clk_stream_p[(t*CLK_STROBE_CLK_PAT) + i];
+            i_clk_n    <= _clk_stream_n[(t*CLK_STROBE_CLK_PAT) + i];
+            i_track    <= _track_stream[(t*CLK_STROBE_CLK_PAT) + i];
           end
 
           // Deassert everything during the idle period
-          for (int d = 0; d < idle_ui_cnt; d++) begin
+          for (int d = 0; d < _idle_ui_cnt; d++) begin
             @(posedge i_dclk)
             i_clk_p <= 1'b0;
             i_clk_n <= 1'b1;
+            i_track <= 1'b0;
           end
         end
   endtask : serialize_clk_pattern
