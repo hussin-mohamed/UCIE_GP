@@ -42,8 +42,8 @@ module ucie_lane_to_byte #(
     input logic [pDATA_IN_WIDTH-1:0]        i_lane_15           ,
     
     //output data to RX controller
-    output logic [pDATA_OUT_WIDTH-1:0]      o_data_out          ,
-    output logic                            o_data_valid
+    output logic [pDATA_OUT_WIDTH-1:0]      o_pl_data           ,
+    output logic                            o_pl_valid
 
 );
 
@@ -246,7 +246,7 @@ module ucie_lane_to_byte #(
     //clock gating logic
     // =========================================================================
     always_comb begin  
-        if(!p_clk)begin
+        if(!i_clk)begin
             enable     =    i_enable                            ;
         end
     end
@@ -279,12 +279,12 @@ module ucie_lane_to_byte #(
 
     always @(posedge p_clk or posedge i_reset) begin
         if (i_reset) begin
-            o_data_out     <=  {pDATA_OUT_WIDTH{1'b0}}          ;
-            o_data_valid   <=  1'b0                             ;                       
+            o_pl_data    <=  {pDATA_OUT_WIDTH{1'b0}}          ;
+            o_pl_valid   <=  1'b0                             ;                       
         end 
         else if (i_enable) begin
-            o_data_out     <=  data_out                         ;
-            o_data_valid   <=  data_valid                       ;  // Use registered ready signal
+            o_pl_data     <=  data_out                         ;
+            o_pl_valid   <=  data_valid                       ;  // Use registered ready signal
             
         end
         
