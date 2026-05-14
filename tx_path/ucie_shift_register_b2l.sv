@@ -23,7 +23,7 @@ module ucie_shift_register #(
     input  logic [INPUT_WIDTH-1:0]      data_in         ,
     input  logic                        data_in_valid   ,
     output logic [63:0]                 data_out        ,
-    output logic                        data_sent
+    output logic                        b2l_ready
 );
 
     // =========================================================================
@@ -39,6 +39,7 @@ module ucie_shift_register #(
     logic [INPUT_WIDTH-1:0]         shift_reg, shift_reg_next;
     logic [COUNTER_WIDTH-1:0]       stage_count, stage_count_next;
     logic                           active, active_next;
+    logic                           data_sent;
 
     // =========================================================================
     // Combinational Logic
@@ -89,6 +90,7 @@ module ucie_shift_register #(
     // Output Assignment (LSB first)
     // =========================================================================
     assign data_out = shift_reg[OUTPUT_WIDTH-1:0];
+    assign b2l_ready = !active; // Ready when not active (idle state)
 
     // =========================================================================
     // Sequential Logic

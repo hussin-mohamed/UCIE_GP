@@ -65,7 +65,7 @@ module ucie_byte_to_lane #(
     wire                                x8_clk                  ;
     wire                                x4_clk                  ;
     logic                               enable                  ;
-    logic   [6:0]                       decoding                ;
+    logic   [4:0]                       decoding                ;
     logic                               x8_mode                 ;
     logic                               x4_mode                 ;
     logic                               x16_en                  ;
@@ -74,7 +74,7 @@ module ucie_byte_to_lane #(
 
     // Internal lane array (collect individual inputs)
     logic  [pDATA_IN_WIDTH-1:0]           data_in               ;
-    logic                               data_ready             ;
+    logic                               data_ready              ;
     
     // Mux output arrays for feeding into shift registers
     logic  [shift_register_X16_WIDTH-1:0] reg_x16_in [15:0]     ;
@@ -153,7 +153,7 @@ module ucie_byte_to_lane #(
                 .data_in(reg_x16_in[i])                             ,
                 .data_in_valid(data_ready)                        ,
                 .data_out(reg_x16_out[i])                           ,
-                .data_sent(reg_x16_valid[i])
+                .b2l_ready(reg_x16_valid[i])
             );
         end
     endgenerate
@@ -172,7 +172,7 @@ module ucie_byte_to_lane #(
                 .data_in(reg_x8_in[i])                              ,
                 .data_in_valid(data_ready)                        ,
                 .data_out(reg_x8_out[i])                            ,
-                .data_sent(reg_x8_valid[i])
+                .b2l_ready(reg_x8_valid[i])
             );
         end
     endgenerate
@@ -191,7 +191,7 @@ module ucie_byte_to_lane #(
                 .data_in(reg_x4_in[i])                              ,
                 .data_in_valid(data_ready)                        ,
                 .data_out(reg_x4_out[i])                            ,
-                .data_sent(reg_x4_valid[i])
+                .b2l_ready(reg_x4_valid[i])
             );
         end
     endgenerate
@@ -219,7 +219,7 @@ module ucie_byte_to_lane #(
     // =========================================================================
     always_comb begin  
         if(!i_clk)begin
-            enable     =    i_enable                            ;
+            enable     =    i_enable && i_lp_irdy               ;
         end
     end
 
@@ -250,7 +250,7 @@ module ucie_byte_to_lane #(
 
     // Input data
     assign data_in = i_lp_data;
-    assign data_ready = i_lp_irdy && i_lp_valid; // Data is ready when both ready and valid are asserted
+    assign data_ready = i_lp_irdy && i_lp_valid && o_pl_trdy; // Data is ready when both ready and valid are asserted
 
 
 
