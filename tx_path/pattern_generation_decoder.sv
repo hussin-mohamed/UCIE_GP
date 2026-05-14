@@ -4,7 +4,7 @@ module pattern_generation_decoder (
     input i_done,
     input i_active,
     input i_clk,
-    output logic o_no_data,
+    output logic o_no_data
 );
     logic no_data ;
     always @(*) begin

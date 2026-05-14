@@ -6,10 +6,11 @@ module tx_controller #(
     input  logic [8:0]            i_tx_encoding,
     input  logic [2:0]            i_lane_map_code,
     //input  logic                  i_lp_irdy,
-    //input  logic                  i_lp_valid,
+    input  logic                  i_lp_valid,
     output logic[MB_LANES-1:0]    o_tx_lfsr_enable,
     output logic                  o_tx_lfsr_load,
     output logic                  o_tx_lfsr_train,
+    output logic                  o_tx_path_reset,
     output logic                  o_data_pattern_type,
     output logic [1:0]            o_pattern_type,
     output logic                  o_tx_done,
@@ -233,7 +234,7 @@ module tx_controller #(
             fifo_wr_en          = '1;
             o_tx_lfsr_train     = 1'b1;
             o_data_pattern_type = 1'b1;
-            o_pattern_type      = PATTERN_DATA;
+            o_pattern_type      = PATTERN_ACTIVE_DATA;
             done_state          = 1'b1;
             done_target         = DONE_CYCLES_LFSR[11:0];
         end
@@ -260,7 +261,7 @@ module tx_controller #(
             o_per_lane_id_gen_enable = 1'b1;
             fifo_wr_en               = '1;
             o_data_pattern_type      = 1'b0;
-            o_pattern_type           = PATTERN_DATA;
+            o_pattern_type           = PATTERN_ACTIVE_DATA;
             done_state               = 1'b1;
             done_target              = DONE_CYCLES_PER_LANEID[11:0];
         end
@@ -342,7 +343,7 @@ module tx_controller #(
             o_tx_reverse <= 1'b0;
             i_lp_valid_d1 <= 1'b0;
             i_lp_valid_d2 <= 1'b0;
-            o_pl_trdy  <= 1'b0;
+            // o_pl_trdy  <= 1'b0;
             o_b2l_enable <= 1'b0;
         end else begin
             enc_q     <= ltsm_states_e'(i_tx_encoding);
@@ -358,6 +359,10 @@ module tx_controller #(
 
             if(enc_q == ENC_RESET) begin
                 o_tx_reverse <= 1'b0;
+                o_tx_path_reset <= 1'b1;
+            end
+            else begin
+                o_tx_path_reset <= 1'b0;
             end
 
             // Per LTSM MBINIT.REPAIRMB sequence, sample lane map code during
@@ -397,7 +402,7 @@ module tx_controller #(
             end
             */
             else begin
-                o_pl_trdy <= 1'b0;
+                // o_pl_trdy <= 1'b0;
                 o_b2l_enable <= 1'b0;
             end
         end

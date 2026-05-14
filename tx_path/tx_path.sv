@@ -95,6 +95,7 @@ module tx_path #(
         .i_reset                 (i_reset),
         .i_tx_encoding           (i_tx_encoding),
         .i_lane_map_code         (i_lane_map_code),
+        .i_lp_valid              (i_lp_valid),
         .o_tx_lfsr_enable        (enable_lfsr),
         .o_tx_lfsr_load          (load),
         .o_tx_lfsr_train         (train),
