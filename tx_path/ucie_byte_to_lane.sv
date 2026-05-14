@@ -74,7 +74,7 @@ module ucie_byte_to_lane #(
 
     // Internal lane array (collect individual inputs)
     logic  [pDATA_IN_WIDTH-1:0]           data_in               ;
-    logic                               data_ready             ;
+    logic                               data_ready              ;
     
     // Mux output arrays for feeding into shift registers
     logic  [shift_register_X16_WIDTH-1:0] reg_x16_in [15:0]     ;
@@ -219,7 +219,7 @@ module ucie_byte_to_lane #(
     // =========================================================================
     always_comb begin  
         if(!i_clk)begin
-            enable     =    i_enable                            ;
+            enable     =    i_enable && i_lp_irdy               ;
         end
     end
 
