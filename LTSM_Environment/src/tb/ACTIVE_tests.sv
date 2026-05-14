@@ -45,6 +45,7 @@ class ACTIVE_test extends uvm_test;
     // linkinit virtual sequences
     linkinit_virtual_sequence linkinit_vseq;
     linkinit_reset_rdi linkinit_reset_rdi_seq;
+    linkinit_vs_timeout linkinit_timeout_seq;
     //active virtual sequences
     active_virtual_sequence active_vseq;
 
@@ -122,6 +123,7 @@ function void ACTIVE_test::build_phase(uvm_phase phase);
     //linkinit virtual sequence 
     linkinit_vseq = linkinit_virtual_sequence::type_id::create("linkinit_vseq");
     linkinit_reset_rdi_seq = linkinit_reset_rdi::type_id::create("linkinit_reset_rdi_seq");
+    linkinit_timeout_seq = linkinit_vs_timeout::type_id::create("linkinit_timeout_seq");
     
     //active virtual sequence
     active_vseq = active_virtual_sequence::type_id::create("active_vseq");
@@ -176,8 +178,9 @@ task ACTIVE_test::run_phase(uvm_phase phase);
     super.run_phase(phase);
     phase.raise_objection(this);
   
-    ////////////test(1) - linkinit to active ,local die request L1 & remote die respond L1  ////////////
-    
+    ////////////test(1) - local die request L1 & remote die respond L1  ////////////
+    `uvm_info("starting", "test 1", UVM_MEDIUM)
+
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", init_success_seq.get_type_name()), UVM_MEDIUM)
     // Start initialization sequence to end mbinit
     init_success_seq.start(env.v_seqr);
@@ -214,8 +217,9 @@ task ACTIVE_test::run_phase(uvm_phase phase);
 
 
   //-------------------------------------------------------------  
-   ////////////test(2) - linkinit to active ,local die request L1 & remote die refuse L1  ////////////   
-    
+   ////////////test(2) - local die request L1 & remote die refuse L1  ////////////   
+    `uvm_info("starting", "test 2", UVM_MEDIUM)
+
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", init_success_seq.get_type_name()), UVM_MEDIUM)
     // Start initialization sequence to end mbinit
     init_success_seq.start(env.v_seqr);
@@ -254,8 +258,8 @@ task ACTIVE_test::run_phase(uvm_phase phase);
 
 
  // -------------------------------------------------------------
-       ////////////test(3) - linkinit to active ,remote die request L1 & local die respond L1  ////////////
-
+       ////////////test(3) - remote die request L1 & local die respond L1  ////////////
+    `uvm_info("starting", "test 3", UVM_MEDIUM)
   
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", init_success_seq.get_type_name()), UVM_MEDIUM)
     // Start initialization sequence to end mbinit
@@ -294,7 +298,8 @@ task ACTIVE_test::run_phase(uvm_phase phase);
 
 
  // -------------------------------------------------------------
-    ////////////test(4) - linkinit to active ,remote die request L1 & local die refuse L1  ////////////
+    ////////////test(4) - remote die request L1 & local die refuse L1  ////////////
+    `uvm_info("starting", "test 4", UVM_MEDIUM)
 
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", init_success_seq.get_type_name()), UVM_MEDIUM)
     // Start initialization sequence to end mbinit
@@ -333,7 +338,9 @@ task ACTIVE_test::run_phase(uvm_phase phase);
 
     //-------------------------------------------------------------
    ////////////test(5) - remote die request exit L1  ////////////
-    
+    `uvm_info("starting", "test 5", UVM_MEDIUM)
+
+
     `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", init_success_seq.get_type_name()), UVM_MEDIUM)
     // Start initialization sequence to end mbinit
     init_success_seq.start(env.v_seqr);
@@ -367,6 +374,29 @@ task ACTIVE_test::run_phase(uvm_phase phase);
     //exit L1 virtual sequence
     l1_rx_vseq_exit_l1.start(env.v_seqr);
  //   `uvm_info(get_type_name(), $sformatf("Finishing sequence: %s", l1_rx_vseq_exit_l1.get_type_name()), UVM_MEDIUM)
+
+////////////test(6) - linkinit timeout  ////////////
+    `uvm_info("starting", "test 6", UVM_MEDIUM)
+
+    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", init_success_seq.get_type_name()), UVM_MEDIUM)
+    // Start initialization sequence to end mbinit
+    init_success_seq.start(env.v_seqr);
+    `uvm_info(get_type_name(), $sformatf("Finishing sequence: %s", init_success_seq.get_type_name()), UVM_MEDIUM)
+    
+    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkinit_reset_rdi_seq.get_type_name()), UVM_MEDIUM)
+    linkinit_reset_rdi_seq.start(env.v_seqr);
+    
+    // Start mbtrain sequence to end mbtrain
+    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", mbtrain_success_seq.get_type_name()), UVM_MEDIUM)
+    mbtrain_success_seq.start(env.v_seqr);
+    `uvm_info(get_type_name(), $sformatf("Finishing sequence: %s", mbtrain_success_seq.get_type_name()), UVM_MEDIUM)
+    
+    
+    `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", linkinit_vseq.get_type_name()), UVM_MEDIUM)
+    // Start link initialization virtual sequence
+    linkinit_timeout_seq.start(env.v_seqr);
+    `uvm_info(get_type_name(), $sformatf("Finishing sequence: %s", linkinit_vseq.get_type_name()), UVM_MEDIUM)
+
 
     phase.drop_objection(this);
 endtask : run_phase
