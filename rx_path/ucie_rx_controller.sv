@@ -20,6 +20,7 @@ module ucie_rx_controller #(
     output logic                  o_rx_lfsr_load,
     output logic                  o_rx_lfsr_train,
     output logic                  o_detection_type,
+    output logic                  o_data_det_type,
     output logic [1:0]            o_pattern_type,
     output logic                  o_rx_done,
     output logic                  o_per_lane_id_det_enable,
@@ -232,6 +233,7 @@ module ucie_rx_controller #(
         done_state               = 1'b0;
         done_target              = 12'd0;
         error_threshold          = 16'd0;
+        o_data_det_type          = 1'b0;
 
         // LFSR pattern generation for eye sweep pattern-generation substates.
         if (eye_tx_uses_lfsr || eye_rx_uses_lfsr) begin
@@ -242,6 +244,7 @@ module ucie_rx_controller #(
             o_error_threshold   = error_threshold;
             o_rx_lfsr_train     = 1'b1;
             o_pattern_type      = PATTERN_ACTIVE_DATA;
+            o_data_det_type     = 1'b1;
             done_state          = 1'b1;
             done_target         = DONE_CYCLES_LFSR[11:0];
         end
@@ -271,6 +274,7 @@ module ucie_rx_controller #(
         if ((i_rx_encoding == ENC_MBINIT_REVERSAL_PER_LANE) || eye_uses_per_lane_id) begin
             o_per_lane_id_det_enable = 1'b1;
             o_pattern_type           = PATTERN_ACTIVE_DATA;
+            o_data_det_type          = 1'b0;
             done_state               = 1'b1;
             done_target              = DONE_CYCLES_PER_LANEID[11:0];
         end
