@@ -5,7 +5,7 @@ module tx_controller #(
     input  logic                  I_reset,
     input  logic [8:0]            i_tx_encoding,
     input  logic [2:0]            i_lane_map_code,
-    input  logic                  i_lp_irdy,
+    //input  logic                  i_lp_irdy,
     input  logic                  i_lp_valid,
     output logic[MB_LANES-1:0]    o_tx_lfsr_enable,
     output logic                  o_tx_lfsr_load,
@@ -279,6 +279,10 @@ module tx_controller #(
             done_state  = 1'b1;
             done_target = DONE_CYCLES_VALID[11:0];
         end
+
+        if(is_main_active)begin
+            o_b2l_enable = 1'b1;
+        end
     
         // AFE enable policy by main state family.
         if (is_main_reset_like || is_main_trainerror || is_main_l1) begin
@@ -390,12 +394,13 @@ module tx_controller #(
             end
 
             // RDI data transmission readiness and enable control
-            
+            /*
             if (is_main_active) begin
-                o_b2l_enable <= i_lp_irdy;
+                o_pl_trdy <= 1'b1;
+                o_b2l_enable <= (i_lp_irdy && i_lp_valid) ? 1'b1 : 1'b0;
             
             end
-            
+            */
             else begin
                 // o_pl_trdy <= 1'b0;
                 o_b2l_enable <= 1'b0;
