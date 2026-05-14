@@ -10,12 +10,12 @@ module ucie_rx_controller #(
     input  logic                  i_valid_results,
     input  logic                  i_l2b_valid,
     input  logic                  i_fifo_empty,
-    input  logic                  i_fifo_rd_en,
     input  logic [15:0]           i_error_threshold,
     output logic [63:0]           o_rx_data_results,
     output logic                  o_clk_results,
     output logic                  o_valid_results,
-    output logic [15:0]           o_error_threshold,                   
+    output logic [15:0]           o_error_threshold,
+    output logic                  o_fifo_rd_en,                   
     output logic                  o_rx_lfsr_enable,
     output logic                  o_rx_lfsr_load,
     output logic                  o_rx_lfsr_train,
@@ -106,6 +106,7 @@ module ucie_rx_controller #(
     logic [11:0] done_target;
     logic        done_state;
     logic [15:0] error_threshold;
+    logic       fifo_rd_en;
 
     // One-hot-like flags derived from the main state field i_tx_encoding[8:3].
     // They simplify AFE policy selection in the control comb block.
@@ -234,8 +235,9 @@ module ucie_rx_controller #(
 
         // LFSR pattern generation for eye sweep pattern-generation substates.
         if (eye_tx_uses_lfsr || eye_rx_uses_lfsr) begin
-            if(!i_fifo_empty && i_fifo_rd_en)begin
+            if(!i_fifo_empty )begin
             o_rx_lfsr_enable    = 1'b1;
+            fifo_rd_en        = 1'b1; // Keep FIFO read enabled during LFSR-based eye patterns to feed data into the pattern generator
             end
             o_error_threshold   = error_threshold;
             o_rx_lfsr_train     = 1'b1;
@@ -255,8 +257,9 @@ module ucie_rx_controller #(
 
         // ACTIVE keeps LFSR enabled for scrambling but disables train mode.
         if (i_rx_encoding == ENC_ACTIVE) begin
-            if(!i_fifo_empty && i_fifo_rd_en)begin
+            if(!i_fifo_empty )begin
             o_rx_lfsr_enable = 1'b1;
+            fifo_rd_en     = 1'b1;
             end
             o_error_threshold = error_threshold;
             o_rx_lfsr_train  = 1'b0;
@@ -376,6 +379,7 @@ module ucie_rx_controller #(
             o_rx_done  <= 1'b0;
             o_l2b_enable <= 1'b0;
         end else begin
+            o_fifo_rd_en <= fifo_rd_en; // Pass through FIFO read enable to output
             enc_q     <= ltsm_states_e'(i_rx_encoding);
             o_rx_done <= 1'b0;
 
