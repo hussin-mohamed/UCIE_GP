@@ -24,11 +24,12 @@ module ucie_byte_to_lane #(
     input logic                            i_clk                ,
     input logic                           i_reset               ,
     input logic                           i_enable              ,
-    input logic                           i_data_ready          ,
+    input logic                           i_lp_iready           ,
+    input logic                           i_lp_valid            ,
     input logic [2:0]                     i_lane_map_code       ,
-    input logic [pDATA_IN_WIDTH-1:0]      i_data_in             ,
+    input logic [pDATA_IN_WIDTH-1:0]      i_lp_data             ,
     //output data to shift registers
-    output logic                              o_data_sent       ,
+    output logic                              o_pl_tready       ,
     output logic [pDATA_OUT_WIDTH-1:0]        o_lane_0          ,
     output logic [pDATA_OUT_WIDTH-1:0]        o_lane_1          ,
     output logic [pDATA_OUT_WIDTH-1:0]        o_lane_2          ,
@@ -72,6 +73,7 @@ module ucie_byte_to_lane #(
     logic                               x4_en                   ;
 
     // Internal lane array (collect individual inputs)
+    logic                               data_ready              ;
     logic  [pDATA_IN_WIDTH-1:0]           data_in               ;
     
     // Mux output arrays for feeding into shift registers
@@ -247,7 +249,8 @@ module ucie_byte_to_lane #(
 
 
     // Input data
-    assign data_in = i_data_in;
+    assign data_in = i_lp_data;
+    assign data_ready = i_lp_iready && i_lp_valid;
 
 
 
@@ -272,6 +275,6 @@ module ucie_byte_to_lane #(
     assign o_lane_13 = lane_out[13];
     assign o_lane_14 = lane_out[14];
     assign o_lane_15 = lane_out[15];
-    assign o_data_sent = (x16_en) ? &reg_x16_valid : (x8_en) ? &reg_x8_valid : (x4_en) ? &reg_x4_valid : 1'b0;    
+    assign o_pl_tready = (x16_en) ? &reg_x16_valid : (x8_en) ? &reg_x8_valid : (x4_en) ? &reg_x4_valid : 1'b0;    
 
 endmodule
