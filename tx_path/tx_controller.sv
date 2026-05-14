@@ -5,8 +5,8 @@ module tx_controller #(
     input  logic                  I_reset,
     input  logic [8:0]            i_tx_encoding,
     input  logic [2:0]            i_lane_map_code,
-    input  logic                  i_lp_irdy,
-    input  logic                  i_lp_valid,
+    //input  logic                  i_lp_irdy,
+    //input  logic                  i_lp_valid,
     output logic[MB_LANES-1:0]    o_tx_lfsr_enable,
     output logic                  o_tx_lfsr_load,
     output logic                  o_tx_lfsr_train,
@@ -15,7 +15,7 @@ module tx_controller #(
     output logic                  o_tx_done,
     output logic                  o_per_lane_id_gen_enable,
     output logic                  o_tx_reverse,
-    output logic                  o_pl_trdy,
+   // output logic                  o_pl_trdy,
     output logic                  o_b2l_enable,
     output logic                  mb_clk_p_en,
     output logic                  mb_clk_n_en,
@@ -224,6 +224,7 @@ module tx_controller #(
 
         done_state  = 1'b0;
         done_target = 12'd0;
+        o_b2l_enable = 1'b0;
 
         // LFSR pattern generation for eye sweep pattern-generation substates.
         if (eye_tx_uses_lfsr || eye_rx_uses_lfsr) begin
@@ -278,6 +279,10 @@ module tx_controller #(
             done_target = DONE_CYCLES_VALID[11:0];
         end
 
+        if(is_main_active)begin
+            o_b2l_enable = 1'b1;
+        end
+    
         // AFE enable policy by main state family.
         if (is_main_reset_like || is_main_trainerror || is_main_l1) begin
             mb_clk_p_en = 1'b0;
@@ -384,10 +389,14 @@ module tx_controller #(
             end
 
             // RDI data transmission readiness and enable control
+            /*
             if (is_main_active) begin
                 o_pl_trdy <= 1'b1;
                 o_b2l_enable <= (i_lp_irdy && i_lp_valid) ? 1'b1 : 1'b0;
-            end else begin
+            
+            end
+            */
+            else begin
                 o_pl_trdy <= 1'b0;
                 o_b2l_enable <= 1'b0;
             end
@@ -396,5 +405,11 @@ module tx_controller #(
 
 endmodule
 
+
+// notes 
+// pattern type : 10 in case of valid/data pattern 
+//                11 incase the active.  
+
+// lfsr pattern length checking  expected(4k).
 
 // reversal register update on reversal apply state entry.
