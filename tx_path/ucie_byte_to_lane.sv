@@ -24,12 +24,12 @@ module ucie_byte_to_lane #(
     input logic                            i_clk                ,
     input logic                           i_reset               ,
     input logic                           i_enable              ,
-    input logic                           i_lp_iready           ,
+    input logic                           i_lp_irdy           ,
     input logic                           i_lp_valid           ,
     input logic [2:0]                     i_lane_map_code       ,
     input logic [pDATA_IN_WIDTH-1:0]      i_lp_data             ,
     //output data to shift registers
-    output logic                              o_pl_tready       ,
+    output logic                              o_pl_trdy       ,
     output logic [pDATA_OUT_WIDTH-1:0]        o_lane_0          ,
     output logic [pDATA_OUT_WIDTH-1:0]        o_lane_1          ,
     output logic [pDATA_OUT_WIDTH-1:0]        o_lane_2          ,
@@ -250,7 +250,7 @@ module ucie_byte_to_lane #(
 
     // Input data
     assign data_in = i_lp_data;
-    assign data_ready = i_lp_iready && i_lp_valid; // Data is ready when both ready and valid are asserted
+    assign data_ready = i_lp_irdy && i_lp_valid; // Data is ready when both ready and valid are asserted
 
 
 
@@ -275,6 +275,6 @@ module ucie_byte_to_lane #(
     assign o_lane_13 = lane_out[13];
     assign o_lane_14 = lane_out[14];
     assign o_lane_15 = lane_out[15];
-    assign o_pl_tready = (x16_en) ? &reg_x16_valid : (x8_en) ? &reg_x8_valid : (x4_en) ? &reg_x4_valid : 1'b0;    
+    assign o_pl_trdy = (x16_en) ? &reg_x16_valid : (x8_en) ? &reg_x8_valid : (x4_en) ? &reg_x4_valid : 1'b0;    
 
 endmodule
