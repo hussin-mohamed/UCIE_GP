@@ -53,6 +53,13 @@ package shared_pkg;
     ,DATA_PATTERN
   } pattern_type_t;
 
+  typedef enum bit [2:0] { 
+     X8_LOWER_MODE = 3'b001
+    ,X8_UPPER_MODE = 3'b010
+    ,X16_MODE      = 3'b011
+    ,X4_LOWER_MODE = 3'b100
+    ,X4_UPPER_MODE = 3'b101
+  } lane_map_code_t;
   //-----------------------------------------------------------------------------
   // RX State Encoding Typedef Enum
   // Source: LTSM Specifications Document
@@ -119,18 +126,15 @@ package shared_pkg;
 
     // --- 1. MBTRAIN VALVREF ---
     MBTRAIN_VALVREF_RX_Start_Handshake             = 9'b01_0000_000, // Hex: 9'h080 (Send Vref Start REQ)
-    MBTRAIN_VALVREF_RX_initiated_eye_sweep         = 9'b11_0000_101, // Hex: 9'h185 (Data-to-clock eye sweep) [DUPLICATE: shared with MBTRAIN_DATAVREF eye sweep]
     MBTRAIN_VALVREF_RX_End_Handshake               = 9'b01_0000_010, // Hex: 9'h082 (Send End REQ)
 
     // --- 2. MBTRAIN DATAVREF ---
     MBTRAIN_DATAVREF_RX_Start_Handshake            = 9'b01_0001_000, // Hex: 9'h088 (Send Start REQ)
-    MBTRAIN_DATAVREF_RX_initiated_eye_sweep        = 9'b11_0000_101, // Hex: 9'h185 (Data-to-clock eye sweep) [DUPLICATE: shared with MBTRAIN_VALVREF eye sweep]
     MBTRAIN_DATAVREF_RX_End_Handshake              = 9'b01_0001_010, // Hex: 9'h08A (Send End REQ)
 
     // --- 3. MBTRAIN SPEEDIDLE ---
     MBTRAIN_SPEEDIDLE_RX_Speed_Transition          = 9'b01_1001_000, // Hex: 9'h0C8 (Change Clock Div)
     MBTRAIN_SPEEDIDLE_RX_End_Handshake             = 9'b01_1001_001, // Hex: 9'h0C9 (Success -> Retrain)
-    MBTRAIN_SPEEDIDLE_RX_TrainError_Handshake      = 9'b00_1000_000, // Hex: 9'h040 (Fail -> Error) [DUPLICATE: shared with TRAINERROR_RX_Handshake]
 
     // --- 4. MBTRAIN TXSELFCAL ---
     MBTRAIN_TXSELFCAL_RX_End_Handshake             = 9'b01_1010_000, // Hex: 9'h0D0 (Send End REQ)
