@@ -24,10 +24,10 @@
 
 class rdi_seq_item extends uvm_sequence_item;
 
-  // ...
+  logic [pNBYTES-1:0][7:0]    data;
 
   `uvm_object_utils_begin(rdi_seq_item)
-    // ...
+    `uvm_field_int(data,                        UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
   `uvm_object_utils_end
 
   // Function: new

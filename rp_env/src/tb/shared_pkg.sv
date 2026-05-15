@@ -19,6 +19,7 @@ package shared_pkg;
   // --- RTL Paramters ---
   parameter pNUM_LANES  = 16;
   parameter pDATA_WIDTH = 64;
+  parameter pNBYTES = 256;
 
   parameter T_CLK = 32ns;
   parameter UI    = 4ns;
