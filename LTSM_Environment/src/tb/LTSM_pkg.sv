@@ -516,12 +516,14 @@ package LTSM_pkg;
     `include "virtual_sequence/active/active_virtual_sequence.sv"
     `include "virtual_sequence/active/linkinit_virtual_sequence.sv"
     `include "virtual_sequence/active/linkinit_reset_rdi.sv"
+    `include "virtual_sequence/active/linkinit_vs_timeout.svh"
     `include "virtual_sequence/active/l1_txinit_exit_l1.sv"
     `include "virtual_sequence/active/l1_tx_vs_rsp_pmnak.sv"
     `include "virtual_sequence/active/l1_tx_virtual_seq_rsp_l1.sv"
     `include "virtual_sequence/active/l1_rx_vs_refuse_l1.sv"
     `include "virtual_sequence/active/l1_rx_seq_rsp_l1.sv"
     `include "virtual_sequence/active/l1_rxinit_exit_l1.sv"
+      
 
     // phyretrain
     `include "virtual_sequence/phyretrain/rdi_init_speedidle.sv"

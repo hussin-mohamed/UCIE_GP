@@ -5,35 +5,38 @@ module ucie_rx_controller #(
     input  logic                  i_reset,
     input  logic [8:0]            i_rx_encoding,
     input  logic [2:0]            i_lane_map_code,
-    input  logic [15:0]           i_rx_data_results,
+    input  logic [pNUM_LANES-1:0] i_rx_LFSR_results,
+    input  logic [pNUM_LANES-1:0] i_rx_lane_id_results,
     input  logic [2:0]            i_clk_results,
     input  logic                  i_valid_results,
-    input  logic                  i_l2b_valid,
-    input  logic                  i_fifo_empty,
-    input  logic                  i_fifo_rd_en,
+    input  logic [15:0]           i_fifo_empty,
     input  logic [15:0]           i_error_threshold,
     output logic [63:0]           o_rx_data_results,
+    output logic                  o_rx_path_reset,
+    output logic                  o_rx_error,
     output logic                  o_clk_results,
     output logic                  o_valid_results,
     output logic [15:0]           o_error_threshold,                   
-    output logic                  o_rx_lfsr_enable,
+    output logic [15:0]           o_rx_lfsr_enable,
     output logic                  o_rx_lfsr_load,
     output logic                  o_rx_lfsr_train,
     output logic                  o_detection_type,
+    output logic                  o_data_det_type,
     output logic [1:0]            o_pattern_type,
     output logic                  o_rx_done,
-    output logic                  o_per_lane_id_det_enable,
+    output logic [15:0]           o_per_lane_id_det_enable,
     output logic                  o_l2b_enable,
-    output logic                  o_pl_valid,
     output logic                  o_mb_clk_p_en,
     output logic                  o_mb_clk_n_en,
     output logic                  o_mb_valid_en,
+    output logic [15:0]           o_fifo_rd_en,
     output logic                  o_mb_track_en,
     output logic [MB_LANES-1:0]   o_mb_lanes_en
 );
-
+    assign o_rx_data_results [63:MB_LANES] = '1;
     // Encodings observed on i_rx_encoding from the LTSM RX FSM.
     // These values are used to drive datapath mode selects and AFE enables.
+    assign o_rx_error = (&o_clk_results) && (o_valid_results) && (&o_rx_data_results);
     typedef enum logic [8:0] {
         ENC_RESET                    = 9'h000,
         ENC_SBINIT                   = 9'h008,
@@ -120,6 +123,7 @@ module ucie_rx_controller #(
     logic is_main_phyretrain;
     logic is_main_trainerror;
     logic is_main_l1;
+    logic [15:0] fifo_rd_en;
 
     // Decode lane_map_code into a contiguous "LSB-active" lane mask.
     // This mapping is used after width degradation to enable only functional lanes.
@@ -220,7 +224,7 @@ module ucie_rx_controller #(
         o_rx_lfsr_load           = 1'b0;
         o_rx_lfsr_train          = 1'b0;
         o_pattern_type           = PATTERN_NONE;
-        o_per_lane_id_det_enable = 1'b0;
+        o_per_lane_id_det_enable = 16'h0000;
         o_detection_type         = 1'b0;
         o_mb_clk_p_en            = 1'b0;
         o_mb_clk_n_en            = 1'b0;
@@ -231,22 +235,38 @@ module ucie_rx_controller #(
         done_state               = 1'b0;
         done_target              = 12'd0;
         error_threshold          = 16'd0;
-
+        fifo_rd_en               = 16'h0000;
+        o_data_det_type          = 1'b0;
+        o_rx_data_results[15:0]  = 16'hFFFF; // Default to all 1's (no errors) for LFSR and lane ID patterns
+        o_clk_results              = &3'b111; // Default to all 1's (no errors)
+        o_valid_results            = 1'b1;   // Default to 1 (no errors)
         // LFSR pattern generation for eye sweep pattern-generation substates.
         if (eye_tx_uses_lfsr || eye_rx_uses_lfsr) begin
-            if(!i_fifo_empty && i_fifo_rd_en)begin
+            if(!i_fifo_empty )begin
             o_rx_lfsr_enable    = 1'b1;
+            fifo_rd_en        = 16'hffff; // Keep FIFO read enabled during LFSR-based eye patterns to feed data into the pattern generator
             end
             o_error_threshold   = error_threshold;
             o_rx_lfsr_train     = 1'b1;
             o_pattern_type      = PATTERN_ACTIVE_DATA;
+            o_data_det_type     = 1'b1;
             done_state          = 1'b1;
             done_target         = DONE_CYCLES_LFSR[11:0];
+            case (i_lane_map_code)
+            // 3'b000 from LTSM means "degrade not possible": keep last valid mask.
+            3'b001: begin o_rx_data_results[15:8]=8'hff; o_rx_data_results[7:0]=i_rx_LFSR_results[7:0]; end // logical lanes 0-7
+            3'b010: begin o_rx_data_results[7:0]=8'hff; o_rx_data_results[15:8]=i_rx_LFSR_results[15:8]; end // logical lanes 8-15
+            3'b011: begin o_rx_data_results=i_rx_LFSR_results; end // logical lanes 0-15
+            3'b100: begin o_rx_data_results[15:4]=8'hff; o_rx_data_results[3:0]=i_rx_LFSR_results[3:0]; end // logical lanes 0-3
+            3'b101: begin o_rx_data_results[15:8]=8'hff; o_rx_data_results[7:04]=i_rx_LFSR_results[7:4]; o_rx_data_results[3:0]=4'hf; end // logical lanes 4-7
+            default: begin
+                // default to all lanes enabled
+                o_rx_data_results = 16'hFFFF; 
+             end 
+        endcase
         end
 
-        if ((i_rx_encoding == ENC_TX_EYE_LFSR_START) || (i_rx_encoding == ENC_RX_EYE_LFSR_START)) begin
-            error_threshold = i_error_threshold ;
-        end
+        
 
         // Reload LFSR seed during explicit clear substate and on LINKINIT entry behavior.
         if ((i_rx_encoding == ENC_TX_EYE_LFSR_CLEAR) || (i_rx_encoding == ENC_RX_EYE_LFSR_CLEAR) || (i_rx_encoding == ENC_LINKINIT)) begin
@@ -254,28 +274,48 @@ module ucie_rx_controller #(
         end
 
         // ACTIVE keeps LFSR enabled for scrambling but disables train mode.
-        if (i_rx_encoding == ENC_ACTIVE) begin
-            if(!i_fifo_empty && i_fifo_rd_en)begin
+         if (i_rx_encoding == ENC_ACTIVE) begin
+            if(!i_fifo_empty )begin
             o_rx_lfsr_enable = 1'b1;
+            fifo_rd_en     = 16'hffff;
             end
             o_error_threshold = error_threshold;
             o_rx_lfsr_train  = 1'b0;
+            o_valid_results   = i_valid_results; 
             // Pattern type in ACTIVE depends on RDI inputs
             o_pattern_type = PATTERN_ACTIVE_DATA;
+            o_data_det_type = 1'b1;
         end
 
         // Per-lane ID generation used in reversal/repairmb pattern substates.
         if ((i_rx_encoding == ENC_MBINIT_REVERSAL_PER_LANE) || eye_uses_per_lane_id) begin
-            o_per_lane_id_det_enable = 1'b1;
+            if(!i_fifo_empty )begin
+            fifo_rd_en        = 16'hffff; // Keep FIFO read enabled during LFSR-based eye patterns to feed data into the pattern generator
+            end
+            o_per_lane_id_det_enable = 16'hffff;
+            o_data_det_type          = 1'b0;
             o_pattern_type           = PATTERN_ACTIVE_DATA;
             done_state               = 1'b1;
             done_target              = DONE_CYCLES_PER_LANEID[11:0];
+            case (i_lane_map_code)
+            // 3'b000 from LTSM means "degrade not possible": keep last valid mask.
+            3'b001: begin o_rx_data_results[15:8]=8'hff; o_rx_data_results[7:0]=i_rx_lane_id_results[7:0]; end // logical lanes 0-7
+            3'b010: begin o_rx_data_results[7:0]=8'hff; o_rx_data_results[15:8]=i_rx_lane_id_results[15:8]; end // logical lanes 8-15
+            3'b011: begin o_rx_data_results=i_rx_lane_id_results; end // logical lanes 0-15
+            3'b100: begin o_rx_data_results[15:4]=8'hff; o_rx_data_results[3:0]=i_rx_lane_id_results[3:0]; end // logical lanes 0-3
+            3'b101: begin o_rx_data_results[15:8]=8'hff; o_rx_data_results[7:04]=i_rx_lane_id_results[7:4]; o_rx_data_results[3:0]=4'hf; end // logical lanes 4-7
+            default: begin
+                // default to all lanes enabled
+                o_rx_data_results = 16'hFFFF; 
+             end 
+        endcase
         end
 
 
         // REPAIRCLK pattern substate drives clock-only DETerator profile.
         if (i_rx_encoding == ENC_MBINIT_REPAIRCLK_PAT_DET) begin
             o_pattern_type = PATTERN_CLOCK_ONLY;
+            o_clk_results = i_clk_results;
             done_state     = 1'b1;
             done_target    = DONE_CYCLES_CLOCK[11:0];
         end
@@ -283,6 +323,7 @@ module ucie_rx_controller #(
         // REPAIRVAL and eye-sweep pattern states use active/data pattern profile.
         if ((i_rx_encoding == ENC_MBINIT_REPAIRVAL_PAT_DET) || eye_uses_valid_pattern) begin
             o_pattern_type = PATTERN_VALID_ONLY;
+            o_valid_results = i_valid_results;
             done_state  = 1'b1;
             done_target = DONE_CYCLES_VALID[11:0];
         end
@@ -349,10 +390,10 @@ module ucie_rx_controller #(
         // - Asserted in MBINIT.REPAIRCLK and MBINIT.REPAIRVAL
         // - NOT asserted in all other states
         if (is_main_repairclk || is_main_repairval) begin
-            o_detection_type = 1'b1;
+            o_detection_type = 1'b0;
         end
         else begin
-            o_detection_type = 1'b0;
+            o_detection_type = 1'b1;
         end
     end
 
@@ -360,7 +401,6 @@ module ucie_rx_controller #(
     assign o_rx_data_results = {48'hFFFFFFFFFFFF, i_rx_data_results};
     assign o_clk_results     = i_clk_results;
     assign o_valid_results   = i_valid_results;
-    assign o_pl_valid         = i_l2b_valid;
 
 
     // Done pulse generation:
@@ -375,7 +415,9 @@ module ucie_rx_controller #(
             done_cnt_q <= 12'd0;
             o_rx_done  <= 1'b0;
             o_l2b_enable <= 1'b0;
+            o_fifo_rd_en <= 16'h0000;
         end else begin
+            o_fifo_rd_en <= fifo_rd_en;
             enc_q     <= ltsm_states_e'(i_rx_encoding);
             o_rx_done <= 1'b0;
 
@@ -389,8 +431,16 @@ module ucie_rx_controller #(
             if ((i_rx_encoding == ENC_MBINIT_REPAIRMB_APPLY_DEGRADE) && lane_map_code_valid) begin
                 lane_mask_q <= lane_mask_from_code;
             end
-
+            if ((i_rx_encoding == ENC_TX_EYE_LFSR_START) || (i_rx_encoding == ENC_RX_EYE_LFSR_START)) begin
+            error_threshold = i_error_threshold ;
+            end
             // Reset counter on encoding change to detect new state entry
+            if(enc_q == ENC_RESET) begin
+                o_rx_path_reset <= 1'b1;
+            end
+            else begin
+                o_rx_path_reset <= 1'b0;
+            end
             if (i_rx_encoding != enc_q) begin
                 done_cnt_q <= 12'd0;
             end else if (done_state) begin
