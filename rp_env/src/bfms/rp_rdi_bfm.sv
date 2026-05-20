@@ -22,14 +22,13 @@
 interface rp_rdi_bfm(
   input logic clk
  ,input logic reset
- ,input logic o_sb_ready
 );
-
   //============================================================================
-  // Methods
+  // Phy → RDI Signals (Outputs from DUT)
   //============================================================================
-  task clear();
-    // ...
-  endtask : clear
+  
+  logic [pNBYTES-1:0][7:0]    pl_data;
+  logic                       pl_valid;
+  
 
 endinterface : rp_rdi_bfm

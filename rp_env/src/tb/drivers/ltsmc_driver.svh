@@ -18,15 +18,14 @@
 //
 // CLASS: ltsmc_driver
 //
-// The ltsmc_driver converts ltsmc_seq_item requests into SBINIT
-// control activity on the LTSM control BFM. It is responsible for initiating
-// sideband initialization and for propagating timeout events to the rest of
-// the environment.
+// ...
 //
 //------------------------------------------------------------------------------
 
 class ltsmc_driver extends rp_driver_base #(ltsmc_seq_item, virtual rp_ltsmc_bfm);
   `uvm_component_utils(ltsmc_driver)
+
+  bit is_first_item;
 
 
   // Function: new
@@ -61,11 +60,28 @@ endclass : ltsmc_driver
 
 function ltsmc_driver::new(string name, uvm_component parent);
   super.new(name, parent);
+  is_first_item = 1;
 endfunction : new
 
 // drive_item
 // -----
 
 task ltsmc_driver::drive_item(inout ltsmc_seq_item req, output ltsmc_seq_item rsp);
- // driving logic
+  if (is_first_item) begin
+    @(posedge bfm.clk);
+    bfm.i_rx_encoding     <= req.rx_encoding;
+    bfm.i_lane_map_code   <= req.lane_map_code;
+    bfm.i_error_threshold <= req.error_threshold;
+    bfm.i_half_rate       <= req.half_rate;
+    is_first_item = 0;
+  end else begin
+    while (!bfm.o_rx_done) begin
+      @(posedge bfm.clk);
+    end
+    @(posedge bfm.clk);
+    bfm.i_rx_encoding     <= req.rx_encoding;
+    bfm.i_lane_map_code   <= req.lane_map_code;
+    bfm.i_error_threshold <= req.error_threshold;
+    bfm.i_half_rate       <= req.half_rate;
+  end
 endtask : drive_item

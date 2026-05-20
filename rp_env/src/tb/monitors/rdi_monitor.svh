@@ -71,7 +71,12 @@ endfunction : new
 // ----------------
 
 task rdi_monitor::collect_item_out(output rdi_seq_item _item);
-  _item = new();
+  _item = rdi_seq_item::type_id::create("_item");
+
+  while (bfm.pl_valid == 1'b0) begin
+    @(negedge bfm.clk);
+  end
+  _item.data = bfm.pl_data;
 endtask : collect_item_out
 
 

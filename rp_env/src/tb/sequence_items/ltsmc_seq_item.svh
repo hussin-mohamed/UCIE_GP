@@ -24,10 +24,18 @@
 
 class ltsmc_seq_item extends uvm_sequence_item;
 
-  // ...
+  lane_map_code_t         lane_map_code;    // Selects lane mapping configuration.
+  rx_encoding_t           rx_encoding;      // Current state of the RX FSM.
+  rand logic [15:0]       error_threshold;  // Error threshold for the valid and data pattern detection.
+  logic                   half_rate;        // Rate mode selector.
+  logic [pDATA_WIDTH-1:0] rx_data_results,  // One bit for each lane which indicates the successful detection of the LFSR pattern on that lane.
 
   `uvm_object_utils_begin(ltsmc_seq_item)
-    // ...
+    `uvm_field_enum       (lane_map_code_t, lane_map_code, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_enum       (rx_encoding_t,   rx_encoding,   UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (error_threshold,                UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (half_rate,                      UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (rx_data_results,                UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
   `uvm_object_utils_end
 
   // Function: new
