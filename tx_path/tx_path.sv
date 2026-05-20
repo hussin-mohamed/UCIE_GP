@@ -39,7 +39,6 @@ module tx_path #(
 
     // Per-lane status
     logic [pNUM_LANES-1:0] enable_lfsr;
-    logic [pNUM_LANES-1:0] enable_serializer;
     logic [pNUM_LANES-1:0] enable_lanes;
     logic [pNUM_LANES-1:0] serializer_out;
     logic [pNUM_LANES-1:0] msg_done;
@@ -189,7 +188,7 @@ module tx_path #(
     generate
         for (i = 0; i < pNUM_LANES; i++) begin : gen_lane
 
-            fifo fif (
+            fifo fifo (
                 .i_clk_wr  (i_clk_l),
                 .i_clk_rd  (i_dclk),
                 .i_reset   (reset),
@@ -206,7 +205,6 @@ module tx_path #(
                 .i_reset       (reset),
                 .i_fifo_ser_msg(lane_serializer_in[i]),
                 .i_fifo_empty  (empty[i]),
-                .i_enable      (enable_serializer[i]),
                 .o_tx_sb_data  (serializer_out[i]),
                 .o_fifo_rd_en  (rd_en[i]),
                 .o_msg_done    (msg_done[i]),

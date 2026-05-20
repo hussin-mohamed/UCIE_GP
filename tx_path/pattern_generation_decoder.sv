@@ -28,7 +28,7 @@ module pattern_generation_decoder (
     endcase
     end
     
-    always @(posedge i_clk or negedge i_empty) begin
+    always @(posedge i_clk ) begin
         if (!i_empty) begin
             o_no_data <= 0;
         end

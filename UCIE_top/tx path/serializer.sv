@@ -11,7 +11,6 @@ module serializer
   input  wire                  i_reset,
   input  wire [pSER_WIDTH-1:0] i_fifo_ser_msg,
   input  wire                  i_fifo_empty,
-  input  wire                  i_enable,
   output wire                  o_tx_sb_data,
   output wire                  o_fifo_rd_en,
   output wire                  o_cur_msg_done,
@@ -34,8 +33,6 @@ module serializer
   //---- FSM STATE REGISTER ----------------------------------------------------
   always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
-      state <= ST_IDLE;
-    end else if (!i_enable) begin
       state <= ST_IDLE;
     end else begin
       state <= next_state;
@@ -67,8 +64,6 @@ module serializer
   always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
       bit_counter <= 6'd0;
-    end else if (!i_enable) begin
-      bit_counter <= 6'd0;
     end else begin
       if (state == ST_IDLE || (state == ST_TX && flag_63)) begin
         bit_counter <= 6'd0;
@@ -84,8 +79,6 @@ module serializer
 
   always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
-      shift_reg <= {pSER_WIDTH{1'b0}};
-    end else if (!i_enable) begin
       shift_reg <= {pSER_WIDTH{1'b0}};
     end else begin
       if (state == ST_TX && bit_counter == 0) begin
