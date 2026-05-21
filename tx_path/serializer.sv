@@ -78,7 +78,7 @@ module serializer
 
   //---- SHIFT REGISTER & FIFO READ --------------------------------------------
   // Read from FIFO at the end of the 31st low cycle
-  assign o_fifo_rd_en = (state == ST_IDLE && next_state == ST_TX) || (state == ST_TX && flag_63) ? 1'b1 : 1'b0;
+  assign o_fifo_rd_en = (state == ST_TX && (bit_counter == 0 || flag_63)) ? 1'b1 : 1'b0;
 
   always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
