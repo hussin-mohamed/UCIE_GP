@@ -516,7 +516,7 @@ module clk_valid_pattern_detection (
         if (i_reset) begin
             counter_correct_p_h<=0;
         end
-        else if (counter_track_h == 48) begin
+        else if (counter_clk_p_h == 48) begin
             // clk_p counter: increment on match, reset on mismatch
             if (counter_correct_p_h != 16) begin
                 if (w_serialized_clk_p_h == p_CLK_SEQ_1)
