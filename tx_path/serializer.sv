@@ -78,13 +78,13 @@ module serializer
 
   //---- SHIFT REGISTER & FIFO READ --------------------------------------------
   // Read from FIFO at the end of the 31st low cycle
-  assign o_fifo_rd_en = (state == ST_TX && bit_counter == 0) ? 1'b1 : 1'b0;
+  assign o_fifo_rd_en = (state == ST_IDLE && next_state == ST_TX) || (state == ST_TX && flag_63) ? 1'b1 : 1'b0;
 
   always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
       shift_reg <= {pSER_WIDTH{1'b0}};
     end else begin
-      if (state == ST_TX && bit_counter == 0) begin
+      if (state == ST_TX && (bit_counter == 0 || flag_63)) begin
         shift_reg <= i_fifo_ser_msg;
       end else if (state == ST_TX && !flag_63) begin
         shift_reg <= {1'b0, shift_reg[pSER_WIDTH-1:1]};
