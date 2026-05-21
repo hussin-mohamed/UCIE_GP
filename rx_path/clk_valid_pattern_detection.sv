@@ -486,6 +486,7 @@ module clk_valid_pattern_detection (
             counter_clk_p_h           <= 0;
             w_enable_p_h              <= 0;
             o_enable_clk_p <= 0;
+            counter_correct_p_h<=0;
         end
         else if (!i_pattern_type[0]) begin
             // Clock detection disabled by pattern_type
@@ -507,24 +508,16 @@ module clk_valid_pattern_detection (
             counter_clk_p_h        <= counter_clk_p_h + 1;
             if (counter_clk_p_h == 48) begin
                 counter_clk_p_h <= 1;
-            end
-        end
-
-        
-    end
-    always_ff @( posedge w_dclk or posedge i_reset ) begin
-        if (i_reset) begin
-            counter_correct_p_h<=0;
-        end
-        else if (counter_clk_p_h == 48) begin
-            // clk_p counter: increment on match, reset on mismatch
-            if (counter_correct_p_h != 16) begin
+                if (counter_correct_p_h != 16) begin
                 if (w_serialized_clk_p_h == p_CLK_SEQ_1)
                 counter_correct_p_h <= counter_correct_p_h + 1;
             else
                 counter_correct_p_h <= 0;
             end
+            end
         end
+
+        
     end
 
     always_ff @(posedge w_dclk or posedge i_reset) begin : clock_n_detection_h
@@ -533,6 +526,7 @@ module clk_valid_pattern_detection (
             counter_clk_n_h           <= 0;
             w_enable_n_h              <= 0;
             o_enable_clk_n <= 0;
+            counter_correct_n_h<=0;
         end
         else if (!i_pattern_type[0]) begin
             // Clock detection disabled by pattern_type
@@ -554,24 +548,16 @@ module clk_valid_pattern_detection (
             counter_clk_n_h        <= counter_clk_n_h + 1;
             if (counter_clk_n_h == 48) begin
                 counter_clk_n_h<=1;
-            end
-        end
-    end
-
-    always_ff @( posedge w_dclk or posedge i_reset ) begin 
-        if (i_reset) begin
-            counter_correct_n_h<=0;
-        end
-        else if (counter_clk_n_h == 48) begin
-            // clk_n counter: increment on match, reset on mismatch
-            if (counter_correct_n_h != 16) begin
+                if (counter_correct_n_h != 16) begin
                 if (w_serialized_clk_n_h == ~p_CLK_SEQ_1)
                 counter_correct_n_h <= counter_correct_n_h + 1;
             else
                 counter_correct_n_h <= 0;
             end
+            end
         end
     end
+
 
     always_ff @(posedge w_dclk or posedge i_reset) begin : track_detection_h
         if (i_reset) begin
@@ -579,6 +565,7 @@ module clk_valid_pattern_detection (
             counter_track_h           <= 0;
             w_enable_track_h              <= 0;
             o_enable_track <= 0;
+            counter_correct_track_h<=0;
         end
         else if (!i_pattern_type[0]) begin
             // Clock detection disabled by pattern_type
@@ -600,21 +587,12 @@ module clk_valid_pattern_detection (
             counter_track_h        <= counter_track_h + 1;
             if (counter_track_h == 48) begin
                 counter_track_h <= 1;
-            end
-        end
-    end
-
-    always_ff @( posedge w_dclk or posedge i_reset ) begin
-        if (i_reset) begin
-            counter_correct_track_h<=0;
-        end
-        else if (counter_track_h == 48) begin
-            // track counter: increment on match, reset on mismatch
-            if (counter_correct_track_h != 16) begin
+                if (counter_correct_track_h != 16) begin
                 if (w_serialized_track_h == p_CLK_SEQ_1)
                 counter_correct_track_h <= counter_correct_track_h + 1;
             else
                 counter_correct_track_h <= 0;
+            end
             end
         end
     end
