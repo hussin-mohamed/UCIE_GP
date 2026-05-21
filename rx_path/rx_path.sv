@@ -85,7 +85,7 @@ module rx_path #(
     // Driver — maps raw inputs to recovered lanes/clocks
     // -------------------------------------------------------------------------
 
-    driver driver (
+    receivers receiver (
         .i_clk_p        (i_clk_p),
         .i_clk_n        (i_clk_n),
         .i_track        (i_track),
@@ -150,7 +150,7 @@ module rx_path #(
     );
 
     // -------------------------------------------------------------------------
-    // Per-lane deserializers + FIFOs (hclk → clk_l CDC)
+    // Per-lane deserializers + FIFOs (dclk → clk_l CDC)
     // -------------------------------------------------------------------------
 
     genvar i;
@@ -162,7 +162,8 @@ module rx_path #(
             ) deser (
                 .i_clk_p          (clk_p),
                 .i_clk_n          (clk_n),
-                .i_hclk           (i_hclk),
+                .i_valid          (valid),
+                .i_dclk           (i_dclk),
                 .i_reset          (reset),
                 .i_rx_data        (deserializer_in[i]),
                 .i_fifo_full      (full[i]),
@@ -171,7 +172,7 @@ module rx_path #(
             );
 
             fifo fifo (
-                .i_clk_wr  (i_hclk),
+                .i_clk_wr  (i_dclk),
                 .i_clk_rd  (i_clk_l),
                 .i_reset   (reset),
                 .i_wr_en   (w_en[i]),

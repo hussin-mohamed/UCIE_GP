@@ -8,7 +8,7 @@ module deser_h #(
 )(
   input  wire                    i_clk_p,
   input  wire                    i_clk_n,
-  input  wire                    i_hclk,
+  input  wire                    i_dclk,
   input  wire                    i_reset,
   input  wire                    i_rx_data,
   input  wire                    i_fifo_full,
@@ -64,7 +64,7 @@ module deser_h #(
 
   
   //---- 800MHz CLOCK DOMAIN (CDC & Pulse Generation) --------------------------
-  always @(posedge i_hclk or posedge i_reset) begin
+  always @(posedge i_dclk or posedge i_reset) begin
     if (i_reset) begin
       sync1 <= 1'b0;
       sync2 <= 1'b0;
