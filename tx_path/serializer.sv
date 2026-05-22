@@ -64,8 +64,7 @@ module serializer
   always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
       bit_counter <= 7'd0;
-    end else begin
-    else if (state == ST_IDLE ) begin
+    end else if (state == ST_IDLE ) begin
         bit_counter <= 7'd0;
     else if ((state == ST_TX && flag_63)) begin
       bit_counter <= 7'd1;
@@ -74,7 +73,7 @@ module serializer
         bit_counter <= bit_counter + 7'd1;
       end
     end
-  end
+  
 
   //---- SHIFT REGISTER & FIFO READ --------------------------------------------
   // Read from FIFO at the end of the 31st low cycle
