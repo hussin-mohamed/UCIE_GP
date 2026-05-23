@@ -10,7 +10,7 @@
 
 interface rdi_if #(parameter int NBYTES = 256) (
   input logic clk,
-  input logic rst_n
+  input logic rst
 );
 
   // -------------------------------------------------------------------------
@@ -36,18 +36,18 @@ interface rdi_if #(parameter int NBYTES = 256) (
 
   // Driver side (TB drives lp_data, lp_valid, lp_irdy; samples pl_trdy)
   modport drv_mp (
-    input  clk, rst_n, pl_trdy,
+    input  clk, rst, pl_trdy,
     output lp_data, lp_valid, lp_irdy
   );
 
   // Monitor side (TB samples all signals passively)
   modport mon_mp (
-    input clk, rst_n, lp_data, lp_valid, lp_irdy, pl_trdy
+    input clk, rst, lp_data, lp_valid, lp_irdy, pl_trdy
   );
 
   // DUT side (DUT receives lp_data, lp_valid, lp_irdy; drives pl_trdy)
   modport dut_mp (
-    input  clk, rst_n, lp_data, lp_valid, lp_irdy,
+    input  clk, rst, lp_data, lp_valid, lp_irdy,
     output pl_trdy
   );
 

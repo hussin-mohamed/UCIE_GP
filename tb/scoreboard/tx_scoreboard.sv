@@ -7,18 +7,28 @@
 //              comparison of complete transactions.
 //=============================================================================
 
+import tx_controller_modelling_pkg::*;
+
 class tx_scoreboard extends uvm_scoreboard;
 
   `uvm_component_utils(tx_scoreboard)
 
   // TLM FIFOs — fed by predictor (golden) and egress monitor (actual)
-  uvm_tlm_analysis_fifo #(tx2link_item) golden_fifo;
   uvm_tlm_analysis_fifo #(tx2link_item) actual_fifo;
+  uvm_tlm_analysis_fifo #(rdi_seq_item) rdi_fifo;
+  uvm_tlm_analysis_fifo #(ltsm_seq_item) ltsm_fifo;
 
   // Statistics
   int unsigned match_count;
   int unsigned mismatch_count;
   int unsigned total_count;
+
+    parameter NBYTES = 256;
+    parameter DATA_WIDTH = 64;         //It defines the width of the data input & output ports
+    parameter LANES_NUMBER = 16;
+
+  logic [DATA_WIDTH-1:0] golden_o_lane [0:LANES_NUMBER-1];
+  logic [DATA_WIDTH-1:0] actual_o_lane [0:LANES_NUMBER-1];
 
   // -------------------------------------------------------------------------
   //  Constructor
@@ -37,99 +47,115 @@ class tx_scoreboard extends uvm_scoreboard;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    golden_fifo = new("golden_fifo", this);
     actual_fifo = new("actual_fifo", this);
+    rdi_fifo = new("rdi_fifo", this);
+    ltsm_fifo = new("ltsm_fifo", this);
+
+    // Initialize controller state instances
+    tx_controller_state_init(controller_state_ltsm);
+    tx_controller_state_init(controller_state_cmp);
   endfunction
 
+  // Internal state tracking for context
+  ltsm_encoding_e latest_state;
+  logic [2:0]     latest_lane_map;
+
+  // Controller state instances for isolated FSM state
+  tx_controller_state_t controller_state_ltsm;  // For LTSSM tracking thread
+  tx_controller_state_t controller_state_cmp;   // For comparison thread
+
   // -------------------------------------------------------------------------
-  //  Run Phase — blocking comparison loop
+  //  Run Phase — decoupled comparison loop
   // -------------------------------------------------------------------------
 
   task run_phase(uvm_phase phase);
-    tx2link_item golden, actual;
+    tx2link_item  actual;
+    rdi_seq_item  rdi;
+    ltsm_seq_item ltsm;
 
-    forever begin
-      // Block until both FIFOs have items
-      golden_fifo.get(golden);
-      actual_fifo.get(actual);
+    fork
+      // Thread 1: Continuously update the local state knowledge
+      // This ensures we always know the latest configuration (like lane_map)
+      forever begin
+        ltsm_fifo.get(ltsm);
+        latest_state    = ltsm.encoding;
+        latest_lane_map = ltsm.lane_map;
 
-      total_count++;
+        tx_predictor::predict(
+          controller_state_ltsm,
+          1,
+          latest_state,
+          latest_lane_map,
+          1,
+          {default:0},
+          golden_o_lane
+        );
 
-      // Compare
-      compare_items(golden, actual);
-    end
+      end
+
+      // Thread 2: Main comparison loop driven by egress (actual) data
+      forever begin
+        // 1. Wait for a chunk from the pins (TX2LINK)
+        actual_fifo.get(actual);
+        total_count++;
+
+
+        // 2. Decide if we need RDI data based on the state captured by the monitor
+        if (actual.captured_state == ACTIVE) begin
+          // Only block on RDI if the monitor tagged this chunk as ACTIVE
+          rdi_fifo.get(rdi);
+        end else begin
+          // For non-ACTIVE states, RDI data is irrelevant for the predictor
+          rdi = rdi_seq_item::type_id::create("dummy_rdi");
+          rdi.data = new[NBYTES]; // Prevent "Assignment of 0 elems" fatal error
+        end
+
+        `uvm_info("SCB", $sformatf("Comparing chunk: state=%s, ui_count=%0d",
+                  actual.captured_state.name(), actual.ui_count), UVM_MEDIUM)
+
+        // 3. Run the predictor using the state CAPTURED by the monitor
+        tx_predictor::predict(
+          controller_state_cmp,
+          1,
+          actual.captured_state,
+          latest_lane_map,
+          0,
+          rdi.data,
+          golden_o_lane
+        );
+
+        // 4. Compare directly
+        compare_items(golden_o_lane, actual);
+        actual_o_lane = actual.data_lanes;
+      end
+    join
   endtask
 
-  // -------------------------------------------------------------------------
-  //  Compare Items
-  // -------------------------------------------------------------------------
+  function void compare_items(logic [DATA_WIDTH-1:0] golden [0:LANES_NUMBER-1], tx2link_item actual);
+    bit is_match;
 
-  function void compare_items(tx2link_item golden, tx2link_item actual);
-    bit pass;
-
-    // State metadata must match
-    if (golden.captured_state != actual.captured_state) begin
-      `uvm_error("SCB", $sformatf(
-        "State mismatch: golden=%s, actual=%s",
-        golden.captured_state.name(), actual.captured_state.name()))
-      mismatch_count++;
-      return;
-    end
-
-    // UI count must match
-    if (golden.ui_count != actual.ui_count) begin
-      `uvm_error("SCB", $sformatf(
-        "UI count mismatch for state %s: golden=%0d, actual=%0d",
-        golden.captured_state.name(), golden.ui_count, actual.ui_count))
-      mismatch_count++;
-      return;
-    end
-
-    // For tri-state states, check that actual outputs are Hi-Z
-    if (is_tristate_state(golden.captured_state)) begin
-      check_tristate(actual);
-      return;
-    end
-
-    // Field-level comparison
-    pass = golden.compare(actual);
-
-    if (pass) begin
-      match_count++;
-      `uvm_info("SCB", $sformatf("MATCH [%0d]: state=%s, ui_count=%0d",
-                total_count, golden.captured_state.name(), golden.ui_count), UVM_HIGH)
-    end else begin
-      mismatch_count++;
-      `uvm_error("SCB", $sformatf(
-        "MISMATCH [%0d]: state=%s\nGolden: %s\nActual: %s",
-        total_count, golden.captured_state.name(),
-        golden.convert2string(), actual.convert2string()))
-    end
-  endfunction
-
-  // -------------------------------------------------------------------------
-  //  Check Tri-State — verify all outputs are Hi-Z
-  // -------------------------------------------------------------------------
-
-  function void check_tristate(tx2link_item actual);
-    bit all_z = 1;
-
-    foreach (actual.data_lanes[i]) begin
-      if (actual.data_lanes[i] !== 16'hzzzz) begin
-        all_z = 0;
-        `uvm_error("SCB", $sformatf(
-          "Tri-state violation at UI[%0d]: data_lanes=16'h%04h (expected Hi-Z)",
-          i, actual.data_lanes[i]))
+    // Element-wise comparison (=== for Hi-Z support)
+    // Only compare up to actual.ui_count
+    is_match = 1;
+    foreach (golden[i]) begin
+      for (int j = 0; j < actual.ui_count; j++) begin
+        if (golden[i][j] !== actual.data_lanes[i][j]) begin
+          is_match = 0;
+          break;
+        end
       end
+      if (!is_match) break;
     end
 
-
-    if (all_z) begin
+    if (is_match) begin
       match_count++;
-      `uvm_info("SCB", $sformatf("TRISTATE OK [%0d]: state=%s",
-                total_count, actual.captured_state.name()), UVM_HIGH)
+      `uvm_info("SCB", $sformatf("MATCH [%0d]: ui_count=%0d",
+                total_count, actual.ui_count), UVM_HIGH)
     end else begin
       mismatch_count++;
+      `uvm_error("SCB", $sformatf(
+        "MISMATCH [%0d]:\nActual: %s",
+        total_count, actual.convert2string()))
     end
   endfunction
 

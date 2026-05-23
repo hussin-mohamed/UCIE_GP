@@ -32,8 +32,8 @@ class tx2link_item extends uvm_sequence_item;
   //  Each index [i] holds the sampled value at UI cycle i.
   // -------------------------------------------------------------------------
 
-  // 16 data lanes — data_lanes[ui][lane]
-  logic [15:0] data_lanes [];
+  // 16 data lanes — data_lanes[lane][ui]
+  logic [63:0] data_lanes [0:15];
 
   // -------------------------------------------------------------------------
   //  UVM Registration (no automation macros — manual do_* methods only)
@@ -55,7 +55,6 @@ class tx2link_item extends uvm_sequence_item;
 
   function void init_arrays(int unsigned chunk_size);
     ui_count   = chunk_size;
-    data_lanes = new[chunk_size];
   endfunction
 
   // -------------------------------------------------------------------------
@@ -70,7 +69,6 @@ class tx2link_item extends uvm_sequence_item;
     do_compare &= (ui_count == rhs_.ui_count);
 
     // Compare data lane arrays element by element
-    if (data_lanes.size() != rhs_.data_lanes.size()) return 0;
     foreach (data_lanes[i])
       do_compare &= (data_lanes[i] === rhs_.data_lanes[i]);  // === for Hi-Z compare
 
@@ -82,14 +80,16 @@ class tx2link_item extends uvm_sequence_item;
                   captured_state.name(), ui_count);
 
     // Show first 4 UIs of data lanes for brevity
-    if (data_lanes.size() > 0) begin
+    if (ui_count > 0) begin
       s = {s, ", data[0:3]={"};
-      for (int i = 0; i < 4 && i < data_lanes.size(); i++) begin
+      for (int i = 0; i < 4 && i < ui_count; i++) begin
+        logic [15:0] ui_data;
+        for (int lane = 0; lane < 16; lane++) ui_data[lane] = data_lanes[lane][i];
         if (i > 0) s = {s, ","};
-        if (data_lanes[i] === 16'hzzzz)
+        if (ui_data === 16'hzzzz)
           s = {s, "Z"};
         else
-          s = {s, $sformatf("16'h%04h", data_lanes[i])};
+          s = {s, $sformatf("16'h%04h", ui_data)};
       end
       s = {s, "}"};
     end

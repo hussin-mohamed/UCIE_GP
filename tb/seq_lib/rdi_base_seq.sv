@@ -50,9 +50,6 @@ class rdi_base_seq extends uvm_sequence #(rdi_seq_item);
     if (ltsm_state_fifo == null)
       `uvm_fatal("RDI_SEQ", "ltsm_state_fifo handle is null — must be set before starting")
 
-    // Outer loop — re-enters whenever ACTIVE is reached again
-    forever begin
-
       `uvm_info("RDI_SEQ", "Waiting for ACTIVE state from LTSM...", UVM_LOW)
 
       // Block until LTSM enters ACTIVE state
@@ -92,8 +89,6 @@ class rdi_base_seq extends uvm_sequence #(rdi_seq_item);
         `uvm_info("RDI_SEQ", $sformatf("Flit %0d sent: %s",
                   flit_count, req.convert2string()), UVM_MEDIUM)
       end
-
-    end // forever
   endtask
 
 endclass : rdi_base_seq

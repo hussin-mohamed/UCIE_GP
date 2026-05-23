@@ -21,7 +21,6 @@ class tx_env extends uvm_env;
   tx2link_agent  tx2link_agt;
 
   // Reference model & checking
-  tx_predictor   predictor;
   tx_scoreboard  scoreboard;
   tx_coverage    coverage;
 
@@ -68,7 +67,6 @@ class tx_env extends uvm_env;
     tx2link_agt = tx2link_agent::type_id::create("tx2link_agt", this);
 
     // Instantiate reference model & checking
-    predictor  = tx_predictor::type_id::create("predictor", this);
     scoreboard = tx_scoreboard::type_id::create("scoreboard", this);
     coverage   = tx_coverage::type_id::create("coverage", this);
 
@@ -91,29 +89,18 @@ class tx_env extends uvm_env;
     // 2. LTSM Monitor → tx2link Monitor's internal FIFO
     ltsm_agt.mon.ap.connect(tx2link_agt.mon.ltsm_state_fifo.analysis_export);
 
-    // 3. LTSM Monitor → Predictor
-    ltsm_agt.mon.ap.connect(predictor.ltsm_imp);
-
     // 4. LTSM Monitor → Coverage
     ltsm_agt.mon.ap.connect(coverage.ltsm_imp);
 
-    // ---- RDI Monitor Analysis Port Connections ----
-
-    // 5. RDI Monitor → Predictor
-    rdi_agt.mon.ap.connect(predictor.rdi_imp);
-
     // 6. RDI Monitor → Coverage
     rdi_agt.mon.ap.connect(coverage.rdi_imp);
-
-    // ---- Predictor → Scoreboard ----
-
-    // 7. Predictor golden output → Scoreboard golden FIFO
-    predictor.golden_ap.connect(scoreboard.golden_fifo.analysis_export);
 
     // ---- tx2link Monitor → Scoreboard ----
 
     // 8. tx2link Monitor actual output → Scoreboard actual FIFO
     tx2link_agt.mon.ap.connect(scoreboard.actual_fifo.analysis_export);
+    rdi_agt.mon.ap.connect(scoreboard.rdi_fifo.analysis_export);
+    ltsm_agt.mon.ap.connect(scoreboard.ltsm_fifo.analysis_export);
 
     // ---- Sequencer Container Registration ----
 

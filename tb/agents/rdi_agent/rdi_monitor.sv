@@ -43,7 +43,7 @@ class rdi_monitor extends uvm_monitor;
     rdi_seq_item txn;
 
     // Wait for reset de-assertion
-    @(posedge rdi_vif.rst_n);
+    @(posedge rdi_vif.rst);
 
     forever begin
       @(posedge rdi_vif.clk);
@@ -59,6 +59,7 @@ class rdi_monitor extends uvm_monitor;
           rdi_seq_item::active_flit_size), UVM_HIGH)
 
         // Broadcast to subscribers (predictor, coverage)
+        $display("rdi_write");
         ap.write(txn);
       end
     end

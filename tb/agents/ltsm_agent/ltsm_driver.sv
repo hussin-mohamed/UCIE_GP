@@ -45,8 +45,8 @@ class ltsm_driver extends uvm_driver #(ltsm_seq_item);
     ltsm_vif.lane_map    <= LANE_MAP_ALL_FUNCTIONAL;
 
     // Wait for reset de-assertion
-    @(posedge ltsm_vif.rst_n);
-    @(posedge ltsm_vif.clk);
+    @(negedge ltsm_vif.rst);
+    @(posedge  ltsm_vif.clk);
 
     forever begin
       seq_item_port.get_next_item(req);

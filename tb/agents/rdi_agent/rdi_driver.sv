@@ -44,7 +44,7 @@ class rdi_driver extends uvm_driver #(rdi_seq_item);
     rdi_vif.lp_irdy  <= 1'b0;
 
     // Wait for reset de-assertion
-    @(posedge rdi_vif.rst_n);
+    @(negedge rdi_vif.rst);
     @(posedge rdi_vif.clk);
 
     forever begin

@@ -49,7 +49,7 @@ class ltsm_monitor extends uvm_monitor;
     ltsm_seq_item txn;
 
     // Wait for reset de-assertion
-    @(posedge ltsm_vif.rst_n);
+    @(negedge ltsm_vif.rst);
 
     // Broadcast the initial RESET state
     txn = ltsm_seq_item::type_id::create("ltsm_mon_txn");
@@ -61,7 +61,6 @@ class ltsm_monitor extends uvm_monitor;
       @(posedge ltsm_vif.clk);
 
       // Detect any change on tx_encoding
-      if (ltsm_vif.tx_encoding !== prev_encoding) begin
         txn = ltsm_seq_item::type_id::create("ltsm_mon_txn");
         txn.encoding          = ltsm_encoding_e'(ltsm_vif.tx_encoding);
         txn.lane_map          = ltsm_vif.lane_map;
@@ -69,10 +68,10 @@ class ltsm_monitor extends uvm_monitor;
         `uvm_info("LTSM_MON", $sformatf("State transition: %s -> %s (lane_map=3'b%03b)",
                   prev_encoding.name(), txn.encoding.name(), txn.lane_map), UVM_MEDIUM)
 
+        $display("ltsm_write");
         ap.write(txn);
         prev_encoding = ltsm_encoding_e'(ltsm_vif.tx_encoding);
       end
-    end
   endtask
 
 endclass : ltsm_monitor

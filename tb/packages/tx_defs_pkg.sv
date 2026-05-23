@@ -307,6 +307,18 @@ package tx_defs_pkg;
     endcase
   endfunction
 
+  // Check if encoding involves pattern generation on the egress
+  function automatic logic is_valid_gen_state(ltsm_encoding_e enc);
+    case (enc)
+      REPAIRVAL_VALID_PATTERN_GEN,
+      VALVREF_START_HND,
+      VALTRAINCENTER_START_HND:
+        return 1'b1;
+      default:
+        return 1'b0;
+    endcase
+  endfunction
+
   // Check if lane_map is relevant for this encoding
   function automatic logic uses_lane_map(ltsm_encoding_e enc);
     case (enc)

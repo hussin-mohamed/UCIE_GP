@@ -9,7 +9,7 @@
 //              stub is used. Replace with actual DUT when available.
 //=============================================================================
 
-`timescale 1ns/1ps
+`timescale 1ns/1fs
 
 module tx_tb_top;
 
@@ -23,71 +23,73 @@ module tx_tb_top;
   // -------------------------------------------------------------------------
 
   // Logical clock (for RDI + LTSM agents)
+  realtime clk_period = 10;
   logic clk;
   initial clk = 0;
-  always #5 clk = ~clk;  // 100 MHz (10ns period)
+  always #(clk_period/2) clk = ~clk;  // 100 MHz (10ns period)
 
   // Fast UI clock (for egress agent) — half-rate, 1 fast clk = 2 UI
+  // Ratio: clk / ui_clk = 64
+  // Starts at 1 so posedge ui_clk aligns with posedge clk
+  realtime ui_clk_period = clk_period / 64;
   logic ui_clk;
-  initial ui_clk = 0;
-  always #0.5 ui_clk = ~ui_clk;  // 1 GHz (1ns period) — placeholder
+  initial ui_clk = 1;
+  always #(ui_clk_period/2) ui_clk = ~ui_clk;  // 6.4 GHz (156.25ps period)
 
-  // Active-low reset
-  logic rst_n;
+  // Active-high reset
+  logic rst;
   initial begin
-    rst_n = 0;
+    rst = 1;
     #100;
-    rst_n = 1;
+    rst = 0;
   end
 
   // -------------------------------------------------------------------------
   //  Interface Instantiations
   // -------------------------------------------------------------------------
 
-  rdi_if  #(.NBYTES(256)) rdi_intf  (.clk(clk), .rst_n(rst_n));
-  ltsm_if                 ltsm_intf (.clk(clk), .rst_n(rst_n));
-  tx2link_if              tx2link_intf (.ui_clk(ui_clk), .rst_n(rst_n));
+  rdi_if  #(.NBYTES(256)) rdi_intf  (.clk(clk), .rst(rst));
+  ltsm_if                 ltsm_intf (.clk(clk), .rst(rst));
+  tx2link_if              tx2link_intf (.clk(clk), .ui_clk(ui_clk), .rst(rst));
 
   // -------------------------------------------------------------------------
-  //  DUT Stub — replace with actual RTL when available
+  //  DUT — TX Path RTL wrapper
   // -------------------------------------------------------------------------
   //
-  //  This stub provides minimal connectivity:
-  //  - pl_trdy is always asserted (no backpressure by default)
-  //  - pll_stable and supply_stable assert after a delay
-  //  - tx_done pulses after a fixed latency
-  //  - Egress outputs are driven to Hi-Z
+  //  The wrapper adapts the tx_path RTL to the testbench interface:
+  //  - Converts unpacked/packed array formats for data signals
+  //  - Generates pll_stable and supply_stable (not in RTL)
+  //  - Ties off i_halfrate to 1'b1 (half-rate mode)
 
-  // Stub signals
-  initial begin
-    // RDI stub: always ready
-    rdi_intf.pl_trdy = 1'b1;
+  tx_dut_rtl_wrapper #(
+    .NBYTES(256),
+    .DATA_WIDTH(64),
+    .LANES_NUMBER(16)
+  ) dut_rtl (
+    .clk(clk),
+    .ui_clk(ui_clk),
+    .rst(rst),
 
-    // LTSM stub: PLL/supply stable after 50ns
-    ltsm_intf.pll_stable    = 1'b0;
-    ltsm_intf.supply_stable = 1'b0;
-    ltsm_intf.tx_done       = 1'b0;
+    // RDI
+    .lp_data(rdi_intf.lp_data),
+    .lp_valid(rdi_intf.lp_valid),
+    .lp_irdy(rdi_intf.lp_irdy),
+    .pl_trdy(rdi_intf.pl_trdy),
 
-    #50;
-    ltsm_intf.pll_stable    = 1'b1;
-    ltsm_intf.supply_stable = 1'b1;
-  end
+    // LTSM
+    .tx_encoding(ltsm_intf.tx_encoding),
+    .lane_map(ltsm_intf.lane_map),
+    .pll_stable(ltsm_intf.pll_stable),
+    .supply_stable(ltsm_intf.supply_stable),
+    .tx_done(ltsm_intf.tx_done),
 
-  // Stub tx_done: pulse after every encoding change
-  always @(ltsm_intf.tx_encoding) begin
-    ltsm_intf.tx_done = 1'b0;
-    #20;  // Simulate some processing latency
-    ltsm_intf.tx_done = 1'b1;
-    #10;
-    ltsm_intf.tx_done = 1'b0;
-  end
-
-  // Egress stub: all outputs Hi-Z by default
-  assign tx2link_intf.tx_data  = 16'bz;
-  assign tx2link_intf.tx_clkp  = 1'bz;
-  assign tx2link_intf.tx_clkn  = 1'bz;
-  assign tx2link_intf.tx_valid = 1'bz;
-  assign tx2link_intf.tx_track = 1'bz;
+    // TX2LINK
+    .tx_data(tx2link_intf.tx_data),
+    .tx_clkp(tx2link_intf.tx_clkp),
+    .tx_clkn(tx2link_intf.tx_clkn),
+    .tx_valid(tx2link_intf.tx_valid),
+    .tx_track(tx2link_intf.tx_track)
+  );
 
   // -------------------------------------------------------------------------
   //  SVA Bind (uncomment when DUT is integrated)
@@ -95,7 +97,7 @@ module tx_tb_top;
 
   // bind tx_dut tx_sva sva_inst (
   //   .ui_clk      (egr_intf.ui_clk),
-  //   .rst_n       (rst_n),
+  //   .rst       (rst),
   //   .tx_data     (egr_intf.tx_data),
   //   .tx_clkp     (egr_intf.tx_clkp),
   //   .tx_clkn     (egr_intf.tx_clkn),

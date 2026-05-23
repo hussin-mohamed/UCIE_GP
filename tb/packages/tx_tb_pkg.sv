@@ -15,6 +15,10 @@ package tx_tb_pkg;
   `include "uvm_macros.svh"
 
   import tx_defs_pkg::*;
+  import B2L_modelling_pkg::*;
+  import LFSR_modelling_pkg::*;
+  import tx_controller_modelling_pkg::*;
+  import per_lane_id_modelling_pkg::*;
 
   // -------------------------------------------------------------------------
   //  Layer 1: Sequence Items
