@@ -41,27 +41,3 @@ vlog -sv -suppress 7033 \
   +incdir+tb/coverage \
   +incdir+tb/env \
   +incdir+tb/tests
-vopt +acc tx_tb_top -o opt_tx_tb_top
-vsim -suppress 7033 opt_tx_tb_top -classdebug -l log.log -c +UVM_TESTNAME=tx_smoke_test
-# Add waves for the 3 interfaces
-add wave -group "RDI Interface" -position insertpoint sim:/tx_tb_top/rdi_intf/*
-add wave -group "LTSM Interface" -position insertpoint sim:/tx_tb_top/ltsm_intf/*
-add wave -group "TX2LINK Interface" -position insertpoint  \
-sim:/tx_tb_top/tx2link_intf/clk \
-sim:/tx_tb_top/tx2link_intf/rst \
-sim:/tx_tb_top/tx2link_intf/tx_clkn \
-sim:/tx_tb_top/tx2link_intf/tx_clkp \
-sim:/tx_tb_top/tx2link_intf/tx_data \
-sim:/tx_tb_top/tx2link_intf/tx_track \
-sim:/tx_tb_top/tx2link_intf/tx_valid \
-sim:/tx_tb_top/tx2link_intf/ui_clk
-
-# Run simulation
-run
-
-add wave -position insertpoint  \
-sim:/@tx_scoreboard@1
-add wave -position insertpoint  \
-sim:/@tx2link_monitor@1
-
-run -all
