@@ -37,7 +37,7 @@ class rp_scoreboard extends uvm_scoreboard;
   // --- Components ---
   rp_pred prd;
   
-  rp_cmp_rdi  cmp_rdi;
+  rp_cmp_rdi   cmp_rdi;
   rp_cmp_ltsmc cmp_ltsmc;
 
   // Function: new

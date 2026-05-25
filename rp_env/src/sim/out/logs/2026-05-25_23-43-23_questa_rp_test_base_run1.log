@@ -1,0 +1,547 @@
+# do runsim_2026-05-25_23-43-23.do
+# ** Warning: (vlib-34) Library already exists at "work".
+# Errors: 0, Warnings: 1
+# QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+# Start time: 23:43:26 on May 25,2026
+# vlog ../../../rx_path/LFSR_pattern_generator.sv ../../../rx_path/clk_valid_pattern_detection.sv ../../../rx_path/clk_valid_pattern_detection_tb.sv ../../../rx_path/clock_divider.sv ../../../rx_path/counter_compare.sv ../../../rx_path/demux_1_2.sv ../../../rx_path/deserializer_h.sv ../../../rx_path/deserializer_q.sv ../../../rx_path/fifo.sv ../../../rx_path/lane_id_register.sv ../../../rx_path/mux_2_1.sv ../../../rx_path/per_lane_id_detector.sv ../../../rx_path/per_lane_id_detector_tb.sv ../../../rx_path/per_lane_id_detector_top.svh ../../../rx_path/receivers.sv ../../../rx_path/rx_LFSR.sv ../../../rx_path/rx_LFSR_detection.sv ../../../rx_path/rx_LFSR_tb.svh ../../../rx_path/rx_LFSR_top.sv ../../../rx_path/rx_path.sv ../../../rx_path/synchonizer.sv ../../../rx_path/ucie_lane_to_byte.sv ../../../rx_path/ucie_lane_to_byte_decoder.sv ../../../rx_path/ucie_mux_2_to_1.sv ../../../rx_path/ucie_reordering_block.sv ../../../rx_path/ucie_rx_controller.sv ../../../rx_path/ucie_shift_register.sv "+cover" "+define+SIM" 
+# -- Compiling module LFSR_pattern_generator
+# -- Compiling module clk_valid_pattern_detection
+# -- Compiling module tb_clk_valid_pattern_detection
+# -- Compiling module clock_divider
+# -- Compiling module counter_compare
+# -- Compiling module demux_1_2
+# ** Warning: ../../../rx_path/demux_1_2.sv(5): (vlog-13314) Defaulting port 'din' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module deser_h
+# -- Compiling module deser_q
+# -- Compiling module fifo
+# -- Compiling module lane_id_register
+# -- Compiling module mux_2_1
+# ** Warning: ../../../rx_path/mux_2_1.sv(6): (vlog-13314) Defaulting port 'a' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# ** Warning: ../../../rx_path/mux_2_1.sv(7): (vlog-13314) Defaulting port 'b' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module per_lane_id_detector
+# -- Compiling module per_lane_id_detector_tb
+# -- Compiling module per_lane_id_detector_top
+# ** Warning: ../../../rx_path/per_lane_id_detector_top.svh(28): (vlog-13314) Defaulting port 'i_data_in' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module receivers
+# -- Compiling module rx_LFSR
+# -- Compiling module rx_LFSR_detection
+# -- Compiling module tb_rx_LFSR_top
+# -- Compiling module rx_LFSR_top
+# -- Compiling module rx_path
+# -- Compiling module synchonizer
+# -- Compiling module ucie_lane_to_byte
+# -- Compiling module ucie_lane_to_byte_decoder
+# ** Warning: ../../../rx_path/ucie_lane_to_byte_decoder.sv(50): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+# -- Compiling module ucie_mux_2_to_1
+# -- Compiling module ucie_reordering_block
+# -- Compiling module ucie_rx_controller
+# -- Compiling module ucie_shift_register
+# 
+# Top level modules:
+# 	tb_clk_valid_pattern_detection
+# 	clock_divider
+# 	deser_q
+# 	mux_2_1
+# 	per_lane_id_detector_tb
+# 	tb_rx_LFSR_top
+# 	rx_path
+# End time: 23:43:26 on May 25,2026, Elapsed time: 0:00:00
+# Errors: 0, Warnings: 5
+# QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+# Start time: 23:43:26 on May 25,2026
+# vlog -f src_files.f -mfcu "+define+SIM" 
+# -- Compiling package shared_pkg
+# ** Note: (vlog-2286) ../bfms/rp_ltsm_bfm.sv(22): Using implicit +incdir+C:/questasim64_2021.1/uvm-1.2/../verilog_src/uvm-1.2/src from import uvm_pkg
+# -- Compiling package shared_pkg_sv_unit
+# -- Importing package shared_pkg
+# -- Importing package mtiUvm.uvm_pkg (uvm-1.2 Built-in)
+# -- Compiling interface rp_ltsmc_bfm
+# -- Compiling interface rp_rdi_bfm
+# -- Compiling interface rp_reset_intf
+# -- Compiling interface rp_rmblink_bfm
+# -- Compiling package rp_pkg
+# ** Warning: ../tb/scoreboard/rp_pred.svh(217): (vlog-2251) Illegal concatenation of unpacked value 'success_arr'.
+# ** Warning: ../tb/tests/rp_test_base.svh(185): (vlog-2240) Treating stand-alone use of function 'randomize' as an implicit VOID cast.
+# -- Compiling module rp_tb_top
+# -- Importing package rp_pkg
+# 
+# Top level modules:
+# 	rp_tb_top
+# End time: 23:43:27 on May 25,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 2
+# rp_test_base
+# UVM_HIGH
+# random
+# out/ucdb/2026-05-25_23-43-23_rp_test_base_run1.ucdb
+# out/reports/text/2026-05-25_23-43-23_rp_test_base_run1_code_cov.txt
+# out/reports/text/2026-05-25_23-43-23_rp_test_base_run1_func_cov.txt
+# out/reports/html/2026-05-25_23-43-23_rp_test_base_run1_func_html
+# out/reports/html/2026-05-25_23-43-23_rp_test_base_run1_code_html
+# vsim -voptargs="+acc" -nodpiexports work.rp_tb_top -classdebug -uvmcontrol=all -coverage "+UVM_VERBOSITY=UVM_HIGH" "+UVM_NO_RELNOTES" "+UVM_TESTNAME=rp_test_base" "+UVM_TIMEOUT=100000,YES" -sv_seed random 
+# Start time: 23:43:27 on May 25,2026
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# //  Questa Sim-64
+# //  Version 2021.1 win64 Jan 19 2021
+# //
+# //  Copyright 1991-2021 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.rp_rdi_bfm(fast)
+# Loading work.rp_ltsmc_bfm(fast)
+# Loading work.rp_rmblink_bfm(fast)
+# Loading work.rp_reset_intf(fast)
+# Loading work.shared_pkg(fast)
+# Loading mtiUvm.uvm_pkg(fast)
+# Loading work.rp_pkg(fast)
+# Loading work.shared_pkg_sv_unit(fast)
+# Loading mtiUvm.questa_uvm_pkg(fast)
+# Loading work.rp_tb_top(fast)
+# Loading work.rp_reset_intf(fast__2)
+# Loading work.rp_rdi_bfm(fast__2)
+# Loading work.rp_ltsmc_bfm(fast__2)
+# Loading work.rp_rmblink_bfm(fast__2)
+# Loading work.rx_path(fast)
+# Loading work.receivers(fast)
+# Loading work.clk_valid_pattern_detection(fast)
+# Loading work.synchonizer(fast)
+# Loading work.synchonizer(fast__1)
+# Loading work.synchonizer(fast__2)
+# Loading work.deser_h(fast)
+# Loading work.fifo(fast)
+# Loading work.demux_1_2(fast)
+# Loading work.per_lane_id_detector_top(fast)
+# Loading work.per_lane_id_detector(fast)
+# Loading work.lane_id_register(fast)
+# Loading work.counter_compare(fast)
+# Loading work.per_lane_id_detector(fast__1)
+# Loading work.lane_id_register(fast__1)
+# Loading work.per_lane_id_detector(fast__2)
+# Loading work.lane_id_register(fast__2)
+# Loading work.per_lane_id_detector(fast__3)
+# Loading work.lane_id_register(fast__3)
+# Loading work.per_lane_id_detector(fast__4)
+# Loading work.lane_id_register(fast__4)
+# Loading work.per_lane_id_detector(fast__5)
+# Loading work.lane_id_register(fast__5)
+# Loading work.per_lane_id_detector(fast__6)
+# Loading work.lane_id_register(fast__6)
+# Loading work.per_lane_id_detector(fast__7)
+# Loading work.lane_id_register(fast__7)
+# Loading work.per_lane_id_detector(fast__8)
+# Loading work.lane_id_register(fast__8)
+# Loading work.per_lane_id_detector(fast__9)
+# Loading work.lane_id_register(fast__9)
+# Loading work.per_lane_id_detector(fast__10)
+# Loading work.lane_id_register(fast__10)
+# Loading work.per_lane_id_detector(fast__11)
+# Loading work.lane_id_register(fast__11)
+# Loading work.per_lane_id_detector(fast__12)
+# Loading work.lane_id_register(fast__12)
+# Loading work.per_lane_id_detector(fast__13)
+# Loading work.lane_id_register(fast__13)
+# Loading work.per_lane_id_detector(fast__14)
+# Loading work.lane_id_register(fast__14)
+# Loading work.per_lane_id_detector(fast__15)
+# Loading work.lane_id_register(fast__15)
+# Loading work.rx_LFSR_top(fast)
+# Loading work.rx_LFSR(fast)
+# Loading work.LFSR_pattern_generator(fast)
+# Loading work.rx_LFSR_detection(fast)
+# Loading work.rx_LFSR(fast__1)
+# Loading work.LFSR_pattern_generator(fast__1)
+# Loading work.rx_LFSR(fast__2)
+# Loading work.LFSR_pattern_generator(fast__2)
+# Loading work.rx_LFSR(fast__3)
+# Loading work.LFSR_pattern_generator(fast__3)
+# Loading work.rx_LFSR(fast__4)
+# Loading work.LFSR_pattern_generator(fast__4)
+# Loading work.rx_LFSR(fast__5)
+# Loading work.LFSR_pattern_generator(fast__5)
+# Loading work.rx_LFSR(fast__6)
+# Loading work.LFSR_pattern_generator(fast__6)
+# Loading work.rx_LFSR(fast__7)
+# Loading work.LFSR_pattern_generator(fast__7)
+# Loading work.ucie_lane_to_byte(fast)
+# Loading work.ucie_lane_to_byte_decoder(fast)
+# Loading work.ucie_mux_2_to_1(fast)
+# Loading work.ucie_shift_register(fast)
+# Loading work.ucie_shift_register(fast__1)
+# Loading work.ucie_shift_register(fast__2)
+# Loading work.ucie_reordering_block(fast)
+# Loading work.ucie_rx_controller(fast)
+# ** Warning: (vsim-3015) [PCDPC] - Port size (7) does not match connection size (5) for port 'o_decoding'. The port definition is at: ../../../rx_path/ucie_lane_to_byte_decoder.sv(20).
+#    Time: 0 ns  Iteration: 0  Instance: /rp_tb_top/dut/L2B/u_decoder_inst File: ../../../rx_path/ucie_lane_to_byte.sv Line: 115
+# ** Warning: (vsim-3015) [PCDPC] - Port size (1) does not match connection size (3) for port 'o_clk_results'. The port definition is at: ../../../rx_path/ucie_rx_controller.sv(17).
+#    Time: 0 ns  Iteration: 0  Instance: /rp_tb_top/dut/controller File: ../../../rx_path/rx_path.sv Line: 259
+# Loading C:/questasim64_2021.1/uvm-1.2\win64\uvm_dpi.dll
+# Sv_Seed = 1649861301
+# 1
+# coverage exclude -du rp_sva
+# ** UI-Msg: (vsim-4053) Design unit 'rp_sva' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode {o_msg_out[127:118]} -du ucie_sideband_tx_msg_enc_dec
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sideband_tx_msg_enc_dec' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode {tx_traffic_fifo_msg[127:118]} -du ucie_sb_top
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sb_top' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode {o_msg_out[117]} -du ucie_sideband_tx_msg_enc_dec
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sideband_tx_msg_enc_dec' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode {tx_traffic_fifo_msg[117]} -du ucie_sb_top
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sb_top' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode {o_msg_out[109:101]} -du ucie_sideband_tx_msg_enc_dec
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sideband_tx_msg_enc_dec' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode {tx_traffic_fifo_msg[109:101]} -du ucie_sb_top
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sb_top' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode {o_msg_out[100]} -du ucie_sideband_tx_msg_enc_dec
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sideband_tx_msg_enc_dec' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode {tx_traffic_fifo_msg[100]} -du ucie_sb_top
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sb_top' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode {o_msg_out[98:97]} -du ucie_sideband_tx_msg_enc_dec
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sideband_tx_msg_enc_dec' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode {tx_traffic_fifo_msg[98:97]} -du ucie_sb_top
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sb_top' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode {o_msg_out[93:88]} -du ucie_sideband_tx_msg_enc_dec
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sideband_tx_msg_enc_dec' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode {tx_traffic_fifo_msg[93:88]} -du ucie_sb_top
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sb_top' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -du ucie_sideband_traffic_fifo -fstate state ST_WAIT_FULL
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sideband_traffic_fifo' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode o_stall_traffic -du ucie_sideband_traffic_fifo
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sideband_traffic_fifo' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# coverage exclude -togglenode con_full -du ucie_sideband_traffic_fifo
+# ** UI-Msg: (vsim-4053) Design unit 'ucie_sideband_traffic_fifo' was not found or has null coverage data.
+# ** UI-Msg: (vsim-4036) The 'coverage exclude' command had no effect on some/all objects because
+# no matching coverage data was found.
+# 
+# UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(277) @ 0: reporter [Questa UVM] QUESTA_UVM-1.2.3
+# UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(278) @ 0: reporter [Questa UVM]  questa_uvm::init(all)
+# UVM_INFO @ 0: reporter [RNTST] Running test rp_test_base...
+# UVM_INFO @ 0: reporter [TIMOUTSET] '+UVM_TIMEOUT=100000,YES' provided on the command line is being applied.
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_root.svh(579) @ 0: reporter [UVMTOP] UVM testbench topology:
+# --------------------------------------------------------------------------
+# Name                          Type                        Size  Value     
+# --------------------------------------------------------------------------
+# uvm_test_top                  rp_test_base                -     @377      
+#   env                         rp_env                      -     @392      
+#     ltsmc_agt                 ltsmc_agent                 -     @450      
+#       drvr                    ltsmc_driver                -     @618      
+#         ap                    uvm_analysis_port           -     @786      
+#           recording_detail    integral                    32    'd1       
+#         rsp_port              uvm_analysis_port           -     @635      
+#           recording_detail    integral                    32    'd1       
+#         seq_item_port         uvm_seq_item_pull_port      -     @626      
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       in_ap                   uvm_analysis_port           -     @768      
+#         recording_detail      integral                    32    'd1       
+#       mntr                    ltsmc_monitor               -     @610      
+#         in_ap                 uvm_analysis_port           -     @804      
+#           recording_detail    integral                    32    'd1       
+#         out_ap                uvm_analysis_port           -     @795      
+#           recording_detail    integral                    32    'd1       
+#         reactive_ap           uvm_analysis_port           -     @813      
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       out_ap                  uvm_analysis_port           -     @777      
+#         recording_detail      integral                    32    'd1       
+#       seqr                    ltsmc_sequencer             -     @644      
+#         reactive_exp          uvm_analysis_export         -     @827      
+#           recording_detail    integral                    32    'd1       
+#         reactive_fifo         uvm_tlm_analysis_fifo #(T)  -     @836      
+#           analysis_export     uvm_analysis_imp            -     @880      
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @871      
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @853      
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @862      
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @844      
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         rsp_export            uvm_analysis_export         -     @652      
+#           recording_detail    integral                    32    'd1       
+#         seq_item_export       uvm_seq_item_pull_imp       -     @758      
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#         arbitration_queue     array                       0     -         
+#         lock_queue            array                       0     -         
+#         num_last_reqs         integral                    32    'd1       
+#         num_last_rsps         integral                    32    'd1       
+#       recording_detail        integral                    32    'd1       
+#     rdi_agt                   rdi_agent                   -     @442      
+#       in_ap                   uvm_analysis_port           -     @899      
+#         recording_detail      integral                    32    'd1       
+#       mntr                    rdi_monitor                 -     @891      
+#         in_ap                 uvm_analysis_port           -     @926      
+#           recording_detail    integral                    32    'd1       
+#         out_ap                uvm_analysis_port           -     @917      
+#           recording_detail    integral                    32    'd1       
+#         reactive_ap           uvm_analysis_port           -     @935      
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       out_ap                  uvm_analysis_port           -     @908      
+#         recording_detail      integral                    32    'd1       
+#       recording_detail        integral                    32    'd1       
+#     rmblink_agt               rmblink_agent               -     @458      
+#       drvr                    rmblink_driver              -     @954      
+#         ap                    uvm_analysis_port           -     @1122     
+#           recording_detail    integral                    32    'd1       
+#         rsp_port              uvm_analysis_port           -     @971      
+#           recording_detail    integral                    32    'd1       
+#         seq_item_port         uvm_seq_item_pull_port      -     @962      
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       in_ap                   uvm_analysis_port           -     @1104     
+#         recording_detail      integral                    32    'd1       
+#       mntr                    rmblink_monitor             -     @946      
+#         in_ap                 uvm_analysis_port           -     @1140     
+#           recording_detail    integral                    32    'd1       
+#         out_ap                uvm_analysis_port           -     @1131     
+#           recording_detail    integral                    32    'd1       
+#         reactive_ap           uvm_analysis_port           -     @1149     
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       out_ap                  uvm_analysis_port           -     @1113     
+#         recording_detail      integral                    32    'd1       
+#       seqr                    rmblink_sequencer           -     @980      
+#         reactive_exp          uvm_analysis_export         -     @1163     
+#           recording_detail    integral                    32    'd1       
+#         reactive_fifo         uvm_tlm_analysis_fifo #(T)  -     @1172     
+#           analysis_export     uvm_analysis_imp            -     @1216     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1207     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1189     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1198     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1180     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         rsp_export            uvm_analysis_export         -     @988      
+#           recording_detail    integral                    32    'd1       
+#         seq_item_export       uvm_seq_item_pull_imp       -     @1094     
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#         arbitration_queue     array                       0     -         
+#         lock_queue            array                       0     -         
+#         num_last_reqs         integral                    32    'd1       
+#         num_last_rsps         integral                    32    'd1       
+#       recording_detail        integral                    32    'd1       
+#     rst_drvr                  reset_driver                -     @416      
+#       rsp_port                uvm_analysis_port           -     @433      
+#         recording_detail      integral                    32    'd1       
+#       seq_item_port           uvm_seq_item_pull_port      -     @424      
+#         recording_detail      integral                    32    'd1       
+#       intf_name               string                      10    reset_intf
+#       reset_time_ns           integral                    32    'd0       
+#       recording_detail        integral                    32    'd1       
+#     sb                        rp_scoreboard               -     @408      
+#       axp_in_ltsmc            uvm_analysis_export         -     @1238     
+#         recording_detail      integral                    32    'd1       
+#       axp_in_rmblink          uvm_analysis_export         -     @1229     
+#         recording_detail      integral                    32    'd1       
+#       axp_out_ltsmc           uvm_analysis_export         -     @1256     
+#         recording_detail      integral                    32    'd1       
+#       axp_out_rdi             uvm_analysis_export         -     @1247     
+#         recording_detail      integral                    32    'd1       
+#       cmp_ltsmc               rp_cmp_ltsmc                -     @1281     
+#         axp_in_exp            uvm_analysis_export         -     @1289     
+#           recording_detail    integral                    32    'd1       
+#         axp_out_actual        uvm_analysis_export         -     @1298     
+#           recording_detail    integral                    32    'd1       
+#         expfifo               uvm_tlm_analysis_fifo #(T)  -     @1307     
+#           analysis_export     uvm_analysis_imp            -     @1351     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1342     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1324     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1333     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1315     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         outfifo               uvm_tlm_analysis_fifo #(T)  -     @1360     
+#           analysis_export     uvm_analysis_imp            -     @1404     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1395     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1377     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1386     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1368     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       cmp_rdi                 rp_cmp_rdi                  -     @1273     
+#         axp_in_exp            uvm_analysis_export         -     @1413     
+#           recording_detail    integral                    32    'd1       
+#         axp_out_actual        uvm_analysis_export         -     @1422     
+#           recording_detail    integral                    32    'd1       
+#         expfifo               uvm_tlm_analysis_fifo #(T)  -     @1431     
+#           analysis_export     uvm_analysis_imp            -     @1475     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1466     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1448     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1457     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1439     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         outfifo               uvm_tlm_analysis_fifo #(T)  -     @1484     
+#           analysis_export     uvm_analysis_imp            -     @1528     
+#             recording_detail  integral                    32    'd1       
+#           get_ap              uvm_analysis_port           -     @1519     
+#             recording_detail  integral                    32    'd1       
+#           get_peek_export     uvm_get_peek_imp            -     @1501     
+#             recording_detail  integral                    32    'd1       
+#           put_ap              uvm_analysis_port           -     @1510     
+#             recording_detail  integral                    32    'd1       
+#           put_export          uvm_put_imp                 -     @1492     
+#             recording_detail  integral                    32    'd1       
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       prd                     rp_pred                     -     @1265     
+#         axp_in_ltsmc          uvm_analysis_imp_ltsmc      -     @1546     
+#           recording_detail    integral                    32    'd1       
+#         axp_in_rmblink        uvm_analysis_imp_rmblink    -     @1537     
+#           recording_detail    integral                    32    'd1       
+#         results_ap_ltsmc      uvm_analysis_port           -     @1564     
+#           recording_detail    integral                    32    'd1       
+#         results_ap_rdi        uvm_analysis_port           -     @1555     
+#           recording_detail    integral                    32    'd1       
+#         recording_detail      integral                    32    'd1       
+#       recording_detail        integral                    32    'd1       
+#     vseqr                     virtual_sequencer           -     @469      
+#       rsp_export              uvm_analysis_export         -     @477      
+#         recording_detail      integral                    32    'd1       
+#       seq_item_export         uvm_seq_item_pull_imp       -     @583      
+#         recording_detail      integral                    32    'd1       
+#       recording_detail        integral                    32    'd1       
+#       arbitration_queue       array                       0     -         
+#       lock_queue              array                       0     -         
+#       num_last_reqs           integral                    32    'd1       
+#       num_last_rsps           integral                    32    'd1       
+#     recording_detail          integral                    32    'd1       
+#   recording_detail            integral                    32    'd1       
+# --------------------------------------------------------------------------
+# 
+# UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(339) @ 0: reporter [Questa UVM] End Of Elaboration
+# UVM_INFO ../tb/tests/rp_test_base.svh(152) @ 0: uvm_test_top [start_of_simulation_phase] =============== Start of rp_test_base ===============
+# UVM_INFO ../tb/drivers/reset_driver.svh(109) @ 0: uvm_test_top.env.rst_drvr [RESET_DRIVER] Resetting DUT with 325ns delay...
+# UVM_INFO ../tb/drivers/rp_driver_base.svh(187) @ 5325: uvm_test_top.env.ltsmc_agt.drvr [ltsmc_driver] DRIVED 0 ACTIVE TRANSACTIONS
+# UVM_INFO ../tb/monitors/rp_monitor_base.svh(194) @ 5325: uvm_test_top.env.ltsmc_agt.mntr [ltsmc_monitor] MONITORED 50 OUTPUT TRANSACTIONS
+# UVM_INFO ../tb/monitors/rp_monitor_base.svh(195) @ 5325: uvm_test_top.env.ltsmc_agt.mntr [ltsmc_monitor] MONITORED 0 INPUT TRANSACTIONS
+# UVM_INFO ../tb/monitors/rp_monitor_base.svh(194) @ 5325: uvm_test_top.env.rdi_agt.mntr [rdi_monitor] MONITORED 1 OUTPUT TRANSACTIONS
+# UVM_INFO ../tb/monitors/rp_monitor_base.svh(195) @ 5325: uvm_test_top.env.rdi_agt.mntr [rdi_monitor] MONITORED 50 INPUT TRANSACTIONS
+# UVM_INFO ../tb/drivers/rp_driver_base.svh(187) @ 5325: uvm_test_top.env.rmblink_agt.drvr [rmblink_driver] DRIVED 0 ACTIVE TRANSACTIONS
+# UVM_INFO ../tb/monitors/rp_monitor_base.svh(194) @ 5325: uvm_test_top.env.rmblink_agt.mntr [rmblink_monitor] MONITORED 50 OUTPUT TRANSACTIONS
+# UVM_INFO ../tb/monitors/rp_monitor_base.svh(195) @ 5325: uvm_test_top.env.rmblink_agt.mntr [rmblink_monitor] MONITORED 50 INPUT TRANSACTIONS
+# UVM_INFO ../tb/scoreboard/rp_cmp_base.svh(233) @ 5325: uvm_test_top.env.sb.cmp_ltsmc [rp_cmp_ltsmc] 
+# 
+# 
+# *** TEST FAILED - 0 vectors ran, 0 vectors passed, 0 vectors failed ***
+# 
+# UVM_INFO ../tb/scoreboard/rp_cmp_base.svh(233) @ 5325: uvm_test_top.env.sb.cmp_rdi [rp_cmp_rdi] 
+# 
+# 
+# *** TEST FAILED - 0 vectors ran, 0 vectors passed, 0 vectors failed ***
+# 
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_factory.svh(1645) @ 5325: reporter [UVM/FACTORY/PRINT] 
+#### Factory Configuration (*)
+# 
+#   No instance or type overrides are registered with this factory
+# (*) Types with no associated type name will be printed as <unknown>
+# 
+####
+# 
+# 
+# UVM_INFO ../tb/tests/rp_test_base.svh(215) @ 5325: uvm_test_top [start_of_simulation_phase] =============== End of rp_test_base ===============
+# UVM_INFO verilog_src/uvm-1.2/src/base/uvm_report_server.svh(847) @ 5325: reporter [UVM/REPORT/SERVER] 
+# --- UVM Report Summary ---
+# 
+# ** Report counts by severity
+# UVM_INFO :   20
+# UVM_WARNING :    0
+# UVM_ERROR :    0
+# UVM_FATAL :    0
+# ** Report counts by id
+# [Questa UVM]     3
+# [RESET_DRIVER]     1
+# [RNTST]     1
+# [TIMOUTSET]     1
+# [UVM/FACTORY/PRINT]     1
+# [UVMTOP]     1
+# [ltsmc_driver]     1
+# [ltsmc_monitor]     2
+# [rdi_monitor]     2
+# [rmblink_driver]     1
+# [rmblink_monitor]     2
+# [rp_cmp_ltsmc]     1
+# [rp_cmp_rdi]     1
+# [start_of_simulation_phase]     2
+# 
+# ** Note: $finish    : C:/questasim64_2021.1/win64/../verilog_src/uvm-1.2/src/base/uvm_root.svh(517)
+#    Time: 5325 ns  Iteration: 119  Instance: /rp_tb_top
+# 1
+# Break in Task uvm_pkg/uvm_root::run_test at C:/questasim64_2021.1/win64/../verilog_src/uvm-1.2/src/base/uvm_root.svh line 517
+# Stopped at C:/questasim64_2021.1/win64/../verilog_src/uvm-1.2/src/base/uvm_root.svh line 517
+# End time: 23:43:32 on May 25,2026, Elapsed time: 0:00:05
+# Errors: 0, Warnings: 2

@@ -1,0 +1,531 @@
+Role: You are a professional hardware engineer who are responsible for implementing behavioral models to be part of the predictor of the verification environments
+
+Context:
+- So far, we have finished modelling the individual blocks of the RX-Path: 1) Per-Lane ID Detector, 2) Lane-to-Byte Mapper, 3) RX-LFSR; acts as descrambler in ACTIVE state and LFSR pattern detector in the training and initialization states, 3) Clock and Valid Pattern detectors combined into one block, 4) Deserializer
+- Now, we have to create the core and the brain of the predictor which is the RX-Controller. The RX-Controller takes the state encoding from the LTSM as an input and translates this encoding into control signals to control the blocks of the RX-Path.
+- Based on the control signals generated (e.g. enables, resets, lane map code, etc.), the RX-Path blocks behave in a certain way and consequently some signals are generated from the RX-Path to the LTSM as well as to the RDI. The signals going from the RX-Path to the LTSM are detection results signals that the LTSM uses in the training and initialization states. The signals going to the RDI are the data and the valid signals that the D2D Adapter uses in the ACTIVE state.
+
+Attached Files and Needed Resources:
+- RX-Path top-level RTL file. You need to read this file to have a good top-level view of the RX-Path blocks and their interconnections.
+- LFSR spec document. You need to read this file since it is the main block that we haven't discussed yet.
+- RX-Controller spec document in the form of HTML file that maps each state encoding into the corresponding control signals.
+- Scoreboard components. The scoreboard consists of one predictor and two comparators. The predictor has two exports to get the input items driven by the LTSM driver (axp_in_ltsmc) and RX-Mainband Link driver (i.e. axp_in_rmblink) as well as two ports to send the predicted items of the output items going to the LTSM (axp_out_ltsmc) and the output items going to the RDI (i.e. axp_out_rdi). The cmp_ltsmc and the cmp_rdi comparators compare the predicted LTSM item against the monitored one and the predicted RDI item against the predicted one respectively. You need to read these files to be ready to write the predictor to model the RX-Controller.
+- The Link Training and Initialization section from the UCIe standard. You need to read this section to be fully aquaitinted with the LTSM flow as well as each state in detail.
+- The section from the UCIe standard talking about the LFSR.
+- The three sequence items that move across the environment. You need to read these files to know the fields that you are going to process and predict. Here are the three items:
+```
+class rmblink_seq_item extends uvm_sequence_item;
+
+  rand logic          [7:0]             val_stream   [];    // Serialized 8-bit valid stream representing the Valid signal used during link training or active phases.
+  rand logic                            clk_stream_p [];    // Serialized positive clock stream used for clock training as well as data and valid sampling by the partner.
+  rand logic                            clk_stream_n [];    // Serialized negative clock stream used for clock training as well as data and valid samplingby the partner.
+  rand logic                            track_stream [];    // Serialized track stream.
+  rand int unsigned                     idle_ui_cnt;        // Specifies the number of idle Unit Intervals (UIs) to inject before or after the active/training transmission. Used by the driver only.
+  rand pattern_type_t                   pattern_type;       // Selects the specific physical training or test pattern format (CLK_PATTERN, VAL_PATTERN, or DATA_PATTERN). Used by the driver only.
+  rand logic          [pDATA_WIDTH-1:0] data [pNUM_LANES];  // Two-dimensional array storing the explicit per-lane data payload to be driven across the physical link.
+
+  `uvm_object_utils_begin(rmblink_seq_item)
+    `uvm_field_int        (val_stream,                   UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_array_int  (clk_stream_p,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_array_int  (clk_stream_n,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_array_int  (track_stream,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (idle_ui_cnt,                  UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_enum       (pattern_type_t, pattern_type, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_sarray_int (data,                         UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+  `uvm_object_utils_end
+
+  // Function: new
+  // ...
+
+  extern function new(string name = "");
+
+
+  // Function: do_print
+  //
+  // Extends the default UVM printout with raw values for invalid enums.
+  
+  extern virtual function void do_print(uvm_printer printer);
+
+endclass : rmblink_seq_item
+
+class rdi_seq_item extends uvm_sequence_item;
+
+  logic [pNBYTES-1:0][7:0] data;
+
+  `uvm_object_utils_begin(rdi_seq_item)
+    `uvm_field_int(data, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
+  `uvm_object_utils_end
+
+  // Function: new
+  //
+  // Creates a new LTSM sequence item and initializes the supported encoding
+  // lists from the shared message tables when needed.
+  
+  extern function new(string name = "");
+
+
+  // Function: do_print
+  //
+  // Extends the default UVM printout with raw values for invalid enums.
+  
+  extern virtual function void do_print(uvm_printer printer);
+
+endclass : rdi_seq_item
+
+class ltsmc_seq_item extends uvm_sequence_item;
+
+  lane_map_code_t         lane_map_code;    // Selects lane mapping configuration.
+  rx_encoding_t           rx_encoding;      // Current state of the RX FSM.
+  rand logic [15:0]       error_threshold;  // Error threshold for the valid and data pattern detection.
+  logic                   half_rate;        // Rate mode selector. Always set to 1 and used by the driver only.
+  logic [pDATA_WIDTH-1:0] rx_data_results,  // One bit for each lane which indicates the successful detection of the LFSR pattern on that lane.
+
+  `uvm_object_utils_begin(ltsmc_seq_item)
+    `uvm_field_enum       (lane_map_code_t, lane_map_code, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_enum       (rx_encoding_t,   rx_encoding,   UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (error_threshold,                UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (half_rate,                      UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int        (rx_data_results,                UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
+  `uvm_object_utils_end
+
+  // Function: new
+  //
+  // Creates a new LTSM sequence item and initializes the supported encoding
+  // lists from the shared message tables when needed.
+  
+  extern function new(string name = "");
+
+
+  // Function: do_print
+  //
+  // Extends the default UVM printout with raw values for invalid enums.
+  
+  extern virtual function void do_print(uvm_printer printer);
+
+endclass : ltsmc_seq_item
+```
+
+- The state encoding enum where you are going to use this enum throughout the entire model:
+```
+  //-----------------------------------------------------------------------------
+  // RX State Encoding Typedef Enum
+  // Source: LTSM Specifications Document
+  // Encoding [8:0]: [8:7] = Module (2b) | [6:3] = State (4b) | [2:0] = Substate (3b)
+  //-----------------------------------------------------------------------------
+
+  typedef enum logic [8:0] {
+
+    // =========================================================================
+    // 00: INITIALIZATION PHASE
+    // =========================================================================
+
+    // --- 1. RESET ---
+    RESET_Reset                                    = 9'b00_0000_000, // Hex: 9'h000 (PLL/Power Stabilization)
+
+    // --- 2. SBINIT ---
+    SBINIT_RX_Wait_Out_Of_Reset                    = 9'b00_0001_000, // Hex: 9'h008 (Wait for MSG)
+    SBINIT_RX_Done_Handshake                       = 9'b00_0001_001, // Hex: 9'h009 (Send Done REQ/RESP)
+
+    // --- 3. MBINIT PARAM ---
+    MBINIT_PARAM_RX_Wait_Config_REQ                = 9'b00_0010_000, // Hex: 9'h010 (Idle)
+    MBINIT_PARAM_RX_Check_Parameters               = 9'b00_0010_001, // Hex: 9'h011 (Resolve Capabilities)
+    MBINIT_PARAM_RX_Send_RESP                      = 9'b00_0010_010, // Hex: 9'h012 (Send Config RESP)
+
+    // --- 4. MBINIT CAL ---
+    MBINIT_CAL_RX_Done_Handshake                   = 9'b00_0011_000, // Hex: 9'h018 (Send Cal Done RESP)
+
+    // --- 5. MBINIT REPAIRCLK ---
+    MBINIT_REPAIRCLK_RX_Init_Handshake             = 9'b00_0100_000, // Hex: 9'h020 (Send Init RESP)
+    MBINIT_REPAIRCLK_RX_Pattern_Detection          = 9'b00_0100_001, // Hex: 9'h021 (Check Clock/Track)
+    MBINIT_REPAIRCLK_RX_Wait_Result_REQ            = 9'b00_0100_010, // Hex: 9'h022 (Wait for Log Request)
+    MBINIT_REPAIRCLK_RX_Send_RESP                  = 9'b00_0100_011, // Hex: 9'h023 (Send Result Log)
+    MBINIT_REPAIRCLK_RX_Done_Handshake             = 9'b00_0100_100, // Hex: 9'h024 (Send Done RESP)
+
+    // --- 6. MBINIT REPAIRVAL ---
+    MBINIT_REPAIRVAL_RX_Init_Handshake             = 9'b00_0101_000, // Hex: 9'h028 (Send Init RESP)
+    MBINIT_REPAIRVAL_RX_Valid_Pattern_Det          = 9'b00_0101_001, // Hex: 9'h029 (Check VALTRAIN)
+    MBINIT_REPAIRVAL_RX_Wait_Result_REQ            = 9'b00_0101_010, // Hex: 9'h02A (Wait for Log Request)
+    MBINIT_REPAIRVAL_RX_Send_Result_RESP           = 9'b00_0101_011, // Hex: 9'h02B (Send Result Log)
+    MBINIT_REPAIRVAL_RX_Done_Handshake             = 9'b00_0101_100, // Hex: 9'h02C (Send Done RESP)
+
+    // --- 7. MBINIT REVERSAL ---
+    MBINIT_REVERSAL_RX_Init_Handshake              = 9'b00_0110_000, // Hex: 9'h030 (Send Init RESP)
+    MBINIT_REVERSAL_RX_Clear_Log_Hnd               = 9'b00_0110_001, // Hex: 9'h031 (Reset Error Counters)
+    MBINIT_REVERSAL_RX_Per_Lane_ID_Det             = 9'b00_0110_010, // Hex: 9'h032 (Identify Lanes)
+    MBINIT_REVERSAL_RX_Result_Handshake            = 9'b00_0110_011, // Hex: 9'h033 (Send Result RESP)
+    MBINIT_REVERSAL_RX_Done_Handshake              = 9'b00_0110_100, // Hex: 9'h034 (Send Done RESP)
+
+    // --- 8. MBINIT REPAIRMB ---
+    MBINIT_REPAIRMB_RX_Init_Handshake             = 9'b00_0111_000, // Hex: 9'h038 (Send Start RESP)
+    MBINIT_REPAIRMB_RX_Wait_Apply_Degrade         = 9'b00_0111_010, // Hex: 9'h03A (Wait for TX Map)
+    MBINIT_REPAIRMB_RX_Degrade                    = 9'b00_0111_011, // Hex: 9'h03B (Update Hardware)
+    MBINIT_REPAIRMB_RX_Send_Degrade_Resp          = 9'b00_0111_100, // Hex: 9'h03C (Confirm Degrade)
+    MBINIT_REPAIRMB_RX_Done_Handshake             = 9'b00_0111_101, // Hex: 9'h03D (Send End RESP)
+
+    // --- 9. TRAINERROR ---
+    TRAINERROR_RX_Handshake                        = 9'b00_1000_000, // Hex: 9'h040 (Send Error RESP)
+    TRAINERROR_RX_TrainError                       = 9'b00_1000_001, // Hex: 9'h041 (Wait 8ms Timeout)
+    TRAINERROR_RX_Reset                            = 9'b00_1000_010, // Hex: 9'h042 (Go to RESET)
+
+    // =========================================================================
+    // 01: TRAIN PHASE
+    // =========================================================================
+
+    // --- 1. MBTRAIN VALVREF ---
+    MBTRAIN_VALVREF_RX_Start_Handshake             = 9'b01_0000_000, // Hex: 9'h080 (Send Vref Start REQ)
+    MBTRAIN_VALVREF_RX_End_Handshake               = 9'b01_0000_010, // Hex: 9'h082 (Send End REQ)
+
+    // --- 2. MBTRAIN DATAVREF ---
+    MBTRAIN_DATAVREF_RX_Start_Handshake            = 9'b01_0001_000, // Hex: 9'h088 (Send Start REQ)
+    MBTRAIN_DATAVREF_RX_End_Handshake              = 9'b01_0001_010, // Hex: 9'h08A (Send End REQ)
+
+    // --- 3. MBTRAIN SPEEDIDLE ---
+    MBTRAIN_SPEEDIDLE_RX_Speed_Transition          = 9'b01_1001_000, // Hex: 9'h0C8 (Change Clock Div)
+    MBTRAIN_SPEEDIDLE_RX_End_Handshake             = 9'b01_1001_001, // Hex: 9'h0C9 (Success -> Retrain)
+
+    // --- 4. MBTRAIN TXSELFCAL ---
+    MBTRAIN_TXSELFCAL_RX_End_Handshake             = 9'b01_1010_000, // Hex: 9'h0D0 (Send End REQ)
+
+    // --- 4. MBTRAIN RXCLKCAL ---
+    MBTRAIN_RXCLKCAL_RX_Start_Handshake            = 9'b01_0011_000, // Hex: 9'h098 (Send Start REQ)
+    MBTRAIN_RXCLKCAL_RX_Clock_Shifting_Op          = 9'b01_0011_001, // Hex: 9'h099 (Wait for RX shift)
+    MBTRAIN_RXCLKCAL_RX_End_Handshake              = 9'b01_0011_010, // Hex: 9'h09A (Send End REQ)
+
+    // --- 5. MBTRAIN VALTRAINCENTER ---
+    MBTRAIN_VALTRAINCENTER_RX_Start_Handshake      = 9'b01_0100_000, // Hex: 9'h0A0 (Send Start REQ)
+    MBTRAIN_VALTRAINCENTER_RX_End_Handshake        = 9'b01_0100_010, // Hex: 9'h0A2 (Send End REQ)
+
+    // --- 6. MBTRAIN VALTRAINVREF ---
+    MBTRAIN_VALTRAINVREF_RX_Start_Handshake        = 9'b01_1101_000, // Hex: 9'h0E8 (Send Start REQ)
+    MBTRAIN_VALTRAINVREF_RX_End_Handshake          = 9'b01_1101_010, // Hex: 9'h0EA (Send End REQ)
+
+    // --- 7. MBTRAIN DATATRAINCENTER1 ---
+    MBTRAIN_DTC1_RX_Start_Handshake                = 9'b01_0010_000, // Hex: 9'h090 (Send Start REQ)
+    MBTRAIN_DTC1_RX_End_Handshake                  = 9'b01_0010_010, // Hex: 9'h092 (Send End REQ)
+
+    // --- 8. MBTRAIN DATATRAINVREF ---
+    MBTRAIN_DATATRAINVREF_RX_Start_Handshake       = 9'b01_1110_000, // Hex: 9'h0F0 (Send Start REQ)
+    MBTRAIN_DATATRAINVREF_RX_End_Handshake         = 9'b01_1110_010, // Hex: 9'h0F2 (Send End REQ)
+
+    // --- 9. MBTRAIN RXDESKEW ---
+    MBTRAIN_RXDESKEW_RX_Start_Handshake            = 9'b01_0101_000, // Hex: 9'h0A8 (Send Start REQ)
+    MBTRAIN_RXDESKEW_RX_EQ_Preset_Handshake        = 9'b01_0101_001, // Hex: 9'h0A9 (Send EQ Preset REQ)
+    MBTRAIN_RXDESKEW_RX_Deskew_Operation           = 9'b01_0101_010, // Hex: 9'h0AA (Wait for Deskew)
+    MBTRAIN_RXDESKEW_RX_Datacenter_Handshake       = 9'b01_0101_011, // Hex: 9'h0AB (Exit to DTC2)
+    MBTRAIN_RXDESKEW_RX_End_Handshake              = 9'b01_0101_100, // Hex: 9'h0AC (Exit to LinkSpeed)
+    MBTRAIN_RXDESKEW_RX_Train_Error_Handshake      = 9'b01_0101_101, // Hex: 9'h0AD (Exit to Error)
+
+    // --- 10. MBTRAIN DATATRAINCENTER2 ---
+    MBTRAIN_DTC2_RX_Start_Handshake                = 9'b01_0110_000, // Hex: 9'h0B0 (Send Start REQ)
+    MBTRAIN_DTC2_RX_End_Handshake                  = 9'b01_0110_010, // Hex: 9'h0B2 (Send End REQ)
+
+    // --- 11. MBTRAIN LINKSPEED ---
+    MBTRAIN_LINKSPEED_RX_Start_Handshake           = 9'b01_0111_000, // Hex: 9'h0B8 (Send Start REQ)
+    MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd       = 9'b01_0111_010, // Hex: 9'h0BA (Success -> LinkInit)
+    MBTRAIN_LINKSPEED_RX_Error_REQ                 = 9'b01_0111_011, // Hex: 9'h0BB (Fail -> Eval Error)
+    MBTRAIN_LINKSPEED_RX_Phy_Retrain_Hnd           = 9'b01_0111_100, // Hex: 9'h0BC (Critical Fail -> Retrain)
+    MBTRAIN_LINKSPEED_RX_Exit_Repair_Hnd           = 9'b01_0111_101, // Hex: 9'h0BD (Exit to Repair)
+    MBTRAIN_LINKSPEED_RX_Exit_SpeedDegrade_Hnd     = 9'b01_0111_110, // Hex: 9'h0BE (Exit to Speed Degrade)
+
+    // --- 12. MBTRAIN REPAIR ---
+    MBTRAIN_REPAIR_RX_Start_Handshake              = 9'b01_1000_000, // Hex: 9'h0C0 (Send Init REQ)
+    MBTRAIN_REPAIR_RX_Apply_Degrade_Handshake      = 9'b01_1000_001, // Hex: 9'h0C1 (Negotiate Width)
+    MBTRAIN_REPAIR_RX_End_Handshake                = 9'b01_1000_010, // Hex: 9'h0C2 (Send End REQ)
+
+    // --- 13. PHYRETRAIN ---
+    PHYRETRAIN_RX_PL_StallReq_Handshake            = 9'b01_1011_000, // Hex: 9'h0D8 (Ask Adapter to Stall)
+    PHYRETRAIN_RX_Retrain_Handshake                = 9'b01_1011_001, // Hex: 9'h0D9 (Sync with Partner)
+    PHYRETRAIN_RX_Start_Req_Handshake              = 9'b01_1011_010, // Hex: 9'h0DA (Choose next state)
+
+    // =========================================================================
+    // 10: ACTIVE PHASE
+    // =========================================================================
+
+    // --- 1. LINKINIT ---
+    LINKINIT_RX_PL_Clk_Req_Handshake              = 9'b10_0000_000, // Hex: 9'h100 (Req Adapter Clock)
+    LINKINIT_RX_LP_Wake_Req_Handshake             = 9'b10_0000_001, // Hex: 9'h101 (Wake Adapter)
+    LINKINIT_RX_State_Rsp_Handshake               = 9'b10_0000_010, // Hex: 9'h102 (Ack State Exch)
+
+    // --- 2. ACTIVE ---
+    ACTIVE_RX_Active                               = 9'b10_0001_000, // Hex: 9'h108 (Data Flowing)
+
+    // --- 3. L1 / Exit HS ---
+    L1_RX_Start_HS                                 = 9'b10_0010_000, // Hex: 9'h110 (Entering Sleep)
+    L1_RX_L1_State                                 = 9'b10_0010_001, // Hex: 9'h111 (Low Power State)
+    L1_RX_Wait1us                                  = 9'b10_0011_010, // Hex: 9'h11A (Wait for RDI)
+    L1_RX_Refuse                                   = 9'b10_0011_011, // Hex: 9'h11B (Refuse L1)
+    EXIT_HS_RX_Exit_Handshake                      = 9'b10_0011_100, // Hex: 9'h11C (Wakeup from L1)
+
+    // =========================================================================
+    // 11: DATA-TO-CLOCK EYE SWEEP
+    // =========================================================================
+    // --- 1. TX Initiated (state = 4'b0000) ---
+    Data_To_Clock_test_RX_INIT_Handshake_TX_Init          = 9'b11_0000_000, // Hex: 9'h180
+    Data_To_Clock_test_RX_LFSR_Clear_Handshake_TX_Init    = 9'b11_0000_001, // Hex: 9'h181
+    Data_To_Clock_test_RX_Pattern_Detection_TX_Init       = 9'b11_0000_010, // Hex: 9'h182
+    Data_To_Clock_test_RX_Result_Handshake_TX_Init        = 9'b11_0000_011, // Hex: 9'h183
+    Data_To_Clock_test_RX_End_Init_Handshake_TX_Init      = 9'b11_0000_100, // Hex: 9'h184
+
+    // --- 2. RX Initiated (state = 4'b0001) ---
+    Data_To_Clock_test_RX_INIT_Handshake_RX_Init          = 9'b11_0001_000, // Hex: 9'h188
+    Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init    = 9'b11_0001_001, // Hex: 9'h189
+    Data_To_Clock_test_RX_Pattern_Detection_RX_Init       = 9'b11_0001_010, // Hex: 9'h18A
+    Data_To_Clock_test_RX_Result_Handshake_RX_Init        = 9'b11_0001_011, // Hex: 9'h18B
+    Data_To_Clock_test_RX_Sweep_Result_Handshake          = 9'b11_0001_100, // Hex: 9'h18C
+    Data_To_Clock_test_RX_End_Init_Handshake_RX_Init      = 9'b11_0001_101  // Hex: 9'h18D
+
+  } rx_encoding_t;
+```
+- The modelling functions of the individual blocks which are already implemented and tested. You need to fully understand those functions since your predictor should know how to use them properly. Here are the functions:
+```
+// ============================================================================
+// PACKAGE: per_lane_id_detector_pkg
+// ============================================================================
+package per_lane_id_detector_pkg;
+  `include "uvm_macros.svh"
+  import uvm_pkg::*;
+
+  parameter pNUM_LANES  = 16;
+  parameter pDATA_WIDTH = 64;
+  parameter pNBYTES     = 256;
+
+  int per_lane_pat_cnt [pNUM_LANES];
+  int per_lane_iter_cnt;
+
+  function void get_per_lane_id_results(
+     input  logic [(pDATA_WIDTH/16)-1:0][15:0] _lanes         [pNUM_LANES]
+    ,input  logic [2:0]                        _lane_map_code
+    ,output logic                              _lanes_success [pNUM_LANES]
+  );
+    int start_lane;
+    int num_active_lanes;
+
+    // Initialize all success flags to 0
+    for (int i = 0; i < pNUM_LANES; i++) begin
+      _lanes_success[i] = 1'b0;
+    end
+
+    // Determine offset based on your lane map code
+    case (_lane_map_code)
+      3'b001: begin start_lane = 0; num_active_lanes = 8;  end // x8 mode, lower lanes
+      3'b010: begin start_lane = 8; num_active_lanes = 8;  end // x8 mode, upper lanes
+      3'b011: begin start_lane = 0; num_active_lanes = 16; end // x16 mode
+      3'b100: begin start_lane = 0; num_active_lanes = 4;  end // x4 mode, lower lanes
+      3'b101: begin start_lane = 4; num_active_lanes = 4;  end // x4 mode, upper lanes
+      
+      default:
+      begin
+        `uvm_fatal("PRD_PERLANE", $sformatf("Unsupported lane_map_code: %0b, Supported codes are 001b...101b", _lane_map_code))
+      end
+    endcase // lane_map_code
+
+    for (int lane_idx = start_lane; lane_idx < (start_lane + num_active_lanes); lane_idx++) begin
+      for (int pat_idx = 0; pat_idx < pDATA_WIDTH/16; pat_idx++) begin
+        if (_lanes[lane_idx][pat_idx] == {4'b1010, 8'(lane_idx), 4'b1010}) begin
+          per_lane_pat_cnt[lane_idx]++;
+        end else begin
+          per_lane_pat_cnt[lane_idx] = 0;
+        end
+      end
+    end
+
+    foreach (per_lane_pat_cnt[lane_idx]) begin
+      if (per_lane_pat_cnt[lane_idx] >= 16) begin
+        _lanes_success[lane_idx] = 1;
+      end else begin
+        _lanes_success[lane_idx] = 0;
+      end
+    end
+
+    if (per_lane_iter_cnt == ((128*16)/(pDATA_WIDTH))) begin
+      per_lane_iter_cnt = 0;
+    end else begin
+      per_lane_iter_cnt++;
+    end
+  endfunction : get_per_lane_id_results
+
+endpackage : per_lane_id_detector_pkg
+
+//=============================================================================
+// PACKAGE: l2b_pkg
+//=============================================================================
+package l2b_pkg;
+  `include "uvm_macros.svh"
+  import uvm_pkg::*;
+
+  parameter pNUM_LANES  = 16;
+  parameter pDATA_WIDTH = 64;
+  parameter pNBYTES     = 256;
+
+  int l2b_iter_cnt;
+
+  function void lane2byte(
+     input  logic [(pDATA_WIDTH/8)-1:0][7:0] _lanes [pNUM_LANES]
+    ,input  logic [2:0]                      _lane_map_code
+    ,output logic [pNBYTES-1:0][7:0]         _data
+  );
+
+    int data_byte_idx;
+    int lane_byte_idx;
+    int lane_idx;
+    int start_lane;
+    int byte_step;
+    int num_iter;
+
+    // Determine offset based on your lane map code
+    case (_lane_map_code)
+      3'b001: begin start_lane = 0; byte_step = 8;  end // x8 mode, lower lanes
+      3'b010: begin start_lane = 8; byte_step = 8;  end // x8 mode, upper lanes
+      3'b011: begin start_lane = 0; byte_step = 16; end // x16 mode
+      3'b100: begin start_lane = 0; byte_step = 4;  end // x4 mode, lower lanes
+      3'b101: begin start_lane = 4; byte_step = 4;  end // x4 mode, upper lanes
+      
+      default:
+      begin
+        `uvm_fatal("PRD_L2B", $sformatf("Unsupported lane_map_code: %0b, Supported codes are 001b...101b", _lane_map_code))
+      end
+    endcase // lane_map_code
+
+    for (int norm_idx = 0; norm_idx < byte_step; norm_idx++) begin
+      logic [(pDATA_WIDTH/8)-1:0][7:0] lane;
+      lane_idx = start_lane + norm_idx;
+      lane = _lanes[lane_idx];
+
+      for (int lane_byte_idx = 0; lane_byte_idx < (pDATA_WIDTH/8); lane_byte_idx++) begin
+        data_byte_idx = byte_step*(8*l2b_iter_cnt + lane_byte_idx) + norm_idx;
+        _data[data_byte_idx] = lane[lane_byte_idx];
+      end
+    end
+
+    num_iter = (pNBYTES/(8*byte_step)) - 1;
+
+    if (l2b_iter_cnt == num_iter) begin
+      l2b_iter_cnt = 0;
+    end else begin
+      l2b_iter_cnt++;
+    end
+  endfunction : lane2byte
+
+endpackage : l2b_pkg
+
+package rx_lfsr_pkg;
+  parameter pDATA_WIDTH = 64;
+  parameter pLFSR_TAPS = 23;
+  parameter pNUM_LANES = 16;
+  parameter logic [pLFSR_TAPS-1:0] LANE_ID [0:7] = '{
+    23'h1DBFBC, // Lane 0,8
+    23'h0607BB, // Lane 1,9
+    23'h1EC760, // Lane 2,10
+    23'h18C0DB, // Lane 3,11
+    23'h010F12, // Lane 4,12
+    23'h19CFC9, // Lane 5,13
+    23'h0277CE, // Lane 6,14
+    23'h1BB807  // Lane 7,15
+  };
+
+  static logic [pLFSR_TAPS-1:0] lfsr_state [pNUM_LANES-1:0];
+  static logic [pLFSR_TAPS-1:0] lfsr_last_state [pNUM_LANES-1:0];
+  static int lane_error_count [pNUM_LANES-1:0];
+  logic expected_bit;
+
+  function static load_lfsr_state (
+     input  int                     _bit_index
+    ,output logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES-1:0]
+  );
+    for (int i = 0; i < pNUM_LANES; i++) begin
+      lfsr_state[i] = LANE_ID[i % 8];
+      _out_data[i][_bit_index] = lfsr_state[i][pLFSR_TAPS-1];
+    end
+  endfunction : load_lfsr_state
+
+  function static train_detection(
+     input  logic [pDATA_WIDTH-1:0] _data             [pNUM_LANES-1:0]
+    ,input  int                     _error_threshold
+    ,input  int                     _bit_index
+    ,output bit                     _success          [pNUM_LANES-1:0]
+    ,output logic [pDATA_WIDTH-1:0] _out_data         [pNUM_LANES-1:0]
+  );
+    for (int i = 0; i < pNUM_LANES; i++) begin
+      expected_bit = lfsr_state[i][pLFSR_TAPS-1];
+      _out_data[i][_bit_index] = lfsr_state[i][pLFSR_TAPS-1];
+      if (_data[i][_bit_index] !== expected_bit) begin
+        lane_error_count[i]++;
+      end
+      if (lane_error_count[i] > _error_threshold) begin
+        _success[i] = 1'b0;
+      end else begin
+        _success[i] = 1'b1;
+      end
+    end
+  endfunction : train_detection
+
+  function update_lfsr_state(input bit load);
+    if (!load) begin
+      foreach (lfsr_state[i,j]) begin
+        if ((j == 2) || (j == 5) || (j == 8) || (j == 16) || (j == 21)) begin
+          lfsr_state[i][j] = lfsr_last_state[i][j-1] ^ lfsr_last_state[i][pLFSR_TAPS-1];
+        end else if (j == 0) begin
+          lfsr_state[i][j] = lfsr_last_state[i][pLFSR_TAPS-1];
+        end else begin
+          lfsr_state[i][j] = lfsr_last_state[i][j-1];
+        end
+      end
+    end
+
+    lfsr_last_state = lfsr_state;
+  endfunction : update_lfsr_state
+
+  function static descramble_data(
+     input  logic [pDATA_WIDTH-1:0] _data [pNUM_LANES-1:0]
+    ,input  int                     _bit_index
+    ,output logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES-1:0]
+  );
+    for (int i = 0; i < pNUM_LANES; i++) begin
+      _out_data[i][_bit_index] = _data[i][_bit_index] ^ lfsr_state[i][pLFSR_TAPS-1];
+    end
+  endfunction : descramble_data
+  
+  function static rx_lfsr (
+     input  bit                     _train
+    ,input  bit                     _load
+    ,input  logic [pDATA_WIDTH-1:0] _data             [pNUM_LANES-1:0]
+    ,input  int                     _error_threshold
+    ,output bit                     _success          [pNUM_LANES-1:0]
+    ,output logic [pDATA_WIDTH-1:0] _out_data         [pNUM_LANES-1:0]
+  );
+    for (int bit_index = 0; bit_index < pDATA_WIDTH; bit_index++) begin   
+      if (_load)begin
+        load_lfsr_state(_out_data,bit_index);
+        lane_error_count = '{default:0};
+      end else if (_train) begin
+        train_detection(_data,_success,_error_threshold,bit_index,_out_data);
+      end else begin
+        descramble_data(_data,bit_index,_out_data);
+      end
+      update_lfsr_state(_load);
+    end  
+  endfunction : rx_lfsr
+
+endpackage : rx_lfsr_pkg
+
+```
+
+Task:
+- Write the predictor implementation that models the controller behavior.
+- The models of the individual blocks are already implemented and tested (i.e. Per-Lane ID Detector, Lane-to-Byte Mapper, RX-LFSR)
+- The Clock and Valid Pattern Detector is completely modelled and checked using SystemVerilog assertions, and therefore, completely ignore them while writing the predictor.
+- The predictor needs to determine which function it should call based on the given state encoding and pass the arguments properly using the given fields from the input items.
+- The functions are given encapsulated inside packages. However, you should get them out of their packages and put them inside the predictor along with any global variable as a global variable inside the predictor.
+- The predictor also should override the pre_reset_phase to reset any variables like l2b_iter_cnt, per_lane_pat_cnt, per_lane_iter_cnt, lfsr_state, lfsr_last_state, lane_error_count, and expected_bit.
+- The predictor should handle the items coming from both exports and use both of them simultaneously to use the functions to get the predicted output items.
+- The predictor should always send a predicted LTSM item to through the LTSM port for every single state even if this state has nothing to do with the RX-Path (e.g. SBINIT). Therefore, the predictor should assign the default values to the fields of the predicted LTSM item in case of the states that does not include any operation to be done by the RX-Path.
+- On the other hand, the predictor should only send RDI items in the ACTIVE state when there's actual data to be sent. Otherwise, the RDI port should NOT be used.
+- For the LFSR function, you have two flags to control what you want to do based on the state. There are states that requires only the LFSR to be loaded and in this case, you will raise the _load flag when calling the rx_lfsr function. There are states that requires pattern detection and in this case, you will call the rx_lfsr function with the _train raised. In the ACTIVE state, you will call the rx_lfsr function with both flags deasserted to descramble the incomin data.
+
+
+Guidelines and Constraints:
+- Assume all the parameters as well as the enums are already accessible where all of them are encapsulated inside a shared package.
+- We only support the UCIe standard package,  and therefore ignore any information related to the advanced package.
+- We do NOT support the Management Protocol, and therefore ignore any information related to the Management.
+- Feel free to ask any questions before diving into the implementation since I would have missed something that you need or there's something I didn't explain it well.
+- We do NOT support Runtime Recalibration (TARR).

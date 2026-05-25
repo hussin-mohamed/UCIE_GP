@@ -22,7 +22,7 @@
 //
 //-----------------------------------------------------------------------------
 
-virtual class rp_monitor_base #(type ITEM_T, type INTF_T, parameterw is_reactive=0) extends uvm_monitor;
+virtual class rp_monitor_base #(type ITEM_T, type INTF_T, parameter is_reactive=0) extends uvm_monitor;
   // `uvm_component_param_utils(rp_monitor_base #(ITEM_T, INTF_T))
   
   INTF_T bfm;
@@ -147,7 +147,6 @@ endtask : run_phase
 
 task rp_monitor_base::monitor_items_out();
   forever begin
-    #100;
     collect_item_out(item_out);
     item_out.set_transaction_id(txn_out_id);
     txn_out_id++;
@@ -169,7 +168,6 @@ endtask : monitor_items_out
 
 task rp_monitor_base::monitor_items_in();
   forever begin
-    #100;
     collect_item_in(item_in);
 
     // Write the item_in to the analysis port and log the monitored item_in

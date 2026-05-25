@@ -14,7 +14,6 @@
 // *                                                                          *
 // ****************************************************************************
 
-
 `uvm_analysis_imp_decl(_rmblink)
 `uvm_analysis_imp_decl(_ltsmc)
 
@@ -22,141 +21,394 @@
 //
 // CLASS: rp_pred
 //
-// Predictor for the LTSM-to-link direction. It converts TX/RX LTSM items into
-// the rmblink transactions expected from the DUT.
+// Predictor for the LTSM-to-link direction. It tracks state encodings and 
+// uses behavioral models of the RX-Path (LFSR, Per-Lane ID, Lane-to-Byte) 
+// to generate expected transactions for the comparators.
 //
 //---------------------------------------------------------------------------
 
 class rp_pred extends uvm_component;
   `uvm_component_utils(rp_pred)
 
-  uvm_analysis_imp_rmblink #(rmblink_seq_item,  rp_pred) axp_in_rmblink;
-  uvm_analysis_imp_ltsmc    #(ltsmc_seq_item,  rp_pred)    axp_in_ltsmc;
+  // ------------------------------------------------------------------------
+  // Ports and Exports
+  // ------------------------------------------------------------------------
+  uvm_analysis_imp_rmblink #(rmblink_seq_item, rp_pred) axp_in_rmblink;
+  uvm_analysis_imp_ltsmc   #(ltsmc_seq_item, rp_pred)   axp_in_ltsmc;
+  uvm_analysis_port        #(rdi_seq_item)              results_ap_rdi;
+  uvm_analysis_port        #(ltsmc_seq_item)            results_ap_ltsmc;
 
-  uvm_analysis_port #(rdi_seq_item)  results_ap_rdi;
-  uvm_analysis_port #(ltsmc_seq_item) results_ap_ltsmc;
+  // ------------------------------------------------------------------------
+  // Architectural Parameters
+  // ------------------------------------------------------------------------
+  localparam int pNUM_LANES  = 16;
+  localparam int pDATA_WIDTH = 64;
+  localparam int pNBYTES     = 256;
+  localparam int pLFSR_TAPS  = 23;
 
-  ltsmc_seq_item    ltsmc_item;
-  rmblink_seq_item rmblink_item;
+  // ------------------------------------------------------------------------
+  // Internal State & Block Variables
+  // ------------------------------------------------------------------------
+  int per_lane_pat_cnt [pNUM_LANES];
+  int per_lane_iter_cnt;
 
-  int unsigned txn_id = 0;
+  int l2b_iter_cnt;
+  logic [pNBYTES-1:0][7:0] rdi_data_buffer;
+  
+  logic [pLFSR_TAPS-1:0] lfsr_state [pNUM_LANES-1:0];
+  logic [pLFSR_TAPS-1:0] lfsr_last_state [pNUM_LANES-1:0];
+  int lane_error_count [pNUM_LANES-1:0];
+  logic expected_bit;
+  int lfsr_train_iter_cnt;
 
-  // Function: new
-  //
-  // Creates the LTSM-to-link predictor.
+  logic [pLFSR_TAPS-1:0] LANE_ID [0:7] = '{
+    23'h1DBFBC, // Lanes 0,8
+    23'h0607BB, // Lanes 1,9
+    23'h1EC760, // Lanes 2,10
+    23'h18C0DB, // Lanes 3,11
+    23'h010F12, // Lanes 4,12
+    23'h19CFC9, // Lanes 5,13
+    23'h0277CE, // Lanes 6,14
+    23'h1BB807  // Lanes 7,15
+  };
 
-  extern function new(string name, uvm_component parent);
+  // Predictor Cache Memory
+  rx_encoding_t     current_rx_encoding;
+  rx_encoding_t     previous_rx_encoding;
+  lane_map_code_t   current_lane_map_code;
+  logic [15:0]      current_error_threshold;
 
-  // Function: build_phase
-  //
-  // Constructs the predictor inputs and output analysis port.
+  // ------------------------------------------------------------------------
+  // Constructor
+  // ------------------------------------------------------------------------
+  function new(string name, uvm_component parent);
+    super.new(name, parent);
+  endfunction : new
 
-  extern virtual function void build_phase(uvm_phase phase);
+  // ------------------------------------------------------------------------
+  // UVM Phases
+  // ------------------------------------------------------------------------
+  virtual function void build_phase(uvm_phase phase);
+    super.build_phase(phase);
+    axp_in_rmblink   = new("axp_in_rmblink", this);
+    axp_in_ltsmc     = new("axp_in_ltsmc", this);
+    results_ap_rdi   = new("results_ap_rdi", this);
+    results_ap_ltsmc = new("results_ap_ltsmc", this);
+  endfunction : build_phase
 
-  // Task: pre_reset_phase
-  //
-  // Flushes any queued LTSM items from previous runs and resets the transaction id counter.
+  virtual task pre_reset_phase(uvm_phase phase);
+    super.pre_reset_phase(phase);
+    
+    // Clear all tracking logic variables upon system reset
+    l2b_iter_cnt = 0;
+    per_lane_iter_cnt = 0;
+    lfsr_train_iter_cnt = 0;
+    expected_bit = 1'b0;
+    
+    current_rx_encoding = RESET_Reset;
+    previous_rx_encoding = RESET_Reset;
+    current_error_threshold = 16'h0;
+    rdi_data_buffer = '{default: 8'h0};
+    
+    for (int i = 0; i < pNUM_LANES; i++) begin
+      per_lane_pat_cnt[i] = 0;
+      lfsr_state[i] = 23'h0;
+      lfsr_last_state[i] = 23'h0;
+      lane_error_count[i] = 0;
+    end
+  endtask : pre_reset_phase
 
-  extern virtual task pre_reset_phase(uvm_phase phase);
+  // ------------------------------------------------------------------------
+  // Export Implementations
+  // ------------------------------------------------------------------------
+  virtual function void write_ltsmc(ltsmc_seq_item t);
+    ltsmc_seq_item out_item;
 
-  // Function: write_rmblink
-  //
-  // Queues an incoming TX-side LTSM item for prediction.
+    // 1. Exclude Clock/Track/Valid Training States entirely
+    if ((t.rx_encoding >= MBINIT_REPAIRCLK_RX_Init_Handshake && t.rx_encoding <= MBINIT_REPAIRCLK_RX_Done_Handshake) ||
+        (t.rx_encoding >= MBINIT_REPAIRVAL_RX_Init_Handshake && t.rx_encoding <= MBINIT_REPAIRVAL_RX_Done_Handshake)) begin
+      `uvm_info("PRD", "Discarding MBINIT.REPAIRCLK/MBINIT.REPAIRVAL input LTSM transaction. MBINIT.REPAIRCLK/MBINIT.REPAIRVAL input LTSM transactions are fully modelled and checked using SVAs", UVM_MEDIUM)
+      return;
+    end
 
-  extern function void write_rmblink(rmblink_seq_item t);
+    // 2. Cache State Configurations
+    if (current_rx_encoding != t.rx_encoding) begin
+      previous_rx_encoding = current_rx_encoding;
+    end
+    current_rx_encoding = t.rx_encoding;
+    
+    if (t.rx_encoding == MBINIT_PARAM_RX_Check_Parameters ||
+        t.rx_encoding == MBINIT_REPAIRMB_RX_Degrade) begin
+      current_lane_map_code = t.lane_map_code;
+    end
 
-  // Function: write_ltsmc
-  //
-  // Queues an incoming RX-side LTSM item for prediction.
+    if (t.rx_encoding == Data_To_Clock_test_RX_INIT_Handshake_TX_Init ||
+        t.rx_encoding == Data_To_Clock_test_RX_INIT_Handshake_RX_Init) begin
+      current_error_threshold = t.error_threshold;
+    end
 
-  extern function void write_ltsmc(ltsmc_seq_item t);
+    // 3. Process LFSR Load Control States internally since link is idle
+    if (t.rx_encoding == Data_To_Clock_test_RX_LFSR_Clear_Handshake_TX_Init || 
+        t.rx_encoding == Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init ||
+        t.rx_encoding == LINKINIT_RX_PL_Clk_Req_Handshake) begin
+      
+      logic [pDATA_WIDTH-1:0] dummy_data    [pNUM_LANES-1:0];
+      logic                   dummy_success [pNUM_LANES-1:0];
+      logic [pDATA_WIDTH-1:0] dummy_out     [pNUM_LANES-1:0];
 
-  // Function: write_rdi
-  //
-  // Queues an incoming RDI item. The mailbox is kept for future path support.
+      dummy_data = '{default: 64'h0};
+      rx_lfsr(1'b0, 1'b1, dummy_data, current_error_threshold, dummy_success, dummy_out);
+    end
 
-  extern function void write_rdi(rdi_seq_item t);
+    // 4. If Idle/Control State (No data payload expected), emit LTSMC immediately
+    if (is_control_state(t.rx_encoding)) begin
+      out_item = ltsmc_seq_item::type_id::create("out_item");
+      out_item.rx_encoding = t.rx_encoding;
+      out_item.lane_map_code = t.lane_map_code;
+      out_item.error_threshold = t.error_threshold;
+      out_item.half_rate = t.half_rate;
+      out_item.rx_data_results = '0; // Default zero array /////////// I think it should take the last value and not zero
+      results_ap_ltsmc.write(out_item);
+    end
+  endfunction : write_ltsmc
 
-  // Function: get_predicted_ltsmc_item
-  //
-  // Builds the expected ltsm item corresponding.
+  virtual function void write_rmblink(rmblink_seq_item t);
+    logic [(pDATA_WIDTH/16)-1:0][15:0] lanes [pNUM_LANES];
+    logic                              success_arr [pNUM_LANES-1:0];
+    
+    logic [(pDATA_WIDTH/8)-1:0][7:0]   l2b_lanes [pNUM_LANES];
+    logic [pDATA_WIDTH-1:0]            lfsr_out_data [pNUM_LANES-1:0];
 
-  extern function ltsmc_seq_item get_predicted_ltsmc_item(ltsmc_seq_item _t_ltsmc_in, rmblink_seq_item _t_rmblink_in);
+    // ========================================================================
+    // PER-LANE ID PATTERN DETECTION
+    // ========================================================================
+    if (current_rx_encoding == MBINIT_REVERSAL_RX_Per_Lane_ID_Det ||
+       ((current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_TX_Init || 
+         current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) && 
+         previous_rx_encoding == MBINIT_REPAIRMB_RX_Init_Handshake)) begin
 
-  // Function: get_predicted_rdi_item
-  //
-  // Builds the expected rdi item corresponding.
+      // Repack array for 16-bit blocks
+      for (int i = 0; i < pNUM_LANES; i++) begin
+        for (int j = 0; j < pDATA_WIDTH/16; j++) begin
+          lanes[i][j] = t.data[i][j*16 +: 16];
+        end
+      end
 
-  extern function rdi_seq_item get_predicted_rdi_item(ltsmc_seq_item _t_ltsmc_in, rmblink_seq_item _t_rmblink_in);
+      get_per_lane_id_results(lanes, current_lane_map_code, success_arr);
+    end 
+    
+    // ========================================================================
+    // LFSR PATTERN DETECTION
+    // ========================================================================
+    else if (current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_TX_Init || 
+             current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) begin
+      rx_lfsr(1'b1, 1'b0, t.data, current_error_threshold, success_arr, lfsr_out_data);
+    end 
+
+    // ========================================================================
+    // Predicted LTSMC Item Generation
+    // ========================================================================
+    else if (current_rx_encoding == Data_To_Clock_test_RX_Result_Handshake_TX_Init ||
+             current_rx_encoding == Data_To_Clock_test_RX_Result_Handshake_RX_Init) begin
+      ltsmc_seq_item out_item = ltsmc_seq_item::type_id::create("out_item");
+      out_item.rx_encoding = current_rx_encoding;
+      out_item.lane_map_code = current_lane_map_code;
+      out_item.error_threshold = current_error_threshold;
+      out_item.rx_data_results = {48'h0, success_arr};
+      results_ap_ltsmc.write(out_item);
+      lfsr_train_iter_cnt = 0; // Wrap tracking
+    end
+    
+    // ========================================================================
+    // ACTIVE DATA DESCRAMBLING & LANE-TO-BYTE MAPPING
+    // ========================================================================
+    else if (current_rx_encoding == ACTIVE_RX_Active) begin
+      
+      // Descramble
+      rx_lfsr(1'b0, 1'b0, t.data, current_error_threshold, success_arr, lfsr_out_data);
+
+      // Repack 8-bit blocks for Lane2Byte mapper
+      for (int i = 0; i < pNUM_LANES; i++) begin
+        for (int j = 0; j < pDATA_WIDTH/8; j++) begin
+          l2b_lanes[i][j] = lfsr_out_data[i][j*8 +: 8];
+        end
+      end
+
+      lane2byte(l2b_lanes, current_lane_map_code, rdi_data_buffer);
+
+      // Emit RDI item once 256 bytes are fully assembled
+      if (l2b_iter_cnt == 0) begin
+        rdi_seq_item rdi_item = rdi_seq_item::type_id::create("rdi_item");
+        rdi_item.data = rdi_data_buffer;
+        results_ap_rdi.write(rdi_item);
+      end
+    end
+  endfunction : write_rmblink
+
+  // ------------------------------------------------------------------------
+  // Extracted Block Models
+  // ------------------------------------------------------------------------
+
+  function void get_per_lane_id_results(
+     input  logic [(pDATA_WIDTH/16)-1:0][15:0] _lanes [pNUM_LANES],
+     input  logic [2:0]                        _lane_map_code,
+     output logic                              _lanes_success [pNUM_LANES]
+  );
+    int start_lane;
+    int num_active_lanes;
+
+    for (int i = 0; i < pNUM_LANES; i++) begin
+      _lanes_success[i] = 1'b0;
+    end
+
+    case (_lane_map_code)
+      3'b001: begin start_lane = 0; num_active_lanes = 8;  end // x8 lower
+      3'b010: begin start_lane = 8; num_active_lanes = 8;  end // x8 upper
+      3'b011: begin start_lane = 0; num_active_lanes = 16; end // x16 
+      3'b100: begin start_lane = 0; num_active_lanes = 4;  end // x4 lower
+      3'b101: begin start_lane = 4; num_active_lanes = 4;  end // x4 upper
+      default: `uvm_fatal("PRD_PERLANE", $sformatf("Unsupported lane_map_code: %0b", _lane_map_code))
+    endcase
+
+    for (int lane_idx = start_lane; lane_idx < (start_lane + num_active_lanes); lane_idx++) begin
+      for (int pat_idx = 0; pat_idx < pDATA_WIDTH/16; pat_idx++) begin
+        if (_lanes[lane_idx][pat_idx] == {4'b1010, 8'(lane_idx), 4'b1010}) begin
+          per_lane_pat_cnt[lane_idx]++;
+        end else begin
+          per_lane_pat_cnt[lane_idx] = 0;
+        end
+      end
+    end
+
+    foreach (per_lane_pat_cnt[lane_idx]) begin
+      if (per_lane_pat_cnt[lane_idx] >= 16) begin
+        _lanes_success[lane_idx] = 1;
+      end else begin
+        _lanes_success[lane_idx] = 0;
+      end
+    end
+
+    if (per_lane_iter_cnt == ((128*16)/(pDATA_WIDTH))) begin
+      per_lane_iter_cnt = 0;
+    end else begin
+      per_lane_iter_cnt++;
+    end
+  endfunction : get_per_lane_id_results
+
+  function void lane2byte(
+     input  logic [(pDATA_WIDTH/8)-1:0][7:0] _lanes [pNUM_LANES],
+     input  logic [2:0]                      _lane_map_code,
+     ref    logic [pNBYTES-1:0][7:0]         _data
+  );
+    int data_byte_idx;
+    int lane_byte_idx;
+    int lane_idx;
+    int start_lane;
+    int byte_step;
+    int num_iter;
+
+    case (_lane_map_code)
+      3'b001: begin start_lane = 0; byte_step = 8;  end 
+      3'b010: begin start_lane = 8; byte_step = 8;  end 
+      3'b011: begin start_lane = 0; byte_step = 16; end 
+      3'b100: begin start_lane = 0; byte_step = 4;  end 
+      3'b101: begin start_lane = 4; byte_step = 4;  end 
+      default: `uvm_fatal("PRD_L2B", $sformatf("Unsupported lane_map_code: %0b", _lane_map_code))
+    endcase
+
+    for (int norm_idx = 0; norm_idx < byte_step; norm_idx++) begin
+      logic [(pDATA_WIDTH/8)-1:0][7:0] lane;
+      lane_idx = start_lane + norm_idx;
+      lane = _lanes[lane_idx];
+
+      for (int l_byte_idx = 0; l_byte_idx < (pDATA_WIDTH/8); l_byte_idx++) begin
+        data_byte_idx = byte_step*(8*l2b_iter_cnt + l_byte_idx) + norm_idx;
+        _data[data_byte_idx] = lane[l_byte_idx];
+      end
+    end
+
+    num_iter = (pNBYTES/(8*byte_step)) - 1;
+
+    if (l2b_iter_cnt == num_iter) begin
+      l2b_iter_cnt = 0;
+    end else begin
+      l2b_iter_cnt++;
+    end
+  endfunction : lane2byte
+
+  function void load_lfsr_state(int _bit_index, ref logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES-1:0]);
+    for (int i = 0; i < pNUM_LANES; i++) begin
+      lfsr_state[i] = LANE_ID[i % 8];
+      _out_data[i][_bit_index] = lfsr_state[i][pLFSR_TAPS-1];
+    end
+  endfunction : load_lfsr_state
+
+  function void train_detection(
+     input  logic [pDATA_WIDTH-1:0] _data [pNUM_LANES-1:0],
+     input  int                     _error_threshold,
+     input  int                     _bit_index,
+     output logic                   _success [pNUM_LANES-1:0],
+     ref    logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES-1:0]
+  );
+    for (int i = 0; i < pNUM_LANES; i++) begin
+      expected_bit = lfsr_state[i][pLFSR_TAPS-1];
+      _out_data[i][_bit_index] = lfsr_state[i][pLFSR_TAPS-1];
+      if (_data[i][_bit_index] !== expected_bit) begin
+        lane_error_count[i]++;
+      end
+      if (lane_error_count[i] > _error_threshold) begin
+        _success[i] = 1'b0;
+      end else begin
+        _success[i] = 1'b1;
+      end
+    end
+  endfunction : train_detection
+
+  function void update_lfsr_state(input bit load);
+    if (!load) begin
+      foreach (lfsr_state[i,j]) begin
+        if ((j == 2) || (j == 5) || (j == 8) || (j == 16) || (j == 21)) begin
+          lfsr_state[i][j] = lfsr_last_state[i][j-1] ^ lfsr_last_state[i][pLFSR_TAPS-1];
+        end else if (j == 0) begin
+          lfsr_state[i][j] = lfsr_last_state[i][pLFSR_TAPS-1];
+        end else begin
+          lfsr_state[i][j] = lfsr_last_state[i][j-1];
+        end
+      end
+    end
+    lfsr_last_state = lfsr_state;
+  endfunction : update_lfsr_state
+
+  function void descramble_data(
+     input  logic [pDATA_WIDTH-1:0] _data [pNUM_LANES-1:0],
+     input  int                     _bit_index,
+     ref    logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES-1:0]
+  );
+    for (int i = 0; i < pNUM_LANES; i++) begin
+      _out_data[i][_bit_index] = _data[i][_bit_index] ^ lfsr_state[i][pLFSR_TAPS-1];
+    end
+  endfunction : descramble_data
+  
+  function void rx_lfsr(
+     input  bit                     _train,
+     input  bit                     _load,
+     input  logic [pDATA_WIDTH-1:0] _data [pNUM_LANES-1:0],
+     input  int                     _error_threshold,
+     output logic                   _success [pNUM_LANES-1:0],
+     output logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES-1:0]
+  );
+    _out_data = '{default: 64'h0}; // Prevent X-propagation logic bugs
+    for (int bit_index = 0; bit_index < pDATA_WIDTH; bit_index++) begin
+      if (_load) begin
+        load_lfsr_state(bit_index, _out_data);
+        lane_error_count = '{default: 0};
+      end else if (_train) begin
+        train_detection(_data, _error_threshold, bit_index, _success, _out_data);
+      end else begin
+        descramble_data(_data, bit_index, _out_data);
+      end
+      update_lfsr_state(_load);
+    end  
+  endfunction : rx_lfsr
+
 endclass : rp_pred
-
-//---------------------------------------------------------------------------
-// IMPLEMENTATION
-//---------------------------------------------------------------------------
-
-//---------------------------------------------------------------------------
-//
-// CLASS: rp_pred
-//
-//---------------------------------------------------------------------------
-
-// new
-// ---
-
-function rp_pred::new(string name, uvm_component parent);
-  super.new(name, parent);
-endfunction : new
-
-// build_phase
-// -----------
-
-function void rp_pred::build_phase(uvm_phase phase);
-  super.build_phase(phase);
-  axp_in_rmblink  = new("axp_in_rmblink", this);
-  axp_in_ltsmc     = new("axp_in_ltsmc", this);
-  results_ap_rdi  = new("axp_in_rdi", this);
-  results_ap_ltsmc = new("results_ap_phy", this);
-endfunction : build_phase
-
-// pre_reset_phase
-// ---------------
-
-task rp_pred::pre_reset_phase(uvm_phase phase);
-  super.pre_reset_phase(phase);
-  // ...
-endtask : pre_reset_phase
-
-// write_rdi
-// --------
-
-function void rp_pred::write_rdi(rdi_seq_item t);
-  // ...
-endfunction : write_rdi
-
-// write_rmblink
-// --------
-
-function void rp_pred::write_rmblink(rmblink_seq_item t);
-  // ...
-endfunction : write_rmblink
-
-// write_ltsmc
-// --------
-
-function void rp_pred::write_ltsmc(ltsmc_seq_item t);
-  // ...
-endfunction : write_ltsmc
-
-// get_predicted_ltsmc_item
-// ------------------
-
-function ltsmc_seq_item rp_pred::get_predicted_ltsmc_item(ltsmc_seq_item _t_ltsmc_in, rmblink_seq_item _t_rmblink_in);
-  // ...
-endfunction : get_predicted_ltsmc_item
-
-// get_predicted_rdi_item
-// ------------------
-
-function rdi_seq_item rp_pred::get_predicted_rdi_item(ltsmc_seq_item _t_ltsmc_in, rmblink_seq_item _t_rmblink_in);
-  // ...
-endfunction : get_predicted_rdi_item

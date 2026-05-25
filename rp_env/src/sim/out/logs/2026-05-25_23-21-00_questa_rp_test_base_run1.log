@@ -1,0 +1,80 @@
+# do runsim_2026-05-25_23-21-00.do
+# ** Warning: (vlib-34) Library already exists at "work".
+# Errors: 0, Warnings: 1
+# QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+# Start time: 23:21:02 on May 25,2026
+# vlog -f src_files.f -mfcu "+define+SIM" 
+# -- Compiling package shared_pkg
+# ** Note: (vlog-2286) ../bfms/rp_ltsm_bfm.sv(22): Using implicit +incdir+C:/questasim64_2021.1/uvm-1.2/../verilog_src/uvm-1.2/src from import uvm_pkg
+# -- Compiling package shared_pkg_sv_unit
+# -- Importing package shared_pkg
+# -- Importing package mtiUvm.uvm_pkg (uvm-1.2 Built-in)
+# -- Compiling interface rp_ltsmc_bfm
+# -- Compiling interface rp_rdi_bfm
+# -- Compiling interface rp_reset_intf
+# -- Compiling interface rp_rmblink_bfm
+# -- Compiling package rp_pkg
+# ** Warning: ../tb/scoreboard/rp_pred.svh(217): (vlog-2251) Illegal concatenation of unpacked value 'success_arr'.
+# ** Warning: ../tb/tests/rp_test_base.svh(185): (vlog-2240) Treating stand-alone use of function 'randomize' as an implicit VOID cast.
+# -- Compiling module rp_tb_top
+# -- Importing package rp_pkg
+# 
+# Top level modules:
+# 	rp_tb_top
+# End time: 23:21:03 on May 25,2026, Elapsed time: 0:00:01
+# Errors: 0, Warnings: 2
+# rp_test_base
+# UVM_HIGH
+# random
+# out/ucdb/2026-05-25_23-21-00_rp_test_base_run1.ucdb
+# out/reports/text/2026-05-25_23-21-00_rp_test_base_run1_code_cov.txt
+# out/reports/text/2026-05-25_23-21-00_rp_test_base_run1_func_cov.txt
+# out/reports/html/2026-05-25_23-21-00_rp_test_base_run1_func_html
+# out/reports/html/2026-05-25_23-21-00_rp_test_base_run1_code_html
+# vsim -voptargs="+acc" -nodpiexports work.rp_tb_top -classdebug -uvmcontrol=all -coverage "+UVM_VERBOSITY=UVM_HIGH" "+UVM_NO_RELNOTES" "+UVM_TESTNAME=rp_test_base" "+UVM_TIMEOUT=100000,YES" -sv_seed random 
+# Start time: 23:21:03 on May 25,2026
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# ** Warning: ../tb/scoreboard/rp_pred.svh(217): (vopt-2251) Illegal concatenation of unpacked value 'success_arr'.
+# ** Warning: ../tb/tests/rp_test_base.svh(185): (vopt-2240) Treating stand-alone use of function 'randomize' as an implicit VOID cast.
+# ** Note: (vsim-12126) Error and warning message counts have been restored: Errors=0, Warnings=2.
+# //  Questa Sim-64
+# //  Version 2021.1 win64 Jan 19 2021
+# //
+# //  Copyright 1991-2021 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.rp_rdi_bfm(fast)
+# Loading work.rp_ltsmc_bfm(fast)
+# Loading work.rp_rmblink_bfm(fast)
+# Loading work.rp_reset_intf(fast)
+# Loading work.shared_pkg(fast)
+# Loading mtiUvm.uvm_pkg(fast)
+# Loading work.rp_pkg(fast)
+# Loading work.shared_pkg_sv_unit(fast)
+# Loading mtiUvm.questa_uvm_pkg(fast)
+# Loading work.rp_tb_top(fast)
+# Loading work.rp_reset_intf(fast__2)
+# Loading work.rp_rdi_bfm(fast__2)
+# Loading work.rp_ltsmc_bfm(fast__2)
+# Loading work.rp_rmblink_bfm(fast__2)
+# ** Error: (vsim-8268) No Default value for formal '_track_stream' in task/function serialize_clk_pattern.
+#    Time: 0 ns  Iteration: 0  Region: /rp_pkg::rmblink_driver File: ../tb/drivers/rmblink_driver.svh Line: 68
+# ** Error: (vsim-3044) Usage of 'mntr.is_reactive' inconsistent with 'parameter' object.
+#    Time: 0 ns  Iteration: 0  Region: /rp_pkg::rp_agent_base #("rdi_cfg", virtual rp_rdi_bfm, rp_pkg::rdi_seq_item, rp_pkg::rdi_sequencer, rp_pkg::rdi_driver, rp_pkg::rdi_monitor) File: ../tb/agents/rp_agent_base.svh Line: 98
+# ** Error: (vsim-3044) Usage of 'mntr.is_reactive' inconsistent with 'parameter' object.
+#    Time: 0 ns  Iteration: 0  Region: /rp_pkg::rp_agent_base #("ltsmc_cfg", virtual rp_ltsmc_bfm, rp_pkg::ltsmc_seq_item, rp_pkg::ltsmc_sequencer, rp_pkg::ltsmc_driver, rp_pkg::ltsmc_monitor) File: ../tb/agents/rp_agent_base.svh Line: 98
+# ** Error: (vsim-3044) Usage of 'mntr.is_reactive' inconsistent with 'parameter' object.
+#    Time: 0 ns  Iteration: 0  Region: /rp_pkg::rp_agent_base #("rmblink_cfg", virtual rp_rmblink_bfm, rp_pkg::rmblink_seq_item, rp_pkg::rmblink_sequencer, rp_pkg::rmblink_driver, rp_pkg::rmblink_monitor) File: ../tb/agents/rp_agent_base.svh Line: 98
+# Loading C:/questasim64_2021.1/uvm-1.2\win64\uvm_dpi.dll
+# Error loading design
+# End time: 23:21:07 on May 25,2026, Elapsed time: 0:00:04
+# Errors: 4, Warnings: 2

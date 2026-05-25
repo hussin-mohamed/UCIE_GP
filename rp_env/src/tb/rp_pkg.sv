@@ -21,6 +21,8 @@ package rp_pkg;
   `include "agent_typedefs.svh"
   `include "rp_utils.svh"
 
+  event ev_ready_for_next_encoding;
+
 
   // Group: Sequence Items
   //

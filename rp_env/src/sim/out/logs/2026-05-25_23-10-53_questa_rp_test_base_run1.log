@@ -1,0 +1,29 @@
+# do runsim_2026-05-25_23-10-53.do
+# ** Warning: (vlib-34) Library already exists at "work".
+# Errors: 0, Warnings: 1
+# QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+# Start time: 23:10:55 on May 25,2026
+# vlog -f src_files.f -mfcu "+define+SIM" 
+# -- Compiling package shared_pkg
+# ** Note: (vlog-2286) ../bfms/rp_ltsm_bfm.sv(22): Using implicit +incdir+C:/questasim64_2021.1/uvm-1.2/../verilog_src/uvm-1.2/src from import uvm_pkg
+# -- Compiling package shared_pkg_sv_unit
+# -- Importing package shared_pkg
+# -- Importing package mtiUvm.uvm_pkg (uvm-1.2 Built-in)
+# -- Compiling interface rp_ltsmc_bfm
+# -- Compiling interface rp_rdi_bfm
+# -- Compiling interface rp_reset_intf
+# -- Compiling interface rp_rmblink_bfm
+# -- Compiling package rp_pkg
+# ** Warning: ../tb/scoreboard/rp_pred.svh(217): (vlog-2251) Illegal concatenation of unpacked value 'success_arr'.
+# ** Error: ../tb/scoreboard/rp_pred.svh(228): (vlog-2730) Undefined variable: 'lfsr_success'.
+# ** Warning: ../tb/tests/rp_test_base.svh(185): (vlog-2240) Treating stand-alone use of function 'randomize' as an implicit VOID cast.
+# -- Compiling module rp_tb_top
+# -- Importing package rp_pkg
+# ** Error: ../tb/scoreboard/rp_pred.svh(228): (vlog-2730) Undefined variable: 'lfsr_success'.
+# End time: 23:10:56 on May 25,2026, Elapsed time: 0:00:01
+# Errors: 2, Warnings: 2
+# ** Error: C:/questasim64_2021.1/win64/vlog failed.
+# Error in macro ./runsim_2026-05-25_23-10-53.do line 3
+# C:/questasim64_2021.1/win64/vlog failed.
+#     while executing
+# "vlog -f src_files.f -mfcu +define+SIM"

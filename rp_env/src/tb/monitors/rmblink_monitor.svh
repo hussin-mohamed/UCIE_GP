@@ -71,6 +71,7 @@ endfunction : new
 
 task rmblink_monitor::collect_item_out(output rmblink_seq_item _item);
   _item = new();
+  #100;
 endtask : collect_item_out
 
 
@@ -79,6 +80,9 @@ endtask : collect_item_out
 
 task rmblink_monitor::collect_item_in(output rmblink_seq_item _item);
   _item = new();
+
+  @(posedge bfm.clk);
+
   if (
     bfm.i_rx_encoding == MBINIT_REVERSAL_RX_Per_Lane_ID_Det               ||  // Per Lane ID pattern
     bfm.i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_TX_Init  ||  // LFSR pattern or Per Lane ID pattern

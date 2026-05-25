@@ -50,9 +50,10 @@ interface rp_rmblink_bfm(
     i_valid <= 0;
   end
 
-  //============================================================================
-  // Amr
-  //============================================================================
+  task clear();
+    
+  endtask : clear
+
   task serialize_data(
      input logic [pDATA_WIDTH-1:0] _data         [pNUM_LANES]
     ,input logic [7:0]             _val_stream   []
@@ -144,9 +145,6 @@ interface rp_rmblink_bfm(
     end
   endtask : deserialize_data
 
-  //============================================================================
-  // Araby
-  //============================================================================
   task serialize_valid_pattern(
       input logic        [7:0]               _val_stream   []
      ,input logic                            _clk_stream_p []

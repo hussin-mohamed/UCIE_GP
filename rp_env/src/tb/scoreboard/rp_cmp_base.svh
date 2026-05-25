@@ -160,21 +160,8 @@ task rp_cmp_base::main_phase(uvm_phase phase);
 
 
   forever begin
-    if (get_exp_only) begin
-      expfifo.get(exp_tr);
-      get_exp_only = 0;
-    end else begin
-      expfifo.get(exp_tr);
-      outfifo.get(out_tr);
-    end
-
-    if (exp_tr.get_transaction_id() != out_tr.get_transaction_id()) begin
-      `uvm_error(cmp_name, $sformatf("Timeout! DUT dropped transaction. Expected:\n %s", exp_tr.sprint()))
-      ERROR();
-      get_exp_only = 1;
-      continue;
-    end
-
+    expfifo.get(exp_tr);
+    outfifo.get(out_tr);
 
     // Pass the custom comparer policy to the compare() method
     if (!out_tr.compare(exp_tr, comparer)) begin

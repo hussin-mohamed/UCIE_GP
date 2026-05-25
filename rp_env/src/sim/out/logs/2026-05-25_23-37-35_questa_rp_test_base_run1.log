@@ -1,0 +1,43 @@
+# do runsim_2026-05-25_23-37-35.do
+# ** Warning: (vlib-34) Library already exists at "work".
+# Errors: 0, Warnings: 1
+# QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+# Start time: 23:37:37 on May 25,2026
+# vlog ../../../rx_path/LFSR_pattern_generator.sv ../../../rx_path/clk_valid_pattern_detection.sv ../../../rx_path/clk_valid_pattern_detection_tb.sv ../../../rx_path/clock_divider.sv ../../../rx_path/counter_compare.sv ../../../rx_path/demux_1_2.sv ../../../rx_path/deserializer_h.sv ../../../rx_path/deserializer_q.sv ../../../rx_path/fifo.sv ../../../rx_path/lane_id_register.sv ../../../rx_path/mux_2_1.sv ../../../rx_path/per_lane_id_detector.sv ../../../rx_path/per_lane_id_detector_tb.sv ../../../rx_path/per_lane_id_detector_top.svh ../../../rx_path/receivers.sv ../../../rx_path/rx_LFSR.sv ../../../rx_path/rx_LFSR_detection.sv ../../../rx_path/rx_LFSR_tb.svh ../../../rx_path/rx_LFSR_top.sv ../../../rx_path/rx_error_decoder.sv ../../../rx_path/rx_path.drawio ../../../rx_path/rx_path.sv ../../../rx_path/synchonizer.sv ../../../rx_path/ucie_lane_to_byte.sv ../../../rx_path/ucie_lane_to_byte_decoder.sv ../../../rx_path/ucie_mux_2_to_1.sv ../../../rx_path/ucie_reordering_block.sv ../../../rx_path/ucie_rx_controller.sv ../../../rx_path/ucie_shift_register.sv "+cover" "+define+SIM" 
+# -- Compiling module LFSR_pattern_generator
+# -- Compiling module clk_valid_pattern_detection
+# -- Compiling module tb_clk_valid_pattern_detection
+# -- Compiling module clock_divider
+# -- Compiling module counter_compare
+# -- Compiling module demux_1_2
+# ** Warning: ../../../rx_path/demux_1_2.sv(5): (vlog-13314) Defaulting port 'din' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module deser_h
+# -- Compiling module deser_q
+# -- Compiling module fifo
+# -- Compiling module lane_id_register
+# -- Compiling module mux_2_1
+# ** Warning: ../../../rx_path/mux_2_1.sv(6): (vlog-13314) Defaulting port 'a' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# ** Warning: ../../../rx_path/mux_2_1.sv(7): (vlog-13314) Defaulting port 'b' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module per_lane_id_detector
+# -- Compiling module per_lane_id_detector_tb
+# -- Compiling module per_lane_id_detector_top
+# ** Warning: ../../../rx_path/per_lane_id_detector_top.svh(28): (vlog-13314) Defaulting port 'i_data_in' kind to 'var' rather than 'wire' due to default compile option setting of -svinputport=relaxed.
+# -- Compiling module receivers
+# -- Compiling module rx_LFSR
+# -- Compiling module rx_LFSR_detection
+# -- Compiling module tb_rx_LFSR_top
+# -- Compiling module rx_LFSR_top
+# -- Compiling module rx_error_decoder
+# ** Error: (vlog-13038) ../../../rx_path/rx_error_decoder.sv(13): near ")": Missing port in ansi port list.
+# ** Error: (vlog-13069) ../../../rx_path/rx_path.drawio(1): near "<": syntax error, unexpected '<', expecting class.
+# -- Compiling module rx_path
+# ** Error: (vlog-13069) ../../../rx_path/rx_path.drawio(1): near "m": syntax error, unexpected end of source code.
+# ** Error: ../../../rx_path/rx_path.drawio(1): (vlog-13205) Syntax error found in the scope following 'm'. Is there a missing '::'?
+# ** Warning: ../../../rx_path/ucie_lane_to_byte_decoder.sv(50): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+# End time: 23:37:37 on May 25,2026, Elapsed time: 0:00:00
+# Errors: 4, Warnings: 5
+# ** Error: C:/questasim64_2021.1/win64/vlog failed.
+# Error in macro ./runsim_2026-05-25_23-37-35.do line 2
+# C:/questasim64_2021.1/win64/vlog failed.
+#     while executing
+# "vlog ../../../rx_path/* +cover +define+SIM"

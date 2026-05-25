@@ -1,0 +1,18 @@
+# do runsim_2026-05-25_23-03-47.do
+# ** Warning: (vlib-34) Library already exists at "work".
+# Errors: 0, Warnings: 1
+# QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+# Start time: 23:03:49 on May 25,2026
+# vlog -f src_files.f -mfcu "+define+SIM" 
+# -- Compiling package shared_pkg
+# ** Note: (vlog-2286) ../bfms/rp_ltsm_bfm.sv(22): Using implicit +incdir+C:/questasim64_2021.1/uvm-1.2/../verilog_src/uvm-1.2/src from import uvm_pkg
+# ** Error: ../tb/top.sv(36): (vlog-2730) Undefined variable: 'T_CLK_L'.
+# ** Error: ../tb/top.sv(37): (vlog-2730) Undefined variable: 'T_CLK_H'.
+# ** Error: ../tb/top.sv(38): (vlog-2730) Undefined variable: 'T_CLK_D'.
+# End time: 23:03:50 on May 25,2026, Elapsed time: 0:00:01
+# Errors: 3, Warnings: 0
+# ** Error: C:/questasim64_2021.1/win64/vlog failed.
+# Error in macro ./runsim_2026-05-25_23-03-47.do line 3
+# C:/questasim64_2021.1/win64/vlog failed.
+#     while executing
+# "vlog -f src_files.f -mfcu +define+SIM"

@@ -20,26 +20,27 @@ package shared_pkg;
   parameter pNUM_LANES  = 16;
   parameter pDATA_WIDTH = 64;
   parameter pNBYTES = 256;
+  parameter pLFSR_TAPS = 23;
+  parameter logic [pLFSR_TAPS-1:0] LANE_ID [0:7] = '{
+   23'h1DBFBC, // Lane 0,8
+   23'h0607BB, // Lane 1,9
+   23'h1EC760, // Lane 2,10
+   23'h18C0DB, // Lane 3,11
+   23'h010F12, // Lane 4,12
+   23'h19CFC9, // Lane 5,13
+   23'h0277CE, // Lane 6,14
+   23'h1BB807  // Lane 7,15
+  };
 
-  parameter T_CLK = 32ns;
-  parameter UI    = 4ns;
-
-  parameter LINK2LTSM_RTL_LATENCY = 11 * T_CLK;
-  parameter LTSM2LINK_RTL_LATENCY = (8 * T_CLK) + (0.5 * UI);
-  parameter HEADER_SER_LATENCY    = 64 * UI;
-  parameter DATA_SER_LATENCY      = 64 * UI;
-  parameter IDLE_LATENCY          = 32 * UI;
-
-  parameter DATA_MAX = 64'hFFFF_FFFF_FFFF_FFFF;
-  parameter INFO_MAX = 16'hFFFF;
+  parameter T_CLK_L = 64ns;
+  parameter T_CLK_H = 2ns;
+  parameter T_CLK_D = 1ns;
 
   parameter VALID_CLK_PATTERN_STREAM_LEN = 128;
   parameter CLK_STREAM_LEN_CLK_PAT = 4096;  
   parameter CLK_STREAM_LEN_VALID_PAT = 1024;
   parameter CLK_STROBE_VALID_PAT = 8;
   parameter CLK_STROBE_CLK_PAT = 32;
-
-
 
   // --- Type Definitions ---
   typedef enum bit { 
@@ -60,6 +61,7 @@ package shared_pkg;
     ,X4_LOWER_MODE = 3'b100
     ,X4_UPPER_MODE = 3'b101
   } lane_map_code_t;
+  
   //-----------------------------------------------------------------------------
   // RX State Encoding Typedef Enum
   // Source: LTSM Specifications Document

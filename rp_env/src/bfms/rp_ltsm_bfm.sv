@@ -19,6 +19,10 @@
 //              State Machine (LTSM).
 //******************************************************************************
 
+`include "uvm_macros.svh"
+import shared_pkg::*;
+import uvm_pkg::*;
+
 interface rp_ltsmc_bfm(
    input  logic clk
   ,input  logic reset
@@ -29,7 +33,7 @@ interface rp_ltsmc_bfm(
   logic [15:0]            i_error_threshold;  // Error threshold for the valid and data pattern detection.
   logic                   i_half_rate;        // Rate mode selector.
   logic                   o_rx_done;          // Indicates that the RX datapath has finished its opertaion.
-  logic [pDATA_WIDTH-1:0] o_rx_data_results,  // One bit for each lane which indicates the successful detection of the LFSR pattern on that lane.
+  logic [pDATA_WIDTH-1:0] o_rx_data_results;  // One bit for each lane which indicates the successful detection of the LFSR pattern on that lane.
   logic [2:0]             o_clk_result;       // Indicates the successful detection of the clock pattern.
   logic                   o_valid_result;     // Indicates the successful detection of the valid pattern.
 

@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<!-- saved from url=(0194)file:///C:/Users/20122/AppData/Local/Packages/5319275A.WhatsAppDesktop_cv1g1gvanyjgm/LocalState/sessions/FDF3EFC0CA0937324EC68B62B6600296E419173C/transfers/2026-21/rx_controller_state_table.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RX Controller State Output Reference</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #0a0c10;
+    --surface: #111318;
+    --surface2: #181c24;
+    --border: #1e2530;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --text-muted: #64748b;
+    --text-dim: #94a3b8;
+    --header-bg: #0d1117;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+
+  .page-header {
+    margin-bottom: 32px;
+    border-left: 3px solid var(--accent);
+    padding-left: 16px;
+  }
+
+  .page-header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .page-header p {
+    color: var(--text-muted);
+    font-size: 11px;
+    margin-top: 6px;
+  }
+
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 12px 16px;
+    border-radius: 6px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover, .filter-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0, 212, 255, 0.06);
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1400px;
+  }
+
+  thead {
+    background: var(--header-bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  thead tr:first-child th {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    padding: 10px 8px 4px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
+
+  thead tr:first-child th.group-id    { background: rgba(0,212,255,0.07); }
+  thead tr:first-child th.group-afe   { background: rgba(124,58,237,0.07); }
+  thead tr:first-child th.group-lfsr  { background: rgba(16,185,129,0.07); }
+  thead tr:first-child th.group-det   { background: rgba(245,158,11,0.07); }
+  thead tr:first-child th.group-ctrl  { background: rgba(239,68,68,0.07); }
+
+  thead tr:last-child th {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 5px 8px 8px;
+    border-bottom: 2px solid var(--border);
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 7px 8px;
+    border-bottom: 1px solid rgba(30,37,48,0.7);
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    font-size: 11px;
+  }
+
+  tr:hover td { background: rgba(255,255,255,0.025); }
+
+  /* Group rows */
+  tr.group-header td {
+    background: var(--surface2);
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-align: left;
+    padding: 8px 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* State name column */
+  td.state-name {
+    text-align: left;
+    color: var(--text);
+    font-weight: 600;
+    padding-left: 20px;
+    font-size: 10.5px;
+  }
+
+  td.substate-name {
+    text-align: left;
+    color: var(--text-dim);
+    padding-left: 32px;
+    font-size: 10px;
+    font-style: italic;
+  }
+
+  /* Encoding */
+  td.enc {
+    color: var(--warn);
+    font-weight: 700;
+    font-size: 11px;
+  }
+
+  /* Value cells */
+  .v1  { color: var(--accent3); font-weight: 600; }
+  .v0  { color: var(--text-muted); }
+  .vx  { color: var(--text-dim); }
+  .vm  { color: var(--warn); font-weight: 600; }   /* mask-based */
+  .vi  { color: var(--accent); font-weight: 600; } /* input passthrough */
+  .vff { color: var(--accent2); font-weight: 600; } /* 0xFFFF */
+
+  .note-cell {
+    text-align: left;
+    font-size: 9.5px;
+    color: var(--text-muted);
+    max-width: 180px;
+    white-space: normal;
+    line-height: 1.4;
+  }
+
+  /* hidden rows */
+  tr.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>UCIe RX Controller — State Output Reference</h1>
+  <p>All outputs default to 0 unless explicitly overridden. Encoding values from RX_FSM. Source: ucie_rx_controller.sv + LTSM Design Spec.</p>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>1 — asserted</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#64748b"></div>0 — default / deasserted</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f59e0b"></div>lane_mask_q — active lane mask register</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#00d4ff"></div>input — passthrough from input port</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div>0xFFFF — all lanes</div>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="filterRows(&#39;all&#39;, this)">All States</button>
+  <button class="filter-btn" onclick="filterRows(&#39;mbinit&#39;, this)">MBINIT</button>
+  <button class="filter-btn" onclick="filterRows(&#39;mbtrain&#39;, this)">MBTRAIN</button>
+  <button class="filter-btn" onclick="filterRows(&#39;eye&#39;, this)">Eye Sweep</button>
+  <button class="filter-btn" onclick="filterRows(&#39;active&#39;, this)">Active/LinkInit</button>
+</div>
+
+<div class="table-wrapper">
+<table id="main-table">
+<thead>
+  <tr>
+    <!-- Identity -->
+    <th class="group-id" colspan="3">IDENTITY</th>
+    <!-- AFE Enables -->
+    <th class="group-afe" colspan="5">AFE ENABLES</th>
+    <!-- LFSR -->
+    <th class="group-lfsr" colspan="4">LFSR CONTROL</th>
+    <!-- Detection -->
+    <th class="group-det" colspan="5">DETECTION / PATTERN</th>
+    <!-- Control -->
+    <th class="group-ctrl" colspan="6">DATAPATH CONTROL</th>
+  </tr>
+  <tr>
+    <th>State / Substate Name</th>
+    <th>Encoding</th>
+    <th>Group</th>
+    <!-- AFE -->
+    <th>mb_clk_p_en</th>
+    <th>mb_clk_n_en</th>
+    <th>mb_valid_en</th>
+    <th>mb_track_en</th>
+    <th>mb_lanes_en</th>
+    <!-- LFSR -->
+    <th>rx_lfsr_enable</th>
+    <th>rx_lfsr_load</th>
+    <th>rx_lfsr_train</th>
+    <th>fifo_rd_en</th>
+    <!-- Detection -->
+    <th>pattern_type</th>
+    <th>detection_type</th>
+    <th>data_det_type</th>
+    <th>per_lane_id_det_en</th>
+    <th>error_threshold</th>
+    <!-- Control -->
+    <th>rx_path_reset</th>
+    <th>rx_done</th>
+    <th>l2b_enable</th>
+    <th>rx_error</th>
+    <th>Notes</th>
+  </tr>
+</thead>
+<tbody>
+
+<!-- ═══ RESET ═══ -->
+<tr class="group-header" data-group="mbinit"><td colspan="22">00: INITIALIZATION PHASE</td></tr>
+
+<tr data-group="mbinit">
+  <td class="state-name">RESET</td>
+  <td class="enc">0x000</td><td>RESET</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">enc_q==RESET → path_reset=1</td>
+</tr>
+
+<!-- ═══ SBINIT ═══ -->
+<tr data-group="mbinit">
+  <td class="state-name">SBINIT — RX Wait Out of Reset</td>
+  <td class="enc">0x008</td><td>SBINIT</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_reset_like</td>
+</tr>
+
+<!-- ═══ MBINIT PARAM ═══ -->
+<tr data-group="mbinit">
+  <td class="state-name">MBINIT.PARAM — RX Wait Config REQ</td>
+  <td class="enc">0x010</td><td>MBINIT</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_reset_like</td>
+</tr>
+
+<!-- ═══ MBINIT CAL ═══ -->
+<tr data-group="mbinit">
+  <td class="state-name">MBINIT.CAL — RX Done Handshake</td>
+  <td class="enc">0x018</td><td>MBINIT</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_reset_like</td>
+</tr>
+
+<!-- ═══ MBINIT REPAIRCLK ═══ -->
+<tr data-group="mbinit">
+  <td class="state-name">MBINIT.REPAIRCLK — RX Init Handshake</td>
+  <td class="enc">0x020</td><td>REPAIRCLK</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v0">0</td><td class="v1">1</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_repairclk; detection_type=0</td>
+</tr>
+
+<tr data-group="mbinit">
+  <td class="substate-name">↳ RX Pattern Detection</td>
+  <td class="enc">0x021</td><td>REPAIRCLK</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v0">0</td><td class="v1">1</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">CLK_ONLY</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="vi">0→1 on i_clk_results</td><td class="v0">0</td><td class="vi">comb</td>
+  <td class="note-cell">clk_results = i_clk_results; done deasserts on entry, reasserts when |i_clk_results</td>
+</tr>
+
+<!-- ═══ MBINIT REPAIRVAL ═══ -->
+<tr data-group="mbinit">
+  <td class="state-name">MBINIT.REPAIRVAL — RX Init Handshake</td>
+  <td class="enc">0x028</td><td>REPAIRVAL</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">VALID_ONLY</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_repairval; pattern_type forced VALID_ONLY; detection_type=0</td>
+</tr>
+
+<tr data-group="mbinit">
+  <td class="substate-name">↳ RX Valid Pattern Detection</td>
+  <td class="enc">0x029</td><td>REPAIRVAL</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">VALID_ONLY</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="vi">0→1 on i_valid_results</td><td class="v0">0</td><td class="vi">comb</td>
+  <td class="note-cell">valid_results=i_valid_results; done reasserts when i_valid_results=1</td>
+</tr>
+
+<!-- ═══ MBINIT REVERSAL ═══ -->
+<tr data-group="mbinit">
+  <td class="state-name">MBINIT.REVERSAL — RX Init Handshake</td>
+  <td class="enc">0x030</td><td>REVERSAL</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_reversal</td>
+</tr>
+
+<tr data-group="mbinit">
+  <td class="substate-name">↳ RX Per Lane ID Detection</td>
+  <td class="enc">0x032</td><td>REVERSAL</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="vff">0xFFFF*</td>
+  <td class="vx">ACTIVE_DATA</td><td class="v1">1</td><td class="v0">0</td><td class="vff">0xFFFF</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="vi">comb</td>
+  <td class="note-cell">*fifo_rd_en if !fifo_empty; lane_id_results masked by lane_map_code</td>
+</tr>
+
+<tr data-group="mbinit">
+  <td class="substate-name">↳ RX Result / Done Handshake</td>
+  <td class="enc">0x033–0x034</td><td>REVERSAL</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">0x034 = REVERSAL_APPLY; samples lane_mask_q (no, that's REPAIRMB)</td>
+</tr>
+
+<!-- ═══ MBINIT REPAIRMB ═══ -->
+<tr data-group="mbinit">
+  <td class="state-name">MBINIT.REPAIRMB — RX Init Handshake</td>
+  <td class="enc">0x038</td><td>REPAIRMB</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_repairmb</td>
+</tr>
+
+<tr data-group="mbinit">
+  <td class="substate-name">↳ RX Data-to-Clock Point Detection</td>
+  <td class="enc">0x039</td><td>REPAIRMB</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="vff">0xFFFF*</td>
+  <td class="vx">ACTIVE_DATA</td><td class="v1">1</td><td class="v0">0</td><td class="vff">0xFFFF</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="vi">0→1 on |i_rx_lane_id_results</td><td class="v0">0</td><td class="vi">comb</td>
+  <td class="note-cell">eye_uses_per_lane_id context; *if !fifo_empty</td>
+</tr>
+
+<tr data-group="mbinit">
+  <td class="substate-name">↳ RX Apply Degrade / Done</td>
+  <td class="enc">0x03A</td><td>REPAIRMB</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">Samples lane_mask_q from lane_map_code when lane_map_code_valid</td>
+</tr>
+
+<!-- ═══ TRAINERROR ═══ -->
+<tr data-group="mbinit">
+  <td class="state-name">TRAINERROR — RX Handshake</td>
+  <td class="enc">0x040</td><td>TRAINERROR</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_trainerror</td>
+</tr>
+
+<!-- ═══ MBTRAIN GROUP ═══ -->
+<tr class="group-header" data-group="mbtrain"><td colspan="22">01: TRAIN PHASE — MBTRAIN states</td></tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">MBTRAIN.VALVREF — RX Start Handshake</td>
+  <td class="enc">0x080</td><td>MBTRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">VALID_ONLY</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">VALVREF forces pattern_type=VALID_ONLY</td>
+</tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">MBTRAIN.DATAVREF — RX Start Handshake</td>
+  <td class="enc">0x088</td><td>MBTRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_mbtrain</td>
+</tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">MBTRAIN.DTC1 — RX Start Handshake</td>
+  <td class="enc">0x090</td><td>MBTRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_mbtrain</td>
+</tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">MBTRAIN.RXCLKCAL — RX Start Handshake</td>
+  <td class="enc">0x098</td><td>MBTRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_mbtrain</td>
+</tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">MBTRAIN.VALTRAINCENTER — RX Start Handshake</td>
+  <td class="enc">0x0A0</td><td>MBTRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_mbtrain; eye sweep uses ACTIVE_DATA</td>
+</tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">MBTRAIN.RXDESKEW — RX Start Handshake</td>
+  <td class="enc">0x0A8</td><td>MBTRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_mbtrain</td>
+</tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">MBTRAIN.DTC2 — RX Start Handshake</td>
+  <td class="enc">0x0B0</td><td>MBTRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_mbtrain</td>
+</tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">MBTRAIN.LINKSPEED — RX Start Handshake</td>
+  <td class="enc">0x0B8</td><td>MBTRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_mbtrain</td>
+</tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">MBTRAIN.REPAIR — RX Start Handshake</td>
+  <td class="enc">0x0C0</td><td>MBTRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_mbtrain</td>
+</tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">MBTRAIN.SPEEDIDLE — RX Speed Transition</td>
+  <td class="enc">0x0C8</td><td>MBTRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_mbtrain</td>
+</tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">MBTRAIN.TXSELFCAL — RX End Handshake</td>
+  <td class="enc">0x0D0</td><td>MBTRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_mbtrain</td>
+</tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">MBTRAIN.VALTRAINCENTER — RX Start HS</td>
+  <td class="enc">0x0E8</td><td>MBTRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_mbtrain; eye uses ACTIVE_DATA</td>
+</tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">MBTRAIN.DATATRAINVREF — RX Start HS</td>
+  <td class="enc">0x0F0</td><td>MBTRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_mbtrain</td>
+</tr>
+
+<tr data-group="mbtrain">
+  <td class="state-name">PHYRETRAIN — RX PL Stall Req Handshake</td>
+  <td class="enc">0x0D8</td><td>PHYRETRAIN</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_phyretrain</td>
+</tr>
+
+<!-- ═══ ACTIVE PHASE ═══ -->
+<tr class="group-header" data-group="active"><td colspan="22">10: ACTIVE PHASE</td></tr>
+
+<tr data-group="active">
+  <td class="state-name">LINKINIT — RX Clk Req Handshake</td>
+  <td class="enc">0x100</td><td>LINKINIT</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">rx_lfsr_load=1 (LFSR reset on LINKINIT entry)</td>
+</tr>
+
+<tr data-group="active">
+  <td class="state-name">ACTIVE — RX Active</td>
+  <td class="enc">0x108</td><td>ACTIVE</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="vi">from !fifo_empty</td><td class="v0">0</td><td class="v0">0</td><td class="vi">from !fifo_empty</td>
+  <td class="vx">ACTIVE_DATA</td><td class="v1">1</td><td class="v1">1</td><td class="v0">0</td><td class="vi">error_threshold_q</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v1">1</td><td class="vi">comb</td>
+  <td class="note-cell">lfsr_enable &amp; fifo_rd=0xFFFF when !fifo_empty; valid_results=i_valid_results; l2b_enable=1</td>
+</tr>
+
+<tr data-group="active">
+  <td class="state-name">L1 — RX L1 State</td>
+  <td class="enc">0x110</td><td>L1</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">is_main_l1; all AFE disabled</td>
+</tr>
+
+<!-- ═══ EYE SWEEP ═══ -->
+<tr class="group-header" data-group="eye"><td colspan="22">11: DATA-TO-CLOCK EYE SWEEP</td></tr>
+
+<tr data-group="eye">
+  <td class="state-name">TX Eye — LFSR Start Handshake</td>
+  <td class="enc">0x180</td><td>EYE</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">Samples error_threshold_q from i_error_threshold</td>
+</tr>
+
+<tr data-group="eye">
+  <td class="state-name">TX Eye — LFSR Clear Handshake</td>
+  <td class="enc">0x181</td><td>EYE</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">rx_lfsr_load=1; rx_path_reset=1 (enc_q==LFSR_CLEAR)</td>
+</tr>
+
+<tr data-group="eye">
+  <td class="state-name">TX Eye — Pattern Detection (LFSR context)</td>
+  <td class="enc">0x182</td><td>EYE</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="vi">if !fifo_empty</td><td class="v0">0</td><td class="v1">1</td><td class="vi">if !fifo_empty</td>
+  <td class="vx">ACTIVE_DATA</td><td class="v1">1</td><td class="v1">1</td><td class="v0">0</td><td class="vi">error_threshold_q</td>
+  <td class="v0">0</td><td class="vi">0→1 on |LFSR_results</td><td class="v0">0</td><td class="vi">comb</td>
+  <td class="note-cell">eye_tx_uses_lfsr (default); LFSR_results masked by lane_map_code</td>
+</tr>
+
+<tr data-group="eye">
+  <td class="substate-name">↳ 0x182 in REPAIRMB context (per-lane ID)</td>
+  <td class="enc">0x182</td><td>EYE</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="vi">if !fifo_empty</td>
+  <td class="vx">ACTIVE_DATA</td><td class="v1">1</td><td class="v0">0</td><td class="vff">0xFFFF</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="vi">0→1 on |lane_id_results</td><td class="v0">0</td><td class="vi">comb</td>
+  <td class="note-cell">eye_uses_per_lane_id; ltsm_current_state_q==REPAIRMB</td>
+</tr>
+
+<tr data-group="eye">
+  <td class="substate-name">↳ 0x182 in VALTRAINCENTER context (active data)</td>
+  <td class="enc">0x182</td><td>EYE</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">ACTIVE_DATA</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="vi">0→1 on |LFSR_results</td><td class="v0">0</td><td class="vi">comb</td>
+  <td class="note-cell">eye_uses_active_data_pattern; ltsm_current_state_q==VALTRAINCENTER</td>
+</tr>
+
+<tr data-group="eye">
+  <td class="state-name">TX Eye — Result Handshake</td>
+  <td class="enc">0x183</td><td>EYE</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">ENC_TX_EYE_RES_HS</td>
+</tr>
+
+<tr data-group="eye">
+  <td class="state-name">RX Eye — LFSR Clear Handshake</td>
+  <td class="enc">0x188</td><td>EYE</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">rx_lfsr_load=1; rx_path_reset=1 (enc_q==RX_EYE_LFSR_CLEAR)</td>
+</tr>
+
+<tr data-group="eye">
+  <td class="state-name">RX Eye — LFSR Start Handshake</td>
+  <td class="enc">0x189</td><td>EYE</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">Samples error_threshold_q from i_error_threshold</td>
+</tr>
+
+<tr data-group="eye">
+  <td class="state-name">RX Eye — Pattern Detection (LFSR context)</td>
+  <td class="enc">0x18A</td><td>EYE</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="vi">if !fifo_empty</td><td class="v0">0</td><td class="v1">1</td><td class="vi">if !fifo_empty</td>
+  <td class="vx">ACTIVE_DATA</td><td class="v1">1</td><td class="v1">1</td><td class="v0">0</td><td class="vi">error_threshold_q</td>
+  <td class="v0">0</td><td class="vi">0→1 on |LFSR_results</td><td class="v0">0</td><td class="vi">comb</td>
+  <td class="note-cell">eye_rx_uses_lfsr (default); LFSR_results masked by lane_map_code</td>
+</tr>
+
+<tr data-group="eye">
+  <td class="substate-name">↳ 0x18A in VALVREF context (valid-only)</td>
+  <td class="enc">0x18A</td><td>EYE</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">VALID_ONLY</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="vi">0→1 on i_valid_results</td><td class="v0">0</td><td class="vi">comb</td>
+  <td class="note-cell">eye_uses_valid_pattern; ltsm_current_state_q==VALVREF</td>
+</tr>
+
+<tr data-group="eye">
+  <td class="substate-name">↳ 0x18A in VALTRAINVREF context (active data)</td>
+  <td class="enc">0x18A</td><td>EYE</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">ACTIVE_DATA</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="vi">0→1 on |LFSR_results</td><td class="v0">0</td><td class="vi">comb</td>
+  <td class="note-cell">eye_uses_active_data_pattern; ltsm_current_state_q==VALTRAINVREF</td>
+</tr>
+
+<tr data-group="eye">
+  <td class="state-name">RX Eye — Result Handshake</td>
+  <td class="enc">0x18B</td><td>EYE</td>
+  <td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="v1">1</td><td class="vm">lane_mask_q</td>
+  <td class="v0">0</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="vx">NONE</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="v0">0</td><td class="v1">1</td><td class="v0">0</td><td class="v0">0</td>
+  <td class="note-cell">ENC_RX_EYE_RES_HS</td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+<script>
+function filterRows(group, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const rows = document.querySelectorAll('tbody tr, thead tr');
+  document.querySelectorAll('tbody tr').forEach(row => {
+    if (group === 'all') {
+      row.classList.remove('hidden');
+    } else {
+      const rg = row.getAttribute('data-group') || '';
+      if (row.classList.contains('group-header')) {
+        // show group header if any child matches
+        row.classList.toggle('hidden', !rg.includes(group));
+      } else {
+        row.classList.toggle('hidden', !rg.includes(group));
+      }
+    }
+  });
+}
+</script>
+
+
+</body></html>

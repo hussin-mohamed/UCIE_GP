@@ -31,6 +31,7 @@ module rp_tb_top;
   bit   hclk;
   bit   dclk;
   logic reset_wire;
+  bit   rx_error_dummy;
 
   // Clock generation
   initial forever #(T_CLK_L) clk   = ~clk;
@@ -70,12 +71,41 @@ module rp_tb_top;
   // Assign Statements
   //============================================================================
   assign rmblink_bfm.i_rx_encoding = ltsmc_bfm.i_rx_encoding;
-  assign rdi_bfm.i_rx_encoding     = ltsmc_bfm.i_rx_encoding;
 
   //============================================================================
   // DUT Instantiation
   //============================================================================
-  
+  rx_path dut (
+    // Clocks & resets
+    .i_clk_l           (clk),
+    .i_clk_p           (rmblink_bfm.i_clk_p),
+    .i_clk_n           (rmblink_bfm.i_clk_n),
+    .i_hclk            (hclk),
+    .i_dclk            (dclk),
+    .i_track           (rmblink_bfm.i_track),
+    .i_reset           (reset_wire),
+
+    // Data inputs
+    .i_lanes           (rmblink_bfm.i_data),
+    .i_valid           (rmblink_bfm.i_valid),
+    .i_halfrate        (ltsmc_bfm.i_half_rate),
+
+    // Configuration
+    .i_rx_encoding     (ltsmc_bfm.i_rx_encoding),
+    .i_lane_map_code   (ltsmc_bfm.i_lane_map_code),
+    .i_error_threshold (ltsmc_bfm.i_error_threshold),
+
+    // Outputs
+    .o_pl_data         (rdi_bfm.pl_data),
+    .o_pl_valid        (rdi_bfm.pl_valid),
+    .o_rx_done         (ltsmc_bfm.o_rx_done),
+    .o_rx_data_results (ltsmc_bfm.o_rx_data_results),
+    .o_rx_error        (rx_error_dummy),
+    .o_clk_results     (ltsmc_bfm.o_clk_result),
+    .o_valid_results   (ltsmc_bfm.o_valid_result)
+  );
+
+
   //============================================================================
   // Binding Assertions Interface
   //============================================================================

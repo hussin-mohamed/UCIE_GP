@@ -71,16 +71,9 @@ endfunction : new
 
 task ltsmc_monitor::collect_item_out(output ltsmc_seq_item _item);
   _item = new();
-  lane_map_code_t         lane_map_code;    // Selects lane mapping configuration.
-  rx_encoding_t           rx_encoding;      // Current state of the RX FSM.
-  rand logic [15:0]       error_threshold;  // Error threshold for the valid and data pattern detection.
-  logic                   half_rate;        // Rate mode selector.
-  logic [pDATA_WIDTH-1:0] rx_data_results,  // One bit for each lane which indicates the successful detection of the LFSR pattern on that lane.
 
-  while (!bfm.o_rx_done) begin
-    @(negedge bfm.clk);
-  end
-
+  @(bfm.i_rx_encoding);
+  @(posedge bfm.clk)
   _item.rx_data_results = bfm.o_rx_data_results;
 endtask : collect_item_out
 
@@ -90,11 +83,11 @@ endtask : collect_item_out
 
 task ltsmc_monitor::collect_item_in(output ltsmc_seq_item _item);
   _item = new();
-  @(bfm.rx_encoding);
-  if (is_monitored_state(bfm.rx_encoding)) begin
-    @(posedge clk);
-    _item.lane_map_code   = bfm.i_lane_map_code;
-    _item.rx_encoding     = bfm.i_rx_encoding;
+  @(bfm.i_rx_encoding);
+  if (is_monitored_state(rx_encoding_t'(bfm.i_rx_encoding))) begin
+    @(posedge bfm.clk);
+    _item.lane_map_code   = lane_map_code_t'(bfm.i_lane_map_code);
+    _item.rx_encoding     = rx_encoding_t'(bfm.i_rx_encoding);
     _item.error_threshold = bfm.i_error_threshold;
     _item.half_rate       = bfm.i_half_rate;
   end

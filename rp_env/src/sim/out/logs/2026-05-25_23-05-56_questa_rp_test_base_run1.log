@@ -1,0 +1,40 @@
+# do runsim_2026-05-25_23-05-56.do
+# ** Warning: (vlib-34) Library already exists at "work".
+# Errors: 0, Warnings: 1
+# QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+# Start time: 23:05:58 on May 25,2026
+# vlog -f src_files.f -mfcu "+define+SIM" 
+# -- Compiling package shared_pkg
+# ** Note: (vlog-2286) ../bfms/rp_ltsm_bfm.sv(22): Using implicit +incdir+C:/questasim64_2021.1/uvm-1.2/../verilog_src/uvm-1.2/src from import uvm_pkg
+# -- Compiling package shared_pkg_sv_unit
+# -- Importing package shared_pkg
+# -- Importing package mtiUvm.uvm_pkg (uvm-1.2 Built-in)
+# -- Compiling interface rp_ltsmc_bfm
+# -- Compiling interface rp_rdi_bfm
+# -- Compiling interface rp_reset_intf
+# -- Compiling interface rp_rmblink_bfm
+# -- Compiling package rp_pkg
+# ** Error (suppressible): ../tb/sequence_items/rmblink_seq_item.svh(37): (vlog-13215) Arg. 'value' of 'print_field':  Cannot assign an unpacked type 'reg[7:0] $[]' to a packed type 'reg signed[4095:0]'.
+# ** Error (suppressible): ../tb/sequence_items/rmblink_seq_item.svh(37): (vlog-13215) Arg. 'value' of 'print_field_int':  Cannot assign an unpacked type 'reg[7:0] $[]' to a packed type 'reg signed[63:0]'.
+# ** Error (suppressible): ../tb/sequence_items/rmblink_seq_item.svh(37): (vlog-2997) Case item comparison:  Cannot assign a packed type 'reg signed[4095:0]' to an unpacked type 'reg[7:0] $[]'.
+# ** Error (suppressible): ../tb/scoreboard/rp_pred.svh(160): (vlog-13215) Arg. '_success' of 'rx_lfsr':  Cannot assign an unpacked type 'bit $[15:0]' to a packed type 'reg[15:0]'.
+# ** Error (suppressible): ../tb/scoreboard/rp_pred.svh(197): (vlog-13215) Arg. '_lanes_success' of 'get_per_lane_id_results':  Cannot assign an unpacked type 'reg $[0:15]' to a packed type 'reg[15:0]'.
+# ** Error (suppressible): ../tb/scoreboard/rp_pred.svh(205): (vlog-13215) Arg. '_success' of 'rx_lfsr':  Cannot assign an unpacked type 'bit $[15:0]' to a packed type 'reg[15:0]'.
+# ** Error: ../tb/scoreboard/rp_pred.svh(228): (vlog-2730) Undefined variable: 'lfsr_success'.
+# ** Warning: ../tb/tests/rp_test_base.svh(185): (vlog-2240) Treating stand-alone use of function 'randomize' as an implicit VOID cast.
+# -- Compiling module rp_tb_top
+# -- Importing package rp_pkg
+# ** Error (suppressible): ../tb/sequence_items/rmblink_seq_item.svh(37): (vlog-13215) Arg. 'value' of 'print_field':  Cannot assign an unpacked type 'reg[7:0] $[]' to a packed type 'reg signed[4095:0]'.
+# ** Error (suppressible): ../tb/sequence_items/rmblink_seq_item.svh(37): (vlog-13215) Arg. 'value' of 'print_field_int':  Cannot assign an unpacked type 'reg[7:0] $[]' to a packed type 'reg signed[63:0]'.
+# ** Error (suppressible): ../tb/sequence_items/rmblink_seq_item.svh(37): (vlog-2997) Case item comparison:  Cannot assign a packed type 'reg signed[4095:0]' to an unpacked type 'reg[7:0] $[]'.
+# ** Error (suppressible): ../tb/scoreboard/rp_pred.svh(160): (vlog-13215) Arg. '_success' of 'rx_lfsr':  Cannot assign an unpacked type 'bit $[15:0]' to a packed type 'reg[15:0]'.
+# ** Error (suppressible): ../tb/scoreboard/rp_pred.svh(197): (vlog-13215) Arg. '_lanes_success' of 'get_per_lane_id_results':  Cannot assign an unpacked type 'reg $[0:15]' to a packed type 'reg[15:0]'.
+# ** Error (suppressible): ../tb/scoreboard/rp_pred.svh(205): (vlog-13215) Arg. '_success' of 'rx_lfsr':  Cannot assign an unpacked type 'bit $[15:0]' to a packed type 'reg[15:0]'.
+# ** Error: ../tb/scoreboard/rp_pred.svh(228): (vlog-2730) Undefined variable: 'lfsr_success'.
+# End time: 23:05:59 on May 25,2026, Elapsed time: 0:00:01
+# Errors: 14, Warnings: 1
+# ** Error: C:/questasim64_2021.1/win64/vlog failed.
+# Error in macro ./runsim_2026-05-25_23-05-56.do line 3
+# C:/questasim64_2021.1/win64/vlog failed.
+#     while executing
+# "vlog -f src_files.f -mfcu +define+SIM"

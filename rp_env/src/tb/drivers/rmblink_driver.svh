@@ -68,6 +68,7 @@ task rmblink_driver::drive_item(inout rmblink_seq_item req, output rmblink_seq_i
     bfm.serialize_clk_pattern(
        ._clk_stream_p(req.clk_stream_p)
       ,._clk_stream_n(req.clk_stream_n)
+      ,._track_stream(req.track_stream)
       ,._idle_ui_cnt(req.idle_ui_cnt)
     );
   end else if (req.pattern_type == VAL_PATTERN) begin // VAL_PATTERN
@@ -75,6 +76,7 @@ task rmblink_driver::drive_item(inout rmblink_seq_item req, output rmblink_seq_i
        ._val_stream(req.val_stream)
       ,._clk_stream_p(req.clk_stream_p)
       ,._clk_stream_n(req.clk_stream_n)
+      ,._track_stream(req.track_stream)
     );
   end else begin // DATA_PATTERN
     bfm.serialize_data(

@@ -94,8 +94,6 @@ function void rp_agent_base::build_phase(uvm_phase phase);
     `uvm_fatal("build_phase", $sformatf("AGENT - Unable to get the agent configuration object from the uvm_config_db, CFG_NAME: %s, agent name: %s", CFG_NAME, this.get_full_name()))
 
   mntr = MNTR_T::type_id::create("mntr", this);
-
-  mntr.is_reactive = cfg.is_reactive;
   
   if (cfg != null) is_active = cfg.is_active;
 

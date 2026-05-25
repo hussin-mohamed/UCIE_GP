@@ -1,5 +1,5 @@
 vlib work
-# vlog ../../../RX-Path/* +cover +define+SIM
+ vlog ../../../rx_path/LFSR_pattern_generator.sv ../../../rx_path/clk_valid_pattern_detection.sv ../../../rx_path/clk_valid_pattern_detection_tb.sv ../../../rx_path/clock_divider.sv ../../../rx_path/counter_compare.sv ../../../rx_path/demux_1_2.sv ../../../rx_path/deserializer_h.sv ../../../rx_path/deserializer_q.sv ../../../rx_path/fifo.sv ../../../rx_path/lane_id_register.sv ../../../rx_path/mux_2_1.sv ../../../rx_path/per_lane_id_detector.sv ../../../rx_path/per_lane_id_detector_tb.sv ../../../rx_path/per_lane_id_detector_top.svh ../../../rx_path/receivers.sv ../../../rx_path/rx_LFSR.sv ../../../rx_path/rx_LFSR_detection.sv ../../../rx_path/rx_LFSR_tb.svh ../../../rx_path/rx_LFSR_top.sv ../../../rx_path/rx_path.sv ../../../rx_path/synchonizer.sv ../../../rx_path/ucie_lane_to_byte.sv ../../../rx_path/ucie_lane_to_byte_decoder.sv ../../../rx_path/ucie_mux_2_to_1.sv ../../../rx_path/ucie_reordering_block.sv ../../../rx_path/ucie_rx_controller.sv ../../../rx_path/ucie_shift_register.sv +cover +define+SIM
 vlog -f src_files.f -mfcu +define+SIM
 
 # Read parameters passed dynamically from the Makefile via environment variables
@@ -28,80 +28,37 @@ set NoQuitOnFinish 1
 # 1. Global Clock & Reset
 add wave -group Global_Signals -position insertpoint  \
   sim:/rp_tb_top/reset_intf/clk \
-  sim:/rp_tb_top/reset_intf/reset \
-  sim:/rp_tb_top/rmblink_bfm/clk_800MHz
+  sim:/rp_tb_top/reset_intf/reset
 
-# 2. LTSM Control BFM
-add wave -group LTSM_CTRL -position insertpoint  \
-  sim:/rp_tb_top/ltsmc_bfm/i_sb_init_start \
-  sim:/rp_tb_top/ltsmc_bfm/i_timer_1ms \
-  sim:/rp_tb_top/ltsmc_bfm/o_sb_ready \
-  sim:/rp_tb_top/ltsmc_bfm/timeout \
-  sim:/rp_tb_top/ltsmc_bfm/tms
+# 2. LTSM Control BFM (Configuration & Status)
+add wave -group LTSM_CTRL_BFM -position insertpoint  \
+  sim:/rp_tb_top/ltsmc_bfm/i_half_rate \
+  sim:/rp_tb_top/ltsmc_bfm/i_rx_encoding \
+  sim:/rp_tb_top/ltsmc_bfm/i_lane_map_code \
+  sim:/rp_tb_top/ltsmc_bfm/i_error_threshold \
+  sim:/rp_tb_top/ltsmc_bfm/o_rx_done \
+  sim:/rp_tb_top/ltsmc_bfm/o_clk_result \
+  sim:/rp_tb_top/ltsmc_bfm/o_valid_result \
+  sim:/rp_tb_top/ltsmc_bfm/o_rx_data_results
 
-# 3. PHY Link BFM (Serial MDI)
-add wave -group PHY_LINK_MDI -position insertpoint  \
-  sim:/rp_tb_top/rmblink_bfm/i_rx_sb_data \
-  sim:/rp_tb_top/rmblink_bfm/i_rx_sb_clk \
-  sim:/rp_tb_top/rmblink_bfm/o_tx_sb_data \
-  sim:/rp_tb_top/rmblink_bfm/o_tx_sb_clk \
-  sim:/rp_tb_top/rmblink_bfm/pat_detected
+# 3. PHY Link BFM (RX Mainband Link / Serial)
+add wave -group RMBLINK_BFM -position insertpoint  \
+  sim:/rp_tb_top/rmblink_bfm/i_clk_p \
+  sim:/rp_tb_top/rmblink_bfm/i_clk_n \
+  sim:/rp_tb_top/rmblink_bfm/i_hclk \
+  sim:/rp_tb_top/rmblink_bfm/i_dclk \
+  sim:/rp_tb_top/rmblink_bfm/i_track \
+  sim:/rp_tb_top/rmblink_bfm/i_data \
+  sim:/rp_tb_top/rmblink_bfm/i_valid
 
-add wave -group u_tx_msg_enc_dec -position insertpoint  \
-  sim:/rp_tb_top/dut/u_tx_msg/u_tx_msg_enc_dec/*
+# 4. RDI BFM (Adapter Layer Output)
+add wave -group RDI_BFM -position insertpoint  \
+  sim:/rp_tb_top/rdi_bfm/pl_valid \
+  sim:/rp_tb_top/rdi_bfm/pl_data
 
-# 4. SVA Assertions (bound inside DUT)
-add wave -group SVAs -position insertpoint  \
-  sim:/rp_tb_top/dut/sva_inst/ap_pat_gen \
-  sim:/rp_tb_top/dut/sva_inst/ap_pat_low \
-  sim:/rp_tb_top/dut/sva_inst/ap_clk_gen \
-  sim:/rp_tb_top/dut/sva_inst/ap_clk_low \
-  sim:/rp_tb_top/dut/sva_inst/chk_async_reset \
-  sim:/rp_tb_top/dut/sva_inst/chk_no_clk_glitch \
-  sim:/rp_tb_top/dut/sva_inst/pat_detected \
-  sim:/rp_tb_top/dut/sva_inst/timeout \
-  sim:/rp_tb_top/dut/sva_inst/tms
-
-# 4. RDI BFM (Adapter <-> SB)
-# add wave -group RDI_ADAPTER -position insertpoint  \
-#   sim:/rp_tb_top/rdi_bfm/i_lp_cfg_vld \
-#   sim:/rp_tb_top/rdi_bfm/i_lp_cfg_crd \
-#   sim:/rp_tb_top/rdi_bfm/i_lp_cfg \
-#   sim:/rp_tb_top/rdi_bfm/o_pl_cfg_vld \
-#   sim:/rp_tb_top/rdi_bfm/o_pl_cfg_crd \
-#   sim:/rp_tb_top/rdi_bfm/o_pl_cfg
-
-# 5. TX Path BFM (TX <-> SB)
-add wave -group TX_PATH -position insertpoint  \
-  sim:/rp_tb_top/tx_bfm/i_tx_sb_req \
-  sim:/rp_tb_top/tx_bfm/i_tx_sb_rsp \
-  sim:/rp_tb_top/tx_bfm/i_tx_sb_done \
-  sim:/rp_tb_top/tx_bfm/i_tx_encoding \
-  sim:/rp_tb_top/tx_bfm/i_tx_data \
-  sim:/rp_tb_top/tx_bfm/i_tx_info \
-  sim:/rp_tb_top/tx_bfm/o_sb_tx_req \
-  sim:/rp_tb_top/tx_bfm/o_sb_tx_rsp \
-  sim:/rp_tb_top/tx_bfm/o_sb_tx_done \
-  sim:/rp_tb_top/tx_bfm/o_tx_decoding \
-  sim:/rp_tb_top/tx_bfm/o_tx_data \
-  sim:/rp_tb_top/tx_bfm/o_tx_info \
-  sim:/rp_tb_top/tx_bfm/o_tx_valid
-
-# 6. RX Path BFM (RX <-> SB)
-add wave -group RX_PATH -position insertpoint  \
-  sim:/rp_tb_top/rx_bfm/i_rx_sb_req \
-  sim:/rp_tb_top/rx_bfm/i_rx_sb_rsp \
-  sim:/rp_tb_top/rx_bfm/i_rx_sb_done \
-  sim:/rp_tb_top/rx_bfm/i_rx_encoding \
-  sim:/rp_tb_top/rx_bfm/i_rx_data \
-  sim:/rp_tb_top/rx_bfm/i_rx_info \
-  sim:/rp_tb_top/rx_bfm/o_sb_rx_req \
-  sim:/rp_tb_top/rx_bfm/o_sb_rx_rsp \
-  sim:/rp_tb_top/rx_bfm/o_sb_rx_done \
-  sim:/rp_tb_top/rx_bfm/o_rx_decoding \
-  sim:/rp_tb_top/rx_bfm/o_rx_data \
-  sim:/rp_tb_top/rx_bfm/o_rx_info \
-  sim:/rp_tb_top/rx_bfm/o_rx_valid
+# 5. DUT (RX-Path Top Level Ports & Internal Signals)
+add wave -group RX_PATH_DUT -position insertpoint  \
+  sim:/rp_tb_top/dut/*
 
 # ====================================================================
 
@@ -110,69 +67,6 @@ wave zoom range 0ns 500ns
 
 # Exclude the assertion module from code coverage
 coverage exclude -du rp_sva
-
-# ==============================================================================
-# UCIe 3.0 RX-Path Verification - Coverage Exclusions
-# ==============================================================================
-
-# ------------------------------------------------------------------------------
-# 1. Source ID & Upper Reserved Padding (Bits 127:118)
-# Reason: Bits [127:125] are hardcoded to 3'b010 (Physical Layer enc_srcid).
-#         Bits [124:118] map to pRESERVED padding which is permanently tied to 0.
-# ------------------------------------------------------------------------------
-coverage exclude -togglenode o_msg_out\[127:118\] -du ucie_sideband_tx_msg_enc_dec
-coverage exclude -togglenode tx_traffic_fifo_msg\[127:118\] -du ucie_sb_top
-
-# ------------------------------------------------------------------------------
-# 2. Message Code MSB (Bit 117)
-# Reason: MSB of the 8-bit enc_msg_code. All valid UCIe message codes supported 
-#         by this block fit within the lower 7 bits, keeping this MSB tied to 0.
-# ------------------------------------------------------------------------------
-coverage exclude -togglenode o_msg_out\[117\]    -du ucie_sideband_tx_msg_enc_dec
-coverage exclude -togglenode tx_traffic_fifo_msg\[117\]    -du ucie_sb_top
-
-# ------------------------------------------------------------------------------
-# 3. Middle Reserved Padding (Bits 109:101)
-# Reason: This block corresponds to pRESERVED header padding. The encoder logic 
-#         explicitly ties all of these bits to 0.
-# ------------------------------------------------------------------------------
-coverage exclude -togglenode o_msg_out\[109:101\] -du ucie_sideband_tx_msg_enc_dec
-coverage exclude -togglenode tx_traffic_fifo_msg\[109:101\] -du ucie_sb_top
-
-# ------------------------------------------------------------------------------
-# 4. Opcode MSB (Bit 100)
-# Reason: MSB of the 5-bit enc_op_code. Valid operation codes generated here 
-#         (e.g., 'b10000, 'b10010, 'b10101) always have the MSB set to 1.
-# ------------------------------------------------------------------------------
-coverage exclude -togglenode o_msg_out\[100\]    -du ucie_sideband_tx_msg_enc_dec
-coverage exclude -togglenode tx_traffic_fifo_msg\[100\]    -du ucie_sb_top
-
-# ------------------------------------------------------------------------------
-# 5. Hardcoded Header Zeroes (Bits 98:97)
-# Reason: In the o_msg_out concatenation, two 1'b0 bits are explicitly hardcoded 
-#         immediately following the operation code.
-# ------------------------------------------------------------------------------
-coverage exclude -togglenode o_msg_out\[98:97\]  -du ucie_sideband_tx_msg_enc_dec
-coverage exclude -togglenode tx_traffic_fifo_msg\[98:97\]  -du ucie_sb_top
-
-# ------------------------------------------------------------------------------
-# 6. Destination ID & Lower Reserved Padding (Bits 93:88)
-# Reason: Bits [90:88] are statically assigned to 3'b110 (Remote Die enc_dstid).
-#         Bits [93:91] are pRESERVED padding tied to 0.
-# ------------------------------------------------------------------------------
-coverage exclude -togglenode o_msg_out\[93:88\]  -du ucie_sideband_tx_msg_enc_dec
-coverage exclude -togglenode tx_traffic_fifo_msg\[93:88\]  -du ucie_sb_top
-
-# ------------------------------------------------------------------------------
-# 7. TX Traffic FIFO Backpressure / Full Conditions
-# Reason: Unreachable state. The LTSM protocol enforces a strict send-and-wait 
-#         (ping-pong) mechanism. A new request is never sent until the previous 
-#         response is received, making it physically impossible for the 32-depth 
-#         TX FIFO to ever fill up and trigger these stall conditions.
-# ------------------------------------------------------------------------------
-coverage exclude -du ucie_sideband_traffic_fifo -fstate state ST_WAIT_FULL
-coverage exclude -togglenode o_stall_traffic -du ucie_sideband_traffic_fifo
-coverage exclude -togglenode con_full        -du ucie_sideband_traffic_fifo
 
 # Coverage Save settings (Using unique DB name)
 coverage save $COV_DB -onexit

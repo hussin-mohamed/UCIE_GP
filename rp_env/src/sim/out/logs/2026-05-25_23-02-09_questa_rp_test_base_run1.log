@@ -1,0 +1,19 @@
+# do runsim_2026-05-25_23-02-09.do
+# ** Warning: (vlib-34) Library already exists at "work".
+# Errors: 0, Warnings: 1
+# QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+# Start time: 23:02:12 on May 25,2026
+# vlog -f src_files.f -mfcu "+define+SIM" 
+# -- Compiling package shared_pkg
+# ** Note: (vlog-2286) ../bfms/rp_ltsm_bfm.sv(22): Using implicit +incdir+C:/questasim64_2021.1/uvm-1.2/../verilog_src/uvm-1.2/src from import uvm_pkg
+# ** Error: (vlog-13069) ** while parsing file included at ../tb/rp_pkg.sv(49)
+# ** at ../tb/monitors/rp_monitor_base.svh(25): near "is_reactive": syntax error, unexpected IDENTIFIER, expecting ')'.
+# ** Error: (vlog-13069) ** while parsing file included at ../tb/rp_pkg.sv(49)
+# ** at ../tb/monitors/rp_monitor_base.svh(25): near "=": syntax error, unexpected '=', expecting class.
+# End time: 23:02:12 on May 25,2026, Elapsed time: 0:00:00
+# Errors: 2, Warnings: 0
+# ** Error: C:/questasim64_2021.1/win64/vlog failed.
+# Error in macro ./runsim_2026-05-25_23-02-09.do line 3
+# C:/questasim64_2021.1/win64/vlog failed.
+#     while executing
+# "vlog -f src_files.f -mfcu +define+SIM"

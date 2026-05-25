@@ -26,6 +26,7 @@ class ltsmc_driver extends rp_driver_base #(ltsmc_seq_item, virtual rp_ltsmc_bfm
   `uvm_component_utils(ltsmc_driver)
 
   bit is_first_item;
+  rand int next_state_wait_cycles;
 
 
   // Function: new
@@ -64,7 +65,7 @@ function ltsmc_driver::new(string name, uvm_component parent);
 endfunction : new
 
 // drive_item
-// -----
+// ----------
 
 task ltsmc_driver::drive_item(inout ltsmc_seq_item req, output ltsmc_seq_item rsp);
   if (is_first_item) begin
@@ -75,10 +76,11 @@ task ltsmc_driver::drive_item(inout ltsmc_seq_item req, output ltsmc_seq_item rs
     bfm.i_half_rate       <= req.half_rate;
     is_first_item = 0;
   end else begin
-    while (!bfm.o_rx_done) begin
-      @(posedge bfm.clk);
+    @(ev_ready_for_next_encoding);
+    if (!std::randomize(next_state_wait_cycles) with { next_state_wait_cycles inside {[5:40]}; }) begin
+      `uvm_error(get_type_name(), "Failed to randomize next_state_wait_cycles")
     end
-    @(posedge bfm.clk);
+    repeat(next_state_wait_cycles) @(posedge bfm.clk);
     bfm.i_rx_encoding     <= req.rx_encoding;
     bfm.i_lane_map_code   <= req.lane_map_code;
     bfm.i_error_threshold <= req.error_threshold;

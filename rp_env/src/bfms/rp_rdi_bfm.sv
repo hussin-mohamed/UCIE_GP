@@ -19,6 +19,10 @@
 //              and D2D Adapter Layer (RDI - Raw Die Interface)
 //******************************************************************************
 
+`include "uvm_macros.svh"
+import shared_pkg::*;
+import uvm_pkg::*;
+
 interface rp_rdi_bfm(
   input logic clk
  ,input logic reset
@@ -30,5 +34,7 @@ interface rp_rdi_bfm(
   logic [pNBYTES-1:0][7:0]    pl_data;
   logic                       pl_valid;
   
-
+  task clear();
+    
+  endtask : clear
 endinterface : rp_rdi_bfm
