@@ -95,11 +95,9 @@ endtask : collect_item_out
 task ltsmc_monitor::collect_item_in(output ltsmc_seq_item _item);
   _item = new();
   @(bfm.i_rx_encoding);
-  if (is_monitored_state(rx_encoding_t'(bfm.i_rx_encoding))) begin
-    @(posedge bfm.clk);
-    _item.lane_map_code   = lane_map_code_t'(bfm.i_lane_map_code);
-    _item.rx_encoding     = rx_encoding_t'(bfm.i_rx_encoding);
-    _item.error_threshold = bfm.i_error_threshold;
-    _item.half_rate       = bfm.i_half_rate;
-  end
+  @(posedge bfm.clk);
+  _item.lane_map_code   = lane_map_code_t'(bfm.i_lane_map_code);
+  _item.rx_encoding     = rx_encoding_t'(bfm.i_rx_encoding);
+  _item.error_threshold = bfm.i_error_threshold;
+  _item.half_rate       = bfm.i_half_rate;
 endtask : collect_item_in
