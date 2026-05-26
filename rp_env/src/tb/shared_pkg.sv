@@ -21,6 +21,7 @@ package shared_pkg;
   parameter pDATA_WIDTH = 64;
   parameter pNBYTES = 256;
   parameter pLFSR_TAPS = 23;
+  parameter int pDATA_RDI_WIDTH  = 2048
   parameter logic [pLFSR_TAPS-1:0] LANE_ID [0:7] = '{
    23'h1DBFBC, // Lane 0,8
    23'h0607BB, // Lane 1,9
