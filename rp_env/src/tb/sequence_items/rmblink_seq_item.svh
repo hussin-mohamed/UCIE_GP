@@ -30,7 +30,7 @@ class rmblink_seq_item extends uvm_sequence_item;
   rand logic                            clk_stream_n [];    // Serialized negative clock stream used for clock training as well as data and valid samplingby the partner.
   rand logic                            track_stream [];    // Serialized track stream.
   rand int unsigned                     idle_ui_cnt;        // Specifies the number of idle Unit Intervals (UIs) to inject before or after the active/training transmission. Used by the driver only.
-  rand pattern_type_t                   pattern_type;       // Selects the specific physical training or test pattern format (CLK_PATTERN, VAL_PATTERN, or DATA_PATTERN). Used by the driver only.
+  rand rp_opmode_t                      rp_opmode;          // Selects either the ACTIVE operation or the specific physical training or test pattern format (CLK_PATTERN, VAL_PATTERN, or DATA_PATTERN). Used by the driver only.
   rand logic          [pDATA_WIDTH-1:0] data [pNUM_LANES];  // Two-dimensional array storing the explicit per-lane data payload to be driven across the physical link.
 
   `uvm_object_utils_begin(rmblink_seq_item)
@@ -39,7 +39,7 @@ class rmblink_seq_item extends uvm_sequence_item;
     `uvm_field_array_int  (clk_stream_n,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_array_int  (track_stream,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_int        (idle_ui_cnt,                  UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_enum       (pattern_type_t, pattern_type, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_enum       (rp_opmode_t, rp_opmode, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_sarray_int (data,                         UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
   `uvm_object_utils_end
 

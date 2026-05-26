@@ -166,7 +166,7 @@ task rp_test_base::main_phase(uvm_phase phase);
       
       // Set the drain time
       if (objection != null) begin
-        objection.set_drain_time(this, 5000ns);
+        objection.set_drain_time(this, 4000ns);
       end
   
       phase.raise_objection(this);

@@ -22,7 +22,13 @@
 //
 //-----------------------------------------------------------------------------
 
-class ltsmc_monitor extends rp_monitor_base #(ltsmc_seq_item, virtual rp_ltsmc_bfm);
+class ltsmc_monitor extends rp_monitor_base #(
+   .ITEM_T(ltsmc_seq_item)
+  ,.INTF_T(virtual rp_ltsmc_bfm)
+  ,.is_reactive(0)
+  ,.collect_out(1)
+  ,.collect_in(1)
+);
   `uvm_component_utils(ltsmc_monitor)
 
 
@@ -72,8 +78,13 @@ endfunction : new
 task ltsmc_monitor::collect_item_out(output ltsmc_seq_item _item);
   _item = new();
 
-  @(bfm.i_rx_encoding);
-  @(posedge bfm.clk)
+  do begin
+    @(bfm.i_rx_encoding);
+  end while (bfm.i_rx_encoding !== Data_To_Clock_test_RX_Result_Handshake_TX_Init ||
+             bfm.i_rx_encoding !== Data_To_Clock_test_RX_Result_Handshake_RX_Init ||
+             bfm.i_rx_encoding !== MBINIT_REVERSAL_RX_Result_Handshake);
+  
+  @(posedge bfm.clk);
   _item.rx_data_results = bfm.o_rx_data_results;
 endtask : collect_item_out
 

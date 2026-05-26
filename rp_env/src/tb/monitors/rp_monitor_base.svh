@@ -22,7 +22,11 @@
 //
 //-----------------------------------------------------------------------------
 
-virtual class rp_monitor_base #(type ITEM_T, type INTF_T, parameter is_reactive=0) extends uvm_monitor;
+virtual class rp_monitor_base #(
+  type ITEM_T, type INTF_T,
+  parameter is_reactive=0,
+  parameter collect_out=1,
+  parameter collect_in=1) extends uvm_monitor;
   // `uvm_component_param_utils(rp_monitor_base #(ITEM_T, INTF_T))
   
   INTF_T bfm;
@@ -147,14 +151,18 @@ endtask : run_phase
 
 task rp_monitor_base::monitor_items_out();
   forever begin
-    collect_item_out(item_out);
-    item_out.set_transaction_id(txn_out_id);
-    txn_out_id++;
-
-    // Write item_out to the analysis port and log the monitored item_out
-    out_ap.write(item_out);
-    `uvm_info(get_type_name(), $sformatf("MONITORED item_out %s: \n%s", item_out.get_type_name(), item_out.sprint()), UVM_DEBUG)
-    txn_out_cnt++;
+    if (collect_out) begin
+      collect_item_out(item_out);
+      item_out.set_transaction_id(txn_out_id);
+      txn_out_id++;
+  
+      // Write item_out to the analysis port and log the monitored item_out
+      out_ap.write(item_out);
+      `uvm_info(get_type_name(), $sformatf("MONITORED item_out %s: \n%s", item_out.get_type_name(), item_out.sprint()), UVM_DEBUG)
+      txn_out_cnt++;
+    end else begin
+      #100;
+    end
 
     // Send item_out to the sequencer if the monitor is configured to be reactive
     if (is_reactive) begin
@@ -168,12 +176,16 @@ endtask : monitor_items_out
 
 task rp_monitor_base::monitor_items_in();
   forever begin
-    collect_item_in(item_in);
-
-    // Write the item_in to the analysis port and log the monitored item_in
-    in_ap.write(item_in);
-    `uvm_info(get_type_name(), $sformatf("MONITORED item_in %s: \n%s", item_in.get_type_name(), item_in.sprint()), UVM_DEBUG)
-    txn_in_cnt++;
+    if (collect_in) begin
+      collect_item_in(item_in);
+  
+      // Write the item_in to the analysis port and log the monitored item_in
+      in_ap.write(item_in);
+      `uvm_info(get_type_name(), $sformatf("MONITORED item_in %s: \n%s", item_in.get_type_name(), item_in.sprint()), UVM_DEBUG)
+      txn_in_cnt++;
+    end else begin
+      #100;
+    end
   end
 endtask : monitor_items_in
 

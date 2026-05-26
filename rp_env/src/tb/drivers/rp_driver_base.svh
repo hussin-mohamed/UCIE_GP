@@ -157,7 +157,6 @@ endtask : reset_phase
 
 task rp_driver_base::drive_items();
   forever begin
-    #10;
     `uvm_info(get_type_name(), "Entered drive_items", UVM_DEBUG)
 
     // Get the next item from the sequencer

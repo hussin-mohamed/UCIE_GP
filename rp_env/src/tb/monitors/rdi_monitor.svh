@@ -22,7 +22,13 @@
 //
 //-----------------------------------------------------------------------------
 
-class rdi_monitor extends rp_monitor_base #(rdi_seq_item, virtual rp_rdi_bfm);
+class rdi_monitor extends rp_monitor_base #(
+  .ITEM_T(rdi_seq_item)
+  ,.INTF_T(virtual rp_rdi_bfm)
+  ,.is_reactive(0)
+  ,.collect_out(1)
+  ,.collect_in(0)
+);
   `uvm_component_utils(rdi_monitor)
 
 
@@ -74,8 +80,8 @@ task rdi_monitor::collect_item_out(output rdi_seq_item _item);
   _item = rdi_seq_item::type_id::create("_item");
 
   do begin
-     @(negedge bfm.clk);
-  end while (bfm.pl_valid == 1'b0);
+    @(negedge bfm.clk);
+  end while (bfm.pl_valid !== 1'b1);
   _item.data = bfm.pl_data;
 endtask : collect_item_out
 
@@ -85,5 +91,4 @@ endtask : collect_item_out
 
 task rdi_monitor::collect_item_in(output rdi_seq_item _item);
   _item = new();
-  #100;
 endtask : collect_item_in

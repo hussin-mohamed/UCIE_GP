@@ -22,7 +22,13 @@
 //
 //-----------------------------------------------------------------------------
 
-class rmblink_monitor extends rp_monitor_base #(rmblink_seq_item, virtual rp_rmblink_bfm);
+class rmblink_monitor extends rp_monitor_base #(
+   .ITEM_T(rmblink_seq_item)
+  ,.INTF_T(virtual rp_rmblink_bfm)
+  ,.is_reactive(0)
+  ,.collect_out(0)
+  ,.collect_in(1)
+);
   `uvm_component_utils(rmblink_monitor)
 
 
@@ -71,7 +77,6 @@ endfunction : new
 
 task rmblink_monitor::collect_item_out(output rmblink_seq_item _item);
   _item = new();
-  #100;
 endtask : collect_item_out
 
 
@@ -81,17 +86,17 @@ endtask : collect_item_out
 task rmblink_monitor::collect_item_in(output rmblink_seq_item _item);
   _item = new();
 
-  @(posedge bfm.clk);
-
-  if (
+  while (
     bfm.i_rx_encoding == MBINIT_REVERSAL_RX_Per_Lane_ID_Det               ||  // Per Lane ID pattern
     bfm.i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_TX_Init  ||  // LFSR pattern or Per Lane ID pattern
     bfm.i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init  ||  // LFSR pattern
     bfm.i_rx_encoding == ACTIVE_RX_Active                                     // Active data transmission
   ) begin
-    bfm.deserialize_data(
-       ._data(_item.data)
-      ,._val_stream(_item.val_stream)
-    );
+    @(posedge bfm.clk);
   end
+
+  bfm.deserialize_data(
+     ._data(_item.data)
+    ,._val_stream(_item.val_stream)
+  );
 endtask : collect_item_in

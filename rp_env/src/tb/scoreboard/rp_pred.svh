@@ -54,6 +54,7 @@ class rp_pred extends uvm_component;
 
   int l2b_iter_cnt;
   logic [pNBYTES-1:0][7:0] rdi_data_buffer;
+  logic success_arr [pNUM_LANES-1:0];
   
   logic [pLFSR_TAPS-1:0] lfsr_state [pNUM_LANES-1:0];
   logic [pLFSR_TAPS-1:0] lfsr_last_state [pNUM_LANES-1:0];
@@ -121,13 +122,13 @@ class rp_pred extends uvm_component;
   // ------------------------------------------------------------------------
   // Export Implementations
   // ------------------------------------------------------------------------
-  virtual function void write_ltsmc(ltsmc_seq_item t);
+virtual function void write_ltsmc(ltsmc_seq_item t);
     ltsmc_seq_item out_item;
 
     // 1. Exclude Clock/Track/Valid Training States entirely
     if ((t.rx_encoding >= MBINIT_REPAIRCLK_RX_Init_Handshake && t.rx_encoding <= MBINIT_REPAIRCLK_RX_Done_Handshake) ||
         (t.rx_encoding >= MBINIT_REPAIRVAL_RX_Init_Handshake && t.rx_encoding <= MBINIT_REPAIRVAL_RX_Done_Handshake)) begin
-      `uvm_info("PRD", "Discarding MBINIT.REPAIRCLK/MBINIT.REPAIRVAL input LTSM transaction. MBINIT.REPAIRCLK/MBINIT.REPAIRVAL input LTSM transactions are fully modelled and checked using SVAs", UVM_MEDIUM)
+      `uvm_info("PRD", "Discarding MBINIT.REPAIRCLK/MBINIT.REPAIRVAL input LTSM transaction. Fully modelled via SVAs.", UVM_MEDIUM)
       return;
     end
 
@@ -135,13 +136,11 @@ class rp_pred extends uvm_component;
     if (current_rx_encoding != t.rx_encoding) begin
       previous_rx_encoding = current_rx_encoding;
     end
-    current_rx_encoding = t.rx_encoding;
     
-    if (t.rx_encoding == MBINIT_PARAM_RX_Check_Parameters ||
-        t.rx_encoding == MBINIT_REPAIRMB_RX_Degrade) begin
-      current_lane_map_code = t.lane_map_code;
-    end
+    current_rx_encoding = t.rx_encoding;
+    current_lane_map_code = t.lane_map_code;
 
+    // Only update error threshold on INIT handshake
     if (t.rx_encoding == Data_To_Clock_test_RX_INIT_Handshake_TX_Init ||
         t.rx_encoding == Data_To_Clock_test_RX_INIT_Handshake_RX_Init) begin
       current_error_threshold = t.error_threshold;
@@ -160,21 +159,38 @@ class rp_pred extends uvm_component;
       rx_lfsr(1'b0, 1'b1, dummy_data, current_error_threshold, dummy_success, dummy_out);
     end
 
-    // 4. If Idle/Control State (No data payload expected), emit LTSMC immediately
-    if (is_control_state(t.rx_encoding)) begin
+    // ========================================================================
+    // Emit Predicted LTSMC Item in the Result Handshake States
+    // ========================================================================
+    if (t.rx_encoding == Data_To_Clock_test_RX_Result_Handshake_TX_Init  ||
+        t.rx_encoding == Data_To_Clock_test_RX_Result_Handshake_RX_Init  ||
+        t.rx_encoding == MBINIT_REVERSAL_RX_Result_Handshake) begin
+      
+      logic [pNUM_LANES-1:0] packed_success; // Intermediate packed vector
+      
+      // Fix SV Unpacked-to-Packed Conversion
+      foreach (success_arr[i]) begin
+        packed_success[i] = success_arr[i];
+      end
+
       out_item = ltsmc_seq_item::type_id::create("out_item");
-      out_item.rx_encoding = t.rx_encoding;
-      out_item.lane_map_code = t.lane_map_code;
-      out_item.error_threshold = t.error_threshold;
-      out_item.half_rate = t.half_rate;
-      out_item.rx_data_results = '0; // Default zero array /////////// I think it should take the last value and not zero
+      out_item.rx_encoding = current_rx_encoding;
+      out_item.lane_map_code = current_lane_map_code;
+      out_item.error_threshold = current_error_threshold;
+      
+      // Now concatenation works perfectly
+      out_item.rx_data_results = {48'h0, packed_success}; 
+      
       results_ap_ltsmc.write(out_item);
+      
+      // Reset tracking vars for next sequence
+      lfsr_train_iter_cnt = 0; 
+      per_lane_iter_cnt = 0;
     end
   endfunction : write_ltsmc
 
   virtual function void write_rmblink(rmblink_seq_item t);
     logic [(pDATA_WIDTH/16)-1:0][15:0] lanes [pNUM_LANES];
-    logic                              success_arr [pNUM_LANES-1:0];
     
     logic [(pDATA_WIDTH/8)-1:0][7:0]   l2b_lanes [pNUM_LANES];
     logic [pDATA_WIDTH-1:0]            lfsr_out_data [pNUM_LANES-1:0];
@@ -203,20 +219,6 @@ class rp_pred extends uvm_component;
     else if (current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_TX_Init || 
              current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) begin
       rx_lfsr(1'b1, 1'b0, t.data, current_error_threshold, success_arr, lfsr_out_data);
-    end 
-
-    // ========================================================================
-    // Predicted LTSMC Item Generation
-    // ========================================================================
-    else if (current_rx_encoding == Data_To_Clock_test_RX_Result_Handshake_TX_Init ||
-             current_rx_encoding == Data_To_Clock_test_RX_Result_Handshake_RX_Init) begin
-      ltsmc_seq_item out_item = ltsmc_seq_item::type_id::create("out_item");
-      out_item.rx_encoding = current_rx_encoding;
-      out_item.lane_map_code = current_lane_map_code;
-      out_item.error_threshold = current_error_threshold;
-      out_item.rx_data_results = {48'h0, success_arr};
-      results_ap_ltsmc.write(out_item);
-      lfsr_train_iter_cnt = 0; // Wrap tracking
     end
     
     // ========================================================================

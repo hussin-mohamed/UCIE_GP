@@ -52,7 +52,8 @@ package shared_pkg;
      CLK_PATTERN
     ,VAL_PATTERN
     ,DATA_PATTERN
-  } pattern_type_t;
+    ,ACTIVE
+  } rp_opmode_t;
 
   typedef enum bit [2:0] { 
      X8_LOWER_MODE = 3'b001
