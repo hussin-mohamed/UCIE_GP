@@ -27,7 +27,7 @@
 //
 //-----------------------------------------------------------------------------
 
-class rp_sequence_base #(type ITEM_T) extends uvm_sequence #(ITEM_T);
+virtual class rp_sequence_base #(type ITEM_T) extends uvm_sequence #(ITEM_T);
   `uvm_object_param_utils(rp_sequence_base #(ITEM_T))
 
   ITEM_T req, rsp;
@@ -59,7 +59,7 @@ class rp_sequence_base #(type ITEM_T) extends uvm_sequence #(ITEM_T);
   // Virtual method that must be overridden by derived classes to implement
   // sequence-specific transaction generation behavior.
 
-  extern task body();
+  pure virtual task body();
 
 endclass : rp_sequence_base
 
@@ -89,7 +89,7 @@ endfunction : new
 
 function void rp_sequence_base::seq_print(string msg);
   `uvm_info(get_type_name(), msg, UVM_MEDIUM)
-endfunction
+endfunction  :  seq_print
 
 // pre_body
 // --------
@@ -97,13 +97,4 @@ endfunction
 task rp_sequence_base::pre_body();
   seq_print("Entered sequence pre_body");
   req = ITEM_T::type_id::create("req");
-endtask
-
-// body
-// ----
-//
-// Emits a fatal message when a derived sequence forgets to override body().
-
-task rp_sequence_base::body();
-  `uvm_fatal("BODY", "APB_BASE_SEQ - Base sequence's body is not implemented and must be overriden")
-endtask : body
+endtask : pre_body

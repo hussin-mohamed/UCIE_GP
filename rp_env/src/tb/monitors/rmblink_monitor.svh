@@ -87,10 +87,10 @@ task rmblink_monitor::collect_item_in(output rmblink_seq_item _item);
   _item = new();
 
   while (
-    bfm.i_rx_encoding == MBINIT_REVERSAL_RX_Per_Lane_ID_Det               ||  // Per Lane ID pattern
-    bfm.i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_TX_Init  ||  // LFSR pattern or Per Lane ID pattern
-    bfm.i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init  ||  // LFSR pattern
-    bfm.i_rx_encoding == ACTIVE_RX_Active                                     // Active data transmission
+    bfm.i_rx_encoding != MBINIT_REVERSAL_RX_Per_Lane_ID_Det               &&  // Per Lane ID pattern
+    bfm.i_rx_encoding != Data_To_Clock_test_RX_Pattern_Detection_TX_Init  &&  // LFSR pattern or Per Lane ID pattern
+    bfm.i_rx_encoding != Data_To_Clock_test_RX_Pattern_Detection_RX_Init  &&  // LFSR pattern
+    bfm.i_rx_encoding != ACTIVE_RX_Active                                     // Active data transmission
   ) begin
     @(posedge bfm.clk);
   end

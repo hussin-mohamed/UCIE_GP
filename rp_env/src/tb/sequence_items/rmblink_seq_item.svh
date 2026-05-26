@@ -39,7 +39,7 @@ class rmblink_seq_item extends uvm_sequence_item;
     `uvm_field_array_int  (clk_stream_n,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_array_int  (track_stream,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_int        (idle_ui_cnt,                  UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
-    `uvm_field_enum       (rp_opmode_t, rp_opmode, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_enum       (rp_opmode_t, rp_opmode,       UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_sarray_int (data,                         UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
   `uvm_object_utils_end
 

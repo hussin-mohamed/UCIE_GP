@@ -122,7 +122,7 @@ class rp_pred extends uvm_component;
   // ------------------------------------------------------------------------
   // Export Implementations
   // ------------------------------------------------------------------------
-virtual function void write_ltsmc(ltsmc_seq_item t);
+  virtual function void write_ltsmc(ltsmc_seq_item t);
     ltsmc_seq_item out_item;
 
     // 1. Exclude Clock/Track/Valid Training States entirely

@@ -113,6 +113,7 @@ package shared_pkg;
 
     // --- 8. MBINIT REPAIRMB ---
     MBINIT_REPAIRMB_RX_Init_Handshake             = 9'b00_0111_000, // Hex: 9'h038 (Send Start RESP)
+    // Data_To_Clock_test_RX_INIT_Handshake_TX_Init
     MBINIT_REPAIRMB_RX_Wait_Apply_Degrade         = 9'b00_0111_010, // Hex: 9'h03A (Wait for TX Map)
     MBINIT_REPAIRMB_RX_Degrade                    = 9'b00_0111_011, // Hex: 9'h03B (Update Hardware)
     MBINIT_REPAIRMB_RX_Send_Degrade_Resp          = 9'b00_0111_100, // Hex: 9'h03C (Confirm Degrade)
@@ -129,10 +130,12 @@ package shared_pkg;
 
     // --- 1. MBTRAIN VALVREF ---
     MBTRAIN_VALVREF_RX_Start_Handshake             = 9'b01_0000_000, // Hex: 9'h080 (Send Vref Start REQ)
+    // Data_To_Clock_test_RX_INIT_Handshake_RX_Init
     MBTRAIN_VALVREF_RX_End_Handshake               = 9'b01_0000_010, // Hex: 9'h082 (Send End REQ)
 
     // --- 2. MBTRAIN DATAVREF ---
     MBTRAIN_DATAVREF_RX_Start_Handshake            = 9'b01_0001_000, // Hex: 9'h088 (Send Start REQ)
+    // Data_To_Clock_test_RX_INIT_Handshake_RX_Init
     MBTRAIN_DATAVREF_RX_End_Handshake              = 9'b01_0001_010, // Hex: 9'h08A (Send End REQ)
 
     // --- 3. MBTRAIN SPEEDIDLE ---
@@ -149,18 +152,22 @@ package shared_pkg;
 
     // --- 5. MBTRAIN VALTRAINCENTER ---
     MBTRAIN_VALTRAINCENTER_RX_Start_Handshake      = 9'b01_0100_000, // Hex: 9'h0A0 (Send Start REQ)
+    // Data_To_Clock_test_RX_INIT_Handshake_TX_Init
     MBTRAIN_VALTRAINCENTER_RX_End_Handshake        = 9'b01_0100_010, // Hex: 9'h0A2 (Send End REQ)
 
     // --- 6. MBTRAIN VALTRAINVREF ---
     MBTRAIN_VALTRAINVREF_RX_Start_Handshake        = 9'b01_1101_000, // Hex: 9'h0E8 (Send Start REQ)
+    // Data_To_Clock_test_RX_INIT_Handshake_RX_Init
     MBTRAIN_VALTRAINVREF_RX_End_Handshake          = 9'b01_1101_010, // Hex: 9'h0EA (Send End REQ)
 
     // --- 7. MBTRAIN DATATRAINCENTER1 ---
     MBTRAIN_DTC1_RX_Start_Handshake                = 9'b01_0010_000, // Hex: 9'h090 (Send Start REQ)
+    // Data_To_Clock_test_RX_INIT_Handshake_TX_Init
     MBTRAIN_DTC1_RX_End_Handshake                  = 9'b01_0010_010, // Hex: 9'h092 (Send End REQ)
 
     // --- 8. MBTRAIN DATATRAINVREF ---
     MBTRAIN_DATATRAINVREF_RX_Start_Handshake       = 9'b01_1110_000, // Hex: 9'h0F0 (Send Start REQ)
+    // Data_To_Clock_test_RX_INIT_Handshake_RX_Init
     MBTRAIN_DATATRAINVREF_RX_End_Handshake         = 9'b01_1110_010, // Hex: 9'h0F2 (Send End REQ)
 
     // --- 9. MBTRAIN RXDESKEW ---
@@ -173,10 +180,12 @@ package shared_pkg;
 
     // --- 10. MBTRAIN DATATRAINCENTER2 ---
     MBTRAIN_DTC2_RX_Start_Handshake                = 9'b01_0110_000, // Hex: 9'h0B0 (Send Start REQ)
+    // Data_To_Clock_test_RX_INIT_Handshake_TX_Init
     MBTRAIN_DTC2_RX_End_Handshake                  = 9'b01_0110_010, // Hex: 9'h0B2 (Send End REQ)
 
     // --- 11. MBTRAIN LINKSPEED ---
     MBTRAIN_LINKSPEED_RX_Start_Handshake           = 9'b01_0111_000, // Hex: 9'h0B8 (Send Start REQ)
+    // Data_To_Clock_test_RX_INIT_Handshake_TX_Init
     MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd       = 9'b01_0111_010, // Hex: 9'h0BA (Success -> LinkInit)
     MBTRAIN_LINKSPEED_RX_Error_REQ                 = 9'b01_0111_011, // Hex: 9'h0BB (Fail -> Eval Error)
     MBTRAIN_LINKSPEED_RX_Phy_Retrain_Hnd           = 9'b01_0111_100, // Hex: 9'h0BC (Critical Fail -> Retrain)
