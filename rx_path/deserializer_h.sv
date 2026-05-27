@@ -47,12 +47,8 @@ module deser_h #(
 
       if (bit_counter == 7'd63) begin
         bit_counter      <= 'd0;
-        if (i_valid) begin
-          o_fifo_deser_msg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]};
-        end
-        else begin
-          enable<=0;
-        end
+        o_fifo_deser_msg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]};
+        enable           <= 0;
         
         data_rdy_toggle  <= ~data_rdy_toggle;
       end 
