@@ -94,8 +94,10 @@ interface rp_sva #(
     // Detect when we enter a valid pattern state based on the encoding
     always @(posedge i_clk_l) begin
         previous_encoding <= i_rx_encoding;
-        if ( (i_rx_encoding ==  MBINIT_REPAIRVAL_RX_Valid_Pattern_Det )|| 
-             ((i_rx_encoding == Data_To_Clock_test_RX_INIT_Handshake_RX_Init) && ((previous_encoding == MBTRAIN_VALVREF_RX_Start_Handshake) ||
+        if ( i_rx_encoding ==  MBINIT_REPAIRVAL_RX_Valid_Pattern_Det) begin
+            is_valid_pattern = 1'b1;
+        end
+        else if (((i_rx_encoding == Data_To_Clock_test_RX_INIT_Handshake_RX_Init) && ((previous_encoding == MBTRAIN_VALVREF_RX_Start_Handshake) ||
              (previous_encoding == MBTRAIN_VALTRAINCENTER_RX_Start_Handshake) || (previous_encoding == MBTRAIN_VALTRAINVREF_RX_Start_Handshake)))) begin
             wait ((i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init)); 
             is_valid_pattern = 1'b1;

@@ -90,8 +90,7 @@ task rp_vaild_sanity_vseq::body();
                             ,._next_rx_enc(MBINIT_REPAIRVAL_RX_Init_Handshake)
                             );
       ltsmc_seq.start(ltsmc_seqr); 
-  fork
-    begin
+    
       ltsmc_seq.configure (._next_state_type(NEXT)
                             ,._lane_map_code(lane_map_code_t'(0))
                             ,._error_threshold(0)
@@ -99,13 +98,9 @@ task rp_vaild_sanity_vseq::body();
                             ,._next_rx_enc(RESET_Reset)
                             );
       ltsmc_seq.start(ltsmc_seqr);
-
-    end
-
-    begin
+      
       rmblink_valid_sequence.start(rmblink_seqr);
-    end
-  join
+
   repeat (3) begin
       ltsmc_seq.configure (._next_state_type(NEXT)
                             ,._lane_map_code(lane_map_code_t'(0))
