@@ -63,6 +63,14 @@ package shared_pkg;
     ,X4_LOWER_MODE = 3'b100
     ,X4_UPPER_MODE = 3'b101
   } lane_map_code_t;
+
+   typedef enum bit [1:0] {
+     CONFIGURE = 2'b00
+    ,NEXT      = 2'b01
+    ,CUSTOM    = 2'b10
+   } next_state_type_t;
+
+
   
   //-----------------------------------------------------------------------------
   // RX State Encoding Typedef Enum
@@ -153,7 +161,7 @@ package shared_pkg;
 
     // --- 5. MBTRAIN VALTRAINCENTER ---
     MBTRAIN_VALTRAINCENTER_RX_Start_Handshake      = 9'b01_0100_000, // Hex: 9'h0A0 (Send Start REQ)
-    // Data_To_Clock_test_RX_INIT_Handshake_TX_Init
+    // Data_To_Clock_test_RX_INIT_Handshake_RX_Init
     MBTRAIN_VALTRAINCENTER_RX_End_Handshake        = 9'b01_0100_010, // Hex: 9'h0A2 (Send End REQ)
 
     // --- 6. MBTRAIN VALTRAINVREF ---
@@ -163,7 +171,7 @@ package shared_pkg;
 
     // --- 7. MBTRAIN DATATRAINCENTER1 ---
     MBTRAIN_DTC1_RX_Start_Handshake                = 9'b01_0010_000, // Hex: 9'h090 (Send Start REQ)
-    // Data_To_Clock_test_RX_INIT_Handshake_TX_Init
+    // Data_To_Clock_test_RX_INIT_Handshake_RX_Init
     MBTRAIN_DTC1_RX_End_Handshake                  = 9'b01_0010_010, // Hex: 9'h092 (Send End REQ)
 
     // --- 8. MBTRAIN DATATRAINVREF ---
@@ -181,7 +189,7 @@ package shared_pkg;
 
     // --- 10. MBTRAIN DATATRAINCENTER2 ---
     MBTRAIN_DTC2_RX_Start_Handshake                = 9'b01_0110_000, // Hex: 9'h0B0 (Send Start REQ)
-    // Data_To_Clock_test_RX_INIT_Handshake_TX_Init
+    // Data_To_Clock_test_RX_INIT_Handshake_RX_Init
     MBTRAIN_DTC2_RX_End_Handshake                  = 9'b01_0110_010, // Hex: 9'h0B2 (Send End REQ)
 
     // --- 11. MBTRAIN LINKSPEED ---

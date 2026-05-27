@@ -99,7 +99,7 @@ package rp_pkg;
   // Group: Sequences
   //
   // Contains all test sequences for driving the RX-Path verification.
-  // `include "sequences/"
+  `include "sequences/ltsmc_sequence.svh"
 
   // Group: Virtual Sequences
   //
