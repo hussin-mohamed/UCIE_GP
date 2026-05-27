@@ -82,6 +82,13 @@ add wave -group PRD_LFSR_State -position insertpoint \
   sim:/uvm_test_top/env/sb/prd/lfsr_state \
   sim:/uvm_test_top/env/sb/prd/lfsr_last_state
 
+add wave -group Assertions -position insertpoint \
+  sim:/rp_tb_top/dut/rp_sva_inst/assert_valid_pattern_16_frame \
+  sim:/rp_tb_top/dut/rp_sva_inst/assert_valid_pattern_valid_frame \
+  sim:/rp_tb_top/dut/rp_sva_inst/assert_valid_pattern_error_check \
+  sim:/rp_tb_top/dut/rp_sva_inst/chk_async_reset
+  
+
 # ====================================================================
 
 .vcop Action toggleleafnames
