@@ -14,7 +14,7 @@ module ucie_rx_controller #(
     output logic [63:0]           o_rx_data_results,
     output logic                  o_rx_path_reset,
     output logic                  o_rx_error,
-    output logic                  o_clk_results,
+    output logic [2:0]            o_clk_results,
     output logic                  o_valid_results,
     output logic [15:0]           o_error_threshold,                   
     output logic [15:0]           o_rx_lfsr_enable,
@@ -399,9 +399,9 @@ module ucie_rx_controller #(
         o_l2b_enable         <= 1'b0;
         o_fifo_rd_en         <= 16'h0000;
         o_rx_data_results    <= 64'hFFFF_FFFF_FFFF_FFFF;
-        o_clk_results        <= 1'b1;
+        o_clk_results        <= 3'b111;
         o_valid_results      <= 1'b1;
-        o_rx_path_reset      <= 1'b0;
+        o_rx_path_reset      <= 1'b1;
         end 
         else begin
         o_fifo_rd_en      <= fifo_rd_en;
