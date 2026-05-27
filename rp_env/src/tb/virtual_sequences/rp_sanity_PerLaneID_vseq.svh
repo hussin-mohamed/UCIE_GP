@@ -85,7 +85,7 @@ endtask : pre_body
 task rp_sanity_PerLaneID_vseq::body();
   ltsmc_seq.configure(
      ._next_state_type(CUSTOM)
-    ,._lane_map_code(lane_map_code_t'(3'b011))
+    ,._lane_map_code(X16_MODE)
     ,._error_threshold(0)
     ,._half_rate(1'b1)
     ,._next_rx_enc(MBINIT_REVERSAL_RX_Init_Handshake)
@@ -94,7 +94,7 @@ task rp_sanity_PerLaneID_vseq::body();
     
   ltsmc_seq.configure(
      ._next_state_type(NEXT)
-    ,._lane_map_code(lane_map_code_t'(3'b011))
+    ,._lane_map_code(X16_MODE)
     ,._error_threshold(0)
     ,._half_rate(1'b1)
     ,._next_rx_enc(RESET_Reset)
@@ -103,7 +103,7 @@ task rp_sanity_PerLaneID_vseq::body();
 
   ltsmc_seq.configure(
      ._next_state_type(NEXT)
-    ,._lane_map_code(lane_map_code_t'(3'b011))
+    ,._lane_map_code(X16_MODE)
     ,._error_threshold(0)
     ,._half_rate(1'b1)
     ,._next_rx_enc(RESET_Reset)
@@ -120,7 +120,7 @@ task rp_sanity_PerLaneID_vseq::body();
 
   ltsmc_seq.configure(
      ._next_state_type(NEXT)
-    ,._lane_map_code(lane_map_code_t'(3'b011))
+    ,._lane_map_code(X16_MODE)
     ,._error_threshold(0)
     ,._half_rate(1'b1)
     ,._next_rx_enc(RESET_Reset)
@@ -129,7 +129,7 @@ task rp_sanity_PerLaneID_vseq::body();
 
   ltsmc_seq.configure(
      ._next_state_type(NEXT)
-    ,._lane_map_code(lane_map_code_t'(3'b011))
+    ,._lane_map_code(X16_MODE)
     ,._error_threshold(0)
     ,._half_rate(1'b1)
     ,._next_rx_enc(RESET_Reset)

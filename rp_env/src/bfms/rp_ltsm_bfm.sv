@@ -28,8 +28,8 @@ interface rp_ltsmc_bfm(
   ,input  logic reset
 );
   
-  logic [2:0]             i_lane_map_code;    // Selects lane mapping configuration.
-  logic [8:0]             i_rx_encoding;      // Current state of the RX FSM.
+  lane_map_code_t         i_lane_map_code;    // Selects lane mapping configuration.
+  rx_encoding_t           i_rx_encoding;      // Current state of the RX FSM.
   logic [15:0]            i_error_threshold;  // Error threshold for the valid and data pattern detection.
   logic                   i_half_rate;        // Rate mode selector.
   logic                   o_rx_done;          // Indicates that the RX datapath has finished its opertaion.
@@ -41,7 +41,7 @@ interface rp_ltsmc_bfm(
   // Methods
   //============================================================================
   task clear();
-    i_lane_map_code    <= 3'b011;     
+    i_lane_map_code    <= X16_MODE;     
     i_rx_encoding      <= RESET_Reset;
     i_error_threshold  <= 0;
     i_half_rate        <= 1;

@@ -37,7 +37,7 @@ interface rp_rmblink_bfm(
   logic [pNUM_LANES-1:0] i_data;
   logic                  i_valid;
 
-  logic [8:0]            i_rx_encoding;
+  rx_encoding_t          i_rx_encoding;
 
   //============================================================================
   // Methods
