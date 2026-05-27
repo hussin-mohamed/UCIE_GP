@@ -157,7 +157,7 @@ module rx_path #(
     generate
         for (i = 0; i < pNUM_LANES; i++) begin : gen_lane
 
-            deserializer_h #(
+            deser_h #(
                 .pDESER_WIDTH(pDATA_WIDTH)
             ) deser (
                 .i_clk_p          (clk_p),
