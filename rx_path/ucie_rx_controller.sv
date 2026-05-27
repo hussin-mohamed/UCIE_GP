@@ -239,7 +239,7 @@ module ucie_rx_controller #(
         error_threshold          = error_threshold_q;  // Use registered value in combinational logic
         fifo_rd_en               = 16'h0000;
         o_data_det_type          = 1'b0;
-        rx_data_results[15:0]  = 16'hFFFF; // Default to all 1's (no errors) for LFSR and lane ID patterns
+        rx_data_results[15:0]    = o_rx_data_results[15:0]; // Default to all 1's (no errors) for LFSR and lane ID patterns
         clk_results              = 3'b111; // Default to all 1's (no errors)
         valid_results            = 1'b1;   // Default to 1 (no errors)
         // LFSR pattern generation for eye sweep pattern-generation substates.
