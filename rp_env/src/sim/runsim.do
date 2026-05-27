@@ -16,7 +16,7 @@ vsim -voptargs=+acc -nodpiexports work.rp_tb_top -classdebug -uvmcontrol=all -co
     +UVM_VERBOSITY=$VERBOSITY \
     +UVM_NO_RELNOTES \
     +UVM_TESTNAME=$TESTNAME \
-    +UVM_TIMEOUT=100000,YES \
+    +UVM_TIMEOUT=1000000,YES \
     -sv_seed $SEED
 
 set NoQuitOnFinish 1
@@ -36,7 +36,7 @@ add wave -group LTSM_CTRL_BFM -position insertpoint  \
  -color Cyan  sim:/rp_tb_top/ltsmc_bfm/i_rx_encoding \
  sim:/rp_tb_top/ltsmc_bfm/i_lane_map_code \
  sim:/rp_tb_top/ltsmc_bfm/i_error_threshold \
- -color Green sim:/rp_tb_top/ltsmc_bfm/o_rx_done \
+ -color Magenta sim:/rp_tb_top/ltsmc_bfm/o_rx_done \
  sim:/rp_tb_top/ltsmc_bfm/o_clk_result \
  sim:/rp_tb_top/ltsmc_bfm/o_valid_result \
  sim:/rp_tb_top/ltsmc_bfm/o_rx_data_results
@@ -49,11 +49,11 @@ add wave -group RMBLINK_BFM -position insertpoint  \
  -color Gold  sim:/rp_tb_top/rmblink_bfm/i_dclk \
  sim:/rp_tb_top/rmblink_bfm/i_track \
  sim:/rp_tb_top/rmblink_bfm/i_data \
- -color Green sim:/rp_tb_top/rmblink_bfm/i_valid
+ -color Magenta sim:/rp_tb_top/rmblink_bfm/i_valid
 
 # 4. RDI BFM (Adapter Layer Output)
 add wave -group RDI_BFM -position insertpoint  \
- -color Green sim:/rp_tb_top/rdi_bfm/pl_valid \
+ -color Magenta sim:/rp_tb_top/rdi_bfm/pl_valid \
  sim:/rp_tb_top/rdi_bfm/pl_data
 
 # 5. DUT (RX-Path Top Level Ports & Internal Signals)
@@ -76,7 +76,7 @@ add wave -group PRD_State -position insertpoint \
 add wave -group PRD_PerLane_Counts -position insertpoint \
  sim:/uvm_test_top/env/sb/prd/per_lane_pat_cnt \
  -color Red   sim:/uvm_test_top/env/sb/prd/lane_error_count \
- -color Green sim:/uvm_test_top/env/sb/prd/success_arr
+ -color Magenta sim:/uvm_test_top/env/sb/prd/success_arr
 
 add wave -group PRD_LFSR_State -position insertpoint \
  sim:/uvm_test_top/env/sb/prd/lfsr_state \
