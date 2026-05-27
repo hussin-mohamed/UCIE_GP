@@ -175,9 +175,10 @@ class rp_pred extends uvm_component;
       end
 
       out_item = ltsmc_seq_item::type_id::create("out_item");
-      out_item.rx_encoding = current_rx_encoding;
       out_item.lane_map_code = current_lane_map_code;
+      out_item.rx_encoding = current_rx_encoding;
       out_item.error_threshold = current_error_threshold;
+      out_item.half_rate = 1;
       
       // Now concatenation works perfectly
       out_item.rx_data_results = { {48{1'b1}}, packed_success };

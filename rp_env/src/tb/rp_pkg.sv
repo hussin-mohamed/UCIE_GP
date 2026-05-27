@@ -113,5 +113,7 @@ package rp_pkg;
   //
   // Contains the verification test cases.
   `include "tests/rp_test_base.svh"
+  `include "tests/rp_sanity_valid_test.svh"
+  `include "tests/rp_sanity_PerLaneID_test.svh"
 
 endpackage : rp_pkg

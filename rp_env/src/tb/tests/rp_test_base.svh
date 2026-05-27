@@ -26,17 +26,17 @@
 //
 //---------------------------------------------------------------------------
 
-class rp_test_base extends uvm_test;
+virtual class rp_test_base extends uvm_test;
   `uvm_component_utils(rp_test_base)
 
-  rp_env             env;
-  env_config         env_cfg;
-  rp_vaild_sanity_vseq     vseq;
-  uvm_factory        factory = uvm_factory::get();
-  int unsigned       run_count = 3;
-  bit                hit_reset = 0;
-  rand bit           hit_reset_during_init;
-  rand int           reset_delay_ns;
+  rp_env                env;
+  env_config            env_cfg;
+  virtual_sequence_base vseq;
+  uvm_factory           factory = uvm_factory::get();
+  int unsigned          run_count = 3;
+  bit                   hit_reset = 0;
+  rand bit              hit_reset_during_init;
+  rand int              reset_delay_ns;
 
 
   // Function: new
@@ -139,7 +139,7 @@ endfunction : build_phase
 function void rp_test_base::end_of_elaboration_phase(uvm_phase phase);
   super.end_of_elaboration_phase(phase);
 
-  vseq = rp_vaild_sanity_vseq::type_id::create("vseq", this);
+  vseq = virtual_sequence_base::type_id::create("vseq", this);
   uvm_top.print_topology(); // Prints entire testbench hierarchy 
 endfunction : end_of_elaboration_phase
 

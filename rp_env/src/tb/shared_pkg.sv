@@ -64,12 +64,11 @@ package shared_pkg;
     ,X4_UPPER_MODE = 3'b101
   } lane_map_code_t;
 
-   typedef enum bit {
-    NEXT      = 1'b0
-    ,CUSTOM    = 1'b1
+   typedef enum bit [1:0] {
+     NEXT      = 2'b00
+    ,CUSTOM    = 2'b01
+    ,TRAVERSE  = 2'b10
    } next_state_type_t;
-
-
   
   //-----------------------------------------------------------------------------
   // RX State Encoding Typedef Enum
@@ -248,4 +247,160 @@ package shared_pkg;
     Data_To_Clock_test_RX_End_Init_Handshake_RX_Init      = 9'b11_0001_101  // Hex: 9'h18D
 
   } rx_encoding_t;
+
+   // =========================================================================
+   // Full RX FSM Flow
+   // =========================================================================
+   rx_encoding_t rx_flow_array [] = '{
+    // --- 00: INITIALIZATION PHASE ---
+    RESET_Reset,
+    SBINIT_RX_Wait_Out_Of_Reset,
+    SBINIT_RX_Done_Handshake,
+    MBINIT_PARAM_RX_Wait_Config_REQ,
+    MBINIT_PARAM_RX_Check_Parameters,
+    MBINIT_PARAM_RX_Send_RESP,
+    MBINIT_CAL_RX_Done_Handshake,
+    MBINIT_REPAIRCLK_RX_Init_Handshake,
+    MBINIT_REPAIRCLK_RX_Pattern_Detection,
+    MBINIT_REPAIRCLK_RX_Wait_Result_REQ,
+    MBINIT_REPAIRCLK_RX_Send_RESP,
+    MBINIT_REPAIRCLK_RX_Done_Handshake,
+    MBINIT_REPAIRVAL_RX_Init_Handshake,
+    MBINIT_REPAIRVAL_RX_Valid_Pattern_Det,
+    MBINIT_REPAIRVAL_RX_Wait_Result_REQ,
+    MBINIT_REPAIRVAL_RX_Send_Result_RESP,
+    MBINIT_REPAIRVAL_RX_Done_Handshake,
+    MBINIT_REVERSAL_RX_Init_Handshake,
+    MBINIT_REVERSAL_RX_Clear_Log_Hnd,
+    MBINIT_REVERSAL_RX_Per_Lane_ID_Det,
+    MBINIT_REVERSAL_RX_Result_Handshake,
+    MBINIT_REVERSAL_RX_Done_Handshake,
+
+    MBINIT_REPAIRMB_RX_Init_Handshake,
+      // --> TX Initiated DTC Sweep
+      Data_To_Clock_test_RX_INIT_Handshake_TX_Init,
+      Data_To_Clock_test_RX_LFSR_Clear_Handshake_TX_Init,
+      Data_To_Clock_test_RX_Pattern_Detection_TX_Init,
+      Data_To_Clock_test_RX_Result_Handshake_TX_Init,
+      Data_To_Clock_test_RX_End_Init_Handshake_TX_Init,
+    MBINIT_REPAIRMB_RX_Wait_Apply_Degrade,
+    MBINIT_REPAIRMB_RX_Degrade,
+    MBINIT_REPAIRMB_RX_Send_Degrade_Resp,
+    MBINIT_REPAIRMB_RX_Done_Handshake,
+
+    // --- 01: TRAIN PHASE ---
+    MBTRAIN_VALVREF_RX_Start_Handshake,
+      // --> RX Initiated DTC Sweep
+      Data_To_Clock_test_RX_INIT_Handshake_RX_Init,
+      Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Pattern_Detection_RX_Init,
+      Data_To_Clock_test_RX_Result_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Sweep_Result_Handshake,
+      Data_To_Clock_test_RX_End_Init_Handshake_RX_Init,
+    MBTRAIN_VALVREF_RX_End_Handshake,
+
+    MBTRAIN_DATAVREF_RX_Start_Handshake,
+      Data_To_Clock_test_RX_INIT_Handshake_RX_Init,
+      Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Pattern_Detection_RX_Init,
+      Data_To_Clock_test_RX_Result_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Sweep_Result_Handshake,
+      Data_To_Clock_test_RX_End_Init_Handshake_RX_Init,
+    MBTRAIN_DATAVREF_RX_End_Handshake,
+
+    MBTRAIN_SPEEDIDLE_RX_Speed_Transition,
+    MBTRAIN_SPEEDIDLE_RX_End_Handshake,
+
+    MBTRAIN_TXSELFCAL_RX_End_Handshake,
+
+    MBTRAIN_RXCLKCAL_RX_Start_Handshake,
+    MBTRAIN_RXCLKCAL_RX_Clock_Shifting_Op,
+    MBTRAIN_RXCLKCAL_RX_End_Handshake,
+
+    MBTRAIN_VALTRAINCENTER_RX_Start_Handshake,
+      Data_To_Clock_test_RX_INIT_Handshake_RX_Init,
+      Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Pattern_Detection_RX_Init,
+      Data_To_Clock_test_RX_Result_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Sweep_Result_Handshake,
+      Data_To_Clock_test_RX_End_Init_Handshake_RX_Init,
+    MBTRAIN_VALTRAINCENTER_RX_End_Handshake,
+
+    MBTRAIN_VALTRAINVREF_RX_Start_Handshake,
+      Data_To_Clock_test_RX_INIT_Handshake_RX_Init,
+      Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Pattern_Detection_RX_Init,
+      Data_To_Clock_test_RX_Result_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Sweep_Result_Handshake,
+      Data_To_Clock_test_RX_End_Init_Handshake_RX_Init,
+    MBTRAIN_VALTRAINVREF_RX_End_Handshake,
+
+    MBTRAIN_DTC1_RX_Start_Handshake,
+      Data_To_Clock_test_RX_INIT_Handshake_RX_Init,
+      Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Pattern_Detection_RX_Init,
+      Data_To_Clock_test_RX_Result_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Sweep_Result_Handshake,
+      Data_To_Clock_test_RX_End_Init_Handshake_RX_Init,
+    MBTRAIN_DTC1_RX_End_Handshake,
+
+    MBTRAIN_DATATRAINVREF_RX_Start_Handshake,
+      Data_To_Clock_test_RX_INIT_Handshake_RX_Init,
+      Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Pattern_Detection_RX_Init,
+      Data_To_Clock_test_RX_Result_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Sweep_Result_Handshake,
+      Data_To_Clock_test_RX_End_Init_Handshake_RX_Init,
+    MBTRAIN_DATATRAINVREF_RX_End_Handshake,
+
+    MBTRAIN_RXDESKEW_RX_Start_Handshake,
+    MBTRAIN_RXDESKEW_RX_EQ_Preset_Handshake,
+    MBTRAIN_RXDESKEW_RX_Deskew_Operation,
+    MBTRAIN_RXDESKEW_RX_Datacenter_Handshake,
+    MBTRAIN_RXDESKEW_RX_End_Handshake,
+    // (Omitted TRAINERROR as it is an exception branch, not happy path)
+
+    MBTRAIN_DTC2_RX_Start_Handshake,
+      Data_To_Clock_test_RX_INIT_Handshake_RX_Init,
+      Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Pattern_Detection_RX_Init,
+      Data_To_Clock_test_RX_Result_Handshake_RX_Init,
+      Data_To_Clock_test_RX_Sweep_Result_Handshake,
+      Data_To_Clock_test_RX_End_Init_Handshake_RX_Init,
+    MBTRAIN_DTC2_RX_End_Handshake,
+
+    MBTRAIN_LINKSPEED_RX_Start_Handshake,
+      // --> TX Initiated DTC Sweep
+      Data_To_Clock_test_RX_INIT_Handshake_TX_Init,
+      Data_To_Clock_test_RX_LFSR_Clear_Handshake_TX_Init,
+      Data_To_Clock_test_RX_Pattern_Detection_TX_Init,
+      Data_To_Clock_test_RX_Result_Handshake_TX_Init,
+      Data_To_Clock_test_RX_End_Init_Handshake_TX_Init,
+    MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd,
+    // MBTRAIN_LINKSPEED_RX_Error_REQ, // Branch
+    // MBTRAIN_LINKSPEED_RX_Phy_Retrain_Hnd, // Branch
+    // MBTRAIN_LINKSPEED_RX_Exit_Repair_Hnd, // Branch
+    // MBTRAIN_LINKSPEED_RX_Exit_SpeedDegrade_Hnd, // Branch
+
+    MBTRAIN_REPAIR_RX_Start_Handshake,
+    MBTRAIN_REPAIR_RX_Apply_Degrade_Handshake,
+    MBTRAIN_REPAIR_RX_End_Handshake,
+
+    PHYRETRAIN_RX_PL_StallReq_Handshake,
+    PHYRETRAIN_RX_Retrain_Handshake,
+    PHYRETRAIN_RX_Start_Req_Handshake,
+
+    // --- 10: ACTIVE PHASE ---
+    LINKINIT_RX_PL_Clk_Req_Handshake,
+    LINKINIT_RX_LP_Wake_Req_Handshake,
+    LINKINIT_RX_State_Rsp_Handshake,
+
+    ACTIVE_RX_Active,
+
+    L1_RX_Start_HS,
+    L1_RX_L1_State,
+    L1_RX_Wait1us,
+    L1_RX_Refuse,
+    EXIT_HS_RX_Exit_Handshake
+   };
 endpackage : shared_pkg

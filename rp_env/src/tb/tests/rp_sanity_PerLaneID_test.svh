@@ -16,21 +16,17 @@
 
 //-----------------------------------------------------------------------------
 //
-// CLASS: rp_rand_test
+// CLASS: rp_sanity_PerLaneID_test
 //
-// The rp_rand_test class runs randomized sideband traffic after initialization.
-// It overrides the default virtual sequence with rp_rand_vseq and assigns a
-// longer timeout than the sanity test to allow the randomized stimulus to
-// complete.
 //
 //-----------------------------------------------------------------------------
 
-class rp_rand_test extends rp_test_base;
-  `uvm_component_utils(rp_rand_test)
+class rp_sanity_PerLaneID_test extends rp_test_base;
+  `uvm_component_utils(rp_sanity_PerLaneID_test)
 
   // Function: new
   //
-  // Creates a new rp_rand_test instance and retrieves factory singleton handle.
+  // Creates a new rp_sanity_PerLaneID_test instance and retrieves factory singleton handle.
 
   extern function new(string name, uvm_component parent);
 
@@ -44,10 +40,10 @@ class rp_rand_test extends rp_test_base;
 
   // Function: end_of_elaboration_phase
   //
-  // Applies the timeout used by the randomized scenario.
+  // Applies the timeout used by the concurrent scenario.
 
   extern function void end_of_elaboration_phase(uvm_phase phase);
-endclass : rp_rand_test
+endclass : rp_sanity_PerLaneID_test
 
 
 //-----------------------------------------------------------------------------
@@ -56,7 +52,7 @@ endclass : rp_rand_test
 
 //-----------------------------------------------------------------------------
 //
-// CLASS: rp_rand_test
+// CLASS: rp_sanity_PerLaneID_test
 //
 //-----------------------------------------------------------------------------
 
@@ -64,15 +60,18 @@ endclass : rp_rand_test
 // new
 // ---
 
-function rp_rand_test::new(string name, uvm_component parent);
+function rp_sanity_PerLaneID_test::new(string name, uvm_component parent);
   super.new(name, parent);
 endfunction : new
 
 // build_phase
 // -----------
 
-function void rp_rand_test::build_phase(uvm_phase phase);
-  rp_sanity_vseq::type_id::set_type_override(rp_rand_vseq::get_type());
+function void rp_sanity_PerLaneID_test::build_phase(uvm_phase phase);
+  virtual_sequence_base::type_id::set_type_override(rp_sanity_PerLaneID_vseq::get_type());
+  
+  // env_cfg.is_reactive_tx = 1;
+  // env_cfg.is_reactive_rx = 1;
 
   super.build_phase(phase);
 endfunction : build_phase
@@ -80,7 +79,7 @@ endfunction : build_phase
 // end_of_elaboration_phase
 // ---------
 
-function void rp_rand_test::end_of_elaboration_phase(uvm_phase phase);
+function void rp_sanity_PerLaneID_test::end_of_elaboration_phase(uvm_phase phase);
   super.end_of_elaboration_phase(phase);
-  uvm_top.set_timeout(50000us, 0);
+  uvm_top.set_timeout(1000000us, 0);
 endfunction

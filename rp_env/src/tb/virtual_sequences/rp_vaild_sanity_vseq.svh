@@ -97,14 +97,14 @@ task rp_vaild_sanity_vseq::body();
                          ._lane_map_code(lane_map_code_t'(0)),
                          ._error_threshold(2), // Set threshold to 2 for the error tests
                          ._half_rate(1'b1),
-                         ._next_rx_enc(MBINIT_REPAIRVAL_RX_Init_Handshake));
+                         ._target_rx_enc(MBINIT_REPAIRVAL_RX_Init_Handshake));
     ltsmc_seq.start(ltsmc_seqr); 
     
     ltsmc_seq.configure (._next_state_type(NEXT),
                          ._lane_map_code(lane_map_code_t'(0)),
                          ._error_threshold(2),
                          ._half_rate(1'b1),
-                         ._next_rx_enc(RESET_Reset));
+                         ._target_rx_enc(RESET_Reset));
     ltsmc_seq.start(ltsmc_seqr);
 
     // 2. Pass the current test mode to the valid sequence and execute
@@ -117,14 +117,14 @@ task rp_vaild_sanity_vseq::body();
                            ._lane_map_code(lane_map_code_t'(0)),
                            ._error_threshold(2),
                            ._half_rate(1'b1),
-                           ._next_rx_enc(RESET_Reset));
+                           ._target_rx_enc(RESET_Reset));
       ltsmc_seq.start(ltsmc_seqr);
     end
     ltsmc_seq.configure (._next_state_type(CUSTOM),
                          ._lane_map_code(lane_map_code_t'(0)),
                          ._error_threshold(2), // Set threshold to 2 for the error tests
                          ._half_rate(1'b1),
-                         ._next_rx_enc(RESET_Reset));
+                         ._target_rx_enc(RESET_Reset));
     ltsmc_seq.start(ltsmc_seqr); 
 
     // Move to the next enum test case

@@ -88,28 +88,19 @@ task rp_sanity_PerLaneID_vseq::body();
     ,._lane_map_code(X16_MODE)
     ,._error_threshold(0)
     ,._half_rate(1'b1)
-    ,._next_rx_enc(MBINIT_REVERSAL_RX_Init_Handshake)
+    ,._target_rx_enc(MBINIT_REVERSAL_RX_Init_Handshake)
   );
   ltsmc_seq.start(ltsmc_seqr); 
     
   ltsmc_seq.configure(
-     ._next_state_type(NEXT)
+     ._next_state_type(TRAVERSE)
     ,._lane_map_code(X16_MODE)
     ,._error_threshold(0)
     ,._half_rate(1'b1)
-    ,._next_rx_enc(RESET_Reset)
+    ,._target_rx_enc(MBINIT_REVERSAL_RX_Per_Lane_ID_Det)
   );
   ltsmc_seq.start(ltsmc_seqr);
 
-  ltsmc_seq.configure(
-     ._next_state_type(NEXT)
-    ,._lane_map_code(X16_MODE)
-    ,._error_threshold(0)
-    ,._half_rate(1'b1)
-    ,._next_rx_enc(RESET_Reset)
-  );
-  ltsmc_seq.start(ltsmc_seqr);
-  
   for (int i = 0; i < 32; i++) begin
     if (i == 0) begin
       rmblink_sanity_PerLaneID_seq.start(rmblink_seqr);
@@ -117,22 +108,12 @@ task rp_sanity_PerLaneID_vseq::body();
       rmblink_sanity_PerLaneID_seq.start(rmblink_seqr);
     end
   end
-
   ltsmc_seq.configure(
-     ._next_state_type(NEXT)
+     ._next_state_type(TRAVERSE)
     ,._lane_map_code(X16_MODE)
     ,._error_threshold(0)
     ,._half_rate(1'b1)
-    ,._next_rx_enc(RESET_Reset)
-  );
-  ltsmc_seq.start(ltsmc_seqr);
-
-  ltsmc_seq.configure(
-     ._next_state_type(NEXT)
-    ,._lane_map_code(X16_MODE)
-    ,._error_threshold(0)
-    ,._half_rate(1'b1)
-    ,._next_rx_enc(RESET_Reset)
+    ,._target_rx_enc(MBINIT_REVERSAL_RX_Done_Handshake)
   );
   ltsmc_seq.start(ltsmc_seqr);
   
