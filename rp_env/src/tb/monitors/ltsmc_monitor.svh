@@ -80,8 +80,8 @@ task ltsmc_monitor::collect_item_out(output ltsmc_seq_item _item);
 
   do begin
     @(bfm.i_rx_encoding);
-  end while (bfm.i_rx_encoding !== Data_To_Clock_test_RX_Result_Handshake_TX_Init ||
-             bfm.i_rx_encoding !== Data_To_Clock_test_RX_Result_Handshake_RX_Init ||
+  end while (bfm.i_rx_encoding !== Data_To_Clock_test_RX_Result_Handshake_TX_Init &&
+             bfm.i_rx_encoding !== Data_To_Clock_test_RX_Result_Handshake_RX_Init &&
              bfm.i_rx_encoding !== MBINIT_REVERSAL_RX_Result_Handshake);
   
   @(posedge bfm.clk);

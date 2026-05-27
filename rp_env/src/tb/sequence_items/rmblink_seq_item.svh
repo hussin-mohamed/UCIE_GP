@@ -32,6 +32,7 @@ class rmblink_seq_item extends uvm_sequence_item;
   rand int unsigned                     idle_ui_cnt;        // Specifies the number of idle Unit Intervals (UIs) to inject before or after the active/training transmission. Used by the driver only.
   rand rp_opmode_t                      rp_opmode;          // Selects either the ACTIVE operation or the specific physical training or test pattern format (CLK_PATTERN, VAL_PATTERN, or DATA_PATTERN). Used by the driver only.
   rand logic          [pDATA_WIDTH-1:0] data [pNUM_LANES];  // Two-dimensional array storing the explicit per-lane data payload to be driven across the physical link.
+  bit                                   is_first_data_pat;
 
   `uvm_object_utils_begin(rmblink_seq_item)
     `uvm_field_array_int  (val_stream,                   UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)

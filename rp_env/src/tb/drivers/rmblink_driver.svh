@@ -81,6 +81,9 @@ task rmblink_driver::drive_item(inout rmblink_seq_item req, output rmblink_seq_i
       ,._track_stream(req.track_stream)
     );
   end else begin // DATA_PATTERN or ACTIVE
+    if (req.is_first_data_pat) begin
+      @(posedge bfm.clk);
+    end
     bfm.serialize_data(
        ._data(req.data)
       ,._val_stream(req.val_stream)

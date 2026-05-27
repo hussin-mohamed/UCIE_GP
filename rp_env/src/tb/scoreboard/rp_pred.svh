@@ -125,6 +125,7 @@ class rp_pred extends uvm_component;
   virtual function void write_ltsmc(ltsmc_seq_item t);
     ltsmc_seq_item out_item;
 
+
     // 1. Exclude Clock/Track/Valid Training States entirely
     if ((t.rx_encoding >= MBINIT_REPAIRCLK_RX_Init_Handshake && t.rx_encoding <= MBINIT_REPAIRCLK_RX_Done_Handshake) ||
         (t.rx_encoding >= MBINIT_REPAIRVAL_RX_Init_Handshake && t.rx_encoding <= MBINIT_REPAIRVAL_RX_Done_Handshake)) begin
@@ -179,8 +180,7 @@ class rp_pred extends uvm_component;
       out_item.error_threshold = current_error_threshold;
       
       // Now concatenation works perfectly
-      out_item.rx_data_results = {48'h0, packed_success}; 
-      
+      out_item.rx_data_results = { {48{1'b1}}, packed_success };
       results_ap_ltsmc.write(out_item);
       
       // Reset tracking vars for next sequence

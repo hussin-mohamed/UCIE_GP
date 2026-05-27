@@ -71,7 +71,6 @@ endfunction : get_next_rx_state
 
 
 typedef logic [pDATA_WIDTH-1:0] lane_array_t [pNUM_LANES];
-typedef logic [7:0]             val_stream_t [];
 typedef logic                   clk_stream_t [];
 
 function lane_array_t get_ideal_PerLaneID_pattern();
@@ -86,6 +85,7 @@ function lane_array_t get_ideal_PerLaneID_pattern();
   return lanes;
 endfunction : get_ideal_PerLaneID_pattern
 
+typedef logic [7:0]             val_stream_t [];
 function val_stream_t get_ideal_valid_stream(int num_bytes);
   val_stream_t val_stream;
   val_stream = new[num_bytes];
@@ -93,6 +93,8 @@ function val_stream_t get_ideal_valid_stream(int num_bytes);
   for (int i = 0; i < num_bytes; i++) begin
     val_stream[i] = 8'b0000_1111;
   end
+
+  return val_stream;
 endfunction : get_ideal_valid_stream
 
 function clk_stream_t get_ideal_clkp_stream(int num_bits);
@@ -104,6 +106,8 @@ function clk_stream_t get_ideal_clkp_stream(int num_bits);
   for (int i = 0; i < pDATA_WIDTH; i++) begin
     clkp_stream[i] = (i % 2 == 0) ? 1'b1 : 1'b0;
   end
+
+  return clkp_stream;
 endfunction : get_ideal_clkp_stream
 
 function clk_stream_t get_ideal_clkn_stream(int num_bits);
@@ -115,4 +119,6 @@ function clk_stream_t get_ideal_clkn_stream(int num_bits);
   for (int i = 0; i < pDATA_WIDTH; i++) begin
     clkn_stream[i] = (i % 2 == 0) ? 1'b0 : 1'b1;
   end
+
+  return clkn_stream;
 endfunction : get_ideal_clkn_stream
