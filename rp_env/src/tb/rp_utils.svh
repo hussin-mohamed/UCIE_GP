@@ -68,3 +68,50 @@ function rx_encoding_t get_next_rx_state(rx_encoding_t current_state);
       
   endcase // current_state
 endfunction : get_next_rx_state
+
+
+typedef logic [pDATA_WIDTH-1:0] lane_array_t [pNUM_LANES];
+typedef logic [7:0]             val_stream_t [];
+typedef logic                   clk_stream_t [];
+
+function lane_array_t get_ideal_PerLaneID_pattern();
+  lane_array_t lanes;
+  
+  for (int lane = 0; lane < pNUM_LANES; lane++) begin
+    for (int word = 0; word < pDATA_WIDTH/16; word++) begin
+      lanes[lane][word*16 +: 16] = {4'b1010, 8'(lane), 4'b1010};
+    end
+  end
+  
+  return lanes;
+endfunction : get_ideal_PerLaneID_pattern
+
+function val_stream_t get_ideal_valid_stream(int num_bytes);
+  val_stream_t val_stream = new[num_bytes];
+
+  for (int i = 0; i < num_bytes; i++) begin
+    val_stream[i] = 8'b0000_1111;
+  end
+endfunction : get_ideal_valid_stream
+
+function clk_stream_t get_ideal_clkp_stream(int num_bits);
+  clk_stream_t clkp_stream;
+
+  clkp_stream = new[num_bits];
+  
+  // Populate stream
+  for (int i = 0; i < pDATA_WIDTH; i++) begin
+    clkp_stream[i] = (i % 2 == 0) ? 1'b1 : 1'b0;
+  end
+endfunction : get_ideal_clkp_stream
+
+function clk_stream_t get_ideal_clkn_stream(int num_bits);
+  clk_stream_t clkn_stream;
+
+  clkn_stream = new[num_bits];
+  
+  // Populate stream
+  for (int i = 0; i < pDATA_WIDTH; i++) begin
+    clkn_stream[i] = (i % 2 == 0) ? 1'b0 : 1'b1;
+  end
+endfunction : get_ideal_clkn_stream

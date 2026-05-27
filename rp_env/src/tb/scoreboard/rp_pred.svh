@@ -128,7 +128,7 @@ class rp_pred extends uvm_component;
     // 1. Exclude Clock/Track/Valid Training States entirely
     if ((t.rx_encoding >= MBINIT_REPAIRCLK_RX_Init_Handshake && t.rx_encoding <= MBINIT_REPAIRCLK_RX_Done_Handshake) ||
         (t.rx_encoding >= MBINIT_REPAIRVAL_RX_Init_Handshake && t.rx_encoding <= MBINIT_REPAIRVAL_RX_Done_Handshake)) begin
-      `uvm_info("PRD", "Discarding MBINIT.REPAIRCLK/MBINIT.REPAIRVAL input LTSM transaction. Fully modelled via SVAs.", UVM_MEDIUM)
+      `uvm_info("PRD", "Discarding MBINIT.REPAIRCLK/MBINIT.REPAIRVAL input LTSM transaction. Fully modelled via SVAs.", UVM_DEBUG)
       return;
     end
 
