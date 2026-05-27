@@ -16,35 +16,52 @@
 
 //-----------------------------------------------------------------------------
 //
-// CLASS: rmblink_sanity_PerLaneID_sequence
+// CLASS: rp_sequence_base
 //
+// The rp_sequence_base class provides a parameterized base implementation
+// for RX-Path sequences. It includes request/response handles, print utilities,
+// and enforces implementation of the body() task in derived classes.
+//
+// Type Parameters:
+//   ITEM_T - Transaction item type for the sequence
 //
 //-----------------------------------------------------------------------------
 
-class rmblink_sanity_PerLaneID_sequence extends rp_sequence_base #(ltsmc_seq_item);
-  `uvm_object_utils(rmblink_sanity_PerLaneID_sequence)
+class rp_sequence_base #(type ITEM_T) extends uvm_sequence #(ITEM_T);
+  `uvm_object_param_utils(rp_sequence_base #(ITEM_T))
 
-  rmblink_sequencer seqr;
+  ITEM_T req, rsp;
+
 
   // Function: new
   //
-  // Creates a new rmblink_sanity_PerLaneID_sequence instance with the given name.
+  // Creates a new rp_sequence_base instance with the given name.
 
-  extern function new(string name = "rmblink_sanity_PerLaneID_sequence");
+  extern function new(string name = "rp_sequence_base");
 
-  // Task: body
+
+  // Function: seq_print
   //
-  // Sends randomized RX items and synchronizes with the reactive FIFO.
+  // Utility function for printing sequence debug messages with medium verbosity.
 
-  extern task body();
+  extern function void seq_print(string msg);
+
 
   // Task: pre_body
   //
-  // Captures the typed sequencer handle before the sequence starts.
+  // Creates the request transaction object before sequence body execution.
 
   extern task pre_body();
 
-endclass : rmblink_sanity_PerLaneID_sequence
+
+  // Task: body
+  //
+  // Virtual method that must be overridden by derived classes to implement
+  // sequence-specific transaction generation behavior.
+
+  extern task body();
+
+endclass : rp_sequence_base
 
 
 //-----------------------------------------------------------------------------
@@ -53,7 +70,9 @@ endclass : rmblink_sanity_PerLaneID_sequence
 
 //-----------------------------------------------------------------------------
 //
-// CLASS: rmblink_sanity_PerLaneID_sequence
+// CLASS: rp_sequence_base
+//
+// Base implementation of the shared sequence utilities.
 //
 //-----------------------------------------------------------------------------
 
@@ -61,24 +80,30 @@ endclass : rmblink_sanity_PerLaneID_sequence
 // new
 // ---
 
-function rmblink_sanity_PerLaneID_sequence::new(string name = "rmblink_sanity_PerLaneID_sequence");
+function rp_sequence_base::new(string name = "rp_sequence_base");
   super.new(name);
 endfunction : new
+
+// seq_print
+// ---------
+
+function void rp_sequence_base::seq_print(string msg);
+  `uvm_info(get_type_name(), msg, UVM_MEDIUM)
+endfunction
 
 // pre_body
 // --------
 
-task rmblink_sanity_PerLaneID_sequence::pre_body();
-  super.pre_body();
-  $cast(seqr, get_sequencer());
-endtask : pre_body
-
+task rp_sequence_base::pre_body();
+  seq_print("Entered sequence pre_body");
+  req = ITEM_T::type_id::create("req");
+endtask
 
 // body
 // ----
+//
+// Emits a fatal message when a derived sequence forgets to override body().
 
-task rmblink_sanity_PerLaneID_sequence::body();
-  start_item(req);
-  
-  finish_item(req);
+task rp_sequence_base::body();
+  `uvm_fatal("BODY", "APB_BASE_SEQ - Base sequence's body is not implemented and must be overriden")
 endtask : body

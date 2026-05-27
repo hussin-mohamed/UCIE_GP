@@ -87,7 +87,8 @@ function lane_array_t get_ideal_PerLaneID_pattern();
 endfunction : get_ideal_PerLaneID_pattern
 
 function val_stream_t get_ideal_valid_stream(int num_bytes);
-  val_stream_t val_stream = new[num_bytes];
+  val_stream_t val_stream;
+  val_stream = new[num_bytes];
 
   for (int i = 0; i < num_bytes; i++) begin
     val_stream[i] = 8'b0000_1111;

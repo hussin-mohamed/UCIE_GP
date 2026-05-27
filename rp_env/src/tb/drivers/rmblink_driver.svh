@@ -65,21 +65,21 @@ endfunction : new
 
 task rmblink_driver::drive_item(inout rmblink_seq_item req, output rmblink_seq_item rsp);
   if (req.rp_opmode == CLK_PATTERN) begin // CLK_PATTERN
+    @(posedge bfm.clk);
     bfm.serialize_clk_pattern(
        ._clk_stream_p(req.clk_stream_p)
       ,._clk_stream_n(req.clk_stream_n)
       ,._track_stream(req.track_stream)
       ,._idle_ui_cnt(req.idle_ui_cnt)
     );
-    -> ev_ready_for_next_encoding;
   end else if (req.rp_opmode == VAL_PATTERN) begin // VAL_PATTERN
+    @(posedge bfm.clk);
     bfm.serialize_valid_pattern(
        ._val_stream(req.val_stream)
       ,._clk_stream_p(req.clk_stream_p)
       ,._clk_stream_n(req.clk_stream_n)
       ,._track_stream(req.track_stream)
     );
-    -> ev_ready_for_next_encoding;
   end else begin // DATA_PATTERN or ACTIVE
     bfm.serialize_data(
        ._data(req.data)
@@ -89,8 +89,5 @@ task rmblink_driver::drive_item(inout rmblink_seq_item req, output rmblink_seq_i
       ,._track_stream(req.track_stream)
       ,._idle_ui_cnt(req.idle_ui_cnt)
     );
-    if (req.rp_opmode == DATA_PATTERN) begin
-      -> ev_ready_for_next_encoding;
-    end
   end
 endtask : drive_item
