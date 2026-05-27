@@ -21,10 +21,22 @@
 //
 //-----------------------------------------------------------------------------
 
+typedef enum {
+  TEST_PURE_RANDOM,                 // Test 1: Complete garbage data on all lines
+  TEST_IDEAL_ALL_0F,                // Test 2: Perfect Valid (0F) and Perfect Clocks
+  TEST_INJECT_START,                // Test 3: 16 valid patterns at the absolute start
+  TEST_INJECT_MIDDLE,               // Test 4: 16 valid patterns somewhere in the middle
+  TEST_INJECT_END,                  // Test 5: 16 valid patterns at the absolute end (Edge case)
+  TEST_IDEAL_VALID_RANDOM_CLKS,     // Test 9: Perfect Valid (0F), but Clocks/Track are pure random noise
+  TEST_RESET
+} valid_test_mode_e;
+
+
 class rmblink_sanity_valid_sequence extends rp_sequence_base #(rmblink_seq_item);
   `uvm_object_utils(rmblink_sanity_valid_sequence)
 
-  
+  valid_test_mode_e test_mode = TEST_IDEAL_ALL_0F;
+
   // Function: new
   //
   // Creates a new rmblink_sanity_valid_sequence instance with the given name.
@@ -77,47 +89,71 @@ endtask : pre_body
 // ----
 
 task rmblink_sanity_valid_sequence::body();
+  int start_idx;
   start_item(req);
+  
+  // Allocate arrays based on your parameters
   req.val_stream     = new[VALID_CLK_PATTERN_STREAM_LEN];
   req.clk_stream_p   = new[CLK_STREAM_LEN_VALID_PAT];
   req.clk_stream_n   = new[CLK_STREAM_LEN_VALID_PAT];
   req.track_stream   = new[CLK_STREAM_LEN_VALID_PAT];
 
-  foreach (req.val_stream[i]) begin
-      req.val_stream[i] = 8'b0000_1111; // You can also write 8'hF0
+  // ---------------------------------------------------------
+  // BASELINE: Set to Ideal/Zeros to prevent uninitialized data
+  // ---------------------------------------------------------
+  foreach (req.val_stream[i])   req.val_stream[i] = 8'h00;
+  foreach (req.clk_stream_p[i]) req.clk_stream_p[i] = (i % 2 == 0) ? 1'b1 : 1'b0;
+  foreach (req.clk_stream_n[i]) req.clk_stream_n[i] = (i % 2 == 0) ? 1'b0 : 1'b1;
+  foreach (req.track_stream[i]) req.track_stream[i] = (i % 2 == 0) ? 1'b1 : 1'b0;
+
+  // ---------------------------------------------------------
+  // TEST SCENARIOS: Overwrite baseline based on test_mode
+  // ---------------------------------------------------------
+  case (test_mode)
+    
+    TEST_PURE_RANDOM: begin
+      if (!std::randomize(req.val_stream))   `uvm_error("SEQ", "Rand fail: val_stream")
+      if (!std::randomize(req.clk_stream_p)) `uvm_error("SEQ", "Rand fail: clk_p")
+      if (!std::randomize(req.clk_stream_n)) `uvm_error("SEQ", "Rand fail: clk_n")
+      if (!std::randomize(req.track_stream)) `uvm_error("SEQ", "Rand fail: track")
     end
 
-    foreach (req.clk_stream_p[i]) begin
-      // Using the modulo operator (%) to check if the index is even
-      if (i % 2 == 0) begin
-        req.clk_stream_p[i] = 1'b1; // Even index -> 1
-      end else begin
-        req.clk_stream_p[i] = 1'b0; // Odd index -> 0
-      end
+    TEST_IDEAL_ALL_0F: begin
+      foreach (req.val_stream[i]) req.val_stream[i] = 8'b0000_1111;
+    end
+
+    TEST_INJECT_START: begin
+      if (!std::randomize(req.val_stream)) `uvm_error("SEQ", "Rand fail")
+      for (int i = 0; i < 16; i++) req.val_stream[i] = 8'b0000_1111;
+    end
+
+    TEST_INJECT_MIDDLE: begin
+      if (!std::randomize(req.val_stream)) `uvm_error("SEQ", "Rand fail")
+      start_idx = 32;
+      `uvm_info("rmblink_sanity_valid_sequence", $sformatf("Start index: %0d", start_idx), UVM_LOW)
+      
+      for (int i = 0; i < 16; i++) req.val_stream[start_idx + i] = 8'b0000_1111;
+    end
+
+    TEST_INJECT_END: begin
+      if (!std::randomize(req.val_stream)) `uvm_error("SEQ", "Rand fail")
+      start_idx = VALID_CLK_PATTERN_STREAM_LEN - 16; 
+      for (int i = 0; i < 16; i++) req.val_stream[start_idx + i] = 8'b0000_1111;
+    end
+
+    TEST_IDEAL_VALID_RANDOM_CLKS: begin
+      foreach (req.val_stream[i]) req.val_stream[i] = 8'b0000_1111;
+      // Valid stream is perfect, but scramble the physical clocks
+      if (!std::randomize(req.clk_stream_p)) `uvm_error("SEQ", "Rand fail: clk_p")
+      if (!std::randomize(req.clk_stream_n)) `uvm_error("SEQ", "Rand fail: clk_n")
+      if (!std::randomize(req.track_stream)) `uvm_error("SEQ", "Rand fail: track")
     end
     
-    foreach (req.clk_stream_n[i]) begin
-      // Using the modulo operator (%) to check if the index is even
-      if (i % 2 == 0) begin
-        req.clk_stream_n[i] = 1'b0; // Even index -> 0
-      end else begin
-        req.clk_stream_n[i] = 1'b1; // Odd index -> 1
-      end
-    end
-
-    foreach (req.track_stream[i]) begin
-      // Using the modulo operator (%) to check if the index is even
-      if (i % 2 == 0) begin
-        req.track_stream[i] = 1'b1; // Even index -> 1
-      end else begin
-        req.track_stream[i] = 1'b0; // Odd index -> 0
-      end
-    end
-
-  
-    req.idle_ui_cnt = 0;
-    req.rp_opmode = VAL_PATTERN;
-    req.data  = {default: '0}; // Initialize all data lanes to 0 for the valid pattern
+  endcase
+  req.val_stream[VALID_CLK_PATTERN_STREAM_LEN] = 8'b0000_1111;
+  req.idle_ui_cnt = 0;
+  req.rp_opmode = VAL_PATTERN;
+  req.data  = {default: '0}; 
 
   finish_item(req);
 endtask : body

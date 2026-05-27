@@ -83,32 +83,55 @@ endtask : pre_body
 // ----
   
 task rp_vaild_sanity_vseq::body();
-  ltsmc_seq.configure (._next_state_type(CUSTOM)
-                            ,._lane_map_code(lane_map_code_t'(0))
-                            ,._error_threshold(0)
-                            ,._half_rate(1'b1)
-                            ,._next_rx_enc(MBINIT_REPAIRVAL_RX_Init_Handshake)
-                            );
-      ltsmc_seq.start(ltsmc_seqr); 
-    
-      ltsmc_seq.configure (._next_state_type(NEXT)
-                            ,._lane_map_code(lane_map_code_t'(0))
-                            ,._error_threshold(0)
-                            ,._half_rate(1'b1)
-                            ,._next_rx_enc(RESET_Reset)
-                            );
-      ltsmc_seq.start(ltsmc_seqr);
-      
-      rmblink_valid_sequence.start(rmblink_seqr);
+  valid_test_mode_e current_test;
+  current_test = current_test.first();
 
-  repeat (3) begin
-      ltsmc_seq.configure (._next_state_type(NEXT)
-                            ,._lane_map_code(lane_map_code_t'(0))
-                            ,._error_threshold(0)
-                            ,._half_rate(1'b1)
-                            ,._next_rx_enc(RESET_Reset)
-                            );
+  // Loop through all states in the enum
+  do begin
+    `uvm_info("VSEQ", $sformatf("======================================="), UVM_LOW)
+    `uvm_info("VSEQ", $sformatf(" STARTING TEST: %s", current_test.name()), UVM_LOW)
+    `uvm_info("VSEQ", $sformatf("======================================="), UVM_LOW)
+
+    // 1. Setup LTSMC 
+    ltsmc_seq.configure (._next_state_type(CUSTOM),
+                         ._lane_map_code(lane_map_code_t'(0)),
+                         ._error_threshold(2), // Set threshold to 2 for the error tests
+                         ._half_rate(1'b1),
+                         ._next_rx_enc(MBINIT_REPAIRVAL_RX_Init_Handshake));
+    ltsmc_seq.start(ltsmc_seqr); 
+    
+    ltsmc_seq.configure (._next_state_type(NEXT),
+                         ._lane_map_code(lane_map_code_t'(0)),
+                         ._error_threshold(2),
+                         ._half_rate(1'b1),
+                         ._next_rx_enc(RESET_Reset));
+    ltsmc_seq.start(ltsmc_seqr);
+
+    // 2. Pass the current test mode to the valid sequence and execute
+    rmblink_valid_sequence.test_mode = current_test;
+    rmblink_valid_sequence.start(rmblink_seqr);
+
+    // 3. Reset phases (Looping to reset state between tests)
+    repeat (3) begin
+      ltsmc_seq.configure (._next_state_type(NEXT),
+                           ._lane_map_code(lane_map_code_t'(0)),
+                           ._error_threshold(2),
+                           ._half_rate(1'b1),
+                           ._next_rx_enc(RESET_Reset));
       ltsmc_seq.start(ltsmc_seqr);
-      end
+    end
+    ltsmc_seq.configure (._next_state_type(CUSTOM),
+                         ._lane_map_code(lane_map_code_t'(0)),
+                         ._error_threshold(2), // Set threshold to 2 for the error tests
+                         ._half_rate(1'b1),
+                         ._next_rx_enc(RESET_Reset));
+    ltsmc_seq.start(ltsmc_seqr); 
+
+    // Move to the next enum test case
+    current_test = current_test.next();
+
+  end while (current_test != current_test.first()); // Stop when it loops back to the beginning
+
   #100;
+  `uvm_info("VSEQ", "ALL 10 VALID PATTERN TESTS COMPLETED.", UVM_LOW)
 endtask : body

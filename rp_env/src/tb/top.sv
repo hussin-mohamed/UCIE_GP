@@ -111,13 +111,13 @@ module rp_tb_top;
   //============================================================================
   bind rx_path rp_sva rp_sva_inst (
       // Clocks & resets
-    .i_clk_l           (clk),
+    .i_clk_l           (dut.i_clk_l),
     .i_clk_p           (rmblink_bfm.i_clk_p),
     .i_clk_n           (rmblink_bfm.i_clk_n),
-    .i_hclk            (hclk),
-    .i_dclk            (dclk),
+    .i_hclk            (dut.i_hclk),
+    .i_dclk            (dut.i_dclk),
     .i_track           (rmblink_bfm.i_track),
-    .i_reset           (reset_wire),
+    .i_reset           (dut.i_reset),
 
     // Data inputs
     .i_lanes           (rmblink_bfm.i_data),

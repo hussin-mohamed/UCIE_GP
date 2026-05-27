@@ -1,4 +1,3 @@
-
 // -------------------------------------------------------------------------
 // File: rp_sva.sv
 // Description: SVA Checker Interface for UCIe RX-Path Block (SVAUnit Ready)
@@ -6,7 +5,6 @@
 // File: rp_sva.sv
 
 package rp_seq_pkg;
-
 endpackage : rp_seq_pkg
 
 interface rp_sva #(
@@ -37,25 +35,26 @@ interface rp_sva #(
     input logic [2:0]                       o_clk_results,
     input logic                             o_valid_results 
 );
-  import rp_seq_pkg::*;
+
+import rp_seq_pkg::*;
 
   // ============================================================================
   // Helper signals (NOT from RTL — internal to SVA checker)
   // ============================================================================
-
 
    //valid pattern detection signals
    logic valid_pattern_detected   = 0;
    logic valid_pattern_running    = 0;
    logic valid_sample_pulse;
    logic valid_frame_timeout      = 0;
-   logic valid_timeout_started = 0;
+   logic valid_timeout_started    = 0;
+   logic valid_pattern_drive       = 0;
 
     int bit_idx;
     logic first;
     logic [7:0] expected_pattern;
     logic [15:0] error_counter;
-
+    
     //clk_p pattern detection
     logic pattern_detected_clk_p = 0;
     logic pattern_running_clk_p = 0;
@@ -77,67 +76,76 @@ interface rp_sva #(
     //encoding detector
     logic [8:0] previous_encoding;
     logic is_valid_pattern = 0;
+    logic data_to_clk_test_armed = 0; // NEW: Sequence tracker flag
 
 
-
-
-    
     
     // Generate a posedge pulse ONLY when the physical wires go high
     always @(posedge i_clk_p or posedge i_clk_n) begin
-        valid_sample_pulse = 1'b1; // Drive high on the edge
-        #1ps;                    // Wait a microscopic amount of time
-        valid_sample_pulse = 1'b0; // Reset it so the SVA sees a clean posedge next time
+        valid_sample_pulse = 1'b1;
+        // Drive high on the edge
+        #1ps;
+        // Wait a microscopic amount of time
+        valid_sample_pulse = 1'b0;
+        // Reset it so the SVA sees a clean posedge next time
     end
     
 
     // Detect when we enter a valid pattern state based on the encoding
     always @(posedge i_clk_l) begin
-        previous_encoding <= i_rx_encoding;
-        if ( i_rx_encoding ==  MBINIT_REPAIRVAL_RX_Valid_Pattern_Det) begin
-            is_valid_pattern = 1'b1;
-        end
-        else if (((i_rx_encoding == Data_To_Clock_test_RX_INIT_Handshake_RX_Init) && ((previous_encoding == MBTRAIN_VALVREF_RX_Start_Handshake) ||
-             (previous_encoding == MBTRAIN_VALTRAINCENTER_RX_Start_Handshake) || (previous_encoding == MBTRAIN_VALTRAINVREF_RX_Start_Handshake)))) begin
-            wait ((i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init)); 
-            is_valid_pattern = 1'b1;
-        end
-        else begin
-            is_valid_pattern = 1'b0;
+        if (i_reset) begin
+            previous_encoding <= '0;
+            data_to_clk_test_armed <= 1'b0;
+            is_valid_pattern <= 1'b0;
+        end else begin
+            previous_encoding <= i_rx_encoding;
+
+            // 1. Arm the flag if we enter INIT_Handshake from one of the required MBTRAIN states
+            if ((i_rx_encoding == Data_To_Clock_test_RX_INIT_Handshake_RX_Init) &&
+                ((previous_encoding == MBTRAIN_VALVREF_RX_Start_Handshake) ||
+                 (previous_encoding == MBTRAIN_VALTRAINCENTER_RX_Start_Handshake) ||
+                 (previous_encoding == MBTRAIN_VALTRAINVREF_RX_Start_Handshake))) begin
+                
+                data_to_clk_test_armed <= 1'b1;
+                
+            end else if ((i_rx_encoding != Data_To_Clock_test_RX_INIT_Handshake_RX_Init) &&
+                         (i_rx_encoding != Data_To_Clock_test_RX_Pattern_Detection_RX_Init)) begin
+                // Reset the armed flag if we transition to an unrelated state
+                data_to_clk_test_armed <= 1'b0;
+            end
+
+            // 2. Enable `is_valid_pattern` only in allowed states
+            if (i_rx_encoding == MBINIT_REPAIRVAL_RX_Valid_Pattern_Det) begin
+                is_valid_pattern <= 1'b1;
+            end 
+            else if (i_rx_encoding == ACTIVE_RX_Active) begin
+                is_valid_pattern <= 1'b1;
+            end 
+            else if ((i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) && data_to_clk_test_armed) begin
+                is_valid_pattern <= 1'b1;
+            end 
+            else begin
+                is_valid_pattern <= 1'b0; // Continuously recheck and strictly enforce 0 otherwise
+            end
         end
     end
-    
 
-    // Generate timeout and pattern running signals based on the Valid signal's activity
     always @(posedge i_dclk) begin
-            if (is_valid_pattern) begin
-              if ((i_rx_encoding ==  MBINIT_REPAIRVAL_RX_Valid_Pattern_Det)) begin
-              valid_pattern_detected = 1'b0;
-              end
-              else begin
-              valid_pattern_detected = 1'b1;
-              end
-                valid_frame_timeout = 1'b0;
-                valid_timeout_started = 1'b1;
-                @(posedge i_dclk);
-                valid_timeout_started = 1'b0; // Start the timeout countdown
+        if (!valid_pattern_drive) begin 
+            if (i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) begin
+                    valid_pattern_detected = 1'b1;
+                    valid_pattern_drive = 1'b1;
+            end
 
-                wait (i_rx_encoding == Data_To_Clock_test_RX_Result_Handshake_RX_Init); 
-                    valid_frame_timeout = 1'b1; 
-                    valid_pattern_running = 1'b0; // End the pattern detection window
-                    @(posedge i_dclk);
-                    valid_frame_timeout = 1'b0; // Reset for the next test
+            else if (i_rx_encoding == MBINIT_REPAIRVAL_RX_Valid_Pattern_Det) begin
+                    valid_pattern_detected = 1'b0;
+                    valid_pattern_drive = 1'b1;      
             end
         end
-
-
-    always @(posedge i_dclk) begin
-        if ((is_valid_pattern) && !valid_frame_timeout && !valid_pattern_running) begin
-            if (i_valid) begin
-              valid_pattern_running = 1'b1; // Start the pattern detection window
-            end
-            else begin
-              valid_pattern_running = 1'b0; // End the pattern detection window
+        else begin
+            if ((i_rx_encoding == MBINIT_REPAIRVAL_RX_Done_Handshake) || (i_rx_encoding == Data_To_Clock_test_RX_End_Init_Handshake_RX_Init)) begin
+                valid_pattern_detected = 1'b0;
+                valid_pattern_drive = 1'b0; // Reset drive flag when we leave the states that control the pattern detection
             end
         end
     end
@@ -149,8 +157,10 @@ interface rp_sva #(
         end
         else begin
           
-        expected_pattern = {expected_pattern[6:0], i_valid}; // Shift in the new bit
-        bit_idx = bit_idx + 1; // Increment bit index
+        expected_pattern = {expected_pattern[6:0], i_valid};
+        // Shift in the new bit
+        bit_idx = bit_idx + 1;
+        // Increment bit index
 
         if (bit_idx == 8) begin // We have a full byte
           if (expected_pattern != 8'b11110000) begin
@@ -159,7 +169,8 @@ interface rp_sva #(
           end else begin
             $display("[%0t] INFO: Detected correct pattern 11110000", $time);
           end
-          bit_idx = 0; // Reset for the next byte
+          bit_idx = 0;
+          // Reset for the next byte
       end
 
         end
@@ -172,7 +183,7 @@ interface rp_sva #(
       end
     end
 
-/*    // Generate timeout and pattern running signals based on the clk_p signal's activity
+/* // Generate timeout and pattern running signals based on the clk_p signal's activity
     always @(negedge i_dclk) begin
         if (pattern_type != idle) begin
             frame_timeout_clk_p = 1'b0;
@@ -190,25 +201,26 @@ interface rp_sva #(
                 // Thread 2: The early-abort monitor
                 begin
                     // 'wait' is level-sensitive and will catch the change immediately
+                 
                     wait (pattern_type == idle); 
                 end
             join_any
             
             // Kill whichever thread didn't finish first
-            disable fork; 
-
+            disable fork;
             // Determine WHY we exited the fork
             if (pattern_type != idle) begin
                 // Thread 1 finished first -> It's a real timeout!
                 frame_timeout_clk_p = 1'b1; 
                 pattern_running_clk_p = 1'b0; // End the pattern detection window
-                if (pattern_detected_clk_p) pattern_detected_clk_p = 1'b0; // Reset
+                if (pattern_detected_clk_p) pattern_detected_clk_p = 1'b0;
+                // Reset
                 @(posedge i_dclk);
                 frame_timeout_clk_p = 1'b0; // Reset for the next test
             end else begin
                 // Thread 2 finished first -> Aborted early because it went to idle
                 // (Add any necessary reset logic for early termination here)
-                pattern_running_clk_p = 1'b0; 
+                pattern_running_clk_p = 1'b0;
                 frame_timeout_clk_p = 1'b0; // Ensure timeout is reset
             end
         end
@@ -216,10 +228,12 @@ interface rp_sva #(
     always @(posedge i_dclk) begin
         if ((pattern_type != idle) && !frame_timeout_clk_p && !pattern_running_clk_p) begin
             if (i_clk_p) begin
-              pattern_running_clk_p = 1'b1; // Start the pattern detection window
+              pattern_running_clk_p = 1'b1;
+              // Start the pattern detection window
             end
             else begin
-              pattern_running_clk_p = 1'b0; // End the pattern detection window
+              pattern_running_clk_p = 1'b0;
+              // End the pattern detection window
             end
         end
     end
@@ -242,25 +256,26 @@ interface rp_sva #(
                 // Thread 2: The early-abort monitor
                 begin
                     // 'wait' is level-sensitive and will catch the change immediately
+                 
                     wait (pattern_type == idle); 
                 end
             join_any
             
             // Kill whichever thread didn't finish first
-            disable fork; 
-
+            disable fork;
             // Determine WHY we exited the fork
             if (pattern_type != idle) begin
                 // Thread 1 finished first -> It's a real timeout!
                 frame_timeout_clk_n = 1'b1; 
                 pattern_running_clk_n = 1'b0; // End the pattern detection window
-                if (pattern_detected_clk_n) pattern_detected_clk_n = 1'b0; // Reset
+                if (pattern_detected_clk_n) pattern_detected_clk_n = 1'b0;
+                // Reset
                 @(posedge i_dclk);
                 frame_timeout_clk_n = 1'b0; // Reset for the next test
             end else begin
                 // Thread 2 finished first -> Aborted early because it went to idle
                 // (Add any necessary reset logic for early termination here)
-                pattern_running_clk_n = 1'b0; 
+                pattern_running_clk_n = 1'b0;
                 frame_timeout_clk_n = 1'b0; // Ensure timeout is reset
             end
         end
@@ -268,10 +283,12 @@ interface rp_sva #(
     always @(posedge i_dclk) begin
         if ((pattern_type != idle) && !frame_timeout_clk_n && !pattern_running_clk_n) begin
             if (!i_clk_n) begin
-              pattern_running_clk_n = 1'b1; // Start the pattern detection window
+              pattern_running_clk_n = 1'b1;
+              // Start the pattern detection window
             end
             else begin
-              pattern_running_clk_n = 1'b0; // End the pattern detection window
+              pattern_running_clk_n = 1'b0;
+              // End the pattern detection window
             end
         end
     end
@@ -294,25 +311,26 @@ interface rp_sva #(
                 // Thread 2: The early-abort monitor
                 begin
                     // 'wait' is level-sensitive and will catch the change immediately
+                 
                     wait (pattern_type == idle); 
                 end
             join_any
             
             // Kill whichever thread didn't finish first
-            disable fork; 
-
+            disable fork;
             // Determine WHY we exited the fork
             if (pattern_type != idle) begin
                 // Thread 1 finished first -> It's a real timeout!
                 frame_timeout_track = 1'b1; 
                 pattern_running_track = 1'b0; // End the pattern detection window
-                if (pattern_detected_track) pattern_detected_track = 1'b0; // Reset
+                if (pattern_detected_track) pattern_detected_track = 1'b0;
+                // Reset
                 @(posedge i_dclk);
                 frame_timeout_track = 1'b0; // Reset for the next test
             end else begin
                 // Thread 2 finished first -> Aborted early because it went to idle
                 // (Add any necessary reset logic for early termination here)
-                pattern_running_track = 1'b0; 
+                pattern_running_track = 1'b0;
                 frame_timeout_track = 1'b0; // Ensure timeout is reset
             end
         end
@@ -320,14 +338,17 @@ interface rp_sva #(
     always @(posedge i_dclk) begin
         if ((pattern_type != idle) && !frame_timeout_track && !pattern_running_track) begin
             if (i_track) begin
-              pattern_running_track = 1'b1; // Start the pattern detection window
+              pattern_running_track = 1'b1;
+              // Start the pattern detection window
             end
             else begin
-              pattern_running_track = 1'b0; // End the pattern detection window
+              pattern_running_track = 1'b0;
+              // End the pattern detection window
             end
         end
     end
 */
+
   // ============================================================================
   // Properties & Assertions
   // ============================================================================
@@ -380,14 +401,14 @@ interface rp_sva #(
 
   // Valid Property
   property valid_detect_16_in_128_window;
-        @(posedge i_dclk) disable iff(valid_pattern_detected || (i_rx_encoding != MBINIT_REPAIRVAL_RX_Valid_Pattern_Det)  || valid_frame_timeout)
-         ($rose(i_valid) && !valid_pattern_running)|=> 
+        @(posedge i_dclk) disable iff(valid_pattern_detected || (i_rx_encoding != MBINIT_REPAIRVAL_RX_Valid_Pattern_Det))
+         ($rose(i_valid))|=> 
 
         @(posedge valid_sample_pulse) // Sample on the generated valid sample pulse
             // first_match guarantees that once we find it, we stop checking 
             // parallel possibilities and immediately declare success.
             first_match(first_seq_16_consecutive or ##[0:$] seq_16_consecutive);
-    endproperty
+    endproperty 
 
   property valid_active;
         @(posedge i_dclk) disable iff(i_rx_encoding != ACTIVE_RX_Active)
@@ -397,7 +418,7 @@ interface rp_sva #(
     endproperty
 
   property valid_error_check;
-        @(posedge i_dclk) disable iff (!valid_pattern_detected || i_rx_encoding != Data_To_Clock_test_RX_Pattern_Detection_RX_Init || valid_frame_timeout)
+        @(posedge i_dclk) disable iff (!valid_pattern_detected || i_rx_encoding != Data_To_Clock_test_RX_Pattern_Detection_RX_Init)
         // Check this condition continuously while running
         1'b1 |-> (error_counter <= i_error_threshold);
     endproperty
@@ -434,13 +455,11 @@ interface rp_sva #(
    assert_valid_pattern_16_frame: assert property (valid_detect_16_in_128_window) begin
     // This executes only if the pattern is found (Pass)
     valid_pattern_detected = 1'b1;
-
     `uvm_info("Valid Pattern", "16 consecutive 11110000 patterns detected!", UVM_HIGH)
     
     end else begin
     // This executes if the pattern is not found within the window (Fail)
     valid_pattern_detected = 1'b0;
-
     `uvm_info("Valid Pattern", "Failed to detect 16 consecutive 11110000 patterns within 128-cycle window!", UVM_HIGH)
     end
 
@@ -451,13 +470,13 @@ interface rp_sva #(
     end else begin
     // This executes if the pattern is not found within the window (Fail)
     valid_pattern_detected = 1'b0;
-
     `uvm_info("Valid Pattern", "Wrong pattern detected!", UVM_HIGH)
     end
 
   assert_valid_pattern_error_check: assert property (valid_error_check) 
     else begin
-            valid_pattern_detected = 1'b0; // Flag it as failed
+            valid_pattern_detected = 1'b0;
+            // Flag it as failed
 
             `uvm_info("Valid Pattern", "FAIL: Error threshold exceeded!", UVM_HIGH)
         end
@@ -502,17 +521,23 @@ interface rp_sva #(
 
   always_comb
     if (i_reset) begin
-        chk_async_reset: assert final (
+        chk_async_reset_zeros: assert final (
           {
             o_pl_data,
-            o_pl_valid,
+            o_pl_valid
+
+          } == '0
+        );
+          
+        chk_async_reset_ones: assert final (
+          &{
+
             o_rx_done,
             o_rx_data_results,
-            o_rx_error,
             o_clk_results,
             o_valid_results
             
-          } == '0
+          } == 1'b1
         );
     end
 
