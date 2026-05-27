@@ -31,7 +31,7 @@ class rp_test_base extends uvm_test;
 
   rp_env             env;
   env_config         env_cfg;
-  // rp_sanity_vseq     vseq;
+  rp_vaild_sanity_vseq     vseq;
   uvm_factory        factory = uvm_factory::get();
   int unsigned       run_count = 3;
   bit                hit_reset = 0;
@@ -139,7 +139,7 @@ endfunction : build_phase
 function void rp_test_base::end_of_elaboration_phase(uvm_phase phase);
   super.end_of_elaboration_phase(phase);
 
-  // vseq = rp_sanity_vseq::type_id::create("vseq", this);
+  vseq = rp_vaild_sanity_vseq::type_id::create("vseq", this);
   uvm_top.print_topology(); // Prints entire testbench hierarchy 
 endfunction : end_of_elaboration_phase
 
@@ -171,9 +171,9 @@ task rp_test_base::main_phase(uvm_phase phase);
   
       phase.raise_objection(this);
       
-      // `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vseq.get_type_name()), UVM_MEDIUM)
-      // vseq.start(env.vseqr);
-      // `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", vseq.get_type_name()), UVM_MEDIUM)
+       `uvm_info(get_type_name(), $sformatf("Starting sequence: %s", vseq.get_type_name()), UVM_MEDIUM)
+        vseq.start(env.vseqr);
+       `uvm_info(get_type_name(), $sformatf("Finished sequence: %s", vseq.get_type_name()), UVM_MEDIUM)
   
       phase.drop_objection(this); 
     end

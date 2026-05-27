@@ -64,10 +64,9 @@ package shared_pkg;
     ,X4_UPPER_MODE = 3'b101
   } lane_map_code_t;
 
-   typedef enum bit [1:0] {
-     CONFIGURE = 2'b00
-    ,NEXT      = 2'b01
-    ,CUSTOM    = 2'b10
+   typedef enum bit {
+    NEXT      = 1'b0
+    ,CUSTOM    = 1'b1
    } next_state_type_t;
 
 

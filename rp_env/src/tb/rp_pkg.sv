@@ -100,11 +100,12 @@ package rp_pkg;
   //
   // Contains all test sequences for driving the RX-Path verification.
   `include "sequences/ltsmc_sequence.svh"
+  `include "sequences/rmblink_sanity_valid_sequence.svh"
 
   // Group: Virtual Sequences
   //
   // Contains all virtual sequences for managing the existing sequences.
-  // `include "virtual_sequences/"
+  `include "virtual_sequences/rp_vaild_sanity_vseq.svh"
 
   // Group: Tests
   //

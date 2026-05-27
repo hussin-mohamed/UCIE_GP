@@ -16,39 +16,20 @@
 
 //-----------------------------------------------------------------------------
 //
-// CLASS: ltsmc_sequence
+// CLASS: rmblink_sanity_valid_sequence
 //
 //
 //-----------------------------------------------------------------------------
 
-class ltsmc_sequence extends rp_sequence_base #(ltsmc_seq_item);
-  `uvm_object_utils(ltsmc_sequence)
+class rmblink_sanity_valid_sequence extends rp_sequence_base #(rmblink_seq_item);
+  `uvm_object_utils(rmblink_sanity_valid_sequence)
 
-  ltsmc_sequencer seqr;
-  rx_encoding_t   current_state_enc;
-  rx_encoding_t   previous_state_enc;
-  rx_encoding_t   resume_state_enc;
-
-  // Local Configuration Storage
-  lane_map_code_t m_lane_map_code;
-  logic [15:0]    m_error_threshold;
-  logic           m_half_rate;
-
-
+  
   // Function: new
   //
-  // Creates a new ltsmc_sequence instance with the given name.
+  // Creates a new rmblink_sanity_valid_sequence instance with the given name.
 
-  extern function new(string name = "ltsmc_sequence");
-
-  extern virtual function void configure(
-     input next_state_type_t _next_state_type
-    ,input lane_map_code_t   _lane_map_code
-    ,input logic [15:0]      _error_threshold
-    ,input logic             _half_rate
-    ,input rx_encoding_t     _next_rx_enc=RESET_Reset
-  );
-
+  extern function new(string name = "rmblink_sanity_valid_sequence");
 
   // Task: body
   //
@@ -62,7 +43,7 @@ class ltsmc_sequence extends rp_sequence_base #(ltsmc_seq_item);
 
   extern task pre_body();
 
-endclass : ltsmc_sequence
+endclass : rmblink_sanity_valid_sequence
 
 
 //-----------------------------------------------------------------------------
@@ -71,7 +52,7 @@ endclass : ltsmc_sequence
 
 //-----------------------------------------------------------------------------
 //
-// CLASS: ltsmc_sequence
+// CLASS: rmblink_sanity_valid_sequence
 //
 //-----------------------------------------------------------------------------
 
@@ -79,86 +60,64 @@ endclass : ltsmc_sequence
 // new
 // ---
 
-function ltsmc_sequence::new(string name = "ltsmc_sequence");
+function rmblink_sanity_valid_sequence::new(string name = "rmblink_sanity_valid_sequence");
   super.new(name);
-  current_state_enc = RESET_Reset;
-  resume_state_enc  = RESET_Reset;
 endfunction : new
-
-
-function void ltsmc_sequence::configure(
-   input next_state_type_t _next_state_type
-  ,input lane_map_code_t   _lane_map_code
-  ,input logic [15:0]      _error_threshold
-  ,input logic             _half_rate
-  ,input rx_encoding_t     _next_rx_enc = RESET_Reset // Default at the end
-);
-  
-  rx_encoding_t next_calculated_state;
-
-  m_lane_map_code   = _lane_map_code;
-  m_error_threshold = _error_threshold;
-  m_half_rate       = _half_rate;
-
-  if (_next_state_type == NEXT) begin
-    previous_state_enc = current_state_enc;
-    
-    // Are we exiting the Data-To-Clock test phase?
-    if (current_state_enc == Data_To_Clock_test_RX_End_Init_Handshake_TX_Init ||
-        current_state_enc == Data_To_Clock_test_RX_End_Init_Handshake_RX_Init) begin
-        
-      // Defensive check: Ensure we have a valid return address
-      if (resume_state_enc == RESET_Reset) begin
-        `uvm_warning("FSM_RESUME", "Attempting to resume from Data-To-Clock but resume_state is RESET. Defaulting to SBINIT.")
-      end
-
-      // Use standard .next() to resume the FSM sequentially, 
-      current_state_enc = resume_state_enc.next();
-      
-    end else begin
-      
-      // Calculate the next state (which might be a jump to Data_To_Clock)
-      next_calculated_state = get_next_rx_state(current_state_enc);
-      
-      // Did get_next_rx_state() just trigger a jump into Data-To-Clock?
-      // If yes, save the CURRENT state so we know where to return to later.
-      if (next_calculated_state == Data_To_Clock_test_RX_INIT_Handshake_TX_Init ||
-          next_calculated_state == Data_To_Clock_test_RX_INIT_Handshake_RX_Init) begin
-        resume_state_enc = current_state_enc; 
-      end
-      
-      current_state_enc = next_calculated_state;
-    end
-    
-  end else if (_next_state_type == CUSTOM) begin
-    current_state_enc  = _next_rx_enc;
-
-    // Clear the stack if we are forced into Reset or Error
-    if (_next_rx_enc == RESET_Reset || _next_rx_enc == TRAINERROR_RX_Handshake) begin
-       resume_state_enc = RESET_Reset; 
-    end
-  end
-
-endfunction : configure
 
 
 // pre_body
 // --------
 
-task ltsmc_sequence::pre_body();
+task rmblink_sanity_valid_sequence::pre_body();
   super.pre_body();
-  $cast(seqr, get_sequencer());
 endtask : pre_body
 
 
 // body
 // ----
 
-task ltsmc_sequence::body();
+task rmblink_sanity_valid_sequence::body();
   start_item(req);
-  req.rx_encoding     = current_state_enc;
-  req.lane_map_code   = m_lane_map_code;
-  req.error_threshold = m_error_threshold;
-  req.half_rate       = m_half_rate;
+  req.val_stream     = new[VALID_CLK_PATTERN_STREAM_LEN];
+  req.clk_stream_p   = new[CLK_STREAM_LEN_VALID_PAT];
+  req.clk_stream_n   = new[CLK_STREAM_LEN_VALID_PAT];
+  req.track_stream   = new[CLK_STREAM_LEN_VALID_PAT];
+
+  foreach (req.val_stream[i]) begin
+      req.val_stream[i] = 8'b0000_1111; // You can also write 8'hF0
+    end
+
+    foreach (req.clk_stream_p[i]) begin
+      // Using the modulo operator (%) to check if the index is even
+      if (i % 2 == 0) begin
+        req.clk_stream_p[i] = 1'b1; // Even index -> 1
+      end else begin
+        req.clk_stream_p[i] = 1'b0; // Odd index -> 0
+      end
+    end
+    
+    foreach (req.clk_stream_n[i]) begin
+      // Using the modulo operator (%) to check if the index is even
+      if (i % 2 == 0) begin
+        req.clk_stream_n[i] = 1'b0; // Even index -> 0
+      end else begin
+        req.clk_stream_n[i] = 1'b1; // Odd index -> 1
+      end
+    end
+
+    foreach (req.track_stream[i]) begin
+      // Using the modulo operator (%) to check if the index is even
+      if (i % 2 == 0) begin
+        req.track_stream[i] = 1'b1; // Even index -> 1
+      end else begin
+        req.track_stream[i] = 1'b0; // Odd index -> 0
+      end
+    end
+
+  
+    req.idle_ui_cnt = 0;
+    req.rp_opmode = VAL_PATTERN;
+    req.data  = {default: '0}; // Initialize all data lanes to 0 for the valid pattern
+
   finish_item(req);
 endtask : body
