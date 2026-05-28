@@ -80,6 +80,19 @@ module rx_path #(
     logic                   enable_data_drive;
     logic                   mb_clk_n_en;
     logic                   mb_track_en;
+    logic                   empty_result;
+
+    always @(*) begin
+    case (i_lane_map_code)
+           3'b000 : empty_result = 1'b1;
+           3'b001 : empty_result = &empty[7:0];
+           3'b010 : empty_result = &empty[15:8];
+           3'b011 : empty_result = &empty;
+           3'b100 : empty_result = &empty[3:0];
+           3'b101 : empty_result = &empty[15:12];
+           default: empty_result = 1'b1;
+    endcase
+    end
 
     // -------------------------------------------------------------------------
     // Driver — maps raw inputs to recovered lanes/clocks
@@ -261,7 +274,7 @@ module rx_path #(
         .i_reset                (i_reset),
         .i_rx_encoding          (i_rx_encoding),
         .i_lane_map_code        (i_lane_map_code),
-        .i_fifo_empty           (empty),
+        .i_fifo_empty           (empty_result),
         .i_rx_LFSR_results      (lane_lfsr_success),
         .i_rx_lane_id_results   (lane_id_success),
         .i_clk_results          (clk_result_synced),

@@ -9,7 +9,7 @@ module ucie_rx_controller #(
     input  logic [MB_LANES-1:0] i_rx_lane_id_results,
     input  logic [2:0]            i_clk_results,
     input  logic                  i_valid_results,
-    input  logic [15:0]           i_fifo_empty,
+    input  logic                  i_fifo_empty,
     input  logic [15:0]           i_error_threshold,
     output logic [63:0]           o_rx_data_results,
     output logic                  o_rx_path_reset,
@@ -289,10 +289,10 @@ module ucie_rx_controller #(
 
         // Per-lane ID generation used in reversal/repairmb pattern substates.
         if ((i_rx_encoding == ENC_MBINIT_REVERSAL_PER_LANE) || eye_uses_per_lane_id) begin
-            if(!i_fifo_empty )begin
+            if(!i_fifo_empty)begin
             fifo_rd_en        = 16'hffff; // Keep FIFO read enabled during LFSR-based eye patterns to feed data into the pattern generator
-            end
             o_per_lane_id_det_enable = 16'hffff;
+            end
             o_data_det_type          = 1'b0;
             o_pattern_type           = PATTERN_ACTIVE_DATA;
             case (i_lane_map_code)
