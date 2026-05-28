@@ -244,7 +244,7 @@ module rx_path #(
         .i_clk          (i_clk_l),
         .i_reset        (reset),
         .i_enable       (L2B_enable),
-        .i_lane_map_code(lane_map),
+        .i_lane_map_code(i_lane_map_code),
         .i_lane_0       (lane_LFSR_out[0]),
         .i_lane_1       (lane_LFSR_out[1]),
         .i_lane_2       (lane_LFSR_out[2]),
