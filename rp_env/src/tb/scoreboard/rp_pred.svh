@@ -74,7 +74,7 @@ class rp_pred extends uvm_component;
   };
 
   // Predictor Cache Memory
-  rx_encoding_t     current_rx_encoding;
+  rx_encoding_t     current_rx_encoding, t_rx_encoding;
   rx_encoding_t     previous_rx_encoding;
   lane_map_code_t   current_lane_map_code;
   logic [15:0]      current_error_threshold;
@@ -127,6 +127,8 @@ class rp_pred extends uvm_component;
   virtual function void write_ltsmc(ltsmc_seq_item t);
     ltsmc_seq_item out_item;
 
+    t_rx_encoding = t.rx_encoding;
+
 
     // 1. Exclude Clock/Track/Valid Training States entirely
     if ((t.rx_encoding >= MBINIT_REPAIRCLK_RX_Init_Handshake && t.rx_encoding <= MBINIT_REPAIRCLK_RX_Done_Handshake) ||
@@ -135,22 +137,17 @@ class rp_pred extends uvm_component;
       return;
     end
 
-    if (t.rx_encoding == Data_To_Clock_test_RX_INIT_Handshake_RX_Init &&
-          (
-            previous_rx_encoding == MBTRAIN_VALVREF_RX_Start_Handshake        ||  
-            previous_rx_encoding == MBTRAIN_VALTRAINCENTER_RX_Start_Handshake ||
-            previous_rx_encoding == MBTRAIN_VALTRAINVREF_RX_Start_Handshake
-          )
-    ) begin
-      is_d2c_valid_train_state = 1;
-      return;
-    end
+    $display("%0t: t.rx_encoding        = %s", $time, t.rx_encoding.name());
+    $display("%0t: previous_rx_encoding = %s", $time, previous_rx_encoding.name());
+
+    
 
     if (is_d2c_valid_train_state) begin
-      if (t.rx_encoding == Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init) begin
+      if (t.rx_encoding == Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init ||
+          t.rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) begin
         return;
       end
-      if (t.rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) begin
+      if (t.rx_encoding == Data_To_Clock_test_RX_Result_Handshake_RX_Init) begin
         is_d2c_valid_train_state = 0;
         return;
       end
@@ -202,6 +199,17 @@ class rp_pred extends uvm_component;
 
       dummy_data = '{default: 64'h0};
       rx_lfsr(1'b0, 1'b1, dummy_data, current_error_threshold, dummy_success, dummy_out);
+    end
+
+    if (t.rx_encoding == Data_To_Clock_test_RX_INIT_Handshake_RX_Init &&
+          (
+            previous_rx_encoding == MBTRAIN_VALVREF_RX_Start_Handshake        ||  
+            previous_rx_encoding == MBTRAIN_VALTRAINCENTER_RX_Start_Handshake ||
+            previous_rx_encoding == MBTRAIN_VALTRAINVREF_RX_Start_Handshake
+          )
+    ) begin
+      is_d2c_valid_train_state = 1;
+      return;
     end
 
     // ========================================================================
