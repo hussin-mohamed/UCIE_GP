@@ -19,6 +19,10 @@ class rdi_seq_item extends uvm_sequence_item;
   // Inter-flit delay in clock cycles (gap before this flit)
   rand int unsigned delay;
 
+  logic lp_valid;
+  logic lp_irdy;
+  logic pl_trdy;
+
   // -------------------------------------------------------------------------
   //  UVM Registration (no automation macros — manual do_* methods only)
   // -------------------------------------------------------------------------

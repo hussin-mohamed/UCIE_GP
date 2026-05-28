@@ -14,12 +14,16 @@
   import B2L_modelling_pkg::*;
   import LFSR_modelling_pkg::*;
   import per_lane_id_modelling_pkg::*;
+  import reversal_modelling_pkg::*;
 
   class tx_predictor;
 
     static task  predict (
       ref tx_controller_state_t controller_state,
       input  logic        i_reset,
+      input  logic        lp_valid,
+      input  logic        lp_irdy,
+      input  logic        pl_trdy,
       input  logic [8:0]  i_tx_encoding,
       input  logic [2:0]  i_lane_map_code,
       input  logic        i_disable,
@@ -69,6 +73,9 @@
     B2L_modelling (
       i_lane_map_code,
       i_reset,
+      lp_valid,
+      lp_irdy,
+      pl_trdy,
       o_b2l_enable,
       i_disable,
       i_lp_data,
@@ -97,6 +104,20 @@
       o_lane = o_lane_lfsr;
     end else begin
       o_lane = '{default:0};
+    end
+
+    // Apply lane reversal based on controller's o_tx_reverse signal
+    // Reversal is applied within the active lane group only
+    apply_lane_reversal(o_tx_reverse, i_lane_map_code, o_lane, o_lane);
+
+    if (i_lane_map_code == LOGICAL_LANES_0_TO_7) begin
+      for (int i=8; i < 16; i++) begin
+        o_lane[i] = 'bz;
+      end
+    end else if (i_lane_map_code == LOGICAL_LANES_8_TO_15) begin
+      for (int i=0; i < 8; i++) begin
+        o_lane[i] = 'bz;
+      end
     end
 
     endtask

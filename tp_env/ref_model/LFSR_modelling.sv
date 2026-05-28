@@ -63,13 +63,15 @@ parameter integer LANE_ID [0:7] = '{
                 foreach (o_data_out[i]) begin
                     o_data_out[i][j] = LANE_ID[i % 8][LFSR_STAGES-1];
                 end
-            end else if (i_train) begin
-                foreach (o_data_out[i]) begin
-                    o_data_out[i][j] = lfsr_reg[LFSR_STAGES-1][i];
-                end
-            end else begin
-                foreach (o_data_out[i]) begin
-                    o_data_out[i][j] = i_data_in[i][j] ^ lfsr_reg[LFSR_STAGES-1][i];
+            end else if (!i_disable) begin
+                if (i_train) begin
+                    foreach (o_data_out[i]) begin
+                        o_data_out[i][j] = lfsr_reg[LFSR_STAGES-1][i];
+                    end
+                end else begin
+                    foreach (o_data_out[i]) begin
+                        o_data_out[i][j] = i_data_in[i][j] ^ lfsr_reg[LFSR_STAGES-1][i];
+                    end
                 end
             end
             LFSR_update(i_enable, i_disable, i_load, lfsr_reg);

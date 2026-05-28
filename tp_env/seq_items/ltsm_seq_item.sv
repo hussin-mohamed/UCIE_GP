@@ -145,9 +145,26 @@ class ltsm_seq_item extends uvm_sequence_item;
     };
   }
 
+  static rand bit repair;
+  static bit repair_old;
   constraint c_lane_map_all_func {
-    lane_map == LANE_MAP_ALL_FUNCTIONAL;
+    solve repair before lane_map;
+    if (encoding == REPAIRMB_APPLY_DEGRADE_HND) {
+      repair == 1;
+    } else {
+      repair == repair_old;
+    }
+
+    if (repair) {
+      lane_map == LANE_MAP_LANES_8_TO_15;
+    } else {
+      lane_map == LANE_MAP_ALL_FUNCTIONAL;
+    }
   }
+
+  function void post_randomize();
+    repair_old = repair;
+  endfunction
 
   // Reasonable inter-state delay
   constraint c_delay {

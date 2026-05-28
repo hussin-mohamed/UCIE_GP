@@ -92,23 +92,41 @@ module tx_tb_top;
   );
 
   // -------------------------------------------------------------------------
-  //  SVA Bind (uncomment when DUT is integrated)
+  //  SVA — Protocol Assertions
   // -------------------------------------------------------------------------
 
-  // bind tx_dut tx_sva sva_inst (
-  //   .ui_clk      (egr_intf.ui_clk),
-  //   .rst       (rst),
-  //   .tx_data     (egr_intf.tx_data),
-  //   .tx_clkp     (egr_intf.tx_clkp),
-  //   .tx_clkn     (egr_intf.tx_clkn),
-  //   .tx_valid    (egr_intf.tx_valid),
-  //   .tx_track    (egr_intf.tx_track),
-  //   .clk         (clk),
-  //   .tx_encoding (ltsm_intf.tx_encoding),
-  //   .lp_valid    (rdi_intf.lp_valid),
-  //   .lp_irdy     (rdi_intf.lp_irdy),
-  //   .pl_trdy     (rdi_intf.pl_trdy)
-  // );
+  // Pack tx_data from unpacked [0:15] to packed [15:0] for SVA module
+  logic [15:0] tx_data_packed;
+  always_comb begin
+    for (int i = 0; i < 16; i++)
+      tx_data_packed[i] = tx2link_intf.tx_data[i];
+  end
+
+  tx_sva sva_inst (
+    // Egress interface signals
+    .ui_clk        (tx2link_intf.ui_clk),
+    .d_clk         (ui_clk),
+    .rst           (rst),
+    .tx_data       (tx_data_packed),
+    .tx_clkp       (tx2link_intf.tx_clkp),
+    .tx_clkn       (tx2link_intf.tx_clkn),
+    .tx_valid      (tx2link_intf.tx_valid),
+    .tx_track      (tx2link_intf.tx_track),
+
+    // LTSM interface signals
+    .clk           (clk),
+    .tx_encoding   (ltsm_intf.tx_encoding),
+
+    // LTSM DUT status outputs
+    .pll_stable    (ltsm_intf.pll_stable),
+    .supply_stable (ltsm_intf.supply_stable),
+    .tx_done       (ltsm_intf.tx_done),
+
+    // RDI interface signals (covers only)
+    .lp_valid      (rdi_intf.lp_valid),
+    .lp_irdy       (rdi_intf.lp_irdy),
+    .pl_trdy       (rdi_intf.pl_trdy)
+  );
 
   // -------------------------------------------------------------------------
   //  Config DB — publish virtual interfaces

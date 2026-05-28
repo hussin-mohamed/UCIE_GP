@@ -12,6 +12,9 @@ package B2L_modelling_pkg;
     task static B2L_modelling (
         input [2:0] i_lane_map_code,
         input i_reset,
+        input lp_valid,
+        input lp_irdy,
+        input pl_trdy,
         input enable,
         input i_disable,
         input [7:0] i_lp_data [0:NBYTES-1],
@@ -27,17 +30,22 @@ package B2L_modelling_pkg;
     
         if (!i_reset || !enable) begin
             lane_data.delete();
+            idle = 1;
             current_data = '{default:0};
         end else begin
-            lane_data.push_back(i_lp_data);
+            if (!i_disable && lp_valid && lp_irdy && pl_trdy) begin
+                lane_data.push_back(i_lp_data);
+                $display("size = %0d", lane_data.size());
+            end
         end
     
-        if ((lane_data.size() == 0)) begin
+        if ((lane_data.size() == 0) && !i_disable) begin
             idle = 1;
         end
     
-        if ((idle || o_data_sent) && (lane_data.size() >= 1)) begin
+        if (((idle || o_data_sent) && (lane_data.size() >= 1))) begin
             current_data = lane_data.pop_front();
+            $display("size = %0d", lane_data.size());
             idle = 0;
         end
     
@@ -59,9 +67,10 @@ package B2L_modelling_pkg;
     
                 LOGICAL_LANES_0_TO_7: begin
                     for (int i=0; i < 8; i++) begin
-                        o_lane[i] = {current_data[i+(32*count_byte)], current_data[i+8+(32*count_byte)], current_data[i+16+(32*count_byte)], current_data[i+24+(32*count_byte)]};
-                    end   
-                    if ((count_byte+1)*4*(LANES_NUMBER/2) == NBYTES) begin
+                        o_lane[i] = {current_data[i+56+(64*count_byte)], current_data[i+48+(64*count_byte)], current_data[i+40+(64*count_byte)], current_data[i+32+(64*count_byte)],
+                                    current_data[i+24+(64*count_byte)], current_data[i+16+(64*count_byte)], current_data[i+8+(64*count_byte)], current_data[i+(64*count_byte)]};
+                    end
+                    if ((count_byte+1)*8*(LANES_NUMBER/2) == NBYTES) begin
                         o_data_sent = 1;
                         count_byte = 0;
                     end else begin
@@ -71,10 +80,11 @@ package B2L_modelling_pkg;
                 end
     
                 LOGICAL_LANES_8_TO_15: begin
-                    for (int i=8; i < 16; i++) begin
-                        o_lane[i] = {current_data[i+(32*count_byte)], current_data[i+8+(32*count_byte)], current_data[i+16+(32*count_byte)], current_data[i+24+(32*count_byte)]};
-                    end   
-                    if ((count_byte+1)*4*(LANES_NUMBER/2) == NBYTES) begin
+                    for (int i=0; i < 8; i++) begin
+                        o_lane[i + 8] = {current_data[i+56+(64*count_byte)], current_data[i+48+(64*count_byte)], current_data[i+40+(64*count_byte)], current_data[i+32+(64*count_byte)],
+                                    current_data[i+24+(64*count_byte)], current_data[i+16+(64*count_byte)], current_data[i+8+(64*count_byte)], current_data[i+(64*count_byte)]};
+                    end
+                    if ((count_byte+1)*8*(LANES_NUMBER/2) == NBYTES) begin
                         o_data_sent = 1;
                         count_byte = 0;
                     end else begin
@@ -85,9 +95,10 @@ package B2L_modelling_pkg;
     
                 ALL_LANES: begin
                     foreach (o_lane[i]) begin
-                        o_lane[i] = {current_data[i+(64*count_byte)], current_data[i+16+(64*count_byte)], current_data[i+32+(64*count_byte)], current_data[i+48+(64*count_byte)]};
-                    end   
-                    if ((count_byte+1)*4*LANES_NUMBER == NBYTES) begin
+                        o_lane[i] = {current_data[i+112+(128*count_byte)], current_data[i+96+(128*count_byte)], current_data[i+80+(128*count_byte)], current_data[i+64+(128*count_byte)],
+                                    current_data[i+48+(128*count_byte)], current_data[i+32+(128*count_byte)], current_data[i+16+(128*count_byte)], current_data[i+(128*count_byte)]};
+                    end
+                    if ((count_byte+1)*8*LANES_NUMBER == NBYTES) begin
                         o_data_sent = 1;
                         count_byte = 0;
                     end else begin

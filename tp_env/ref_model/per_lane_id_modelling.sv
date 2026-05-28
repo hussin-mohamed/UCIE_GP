@@ -1,7 +1,7 @@
 package per_lane_id_modelling_pkg;
 
     parameter LANES_NUMBER = 16;       //It defines the number of lanes in the system, which is 16 in this case (Lane 0 to Lane 15)
-
+    
     task static per_lane_id_modelling (
         input i_reset,
         input i_enable,
@@ -17,7 +17,7 @@ package per_lane_id_modelling_pkg;
         end else begin
             foreach (o_lane[i]) begin
                 pattern = i;
-                o_lane[i] = {4{4'b0101,pattern,4'b0101}};
+                o_lane[i] = {4{4'b1010,pattern,4'b1010}};
             end
         end
     endtask

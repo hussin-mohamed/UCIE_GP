@@ -227,15 +227,30 @@ package tx_controller_modelling_pkg;
         parent_e  parent_q;
         logic [7:0] done_cnt_q;
         logic       done_prev;
+        logic       o_tx_reverse;
+        logic [8:0] encoding_prev;  // Track previous encoding internally
     } tx_controller_state_t;
 
     // =========================================================================
     // Initialize state structure
     // =========================================================================
     function automatic void tx_controller_state_init(ref tx_controller_state_t state);
-        state.parent_q    = PAR_NONE;
-        state.done_cnt_q  = 8'd0;
-        state.done_prev   = 1'b0;
+        state.parent_q      = PAR_NONE;
+        state.done_cnt_q    = 8'd0;
+        state.done_prev     = 1'b0;
+        state.o_tx_reverse  = 1'b0;
+        state.encoding_prev = 9'h000;
+    endfunction
+
+    // =========================================================================
+    // Copy state from source to destination (for scoreboard synchronization)
+    // =========================================================================
+    function automatic void tx_controller_state_copy(ref tx_controller_state_t dest, input tx_controller_state_t src);
+        dest.parent_q      = src.parent_q;
+        dest.done_cnt_q    = src.done_cnt_q;
+        dest.done_prev     = src.done_prev;
+        dest.o_tx_reverse  = src.o_tx_reverse;
+        dest.encoding_prev = src.encoding_prev;
     endfunction
 
     // =========================================================================
@@ -267,9 +282,11 @@ package tx_controller_modelling_pkg;
         // Reset handling
         // =================================================================
         if (!i_reset) begin
-            state_ref.parent_q    = PAR_NONE;
-            state_ref.done_cnt_q  = 8'd0;
-            state_ref.done_prev   = 1'b0;
+            state_ref.parent_q      = PAR_NONE;
+            state_ref.done_cnt_q    = 8'd0;
+            state_ref.done_prev     = 1'b0;
+            state_ref.o_tx_reverse  = 1'b0;
+            state_ref.encoding_prev = 9'h000;
 
             o_tx_lfsr_enable         = 1'b0;
             o_tx_lfsr_load           = 1'b0;
@@ -297,10 +314,10 @@ package tx_controller_modelling_pkg;
         if (is_eye_sweep) begin
             case (state_ref.parent_q)
                 PAR_DATAVREF,
-                PAR_DTC1,
                 PAR_DATAVREF2,
                 PAR_RXDESKEW:   ctx_lfsr_rx = 1'b1;
 
+                PAR_DTC1,
                 PAR_DTC2,
                 PAR_LINKSPEED:  ctx_lfsr_tx = 1'b1;
 
@@ -354,13 +371,14 @@ package tx_controller_modelling_pkg;
 
         // =================================================================
         // Main output decoder (combinational)
+        // Only tx_reverse preserves its value; other signals reset to 0
         // =================================================================
         o_tx_lfsr_enable         = 1'b0;
         o_tx_lfsr_load           = 1'b0;
         o_tx_lfsr_train          = 1'b0;
         o_per_lane_id_gen_enable = 1'b0;
-        o_tx_reverse             = 1'b0;
         b2l_enable               = 1'b0;
+        o_tx_reverse             = state_ref.o_tx_reverse;  // Preserved
 
         case (i_tx_encoding)
 
@@ -372,6 +390,7 @@ package tx_controller_modelling_pkg;
             // MBINIT.REVERSALMB per-lane ID generation (0x032) [C2]
             ENC_REVERSAL_PERLANE: begin
                 o_per_lane_id_gen_enable = 1'b1;
+                b2l_enable               = 1'b1;
             end
 
             // MBINIT.REVERSALMB apply reversal (0x034) — spec §4.2.3.a
@@ -393,15 +412,19 @@ package tx_controller_modelling_pkg;
                 // ctx_valid (VALTRAINCENTER): no LFSR seed needed
             end
 
-            // Eye-sweep TX-initiated: pattern generation (0x182)
-            ENC_EYE_TX_PAT_GEN: begin
-                if (ctx_lfsr_tx) begin
+            // Eye-sweep pattern generation (TX: 0x182 or RX: 0x18A)
+            ENC_EYE_TX_PAT_GEN,
+            ENC_EYE_RX_PAT_GEN: begin
+                if (ctx_lfsr_tx || ctx_lfsr_rx) begin
                     o_tx_lfsr_enable = 1'b1;
                     o_tx_lfsr_train  = 1'b1;
+                    b2l_enable       = 1'b1;
                 end else if (ctx_perlane) begin
                     o_per_lane_id_gen_enable = 1'b1;
+                    b2l_enable               = 1'b1;
+                end else if (ctx_valid) begin
+                    b2l_enable = 1'b1;
                 end
-                // ctx_valid: valid pattern — no lfsr / per-lane signals needed
             end
 
             // Eye-sweep RX-initiated: LFSR clear (0x189)
@@ -415,10 +438,24 @@ package tx_controller_modelling_pkg;
 
             // Eye-sweep RX-initiated: pattern generation (0x18A)
             ENC_EYE_RX_PAT_GEN: begin
+                $display("[TX_CTRL] RX_PAT_GEN: parent=%0d ctx_lfsr_rx=%b ctx_valid=%b",
+                    state_ref.parent_q, ctx_lfsr_rx, ctx_valid);
                 if (ctx_lfsr_rx) begin
+                    $display("[TX_CTRL] RX_PAT_GEN: LFSR_RX path selected");
                     o_tx_lfsr_enable = 1'b1;
                     o_tx_lfsr_train  = 1'b1;
+                    b2l_enable       = 1'b1;
+                end else if (ctx_valid) begin
+                    $display("[TX_CTRL] RX_PAT_GEN: VALID pattern path selected");
+                    b2l_enable       = 1'b1;
+                end else begin
+                    $display("[TX_CTRL] RX_PAT_GEN: NO path selected! Outputs will be 0");
                 end
+            end
+
+            // REPAIRVAL and REPAIRCLK pattern generation states
+            ENC_REPVAL_PAT: begin
+                b2l_enable = 1'b1;
             end
 
             ENC_ACTIVE: begin
@@ -430,6 +467,12 @@ package tx_controller_modelling_pkg;
             default: ;
 
         endcase
+
+        // =================================================================
+        // Update storage with current output values (for next call)
+        // Only tx_reverse is preserved
+        // =================================================================
+        state_ref.o_tx_reverse = o_tx_reverse;
 
         // =================================================================
         // Sequential state update (happens at end — models posedge behaviour)
@@ -475,12 +518,18 @@ package tx_controller_modelling_pkg;
         end
 
         // --- Update done counter ---
-        if (!count_en) begin
+        // Reset counter when encoding changes (detected via internal tracking)
+        if (i_tx_encoding != state_ref.encoding_prev) begin
+            state_ref.done_cnt_q = 8'd0;
+        end else if (!count_en) begin
             state_ref.done_cnt_q = 8'd0;
         end else if (!done_state) begin
             state_ref.done_cnt_q = state_ref.done_cnt_q + 8'd1;
         end
         // when done_state: hold (counter saturates)
+
+        // --- Update internal state tracking ---
+        state_ref.encoding_prev = i_tx_encoding;
 
         // --- Register done_state for next cycle's o_tx_done ---
         state_ref.done_prev = done_state;

@@ -41,6 +41,7 @@ class tx2link_monitor extends uvm_monitor;
 
   // tx_valid edge detection
   logic tx_valid_q;
+  int counter;
   logic start;
 
   // -------------------------------------------------------------------------
@@ -135,11 +136,18 @@ class tx2link_monitor extends uvm_monitor;
 
     // Sample data
     for (int i = 0; i < chunk_size; i++) begin
-      @(posedge tx2link_vif.ui_clk);
       foreach (tx2link_vif.tx_data[j]) begin
         txn.data_lanes[j][i] = tx2link_vif.tx_data[j];
         data_lanes = txn.data_lanes;
       end
+      @(posedge tx2link_vif.ui_clk);
+      if (!tx2link_vif.tx_valid) begin
+         counter++;
+         if (counter >= 5) begin
+          start = 0;
+          return;
+         end
+      end else counter = 0;
     end
 
     $display($sformatf("Chunk assembled: state=%s, ui_count=%0d",

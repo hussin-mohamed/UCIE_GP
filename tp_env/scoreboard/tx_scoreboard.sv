@@ -84,6 +84,9 @@ class tx_scoreboard extends uvm_scoreboard;
         tx_predictor::predict(
           controller_state_ltsm,
           1,
+          0,
+          0,
+          0,
           latest_state,
           latest_lane_map,
           1,
@@ -97,7 +100,6 @@ class tx_scoreboard extends uvm_scoreboard;
       forever begin
         // 1. Wait for a chunk from the pins (TX2LINK)
         actual_fifo.get(actual);
-        actual_o_lane = actual.data_lanes;
         total_count++;
 
 
@@ -114,10 +116,16 @@ class tx_scoreboard extends uvm_scoreboard;
         `uvm_info("SCB", $sformatf("Comparing chunk: state=%s, ui_count=%0d",
                   actual.captured_state.name(), actual.ui_count), UVM_MEDIUM)
 
+        // Sync state from tracking thread before comparison
+        tx_controller_state_copy(controller_state_cmp, controller_state_ltsm);
+
         // 3. Run the predictor using the state CAPTURED by the monitor
         tx_predictor::predict(
           controller_state_cmp,
           1,
+          rdi.lp_valid,
+          rdi.lp_irdy,
+          rdi.pl_trdy,
           actual.captured_state,
           latest_lane_map,
           0,
@@ -127,6 +135,7 @@ class tx_scoreboard extends uvm_scoreboard;
 
         // 4. Compare directly
         compare_items(golden_o_lane, actual);
+        actual_o_lane = actual.data_lanes;
       end
     join
   endtask

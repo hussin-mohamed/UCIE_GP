@@ -12,6 +12,10 @@ class rdi_monitor extends uvm_monitor;
 
   // Virtual interface handle
   virtual rdi_if rdi_vif;
+  virtual ltsm_if ltsm_vif;
+
+  int count;
+  logic [2:0] lp_valid;
 
   // Analysis port — broadcasts complete flit transactions
   uvm_analysis_port #(rdi_seq_item) ap;
@@ -33,6 +37,8 @@ class rdi_monitor extends uvm_monitor;
     ap = new("ap", this);
     if (!uvm_config_db#(virtual rdi_if)::get(this, "", "rdi_vif", rdi_vif))
       `uvm_fatal("RDI_MON", "Failed to get rdi_vif from config_db")
+    if (!uvm_config_db#(virtual ltsm_if)::get(this, "", "ltsm_vif", ltsm_vif))
+      `uvm_fatal("LTSM_MON", "Failed to get ltsm_vif from config_db")
   endfunction
 
   // -------------------------------------------------------------------------
@@ -43,24 +49,38 @@ class rdi_monitor extends uvm_monitor;
     rdi_seq_item txn;
 
     // Wait for reset de-assertion
-    @(posedge rdi_vif.rst);
+    @(negedge rdi_vif.rst);
 
     forever begin
       @(posedge rdi_vif.clk);
 
       // Detect a valid flit transfer: valid & irdy & trdy all high
-      if (rdi_vif.lp_valid && rdi_vif.lp_irdy && rdi_vif.pl_trdy) begin
-        txn = rdi_seq_item::type_id::create("rdi_mon_txn");
+      if ((rdi_vif.lp_valid && rdi_vif.lp_irdy && rdi_vif.pl_trdy)) begin
+        
+        if (ltsm_vif.lane_map == LANE_MAP_ALL_FUNCTIONAL) begin
+          count = 2;
+        end else begin
+          count = 4;
+        end
 
-        // Sample the data from interface
-        sample_flit(txn);
+        repeat (count) begin
+          txn = rdi_seq_item::type_id::create("rdi_mon_txn");
 
-        `uvm_info("RDI_MON", $sformatf("Collected Flit [%0d bytes]",
-          rdi_seq_item::active_flit_size), UVM_HIGH)
+          // Sample the data from interface
+          sample_flit(txn);
+          txn.lp_valid = rdi_vif.lp_valid;
+          txn.lp_irdy = rdi_vif.lp_irdy;
+          txn.pl_trdy = rdi_vif.pl_trdy;
 
-        // Broadcast to subscribers (predictor, coverage)
-        $display("rdi_write");
-        ap.write(txn);
+          `uvm_info("RDI_MON", $sformatf("Collected Flit [%0d bytes]",
+            rdi_seq_item::active_flit_size), UVM_HIGH)
+
+          // Broadcast to subscribers (predictor, coverage)
+          ap.write(txn);
+
+          @(posedge rdi_vif.clk);
+        end
+        
       end
     end
   endtask
