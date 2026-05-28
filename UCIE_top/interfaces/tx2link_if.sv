@@ -14,8 +14,9 @@
 //=============================================================================
 
 interface tx2link_if (
+  input logic clk,      // Slow logical clock — frame boundary reference
   input logic ui_clk,
-  input logic rst_n
+  input logic rst
 );
 
   // -------------------------------------------------------------------------
@@ -24,7 +25,7 @@ interface tx2link_if (
 
   // 16 serial data lanes — each carries 1 bit per UI (serialized)
   // During disabled/reset states these should be Hi-Z ('z)
-  logic [15:0] tx_data;
+  logic tx_data [0:15];
 
   // Forwarded differential clock pair
   logic tx_clkp;
@@ -42,12 +43,12 @@ interface tx2link_if (
 
   // Monitor side (passive — samples all output signals)
   modport mon_mp (
-    input ui_clk, rst_n, tx_data, tx_clkp, tx_clkn, tx_valid, tx_track
+    input clk, ui_clk, rst, tx_data, tx_clkp, tx_clkn, tx_valid, tx_track
   );
 
   // DUT side (DUT drives all output signals)
   modport dut_mp (
-    input  ui_clk, rst_n,
+    input  clk, ui_clk, rst,
     output tx_data, tx_clkp, tx_clkn, tx_valid, tx_track
   );
 

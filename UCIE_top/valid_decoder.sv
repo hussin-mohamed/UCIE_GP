@@ -14,13 +14,12 @@ module valid_decoder (
     output logic o_rsp
     output logic o_done
 );
-    logic done;
     always_ff @(posedge i_clk) begin
-        if ( !i_valid && (i_req || i_rsp)) begin
-            done <= 1'b1;
+        if ((i_req || i_rsp)) begin
+            o_done <= 1'b1;
         end
         else begin
-            done <= 1'b0;
+            o_done <= 1'b0;
         end
     end
     always @(*) begin
@@ -30,7 +29,6 @@ module valid_decoder (
             o_info = i_info;
             o_req = i_req;
             o_rsp = i_rsp;
-            o_done = i_done;
         end
         else begin
             o_decoding = 9'b0;
@@ -38,7 +36,6 @@ module valid_decoder (
             o_info = 8'b0;
             o_req = 1'b0;
             o_rsp = 1'b0;
-            o_done = done;
         end
     end
 endmodule
