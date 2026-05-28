@@ -1,4 +1,4 @@
-../tb/shared_pkg.sv
+../tb/sb_shared_pkg.sv
 ../bfms/sb_ltsm_ctrl_bfm.sv
 ../bfms/sb_rdi_bfm.sv
 ../bfms/sb_rx_bfm.sv

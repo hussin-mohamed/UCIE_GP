@@ -236,19 +236,19 @@ module tx_path #(
 
     decoder emp_dec (
         .i_empty_done(empty),
-        .i_lane_map  (lane_map),
+        .i_lane_map  (i_lane_map_code),
         .o_empty     (empty_result)
     );
 
     decoder done_dec (
         .i_empty_done(msg_done),
-        .i_lane_map  (lane_map),
+        .i_lane_map  (i_lane_map_code),
         .o_empty     (done_result)
     );
 
     decoder active_dec (
         .i_empty_done(active),
-        .i_lane_map  (lane_map),
+        .i_lane_map  (i_lane_map_code),
         .o_empty     (active_result)
     );
 

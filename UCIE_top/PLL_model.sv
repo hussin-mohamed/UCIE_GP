@@ -1,6 +1,6 @@
 module PLL_model (
-    input [2:0] i_sel,i_reset,
-    input i_clk_32,i_clk_24,i_clk_16,i_clk_12,i_clk_8,i_clk_4,
+    input [2:0] i_sel,
+    input i_clk_32,i_clk_24,i_clk_16,i_clk_12,i_clk_8,i_clk_4,i_reset,
     output logic o_clk_s, o_clk_h,o_clk_l;
 );
     logic clk_S,clk_h;
@@ -21,15 +21,10 @@ module PLL_model (
         .i_reset(i_reset), 
         .o_clk(clk_h)
     );
-    logic clk_d2,clk_d4,clk_d8,clk_d16,clk_d32,clk_d64;
-    clock_divider cd2 (
-        .i_clk(clk_h),
-        .i_enable(1'b1),
-        .i_reset(i_reset),
-        .o_clk(clk_d2)
-    );
+    logic clk_d4,clk_d8,clk_d16,clk_d32,clk_d64;
+
     clock_divider cd4 (
-        .i_clk(clk_d2),
+        .i_clk(clk_h),
         .i_enable(1'b1),
         .i_reset(i_reset),
         .o_clk(clk_d4)
