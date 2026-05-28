@@ -176,13 +176,13 @@ module clk_valid_pattern_generation (
             counter_h<=0;
             
         end
-        else if (counter_h == 23 || i_pattern_type != 2'b01) begin
+        else if (counter_h == 22 || i_pattern_type != 2'b01) begin
 
             counter_h <=0;
 
         end
         
-        else if(w_enable_counting_h && counter_h !=23) begin
+        else if(w_enable_counting_h && counter_h !=22) begin
 
             counter_h <= counter_h + 1;
 
@@ -192,7 +192,7 @@ module clk_valid_pattern_generation (
         if (i_reset) begin
             w_enable_h<=0;
         end
-        else if (i_pattern_type != 2'b01 || (counter_h >= 16)) begin
+        else if (i_pattern_type != 2'b01 || (counter_h >= 15)) begin
             w_enable_h<=0;
         end
         else begin
@@ -223,13 +223,13 @@ module clk_valid_pattern_generation (
             counter_q_1<=0;
             
         end
-        else if (counter_q_1 == 23 || i_pattern_type != 2'b01) begin
+        else if (counter_q_1 == 22 || i_pattern_type != 2'b01) begin
 
             counter_q_1 <=0;
 
         end
         
-        if(w_enable_counting_q_1 && counter_q_1 !=23) begin
+        if(w_enable_counting_q_1 && counter_q_1 !=22) begin
 
             counter_q_1 <= counter_q_1 + 1;
 
@@ -240,7 +240,7 @@ module clk_valid_pattern_generation (
             w_enable_q_1<=0;
             w_enable_counting_q_1<=0;
         end
-        else if (i_pattern_type != 2'b01 || (counter_q_1 >= 16)) begin
+        else if (i_pattern_type != 2'b01 || (counter_q_1 >= 15)) begin
             w_enable_q_1<=0;
         end
         else begin
@@ -264,13 +264,13 @@ module clk_valid_pattern_generation (
             counter_q_2<=0;
             
         end
-        else if (counter_q_2 == 23 || i_pattern_type != 2'b01) begin
+        else if (counter_q_2 == 22 || i_pattern_type != 2'b01) begin
 
             counter_q_2 <=0;
 
         end
         
-        if(w_enable_counting_q_2 && counter_q_2 !=23) begin
+        if(w_enable_counting_q_2 && counter_q_2 !=22) begin
 
             counter_q_2 <= counter_q_2 + 1;
 
@@ -281,7 +281,7 @@ module clk_valid_pattern_generation (
             w_enable_q_2<=0;
             w_enable_counting_q_2<=0;
         end
-        else if (i_pattern_type != 2'b01 || (counter_q_2 >= 16)) begin
+        else if (i_pattern_type != 2'b01 || (counter_q_2 >= 15)) begin
             w_enable_q_2<=0;
         end
         else begin

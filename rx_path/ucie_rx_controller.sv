@@ -219,7 +219,7 @@ module ucie_rx_controller #(
     // 2) Select AFE tri-state enables according to current LTSM state/substate
     // 3) Program done counter behavior (enable + target cycles)
     always_comb begin
-        o_rx_lfsr_enable         = 'b0;
+        o_rx_lfsr_enable         = 16'h0;
         o_rx_lfsr_load           = 1'b0;
         o_rx_lfsr_train          = 1'b0;
         o_pattern_type           = PATTERN_NONE;
@@ -240,7 +240,7 @@ module ucie_rx_controller #(
         // LFSR pattern generation for eye sweep pattern-generation substates.
         if (eye_tx_uses_lfsr || eye_rx_uses_lfsr) begin
             if(!i_fifo_empty )begin
-            o_rx_lfsr_enable    = 'b1;
+            o_rx_lfsr_enable    = 16'hffff;
             fifo_rd_en        = 16'hffff; // Keep FIFO read enabled during LFSR-based eye patterns to feed data into the pattern generator
             end
             o_error_threshold   = error_threshold;
@@ -271,7 +271,7 @@ module ucie_rx_controller #(
         // ACTIVE keeps LFSR enabled for scrambling but disables train mode.
          if (i_rx_encoding == ENC_ACTIVE) begin
             if(!i_fifo_empty )begin
-            o_rx_lfsr_enable = 'b1;
+            o_rx_lfsr_enable = 16'hffff;
             fifo_rd_en     = 16'hffff;
             end
             o_error_threshold = error_threshold;
