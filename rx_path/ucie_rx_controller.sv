@@ -192,7 +192,7 @@ module ucie_rx_controller #(
         eye_uses_valid_pattern     = 1'b0;
         eye_uses_active_data_pattern = 1'b0;
 
-        if (i_rx_encoding == ENC_TX_EYE_PAT_GEN || i_rx_encoding == ENC_RX_EYE_PAT_GEN) begin
+        if (i_rx_encoding == ENC_TX_EYE_PAT_DET || i_rx_encoding == ENC_RX_EYE_PAT_DET) begin
             case (ltsm_current_state_q)
 
                 ENC_MBINIT_REPAIRMB: eye_uses_per_lane_id = 1'b1;
