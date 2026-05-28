@@ -14,7 +14,7 @@
 // *                                                                          *
 // ****************************************************************************
 
-package shared_pkg;
+package sb_shared_pkg;
   
   parameter TX_FIFO_SIZE  = 4;
   parameter RX_FIFO_SIZE  = 4;
@@ -2029,4 +2029,4 @@ message_t unsupported_messages[fullcode_t] = '{
     rsvd1:    '0, rsvd2: '0, rsvd3: '0, rsvd4: '0
   }
 };
-endpackage : shared_pkg
+endpackage : sb_shared_pkg

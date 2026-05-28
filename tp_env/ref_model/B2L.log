@@ -1,0 +1,411 @@
+# vsim -c work.B2L_tb -l B2L.log -do "run -all" 
+# Start time: 22:56:37 on May 03,2026
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# //  Questa Sim-64
+# //  Version 2021.1 win64 Jan 19 2021
+# //
+# //  Copyright 1991-2021 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.B2L_modelling_pkg(fast)
+# Loading work.B2L_tb(fast)
+# run -all
+# 
+# ========== B2L Golden Model Testbench Start ==========
+# 
+# [PASS] Reset | Lane  0 | 0x0000000000000000
+# [PASS] Reset | Lane  1 | 0x0000000000000000
+# [PASS] Reset | Lane  2 | 0x0000000000000000
+# [PASS] Reset | Lane  3 | 0x0000000000000000
+# [PASS] Reset | Lane  4 | 0x0000000000000000
+# [PASS] Reset | Lane  5 | 0x0000000000000000
+# [PASS] Reset | Lane  6 | 0x0000000000000000
+# [PASS] Reset | Lane  7 | 0x0000000000000000
+# [PASS] Reset | Lane  8 | 0x0000000000000000
+# [PASS] Reset | Lane  9 | 0x0000000000000000
+# [PASS] Reset | Lane 10 | 0x0000000000000000
+# [PASS] Reset | Lane 11 | 0x0000000000000000
+# [PASS] Reset | Lane 12 | 0x0000000000000000
+# [PASS] Reset | Lane 13 | 0x0000000000000000
+# [PASS] Reset | Lane 14 | 0x0000000000000000
+# [PASS] Reset | Lane 15 | 0x0000000000000000
+# [PASS] Reset | o_data_sent = 0
+# ----------------------------------------
+# Reset Summary: 17 PASSED | 0 FAILED
+# ----------------------------------------
+# [PASS] NONE mode | Lane  0 | 0x0000000000000000
+# [PASS] NONE mode | Lane  1 | 0x0000000000000000
+# [PASS] NONE mode | Lane  2 | 0x0000000000000000
+# [PASS] NONE mode | Lane  3 | 0x0000000000000000
+# [PASS] NONE mode | Lane  4 | 0x0000000000000000
+# [PASS] NONE mode | Lane  5 | 0x0000000000000000
+# [PASS] NONE mode | Lane  6 | 0x0000000000000000
+# [PASS] NONE mode | Lane  7 | 0x0000000000000000
+# [PASS] NONE mode | Lane  8 | 0x0000000000000000
+# [PASS] NONE mode | Lane  9 | 0x0000000000000000
+# [PASS] NONE mode | Lane 10 | 0x0000000000000000
+# [PASS] NONE mode | Lane 11 | 0x0000000000000000
+# [PASS] NONE mode | Lane 12 | 0x0000000000000000
+# [PASS] NONE mode | Lane 13 | 0x0000000000000000
+# [PASS] NONE mode | Lane 14 | 0x0000000000000000
+# [PASS] NONE mode | Lane 15 | 0x0000000000000000
+# [PASS] NONE mode | o_data_sent = 0
+# ----------------------------------------
+# NONE mode Summary: 17 PASSED | 0 FAILED
+# ----------------------------------------
+# 
+# [15] LOGICAL_LANES_0_TO_7 - cycle 0
+#   Lane  0 : 0x0000000000081018
+#   Lane  1 : 0x0000000001091119
+#   Lane  2 : 0x00000000020a121a
+#   Lane  3 : 0x00000000030b131b
+#   Lane  4 : 0x00000000040c141c
+#   Lane  5 : 0x00000000050d151d
+#   Lane  6 : 0x00000000060e161e
+#   Lane  7 : 0x00000000070f171f
+#   Lane  8 : 0x0000000000000000
+#   Lane  9 : 0x0000000000000000
+#   Lane 10 : 0x0000000000000000
+#   Lane 11 : 0x0000000000000000
+#   Lane 12 : 0x0000000000000000
+#   Lane 13 : 0x0000000000000000
+#   Lane 14 : 0x0000000000000000
+#   Lane 15 : 0x0000000000000000
+#   o_data_sent : 0
+# [PASS] LL_0_TO_7 cycle0 | Lane  0 | 0x0000000000081018
+# [PASS] LL_0_TO_7 cycle0 | Lane  1 | 0x0000000001091119
+# [PASS] LL_0_TO_7 cycle0 | Lane  2 | 0x00000000020a121a
+# [PASS] LL_0_TO_7 cycle0 | Lane  3 | 0x00000000030b131b
+# [PASS] LL_0_TO_7 cycle0 | Lane  4 | 0x00000000040c141c
+# [PASS] LL_0_TO_7 cycle0 | Lane  5 | 0x00000000050d151d
+# [PASS] LL_0_TO_7 cycle0 | Lane  6 | 0x00000000060e161e
+# [PASS] LL_0_TO_7 cycle0 | Lane  7 | 0x00000000070f171f
+# [PASS] LL_0_TO_7 cycle0 | Lane  8 | 0x0000000000000000
+# [PASS] LL_0_TO_7 cycle0 | Lane  9 | 0x0000000000000000
+# [PASS] LL_0_TO_7 cycle0 | Lane 10 | 0x0000000000000000
+# [PASS] LL_0_TO_7 cycle0 | Lane 11 | 0x0000000000000000
+# [PASS] LL_0_TO_7 cycle0 | Lane 12 | 0x0000000000000000
+# [PASS] LL_0_TO_7 cycle0 | Lane 13 | 0x0000000000000000
+# [PASS] LL_0_TO_7 cycle0 | Lane 14 | 0x0000000000000000
+# [PASS] LL_0_TO_7 cycle0 | Lane 15 | 0x0000000000000000
+# [PASS] LL_0_TO_7 cycle0 | o_data_sent = 0
+# ----------------------------------------
+# LL_0_TO_7 cycle0 Summary: 17 PASSED | 0 FAILED
+# ----------------------------------------
+# [PASS] NONE mode | Lane  0 | 0x0000000000000000
+# [PASS] NONE mode | Lane  1 | 0x0000000000000000
+# [PASS] NONE mode | Lane  2 | 0x0000000000000000
+# [PASS] NONE mode | Lane  3 | 0x0000000000000000
+# [PASS] NONE mode | Lane  4 | 0x0000000000000000
+# [PASS] NONE mode | Lane  5 | 0x0000000000000000
+# [PASS] NONE mode | Lane  6 | 0x0000000000000000
+# [PASS] NONE mode | Lane  7 | 0x0000000000000000
+# [PASS] NONE mode | Lane  8 | 0x0000000000000000
+# [PASS] NONE mode | Lane  9 | 0x0000000000000000
+# [PASS] NONE mode | Lane 10 | 0x0000000000000000
+# [PASS] NONE mode | Lane 11 | 0x0000000000000000
+# [PASS] NONE mode | Lane 12 | 0x0000000000000000
+# [PASS] NONE mode | Lane 13 | 0x0000000000000000
+# [PASS] NONE mode | Lane 14 | 0x0000000000000000
+# [PASS] NONE mode | Lane 15 | 0x0000000000000000
+# [PASS] NONE mode | o_data_sent = 0
+# ----------------------------------------
+# NONE mode Summary: 17 PASSED | 0 FAILED
+# ----------------------------------------
+# 
+# [25] LOGICAL_LANES_8_TO_15 - cycle 0
+#   Lane  0 : 0x0000000000000000
+#   Lane  1 : 0x0000000000000000
+#   Lane  2 : 0x0000000000000000
+#   Lane  3 : 0x0000000000000000
+#   Lane  4 : 0x0000000000000000
+#   Lane  5 : 0x0000000000000000
+#   Lane  6 : 0x0000000000000000
+#   Lane  7 : 0x0000000000000000
+#   Lane  8 : 0x0000000008101820
+#   Lane  9 : 0x0000000009111921
+#   Lane 10 : 0x000000000a121a22
+#   Lane 11 : 0x000000000b131b23
+#   Lane 12 : 0x000000000c141c24
+#   Lane 13 : 0x000000000d151d25
+#   Lane 14 : 0x000000000e161e26
+#   Lane 15 : 0x000000000f171f27
+#   o_data_sent : 0
+# [PASS] LL_8_TO_15 cycle0 | Lane  0 | 0x0000000000000000
+# [PASS] LL_8_TO_15 cycle0 | Lane  1 | 0x0000000000000000
+# [PASS] LL_8_TO_15 cycle0 | Lane  2 | 0x0000000000000000
+# [PASS] LL_8_TO_15 cycle0 | Lane  3 | 0x0000000000000000
+# [PASS] LL_8_TO_15 cycle0 | Lane  4 | 0x0000000000000000
+# [PASS] LL_8_TO_15 cycle0 | Lane  5 | 0x0000000000000000
+# [PASS] LL_8_TO_15 cycle0 | Lane  6 | 0x0000000000000000
+# [PASS] LL_8_TO_15 cycle0 | Lane  7 | 0x0000000000000000
+# [PASS] LL_8_TO_15 cycle0 | Lane  8 | 0x0000000008101820
+# [PASS] LL_8_TO_15 cycle0 | Lane  9 | 0x0000000009111921
+# [PASS] LL_8_TO_15 cycle0 | Lane 10 | 0x000000000a121a22
+# [PASS] LL_8_TO_15 cycle0 | Lane 11 | 0x000000000b131b23
+# [PASS] LL_8_TO_15 cycle0 | Lane 12 | 0x000000000c141c24
+# [PASS] LL_8_TO_15 cycle0 | Lane 13 | 0x000000000d151d25
+# [PASS] LL_8_TO_15 cycle0 | Lane 14 | 0x000000000e161e26
+# [PASS] LL_8_TO_15 cycle0 | Lane 15 | 0x000000000f171f27
+# [PASS] LL_8_TO_15 cycle0 | o_data_sent = 0
+# ----------------------------------------
+# LL_8_TO_15 cycle0 Summary: 17 PASSED | 0 FAILED
+# ----------------------------------------
+# [PASS] NONE mode | Lane  0 | 0x0000000000000000
+# [PASS] NONE mode | Lane  1 | 0x0000000000000000
+# [PASS] NONE mode | Lane  2 | 0x0000000000000000
+# [PASS] NONE mode | Lane  3 | 0x0000000000000000
+# [PASS] NONE mode | Lane  4 | 0x0000000000000000
+# [PASS] NONE mode | Lane  5 | 0x0000000000000000
+# [PASS] NONE mode | Lane  6 | 0x0000000000000000
+# [PASS] NONE mode | Lane  7 | 0x0000000000000000
+# [PASS] NONE mode | Lane  8 | 0x0000000000000000
+# [PASS] NONE mode | Lane  9 | 0x0000000000000000
+# [PASS] NONE mode | Lane 10 | 0x0000000000000000
+# [PASS] NONE mode | Lane 11 | 0x0000000000000000
+# [PASS] NONE mode | Lane 12 | 0x0000000000000000
+# [PASS] NONE mode | Lane 13 | 0x0000000000000000
+# [PASS] NONE mode | Lane 14 | 0x0000000000000000
+# [PASS] NONE mode | Lane 15 | 0x0000000000000000
+# [PASS] NONE mode | o_data_sent = 0
+# ----------------------------------------
+# NONE mode Summary: 17 PASSED | 0 FAILED
+# ----------------------------------------
+# 
+# [35] ALL_LANES - cycle 0
+#   Lane  0 : 0x0000000000102030
+#   Lane  1 : 0x0000000001112131
+#   Lane  2 : 0x0000000002122232
+#   Lane  3 : 0x0000000003132333
+#   Lane  4 : 0x0000000004142434
+#   Lane  5 : 0x0000000005152535
+#   Lane  6 : 0x0000000006162636
+#   Lane  7 : 0x0000000007172737
+#   Lane  8 : 0x0000000008182838
+#   Lane  9 : 0x0000000009192939
+#   Lane 10 : 0x000000000a1a2a3a
+#   Lane 11 : 0x000000000b1b2b3b
+#   Lane 12 : 0x000000000c1c2c3c
+#   Lane 13 : 0x000000000d1d2d3d
+#   Lane 14 : 0x000000000e1e2e3e
+#   Lane 15 : 0x000000000f1f2f3f
+#   o_data_sent : 0
+# [PASS] ALL_LANES cycle0 | Lane  0 | 0x0000000000102030
+# [PASS] ALL_LANES cycle0 | Lane  1 | 0x0000000001112131
+# [PASS] ALL_LANES cycle0 | Lane  2 | 0x0000000002122232
+# [PASS] ALL_LANES cycle0 | Lane  3 | 0x0000000003132333
+# [PASS] ALL_LANES cycle0 | Lane  4 | 0x0000000004142434
+# [PASS] ALL_LANES cycle0 | Lane  5 | 0x0000000005152535
+# [PASS] ALL_LANES cycle0 | Lane  6 | 0x0000000006162636
+# [PASS] ALL_LANES cycle0 | Lane  7 | 0x0000000007172737
+# [PASS] ALL_LANES cycle0 | Lane  8 | 0x0000000008182838
+# [PASS] ALL_LANES cycle0 | Lane  9 | 0x0000000009192939
+# [PASS] ALL_LANES cycle0 | Lane 10 | 0x000000000a1a2a3a
+# [PASS] ALL_LANES cycle0 | Lane 11 | 0x000000000b1b2b3b
+# [PASS] ALL_LANES cycle0 | Lane 12 | 0x000000000c1c2c3c
+# [PASS] ALL_LANES cycle0 | Lane 13 | 0x000000000d1d2d3d
+# [PASS] ALL_LANES cycle0 | Lane 14 | 0x000000000e1e2e3e
+# [PASS] ALL_LANES cycle0 | Lane 15 | 0x000000000f1f2f3f
+# [PASS] ALL_LANES cycle0 | o_data_sent = 0
+# ----------------------------------------
+# ALL_LANES cycle0 Summary: 17 PASSED | 0 FAILED
+# ----------------------------------------
+# 
+# [40] ALL_LANES - cycle 1
+#   Lane  0 : 0x0000000040506070
+#   Lane  1 : 0x0000000041516171
+#   Lane  2 : 0x0000000042526272
+#   Lane  3 : 0x0000000043536373
+#   Lane  4 : 0x0000000044546474
+#   Lane  5 : 0x0000000045556575
+#   Lane  6 : 0x0000000046566676
+#   Lane  7 : 0x0000000047576777
+#   Lane  8 : 0x0000000048586878
+#   Lane  9 : 0x0000000049596979
+#   Lane 10 : 0x000000004a5a6a7a
+#   Lane 11 : 0x000000004b5b6b7b
+#   Lane 12 : 0x000000004c5c6c7c
+#   Lane 13 : 0x000000004d5d6d7d
+#   Lane 14 : 0x000000004e5e6e7e
+#   Lane 15 : 0x000000004f5f6f7f
+#   o_data_sent : 0
+# [PASS] ALL_LANES cycle1 | Lane  0 | 0x0000000040506070
+# [PASS] ALL_LANES cycle1 | Lane  1 | 0x0000000041516171
+# [PASS] ALL_LANES cycle1 | Lane  2 | 0x0000000042526272
+# [PASS] ALL_LANES cycle1 | Lane  3 | 0x0000000043536373
+# [PASS] ALL_LANES cycle1 | Lane  4 | 0x0000000044546474
+# [PASS] ALL_LANES cycle1 | Lane  5 | 0x0000000045556575
+# [PASS] ALL_LANES cycle1 | Lane  6 | 0x0000000046566676
+# [PASS] ALL_LANES cycle1 | Lane  7 | 0x0000000047576777
+# [PASS] ALL_LANES cycle1 | Lane  8 | 0x0000000048586878
+# [PASS] ALL_LANES cycle1 | Lane  9 | 0x0000000049596979
+# [PASS] ALL_LANES cycle1 | Lane 10 | 0x000000004a5a6a7a
+# [PASS] ALL_LANES cycle1 | Lane 11 | 0x000000004b5b6b7b
+# [PASS] ALL_LANES cycle1 | Lane 12 | 0x000000004c5c6c7c
+# [PASS] ALL_LANES cycle1 | Lane 13 | 0x000000004d5d6d7d
+# [PASS] ALL_LANES cycle1 | Lane 14 | 0x000000004e5e6e7e
+# [PASS] ALL_LANES cycle1 | Lane 15 | 0x000000004f5f6f7f
+# [PASS] ALL_LANES cycle1 | o_data_sent = 0
+# ----------------------------------------
+# ALL_LANES cycle1 Summary: 17 PASSED | 0 FAILED
+# ----------------------------------------
+# 
+# [45] ALL_LANES - cycle 2
+#   Lane  0 : 0x000000008090a0b0
+#   Lane  1 : 0x000000008191a1b1
+#   Lane  2 : 0x000000008292a2b2
+#   Lane  3 : 0x000000008393a3b3
+#   Lane  4 : 0x000000008494a4b4
+#   Lane  5 : 0x000000008595a5b5
+#   Lane  6 : 0x000000008696a6b6
+#   Lane  7 : 0x000000008797a7b7
+#   Lane  8 : 0x000000008898a8b8
+#   Lane  9 : 0x000000008999a9b9
+#   Lane 10 : 0x000000008a9aaaba
+#   Lane 11 : 0x000000008b9babbb
+#   Lane 12 : 0x000000008c9cacbc
+#   Lane 13 : 0x000000008d9dadbd
+#   Lane 14 : 0x000000008e9eaebe
+#   Lane 15 : 0x000000008f9fafbf
+#   o_data_sent : 0
+# 
+# [45] ALL_LANES - cycle 2 INPUTS
+#   i_lane_map_code : 3'b011
+#   i_reset         : 0
+#   i_enable        : 1
+#   i_data_ready    : 0
+#   i_lp_data[0:255] :
+#     [  0.. 15] : 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
+#     [ 16.. 31] : 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f
+#     [ 32.. 47] : 20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f
+#     [ 48.. 63] : 30 31 32 33 34 35 36 37 38 39 3a 3b 3c 3d 3e 3f
+#     [ 64.. 79] : 40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f
+#     [ 80.. 95] : 50 51 52 53 54 55 56 57 58 59 5a 5b 5c 5d 5e 5f
+#     [ 96..111] : 60 61 62 63 64 65 66 67 68 69 6a 6b 6c 6d 6e 6f
+#     [112..127] : 70 71 72 73 74 75 76 77 78 79 7a 7b 7c 7d 7e 7f
+#     [128..143] : 80 81 82 83 84 85 86 87 88 89 8a 8b 8c 8d 8e 8f
+#     [144..159] : 90 91 92 93 94 95 96 97 98 99 9a 9b 9c 9d 9e 9f
+#     [160..175] : a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 aa ab ac ad ae af
+#     [176..191] : b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 ba bb bc bd be bf
+#     [192..207] : c0 c1 c2 c3 c4 c5 c6 c7 c8 c9 ca cb cc cd ce cf
+#     [208..223] : d0 d1 d2 d3 d4 d5 d6 d7 d8 d9 da db dc dd de df
+#     [224..239] : e0 e1 e2 e3 e4 e5 e6 e7 e8 e9 ea eb ec ed ee ef
+#     [240..255] : f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 fa fb fc fd fe ff
+# [PASS] ALL_LANES cycle2 | Lane  0 | 0x000000008090a0b0
+# [PASS] ALL_LANES cycle2 | Lane  1 | 0x000000008191a1b1
+# [PASS] ALL_LANES cycle2 | Lane  2 | 0x000000008292a2b2
+# [PASS] ALL_LANES cycle2 | Lane  3 | 0x000000008393a3b3
+# [PASS] ALL_LANES cycle2 | Lane  4 | 0x000000008494a4b4
+# [PASS] ALL_LANES cycle2 | Lane  5 | 0x000000008595a5b5
+# [PASS] ALL_LANES cycle2 | Lane  6 | 0x000000008696a6b6
+# [PASS] ALL_LANES cycle2 | Lane  7 | 0x000000008797a7b7
+# [PASS] ALL_LANES cycle2 | Lane  8 | 0x000000008898a8b8
+# [PASS] ALL_LANES cycle2 | Lane  9 | 0x000000008999a9b9
+# [PASS] ALL_LANES cycle2 | Lane 10 | 0x000000008a9aaaba
+# [PASS] ALL_LANES cycle2 | Lane 11 | 0x000000008b9babbb
+# [PASS] ALL_LANES cycle2 | Lane 12 | 0x000000008c9cacbc
+# [PASS] ALL_LANES cycle2 | Lane 13 | 0x000000008d9dadbd
+# [PASS] ALL_LANES cycle2 | Lane 14 | 0x000000008e9eaebe
+# [PASS] ALL_LANES cycle2 | Lane 15 | 0x000000008f9fafbf
+# [PASS] ALL_LANES cycle2 | o_data_sent = 0
+# ----------------------------------------
+# ALL_LANES cycle2 Summary: 17 PASSED | 0 FAILED
+# ----------------------------------------
+# 
+# [50] ALL_LANES - cycle 3 (final)
+#   Lane  0 : 0x00000000c0d0e0f0
+#   Lane  1 : 0x00000000c1d1e1f1
+#   Lane  2 : 0x00000000c2d2e2f2
+#   Lane  3 : 0x00000000c3d3e3f3
+#   Lane  4 : 0x00000000c4d4e4f4
+#   Lane  5 : 0x00000000c5d5e5f5
+#   Lane  6 : 0x00000000c6d6e6f6
+#   Lane  7 : 0x00000000c7d7e7f7
+#   Lane  8 : 0x00000000c8d8e8f8
+#   Lane  9 : 0x00000000c9d9e9f9
+#   Lane 10 : 0x00000000cadaeafa
+#   Lane 11 : 0x00000000cbdbebfb
+#   Lane 12 : 0x00000000ccdcecfc
+#   Lane 13 : 0x00000000cdddedfd
+#   Lane 14 : 0x00000000cedeeefe
+#   Lane 15 : 0x00000000cfdfefff
+#   o_data_sent : 1
+# 
+# [50] ALL_LANES - cycle 3 (final)
+#   i_lane_map_code : 3'b011
+#   i_reset         : 0
+#   i_enable        : 1
+#   i_data_ready    : 0
+#   i_lp_data[0:255] :
+#     [  0.. 15] : 00 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f
+#     [ 16.. 31] : 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f
+#     [ 32.. 47] : 20 21 22 23 24 25 26 27 28 29 2a 2b 2c 2d 2e 2f
+#     [ 48.. 63] : 30 31 32 33 34 35 36 37 38 39 3a 3b 3c 3d 3e 3f
+#     [ 64.. 79] : 40 41 42 43 44 45 46 47 48 49 4a 4b 4c 4d 4e 4f
+#     [ 80.. 95] : 50 51 52 53 54 55 56 57 58 59 5a 5b 5c 5d 5e 5f
+#     [ 96..111] : 60 61 62 63 64 65 66 67 68 69 6a 6b 6c 6d 6e 6f
+#     [112..127] : 70 71 72 73 74 75 76 77 78 79 7a 7b 7c 7d 7e 7f
+#     [128..143] : 80 81 82 83 84 85 86 87 88 89 8a 8b 8c 8d 8e 8f
+#     [144..159] : 90 91 92 93 94 95 96 97 98 99 9a 9b 9c 9d 9e 9f
+#     [160..175] : a0 a1 a2 a3 a4 a5 a6 a7 a8 a9 aa ab ac ad ae af
+#     [176..191] : b0 b1 b2 b3 b4 b5 b6 b7 b8 b9 ba bb bc bd be bf
+#     [192..207] : c0 c1 c2 c3 c4 c5 c6 c7 c8 c9 ca cb cc cd ce cf
+#     [208..223] : d0 d1 d2 d3 d4 d5 d6 d7 d8 d9 da db dc dd de df
+#     [224..239] : e0 e1 e2 e3 e4 e5 e6 e7 e8 e9 ea eb ec ed ee ef
+#     [240..255] : f0 f1 f2 f3 f4 f5 f6 f7 f8 f9 fa fb fc fd fe ff
+# [PASS] ALL_LANES cycle3 (final) | Lane  0 | 0x00000000c0d0e0f0
+# [PASS] ALL_LANES cycle3 (final) | Lane  1 | 0x00000000c1d1e1f1
+# [PASS] ALL_LANES cycle3 (final) | Lane  2 | 0x00000000c2d2e2f2
+# [PASS] ALL_LANES cycle3 (final) | Lane  3 | 0x00000000c3d3e3f3
+# [PASS] ALL_LANES cycle3 (final) | Lane  4 | 0x00000000c4d4e4f4
+# [PASS] ALL_LANES cycle3 (final) | Lane  5 | 0x00000000c5d5e5f5
+# [PASS] ALL_LANES cycle3 (final) | Lane  6 | 0x00000000c6d6e6f6
+# [PASS] ALL_LANES cycle3 (final) | Lane  7 | 0x00000000c7d7e7f7
+# [PASS] ALL_LANES cycle3 (final) | Lane  8 | 0x00000000c8d8e8f8
+# [PASS] ALL_LANES cycle3 (final) | Lane  9 | 0x00000000c9d9e9f9
+# [PASS] ALL_LANES cycle3 (final) | Lane 10 | 0x00000000cadaeafa
+# [PASS] ALL_LANES cycle3 (final) | Lane 11 | 0x00000000cbdbebfb
+# [PASS] ALL_LANES cycle3 (final) | Lane 12 | 0x00000000ccdcecfc
+# [PASS] ALL_LANES cycle3 (final) | Lane 13 | 0x00000000cdddedfd
+# [PASS] ALL_LANES cycle3 (final) | Lane 14 | 0x00000000cedeeefe
+# [PASS] ALL_LANES cycle3 (final) | Lane 15 | 0x00000000cfdfefff
+# [PASS] ALL_LANES cycle3 (final) | o_data_sent = 1
+# ----------------------------------------
+# ALL_LANES cycle3 (final) Summary: 17 PASSED | 0 FAILED
+# ----------------------------------------
+# [PASS] ALL_LANES constant 0xAA | Lane  0 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane  1 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane  2 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane  3 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane  4 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane  5 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane  6 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane  7 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane  8 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane  9 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane 10 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane 11 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane 12 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane 13 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane 14 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | Lane 15 | 0x00000000aaaaaaaa
+# [PASS] ALL_LANES constant 0xAA | o_data_sent = 0
+# ----------------------------------------
+# ALL_LANES constant 0xAA Summary: 17 PASSED | 0 FAILED
+# ----------------------------------------
+# 
+# ========== B2L Testbench Complete ==========
+# 
+# ** Note: $finish    : B2L_tb.sv(339)
+#    Time: 60 ns  Iteration: 0  Instance: /B2L_tb
+# End time: 22:56:42 on May 03,2026, Elapsed time: 0:00:05
+# Errors: 0, Warnings: 0

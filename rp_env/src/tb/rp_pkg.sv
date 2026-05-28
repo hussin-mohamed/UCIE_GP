@@ -16,7 +16,7 @@
 
 package rp_pkg;
   import uvm_pkg::*;
-  import shared_pkg::*;
+  import rp_shared_pkg::*;
   `include "uvm_macros.svh"
   `include "agent_typedefs.svh"
   `include "rp_utils.svh"

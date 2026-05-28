@@ -1,0 +1,142 @@
+# vsim -c work.LFSR_tb -l lfsr.log -do "run -all" 
+# Start time: 22:52:38 on May 01,2026
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# //  Questa Sim-64
+# //  Version 2021.1 win64 Jan 19 2021
+# //
+# //  Copyright 1991-2021 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.LFSR_modelling_pkg(fast)
+# Loading work.LFSR_tb(fast)
+# run -all
+# 
+# ========== LFSR Golden Model Testbench Start ==========
+# 
+# [PASS] Load State | Lane  0 | 0x0000000000000000
+# [PASS] Load State | Lane  1 | 0x0000000000000000
+# [PASS] Load State | Lane  2 | 0x0000000000000000
+# [PASS] Load State | Lane  3 | 0x0000000000000000
+# [PASS] Load State | Lane  4 | 0x0000000000000000
+# [PASS] Load State | Lane  5 | 0x0000000000000000
+# [PASS] Load State | Lane  6 | 0x0000000000000000
+# [PASS] Load State | Lane  7 | 0x0000000000000000
+# [PASS] Load State | Lane  8 | 0x0000000000000000
+# [PASS] Load State | Lane  9 | 0x0000000000000000
+# [PASS] Load State | Lane 10 | 0x0000000000000000
+# [PASS] Load State | Lane 11 | 0x0000000000000000
+# [PASS] Load State | Lane 12 | 0x0000000000000000
+# [PASS] Load State | Lane 13 | 0x0000000000000000
+# [PASS] Load State | Lane 14 | 0x0000000000000000
+# [PASS] Load State | Lane 15 | 0x0000000000000000
+# ----------------------------------------
+# Load State Summary: 16 PASSED | 0 FAILED
+# ----------------------------------------
+# [PASS] Train Mode | Lane  0 | 0xced8c6539894bd6c
+# [PASS] Train Mode | Lane  1 | 0x56aca14c914c57f0
+# [PASS] Train Mode | Lane  2 | 0x32b42fef91bc718c
+# [PASS] Train Mode | Lane  3 | 0x64188ea300f0267c
+# [PASS] Train Mode | Lane  4 | 0x2465ecacfc0f6d40
+# [PASS] Train Mode | Lane  5 | 0x407d620ffcff4b3c
+# [PASS] Train Mode | Lane  6 | 0xd8090510f527a1a0
+# [PASS] Train Mode | Lane  7 | 0x9874671f09d8ea9c
+# [PASS] Train Mode | Lane  8 | 0xced8c6539894bd6c
+# [PASS] Train Mode | Lane  9 | 0x56aca14c914c57f0
+# [PASS] Train Mode | Lane 10 | 0x32b42fef91bc718c
+# [PASS] Train Mode | Lane 11 | 0x64188ea300f0267c
+# [PASS] Train Mode | Lane 12 | 0x2465ecacfc0f6d40
+# [PASS] Train Mode | Lane 13 | 0x407d620ffcff4b3c
+# [PASS] Train Mode | Lane 14 | 0xd8090510f527a1a0
+# [PASS] Train Mode | Lane 15 | 0x9874671f09d8ea9c
+# ----------------------------------------
+# Train Mode Summary: 16 PASSED | 0 FAILED
+# ----------------------------------------
+# [PASS] Train Mode | Lane  0 | 0x07c34f04c1756a50
+# [PASS] Train Mode | Lane  1 | 0x810c3e5d92434f02
+# [PASS] Train Mode | Lane  2 | 0x2615fc6d30fe0ed5
+# [PASS] Train Mode | Lane  3 | 0xa719c230a2bd41d7
+# [PASS] Train Mode | Lane  4 | 0xe89f62cd5586b8cc
+# [PASS] Train Mode | Lane  5 | 0x4f86a0fdf73bf91b
+# [PASS] Train Mode | Lane  6 | 0xc949d1a4a40ddc49
+# [PASS] Train Mode | Lane  7 | 0x86cf715953362552
+# [PASS] Train Mode | Lane  8 | 0x07c34f04c1756a50
+# [PASS] Train Mode | Lane  9 | 0x810c3e5d92434f02
+# [PASS] Train Mode | Lane 10 | 0x2615fc6d30fe0ed5
+# [PASS] Train Mode | Lane 11 | 0xa719c230a2bd41d7
+# [PASS] Train Mode | Lane 12 | 0xe89f62cd5586b8cc
+# [PASS] Train Mode | Lane 13 | 0x4f86a0fdf73bf91b
+# [PASS] Train Mode | Lane 14 | 0xc949d1a4a40ddc49
+# [PASS] Train Mode | Lane 15 | 0x86cf715953362552
+# ----------------------------------------
+# Train Mode Summary: 16 PASSED | 0 FAILED
+# ----------------------------------------
+# [PASS] Load State | Lane  0 | 0x0000000000000000
+# [PASS] Load State | Lane  1 | 0x0000000000000000
+# [PASS] Load State | Lane  2 | 0x0000000000000000
+# [PASS] Load State | Lane  3 | 0x0000000000000000
+# [PASS] Load State | Lane  4 | 0x0000000000000000
+# [PASS] Load State | Lane  5 | 0x0000000000000000
+# [PASS] Load State | Lane  6 | 0x0000000000000000
+# [PASS] Load State | Lane  7 | 0x0000000000000000
+# [PASS] Load State | Lane  8 | 0x0000000000000000
+# [PASS] Load State | Lane  9 | 0x0000000000000000
+# [PASS] Load State | Lane 10 | 0x0000000000000000
+# [PASS] Load State | Lane 11 | 0x0000000000000000
+# [PASS] Load State | Lane 12 | 0x0000000000000000
+# [PASS] Load State | Lane 13 | 0x0000000000000000
+# [PASS] Load State | Lane 14 | 0x0000000000000000
+# [PASS] Load State | Lane 15 | 0x0000000000000000
+# ----------------------------------------
+# Load State Summary: 16 PASSED | 0 FAILED
+# ----------------------------------------
+# [PASS] Scramble Mode | Lane  0 | 0x3e2836a368644d9c
+# [PASS] Scramble Mode | Lane  1 | 0xa65c51bc61bca700
+# [PASS] Scramble Mode | Lane  2 | 0xc244df1f614c817c
+# [PASS] Scramble Mode | Lane  3 | 0x94e87e53f000d68c
+# [PASS] Scramble Mode | Lane  4 | 0xd4951c5c0cff9db0
+# [PASS] Scramble Mode | Lane  5 | 0xb08d92ff0c0fbbcc
+# [PASS] Scramble Mode | Lane  6 | 0x28f9f5e005d75150
+# [PASS] Scramble Mode | Lane  7 | 0x688497eff9281a6c
+# [PASS] Scramble Mode | Lane  8 | 0x3e2836a368644d9c
+# [PASS] Scramble Mode | Lane  9 | 0xa65c51bc61bca700
+# [PASS] Scramble Mode | Lane 10 | 0xc244df1f614c817c
+# [PASS] Scramble Mode | Lane 11 | 0x94e87e53f000d68c
+# [PASS] Scramble Mode | Lane 12 | 0xd4951c5c0cff9db0
+# [PASS] Scramble Mode | Lane 13 | 0xb08d92ff0c0fbbcc
+# [PASS] Scramble Mode | Lane 14 | 0x28f9f5e005d75150
+# [PASS] Scramble Mode | Lane 15 | 0x688497eff9281a6c
+# ----------------------------------------
+# Scramble Mode Summary: 16 PASSED | 0 FAILED
+# ----------------------------------------
+# [PASS] Scramble Mode | Lane  0 | 0xf733bff431859aa0
+# [PASS] Scramble Mode | Lane  1 | 0x71fccead62b3bff2
+# [PASS] Scramble Mode | Lane  2 | 0xd6e50c9dc00efe25
+# [PASS] Scramble Mode | Lane  3 | 0x57e932c0524db127
+# [PASS] Scramble Mode | Lane  4 | 0x186f923da576483c
+# [PASS] Scramble Mode | Lane  5 | 0xbf76500d07cb09eb
+# [PASS] Scramble Mode | Lane  6 | 0x39b9215454fd2cb9
+# [PASS] Scramble Mode | Lane  7 | 0x763f81a9a3c6d5a2
+# [PASS] Scramble Mode | Lane  8 | 0xf733bff431859aa0
+# [PASS] Scramble Mode | Lane  9 | 0x71fccead62b3bff2
+# [PASS] Scramble Mode | Lane 10 | 0xd6e50c9dc00efe25
+# [PASS] Scramble Mode | Lane 11 | 0x57e932c0524db127
+# [PASS] Scramble Mode | Lane 12 | 0x186f923da576483c
+# [PASS] Scramble Mode | Lane 13 | 0xbf76500d07cb09eb
+# [PASS] Scramble Mode | Lane 14 | 0x39b9215454fd2cb9
+# [PASS] Scramble Mode | Lane 15 | 0x763f81a9a3c6d5a2
+# ----------------------------------------
+# Scramble Mode Summary: 16 PASSED | 0 FAILED
+# ----------------------------------------
+# ** Note: $finish    : LFSR_tb.sv(170)
+#    Time: 30 ns  Iteration: 0  Instance: /LFSR_tb
+# End time: 22:52:43 on May 01,2026, Elapsed time: 0:00:05
+# Errors: 0, Warnings: 0

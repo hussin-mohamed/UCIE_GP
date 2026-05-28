@@ -16,7 +16,7 @@
 
 package sb_pkg;
   import uvm_pkg::*;
-  import shared_pkg::*;
+  import sb_shared_pkg::*;
   `include "uvm_macros.svh"
   `include "agent_typedefs.svh"
   `include "sb_utils.svh"
