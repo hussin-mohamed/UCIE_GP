@@ -409,9 +409,9 @@ module UCIe_phy #(
     );
     
     tx_dut_rtl_wrapper #(
-      .NBYTES(256),
-      .DATA_WIDTH(64),
-      .LANES_NUMBER(16)
+      .NBYTES(NBYTES),
+      .DATA_WIDTH(pDATA_WIDTH),
+      .LANES_NUMBER(pNUM_LANES)
     ) dut_rtl (
             .clk(clk_l),
             .ui_clk(clk_mb_f),

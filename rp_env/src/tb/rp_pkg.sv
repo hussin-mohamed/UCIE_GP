@@ -101,12 +101,14 @@ package rp_pkg;
   // Contains all test sequences for driving the RX-Path verification.
   `include "sequences/ltsmc_sequence.svh"
   `include "sequences/rmblink_sanity_valid_sequence.svh"
+  `include "sequences/rmblink_sanity_clk_sequence.svh"
   `include "sequences/rmblink_sanity_PerLaneID_sequence.svh"
 
   // Group: Virtual Sequences
   //
   // Contains all virtual sequences for managing the existing sequences.
   `include "virtual_sequences/rp_vaild_sanity_vseq.svh"
+  `include "virtual_sequences/rp_clk_sanity_vseq.svh"
   `include "virtual_sequences/rp_sanity_PerLaneID_vseq.svh"
 
   // Group: Tests
@@ -114,6 +116,7 @@ package rp_pkg;
   // Contains the verification test cases.
   `include "tests/rp_test_base.svh"
   `include "tests/rp_sanity_valid_test.svh"
+  `include "tests/rp_sanity_clk_test.svh"
   `include "tests/rp_sanity_PerLaneID_test.svh"
 
 endpackage : rp_pkg

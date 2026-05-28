@@ -84,8 +84,12 @@ add wave -group PRD_LFSR_State -position insertpoint \
 
 add wave -group Assertions -position insertpoint \
  sim:/rp_tb_top/dut/rp_sva_inst/assert_valid_pattern_16_frame \
- sim:/rp_tb_top/dut/rp_sva_inst/assert_valid_pattern_valid_frame \
- sim:/rp_tb_top/dut/rp_sva_inst/assert_valid_pattern_error_check \
+ sim:/rp_tb_top/dut/rp_sva_inst/assert_valid_pattern_active_frame \
+ sim:/rp_tb_top/dut/rp_sva_inst/assert_valid_pattern_result_check \
+ sim:/rp_tb_top/dut/rp_sva_inst/assert_clk_p_pattern_frame \
+ sim:/rp_tb_top/dut/rp_sva_inst/assert_clk_n_pattern_frame \
+ sim:/rp_tb_top/dut/rp_sva_inst/assert_track_pattern_frame \
+ sim:/rp_tb_top/dut/rp_sva_inst/assert_clk_pattern_result_check \
  sim:/rp_tb_top/dut/rp_sva_inst/chk_async_reset_zeros \
  sim:/rp_tb_top/dut/rp_sva_inst/chk_async_reset_ones
   

@@ -2,7 +2,6 @@
 // File: rp_sva.sv
 // Description: SVA Checker Interface for UCIe RX-Path Block (SVAUnit Ready)
 // -------------------------------------------------------------------------
-// File: rp_sva.sv
 
 package rp_seq_pkg;
 endpackage : rp_seq_pkg
@@ -44,11 +43,8 @@ import rp_seq_pkg::*;
 
    //valid pattern detection signals
    logic valid_pattern_detected   = 0;
-   logic valid_pattern_running    = 0;
    logic valid_sample_pulse;
-   logic valid_frame_timeout      = 0;
-   logic valid_timeout_started    = 0;
-   logic valid_pattern_drive       = 0;
+   logic valid_pattern_drive      = 0;
 
     int bit_idx;
     logic first;
@@ -57,29 +53,38 @@ import rp_seq_pkg::*;
     
     //clk_p pattern detection
     logic pattern_detected_clk_p = 0;
-    logic pattern_running_clk_p = 0;
-    logic frame_timeout_clk_p = 0;
-    logic clk_p_timeout_started = 0;
+
 
     //clk_n pattern detection
     logic pattern_detected_clk_n = 0;
-    logic pattern_running_clk_n = 0;
-    logic frame_timeout_clk_n = 0;
-    logic clk_n_timeout_started = 0;
+
 
     //track pattern detection
     logic pattern_detected_track = 0;
-    logic pattern_running_track = 0;
-    logic frame_timeout_track = 0;
-    logic track_timeout_started = 0;
+
+
+    //clk pattern detection
+    logic clk_pattern_drive = 0; 
+		logic [2:0] clk_results = 0;
 
     //encoding detector
     logic [8:0] previous_encoding;
+    logic [8:0] current_enc_q;
     logic is_valid_pattern = 0;
+		logic is_clk_pattern = 0;
     logic data_to_clk_test_armed = 0; // NEW: Sequence tracker flag
 
 
+
+    logic pattern_burst_active;
+    logic prev_clk_p;
+    // ---------------------------------------------
     
+
+		//=======================================
+    // Valid  Pattern Detection Logic
+    //=======================================
+
     // Generate a posedge pulse ONLY when the physical wires go high
     always @(posedge i_clk_p or posedge i_clk_n) begin
         valid_sample_pulse = 1'b1;
@@ -91,30 +96,59 @@ import rp_seq_pkg::*;
     end
     
 
+    // Watchdog to detect when the physical clock stops toggling 
+
+    always @(posedge i_dclk) begin
+        if (i_reset || (i_rx_encoding != Data_To_Clock_test_RX_Pattern_Detection_RX_Init)) begin
+            pattern_burst_active <= 1'b1; // Assume active when we first enter the state
+            prev_clk_p <= i_clk_p;
+        end else begin
+            prev_clk_p <= i_clk_p;
+            
+            // If the clock is toggling, keep the timeout cleared
+            if (i_clk_p != prev_clk_p) begin
+                pattern_burst_active <= '1;
+            end 
+            // If the clock is flat, start counting
+            else begin
+                pattern_burst_active <= '0;
+            end
+
+        end
+    end
+
     // Detect when we enter a valid pattern state based on the encoding
     always @(posedge i_clk_l) begin
         if (i_reset) begin
+            current_enc_q <= '0;
             previous_encoding <= '0;
             data_to_clk_test_armed <= 1'b0;
             is_valid_pattern <= 1'b0;
         end else begin
-            previous_encoding <= i_rx_encoding;
+            // 1. Continuously track the 1-cycle delayed signal
+            current_enc_q <= i_rx_encoding;
 
-            // 1. Arm the flag if we enter INIT_Handshake from one of the required MBTRAIN states
+            // 2. Only update previous_encoding when the state ACTUALLY changes
+            if (i_rx_encoding != current_enc_q) begin
+                previous_encoding <= current_enc_q;
+            end
+
+            // 3. Arm the flag
             if ((i_rx_encoding == Data_To_Clock_test_RX_INIT_Handshake_RX_Init) &&
                 ((previous_encoding == MBTRAIN_VALVREF_RX_Start_Handshake) ||
                  (previous_encoding == MBTRAIN_VALTRAINCENTER_RX_Start_Handshake) ||
                  (previous_encoding == MBTRAIN_VALTRAINVREF_RX_Start_Handshake))) begin
                 
                 data_to_clk_test_armed <= 1'b1;
-                
+
             end else if ((i_rx_encoding != Data_To_Clock_test_RX_INIT_Handshake_RX_Init) &&
+                         (i_rx_encoding != Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init) &&
                          (i_rx_encoding != Data_To_Clock_test_RX_Pattern_Detection_RX_Init)) begin
-                // Reset the armed flag if we transition to an unrelated state
+                
                 data_to_clk_test_armed <= 1'b0;
             end
 
-            // 2. Enable `is_valid_pattern` only in allowed states
+            // 4. Enable `is_valid_pattern` only in allowed states
             if (i_rx_encoding == MBINIT_REPAIRVAL_RX_Valid_Pattern_Det) begin
                 is_valid_pattern <= 1'b1;
             end 
@@ -125,10 +159,11 @@ import rp_seq_pkg::*;
                 is_valid_pattern <= 1'b1;
             end 
             else begin
-                is_valid_pattern <= 1'b0; // Continuously recheck and strictly enforce 0 otherwise
+                is_valid_pattern <= 1'b0;
             end
         end
     end
+
 
     always @(posedge i_dclk) begin
         if (!valid_pattern_drive) begin 
@@ -136,7 +171,6 @@ import rp_seq_pkg::*;
                     valid_pattern_detected = 1'b1;
                     valid_pattern_drive = 1'b1;
             end
-
             else if (i_rx_encoding == MBINIT_REPAIRVAL_RX_Valid_Pattern_Det) begin
                     valid_pattern_detected = 1'b0;
                     valid_pattern_drive = 1'b1;      
@@ -151,31 +185,33 @@ import rp_seq_pkg::*;
     end
 
     always @(posedge i_dclk) begin
-      if(is_valid_pattern && (i_rx_encoding !=  MBINIT_REPAIRVAL_RX_Valid_Pattern_Det)) begin
+      // --- ADDED FOR SOLUTION 1: Gated by pattern_burst_active ---
+      if (is_valid_pattern && ((i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) || (i_rx_encoding == ACTIVE_RX_Active))) begin
         if (!first) begin
           first = 1;
         end
         else begin
           
-        expected_pattern = {expected_pattern[6:0], i_valid};
-        // Shift in the new bit
-        bit_idx = bit_idx + 1;
-        // Increment bit index
+        expected_pattern = {expected_pattern[6:0], i_valid}; // Shift in the new bit
+        bit_idx = bit_idx + 1; // Increment bit index
 
-        if (bit_idx == 8) begin // We have a full byte
+        if ((bit_idx == 8) && pattern_burst_active) begin // We have a full byte
           if (expected_pattern != 8'b11110000) begin
             error_counter++;
-            $display("[%0t] ERROR: Detected pattern %b does not match expected 11110000", $time, expected_pattern);
+            `uvm_info("",$sformatf("[%0t] ERROR: Detected pattern %b does not match expected 11110000", $time, expected_pattern), UVM_LOW);
+           if (error_counter > i_error_threshold) begin
+           valid_pattern_detected = 1'b0; // Stop the test if we exceed the error threshold
+           end
           end else begin
-            $display("[%0t] INFO: Detected correct pattern 11110000", $time);
+            `uvm_info("",$sformatf("[%0t] INFO: Detected correct pattern 11110000", $time, expected_pattern), UVM_LOW);
           end
-          bit_idx = 0;
-          // Reset for the next byte
-      end
+          bit_idx = 0; // Reset for the next byte
+        end
 
         end
       end
-      else begin
+      // --- ADDED FOR SOLUTION 1: Modified else condition to reset only when state ends ---
+      else if (!is_valid_pattern) begin
         expected_pattern = 0;
         error_counter = 0;
         bit_idx = 0;
@@ -183,171 +219,47 @@ import rp_seq_pkg::*;
       end
     end
 
-/* // Generate timeout and pattern running signals based on the clk_p signal's activity
-    always @(negedge i_dclk) begin
-        if (pattern_type != idle) begin
-            frame_timeout_clk_p = 1'b0;
-            clk_p_timeout_started = 1'b1;
-            @(posedge i_dclk);
-            clk_p_timeout_started = 1'b0; // Start the timeout countdown
+		//=======================================
+    // CLK Pattern Detection Logic
+    //=======================================
 
-            // Spawn two parallel threads
-            fork
-                // Thread 1: The 1024-cycle timeout counter
-                begin
-                    repeat(6144) @(posedge i_dclk);
-                end
-                
-                // Thread 2: The early-abort monitor
-                begin
-                    // 'wait' is level-sensitive and will catch the change immediately
-                 
-                    wait (pattern_type == idle); 
-                end
-            join_any
+		
+		always @(posedge i_dclk) begin
+        clk_results = {pattern_detected_track , pattern_detected_clk_n , pattern_detected_clk_p};
+    end
+
+		always @(posedge i_clk_l) begin
+        if (i_reset) begin
+            is_clk_pattern <= 1'b0;
+        end else begin
             
-            // Kill whichever thread didn't finish first
-            disable fork;
-            // Determine WHY we exited the fork
-            if (pattern_type != idle) begin
-                // Thread 1 finished first -> It's a real timeout!
-                frame_timeout_clk_p = 1'b1; 
-                pattern_running_clk_p = 1'b0; // End the pattern detection window
-                if (pattern_detected_clk_p) pattern_detected_clk_p = 1'b0;
-                // Reset
-                @(posedge i_dclk);
-                frame_timeout_clk_p = 1'b0; // Reset for the next test
-            end else begin
-                // Thread 2 finished first -> Aborted early because it went to idle
-                // (Add any necessary reset logic for early termination here)
-                pattern_running_clk_p = 1'b0;
-                frame_timeout_clk_p = 1'b0; // Ensure timeout is reset
-            end
-        end
-    end
-    always @(posedge i_dclk) begin
-        if ((pattern_type != idle) && !frame_timeout_clk_p && !pattern_running_clk_p) begin
-            if (i_clk_p) begin
-              pattern_running_clk_p = 1'b1;
-              // Start the pattern detection window
-            end
+            if (i_rx_encoding == MBINIT_REPAIRCLK_RX_Pattern_Detection) begin
+                is_clk_pattern <= 1'b1;
+            end 
             else begin
-              pattern_running_clk_p = 1'b0;
-              // End the pattern detection window
+                is_clk_pattern <= 1'b0;
+            end
+        end
+    end
+		always @(posedge i_dclk) begin
+        if (!clk_pattern_drive) begin 
+            if (i_rx_encoding == MBINIT_REPAIRCLK_RX_Pattern_Detection) begin
+                    pattern_detected_clk_p = 1'b0;
+										pattern_detected_clk_n = 1'b0;
+										pattern_detected_track = 1'b0;
+                    clk_pattern_drive = 1'b1;
+            end
+        end
+        else begin
+            if (i_rx_encoding == MBINIT_REPAIRCLK_RX_Done_Handshake) begin
+                		pattern_detected_clk_p = 1'b0;
+										pattern_detected_clk_n = 1'b0;
+										pattern_detected_track = 1'b0;
+                		clk_pattern_drive = 1'b0; // Reset drive flag when we leave the states that control the pattern detection
             end
         end
     end
 
-    // Generate timeout and pattern running signals based on the clk_n signal's activity
-     always @(negedge i_dclk) begin
-        if (pattern_type != idle) begin
-            frame_timeout_clk_n = 1'b0;
-            clk_n_timeout_started = 1'b1;
-            @(posedge i_dclk);
-            clk_n_timeout_started = 1'b0; // Start the timeout countdown
-
-            // Spawn two parallel threads
-            fork
-                // Thread 1: The 1024-cycle timeout counter
-                begin
-                    repeat(6144) @(posedge i_dclk);
-                end
-                
-                // Thread 2: The early-abort monitor
-                begin
-                    // 'wait' is level-sensitive and will catch the change immediately
-                 
-                    wait (pattern_type == idle); 
-                end
-            join_any
-            
-            // Kill whichever thread didn't finish first
-            disable fork;
-            // Determine WHY we exited the fork
-            if (pattern_type != idle) begin
-                // Thread 1 finished first -> It's a real timeout!
-                frame_timeout_clk_n = 1'b1; 
-                pattern_running_clk_n = 1'b0; // End the pattern detection window
-                if (pattern_detected_clk_n) pattern_detected_clk_n = 1'b0;
-                // Reset
-                @(posedge i_dclk);
-                frame_timeout_clk_n = 1'b0; // Reset for the next test
-            end else begin
-                // Thread 2 finished first -> Aborted early because it went to idle
-                // (Add any necessary reset logic for early termination here)
-                pattern_running_clk_n = 1'b0;
-                frame_timeout_clk_n = 1'b0; // Ensure timeout is reset
-            end
-        end
-    end
-    always @(posedge i_dclk) begin
-        if ((pattern_type != idle) && !frame_timeout_clk_n && !pattern_running_clk_n) begin
-            if (!i_clk_n) begin
-              pattern_running_clk_n = 1'b1;
-              // Start the pattern detection window
-            end
-            else begin
-              pattern_running_clk_n = 1'b0;
-              // End the pattern detection window
-            end
-        end
-    end
-
-    // Generate timeout and pattern running signals based on the track signal's activity
-    always @(negedge i_dclk) begin
-        if (pattern_type != idle) begin
-            frame_timeout_track = 1'b0;
-            track_timeout_started = 1'b1;
-            @(posedge i_dclk);
-            track_timeout_started = 1'b0; // Start the timeout countdown
-
-            // Spawn two parallel threads
-            fork
-                // Thread 1: The 1024-cycle timeout counter
-                begin
-                    repeat(6144) @(posedge i_dclk);
-                end
-                
-                // Thread 2: The early-abort monitor
-                begin
-                    // 'wait' is level-sensitive and will catch the change immediately
-                 
-                    wait (pattern_type == idle); 
-                end
-            join_any
-            
-            // Kill whichever thread didn't finish first
-            disable fork;
-            // Determine WHY we exited the fork
-            if (pattern_type != idle) begin
-                // Thread 1 finished first -> It's a real timeout!
-                frame_timeout_track = 1'b1; 
-                pattern_running_track = 1'b0; // End the pattern detection window
-                if (pattern_detected_track) pattern_detected_track = 1'b0;
-                // Reset
-                @(posedge i_dclk);
-                frame_timeout_track = 1'b0; // Reset for the next test
-            end else begin
-                // Thread 2 finished first -> Aborted early because it went to idle
-                // (Add any necessary reset logic for early termination here)
-                pattern_running_track = 1'b0;
-                frame_timeout_track = 1'b0; // Ensure timeout is reset
-            end
-        end
-    end
-    always @(posedge i_dclk) begin
-        if ((pattern_type != idle) && !frame_timeout_track && !pattern_running_track) begin
-            if (i_track) begin
-              pattern_running_track = 1'b1;
-              // Start the pattern detection window
-            end
-            else begin
-              pattern_running_track = 1'b0;
-              // End the pattern detection window
-            end
-        end
-    end
-*/
 
   // ============================================================================
   // Properties & Assertions
@@ -369,7 +281,7 @@ import rp_seq_pkg::*;
         first_seq_8bit_pattern ##1 seq_8bit_pattern[*15];
     endsequence : first_seq_16_consecutive
 
-/*
+
    // clk_p 32-bit pattern
     sequence clk_p_seq_32bit_pattern;
         (i_clk_p ##1 (!i_clk_p))[*16] ##1 (!i_clk_p)[*16];
@@ -397,7 +309,7 @@ import rp_seq_pkg::*;
         track_seq_32bit_pattern[*16];
     endsequence : track_seq_16_consecutive
 
-*/
+
 
   // Valid Property
   property valid_detect_16_in_128_window;
@@ -417,37 +329,41 @@ import rp_seq_pkg::*;
             first_seq_8bit_pattern 
     endproperty
 
-  property valid_error_check;
-        @(posedge i_dclk) disable iff (!valid_pattern_detected || i_rx_encoding != Data_To_Clock_test_RX_Pattern_Detection_RX_Init)
-        // Check this condition continuously while running
-        1'b1 |-> (error_counter <= i_error_threshold);
-    endproperty
+property valid_results_check;
+        @(posedge i_clk_l) 
+        $rose((i_rx_encoding == MBINIT_REPAIRVAL_RX_Send_Result_RESP) || (i_rx_encoding == Data_To_Clock_test_RX_Result_Handshake_RX_Init))
+        |-> (o_valid_results == valid_pattern_detected);
+  endproperty
 
 
-/*
     // clk_p Property
     property clk_p_detect_16_in_128_window;
-        @(negedge i_dclk) disable iff(pattern_detected_clk_p || pattern_type != test || frame_timeout_clk_p)
-         ($rose(i_clk_p) && !pattern_running_clk_p)|-> 
+        @(negedge i_dclk) disable iff(pattern_detected_clk_p || (i_rx_encoding != MBINIT_REPAIRCLK_RX_Pattern_Detection))
+         ($rose(i_clk_p))|-> 
         first_match(##[0:$] clk_p_seq_16_consecutive);
     endproperty
 
     // clk_n Property
      property clk_n_detect_16_in_128_window;
-        @(negedge i_dclk) disable iff(pattern_detected_clk_n || pattern_type != test || frame_timeout_clk_n)
-         ($fell(i_clk_n) && !pattern_running_clk_n)|-> 
+        @(negedge i_dclk) disable iff(pattern_detected_clk_n || (i_rx_encoding != MBINIT_REPAIRCLK_RX_Pattern_Detection))
+         ($fell(i_clk_n))|-> 
 
         first_match(##[0:$] clk_n_seq_16_consecutive);
     endproperty
 
     // track Property
     property track_detect_16_in_128_window;
-        @(negedge i_dclk) disable iff(pattern_detected_track || pattern_type != test || frame_timeout_track)
-         ($rose(i_track) && !pattern_running_track)|-> 
+        @(negedge i_dclk) disable iff(pattern_detected_track || (i_rx_encoding != MBINIT_REPAIRCLK_RX_Pattern_Detection))
+         ($rose(i_track))|-> 
 
         first_match(##[0:$] track_seq_16_consecutive);
     endproperty
-*/
+
+		property clk_results_check;
+        @(posedge i_clk_l) 
+        $rose((i_rx_encoding == MBINIT_REPAIRCLK_RX_Send_RESP))
+        |-> (o_clk_results == clk_results);
+  endproperty
 
 
    // Assertions
@@ -455,69 +371,64 @@ import rp_seq_pkg::*;
    assert_valid_pattern_16_frame: assert property (valid_detect_16_in_128_window) begin
     // This executes only if the pattern is found (Pass)
     valid_pattern_detected = 1'b1;
-    `uvm_info("Valid Pattern", "16 consecutive 11110000 patterns detected!", UVM_HIGH)
+    //`uvm_info("Valid Pattern", "16 consecutive 11110000 patterns detected!", UVM_HIGH)
     
     end else begin
-    // This executes if the pattern is not found within the window (Fail)
-    valid_pattern_detected = 1'b0;
     `uvm_info("Valid Pattern", "Failed to detect 16 consecutive 11110000 patterns within 128-cycle window!", UVM_HIGH)
     end
 
-   assert_valid_pattern_valid_frame: assert property (valid_active) begin
+   assert_valid_pattern_active_frame: assert property (valid_active) begin
     // This executes only if the pattern is found (Pass)
-    `uvm_info("Valid Pattern", "Right pattern detected!", UVM_HIGH)
+    //`uvm_info("Valid Pattern", "Right pattern detected!", UVM_HIGH)
     
     end else begin
     // This executes if the pattern is not found within the window (Fail)
     valid_pattern_detected = 1'b0;
-    `uvm_info("Valid Pattern", "Wrong pattern detected!", UVM_HIGH)
+    `uvm_info("Valid Pattern", "Wrong pattern detected in Active State!", UVM_HIGH)
     end
-
-  assert_valid_pattern_error_check: assert property (valid_error_check) 
-    else begin
-            valid_pattern_detected = 1'b0;
-            // Flag it as failed
-
-            `uvm_info("Valid Pattern", "FAIL: Error threshold exceeded!", UVM_HIGH)
+   
+  assert_valid_pattern_result_check: assert property (valid_results_check) 
+    //`uvm_info("Valid Pattern", "Test Passed!", UVM_HIGH)
+		else begin
+            `uvm_error("Valid Pattern", "FAIL: Output result does not match expected pattern detection state!")
         end
     
     
-/*
+
   assert_clk_p_pattern_frame: assert property (clk_p_detect_16_in_128_window) begin
     // This executes only if the pattern is found (Pass)
     pattern_detected_clk_p = 1'b1;
-    `uvm_info("clk_p Pattern", "16 consecutive clk_p patterns detected!", UVM_HIGH)
+    //`uvm_info("clk_p Pattern", "16 consecutive clk_p patterns detected!", UVM_HIGH)
     
     end else begin
-    // This executes if the pattern is not found within the window (Fail)
-    pattern_detected_clk_p = 1'b0;
     `uvm_info("clk_p Pattern", "Failed to detect 16 consecutive clk_p patterns within 128-frame window!", UVM_HIGH)
     end
 
   assert_clk_n_pattern_frame: assert property (clk_n_detect_16_in_128_window) begin
     // This executes only if the pattern is found (Pass)
     pattern_detected_clk_n = 1'b1;
-    `uvm_info("clk_n Pattern", "16 consecutive clk_n patterns detected!", UVM_HIGH)
+    //`uvm_info("clk_n Pattern", "16 consecutive clk_n patterns detected!", UVM_HIGH)
     
     end else begin
-    // This executes if the pattern is not found within the window (Fail)
-    pattern_detected_clk_n = 1'b0;
     `uvm_info("clk_n Pattern", "Failed to detect 16 consecutive clk_n patterns within 128-frame window!", UVM_HIGH)
     end
 
   assert_track_pattern_frame: assert property (track_detect_16_in_128_window) begin
     // This executes only if the pattern is found (Pass)
     pattern_detected_track = 1'b1;
-    `uvm_info("track Pattern", "16 consecutive track patterns detected!", UVM_HIGH)
+    //`uvm_info("track Pattern", "16 consecutive track patterns detected!", UVM_HIGH)
     
     end else begin
-    // This executes if the pattern is not found within the window (Fail)
-    pattern_detected_track = 1'b0;
     `uvm_info("track Pattern", "Failed to detect 16 consecutive track patterns within 128-frame window!", UVM_HIGH)
     end
-*/
-  
 
+		assert_clk_pattern_result_check: assert property (clk_results_check) 
+    //`uvm_info("CLK Pattern", "Test Passed!", UVM_HIGH)
+		else begin
+            `uvm_error("CLK Pattern", "FAIL: Output result does not match expected pattern detection state!")
+        end
+
+  
 
   always_comb
     if (i_reset) begin
@@ -525,21 +436,29 @@ import rp_seq_pkg::*;
           {
             o_pl_data,
             o_pl_valid
-
           } == '0
         );
-          
         chk_async_reset_ones: assert final (
           &{
-
             o_rx_done,
             o_rx_data_results,
             o_clk_results,
             o_valid_results
-            
           } == 1'b1
         );
     end
 
+	// ============================================================================
+  // Functional Coverage Directives
+  // ============================================================================
+  
+  cover_valid_pattern_16_frame:      cover property (valid_detect_16_in_128_window);
+  cover_valid_pattern_active_frame:  cover property (valid_active);
+  cover_valid_pattern_result_check:  cover property (valid_results_check);
+
+  cover_clk_p_pattern_frame:         cover property (clk_p_detect_16_in_128_window);
+  cover_clk_n_pattern_frame:         cover property (clk_n_detect_16_in_128_window);
+  cover_track_pattern_frame:         cover property (track_detect_16_in_128_window);
+  cover_clk_pattern_result_check:    cover property (clk_results_check);
 
 endinterface : rp_sva
