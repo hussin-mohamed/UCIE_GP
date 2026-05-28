@@ -256,11 +256,11 @@ module rx_path #(
         .i_lane_8       (lane_LFSR_out[8]),
         .i_lane_9       (lane_LFSR_out[9]),
         .i_lane_10      (lane_LFSR_out[10]),
-        .i_lane_11      (lane_LFSR_out[10]),   // BUG? should be [11]
-        .i_lane_12      (lane_LFSR_out[11]),   // BUG? should be [12]
-        .i_lane_13      (lane_LFSR_out[12]),   // BUG? should be [13]
-        .i_lane_14      (lane_LFSR_out[13]),   // BUG? should be [14]
-        .i_lane_15      (lane_LFSR_out[14]),   // BUG? should be [15]
+        .i_lane_11      (lane_LFSR_out[11]),   
+        .i_lane_12      (lane_LFSR_out[12]),   
+        .i_lane_13      (lane_LFSR_out[13]),   
+        .i_lane_14      (lane_LFSR_out[14]),   
+        .i_lane_15      (lane_LFSR_out[15]),   
         .o_pl_data      (o_pl_data),
         .o_pl_valid     (o_pl_valid)
     );
