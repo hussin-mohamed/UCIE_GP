@@ -163,7 +163,7 @@ module ucie_rx_controller #(
         is_main_trainerror = 1'b0;
         is_main_l1         = 1'b0;
 
-        case (i_rx_encoding[8:3])
+        case ((i_rx_encoding[8:7] == 2'b11) ? ltsm_current_state_q[8:3] : i_rx_encoding[8:3] )
             6'h00, 6'h01, 6'h02, 6'h03: is_main_reset_like = 1'b1; // RESET/SBINIT/MBINIT.PARAM/CAL
             6'h04: is_main_repairclk = 1'b1; // MBINIT.REPAIRCLK
             6'h05: is_main_repairval = 1'b1; // MBINIT.REPAIRVAL
@@ -192,29 +192,24 @@ module ucie_rx_controller #(
         eye_uses_valid_pattern     = 1'b0;
         eye_uses_active_data_pattern = 1'b0;
 
-        if (i_rx_encoding == ENC_TX_EYE_PAT_DET) begin
+        if (i_rx_encoding == ENC_TX_EYE_PAT_GEN || i_rx_encoding == ENC_RX_EYE_PAT_GEN) begin
             case (ltsm_current_state_q)
-                // MBINIT.REPAIRMB uses per-lane ID pattern in its eye-pattern phase.
+
                 ENC_MBINIT_REPAIRMB: eye_uses_per_lane_id = 1'b1;
-
-                // MBTRAIN.VALTRAINCENTER uses active/data pattern per requirement d.
-                ENC_MBTRAIN_VALTRAINCENTER: eye_uses_active_data_pattern = 1'b1;
-
-                // Other TX-initiated eye-pattern contexts are treated as LFSR-based.
-                default: eye_tx_uses_lfsr = 1'b1;
-            endcase
-        end
-
-        if (i_rx_encoding == ENC_RX_EYE_PAT_DET) begin
-            case (ltsm_current_state_q)
-                // MBTRAIN.VALVREF uses valid-only pattern per requirement c.
-                ENC_MBTRAIN_VALVREF: eye_uses_valid_pattern = 1'b1;
-
-                // MBTRAIN.VALTRAINVREF uses active/data pattern per requirement e.
-                ENC_MBTRAIN_VALTRAINVREF: eye_uses_active_data_pattern = 1'b1;
+                
+                // RX-initiated eye pattern in valid-related train states.
+                ENC_MBTRAIN_VALVREF,ENC_MBTRAIN_VALTRAINVREF,ENC_MBTRAIN_VALTRAINCENTER: begin
+                    eye_uses_valid_pattern = 1'b1;
+                    eye_rx_uses_lfsr = 1'b0;
+                    eye_tx_uses_lfsr = 1'b0;
+                end
 
                 // Other RX-initiated eye-pattern contexts are treated as LFSR-based.
-                default: eye_rx_uses_lfsr = 1'b1;
+                default: begin
+                    eye_rx_uses_lfsr = 1'b1;
+                    eye_tx_uses_lfsr = 1'b1;
+                    eye_uses_valid_pattern = 1'b0;
+                end 
             endcase
         end
     end
@@ -320,6 +315,7 @@ module ucie_rx_controller #(
         if ((i_rx_encoding == ENC_MBINIT_REPAIRVAL_PAT_DET) || eye_uses_valid_pattern) begin
             o_pattern_type = PATTERN_VALID_ONLY;
             valid_results = i_valid_results;
+            o_error_threshold   = error_threshold;
         end
 
         // Active/data pattern states (eye sweeps and others).
