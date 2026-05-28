@@ -29,6 +29,8 @@ typedef enum {
   TEST_INJECT_END,                  // Test 5: 16 valid patterns at the absolute end (Edge case)
   TEST_SINGLE_ERROR,                // Test 6: Ideal stream, but 1 bit flipped (Below Threshold)
   TEST_MULTI_ERR_ABOVE_THRESH,      // Test 8: Ideal stream, 5+ errors injected (Above Threshold)
+  TEST_ACTIVE_IDLE,                 // Test 7: Alternating ACTIVE/IDLE patterns to test tracking logic
+  TEST_ACTIVE_ERROR_INJECTION,        // Test 8: Inject errors only during ACTIVE periods to test error handling
   TEST_IDEAL_VALID_RANDOM_CLKS,     // Test 9: Perfect Valid (0F), but Clocks/Track are pure random noise
   TEST_RESET
 } valid_test_mode_e;
@@ -158,6 +160,17 @@ task rmblink_sanity_valid_sequence::body();
         req.val_stream[start_idx] = 8'b0100_1011;
       end
     end
+
+    TEST_ACTIVE_IDLE: begin
+      // ACTIVE (0F)
+      foreach (req.val_stream[i]) req.val_stream[i] = 8'b0000_1111;
+    end
+
+    TEST_ACTIVE_ERROR_INJECTION: begin
+      foreach (req.val_stream[i]) req.val_stream[i] = 8'b0000_1111;
+      start_idx = $urandom_range(VALID_CLK_PATTERN_STREAM_LEN - 1, 0);
+      req.val_stream[start_idx] = 8'b0100_1011; // Inject 1 error
+    end
     
     TEST_IDEAL_VALID_RANDOM_CLKS: begin
       foreach (req.val_stream[i]) req.val_stream[i] = 8'b0000_1111;
@@ -185,7 +198,7 @@ task rmblink_sanity_valid_sequence::body();
   // =========================================================
   req.idle_ui_cnt = 0;
   req.rp_opmode = VAL_PATTERN;
-  req.data  = {default: '0}; 
+  req.data  = {default: '0};
 
   finish_item(req);
 endtask : body

@@ -132,8 +132,6 @@ task rp_vaild_sanity_vseq::body();
 
   end while (current_test != TEST_SINGLE_ERROR); // Stop when it loops back to the beginning
 
-
-  // Loop through all states in the enum
   do begin
     `uvm_info("VSEQ", $sformatf("======================================="), UVM_LOW)
     `uvm_info("VSEQ", $sformatf(" STARTING TEST: %s", current_test.name()), UVM_LOW)
@@ -171,6 +169,35 @@ task rp_vaild_sanity_vseq::body();
     
     ltsmc_seq.configure (._next_state_type(CUSTOM),
                          ._lane_map_code(lane_map_code_t'(0)),
+                         ._error_threshold(1), // Set threshold to 2 for the error tests
+                         ._half_rate(1'b1),
+                         ._target_rx_enc(RESET_Reset));
+    ltsmc_seq.start(ltsmc_seqr); 
+
+    // Move to the next enum test case
+    current_test = current_test.next();
+
+  end while (current_test != TEST_ACTIVE_IDLE); // Stop when it loops back to the beginning
+
+  do begin
+    `uvm_info("VSEQ", $sformatf("======================================="), UVM_LOW)
+    `uvm_info("VSEQ", $sformatf(" STARTING TEST: %s", current_test.name()), UVM_LOW)
+    `uvm_info("VSEQ", $sformatf("======================================="), UVM_LOW)
+
+    // 1. Setup LTSMC 
+    ltsmc_seq.configure (._next_state_type(CUSTOM),
+                         ._lane_map_code(lane_map_code_t'(3)),
+                         ._error_threshold(1), // Set threshold to 2 for the error tests
+                         ._half_rate(1'b1),
+                         ._target_rx_enc(ACTIVE_RX_Active));
+    ltsmc_seq.start(ltsmc_seqr); 
+
+    // 2. Pass the current test mode to the valid sequence and execute
+    rmblink_valid_sequence.test_mode = current_test;
+    rmblink_valid_sequence.start(rmblink_seqr);
+    
+    ltsmc_seq.configure (._next_state_type(CUSTOM),
+                         ._lane_map_code(lane_map_code_t'(3)),
                          ._error_threshold(1), // Set threshold to 2 for the error tests
                          ._half_rate(1'b1),
                          ._target_rx_enc(RESET_Reset));
