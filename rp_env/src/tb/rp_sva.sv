@@ -45,6 +45,7 @@ import rp_seq_pkg::*;
    logic valid_pattern_detected   = 0;
    logic valid_sample_pulse;
    logic valid_pattern_drive      = 0;
+   logic valid_active_drive       = 0;
 
     int bit_idx;
     logic first;
@@ -185,7 +186,22 @@ import rp_seq_pkg::*;
     end
 
     always @(posedge i_dclk) begin
-      // --- ADDED FOR SOLUTION 1: Gated by pattern_burst_active ---
+        if (!valid_active_drive) begin 
+            if (i_rx_encoding == ACTIVE_RX_Active) begin
+                    valid_pattern_detected = 1'b1;
+                    valid_active_drive = 1'b1;
+            end
+        end
+        else begin
+            if (i_rx_encoding != ACTIVE_RX_Active) begin
+                    valid_pattern_detected = 1'b0;
+                    valid_active_drive = 1'b0;
+            end
+        end
+    end
+
+    always @(posedge i_dclk) begin
+
       if (is_valid_pattern && ((i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) || (i_rx_encoding == ACTIVE_RX_Active))) begin
         if (!first) begin
           first = 1;
@@ -195,22 +211,38 @@ import rp_seq_pkg::*;
         expected_pattern = {expected_pattern[6:0], i_valid}; // Shift in the new bit
         bit_idx = bit_idx + 1; // Increment bit index
 
-        if ((bit_idx == 8) && pattern_burst_active) begin // We have a full byte
-          if (expected_pattern != 8'b11110000) begin
-            error_counter++;
-            `uvm_info("",$sformatf("[%0t] ERROR: Detected pattern %b does not match expected 11110000", $time, expected_pattern), UVM_LOW);
-           if (error_counter > i_error_threshold) begin
-           valid_pattern_detected = 1'b0; // Stop the test if we exceed the error threshold
-           end
-          end else begin
-            `uvm_info("",$sformatf("[%0t] INFO: Detected correct pattern 11110000", $time, expected_pattern), UVM_LOW);
-          end
-          bit_idx = 0; // Reset for the next byte
-        end
+        if (i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init)begin
 
+            if ((bit_idx == 8) && pattern_burst_active) begin // We have a full byte
+              if (expected_pattern != 8'b11110000) begin
+                error_counter++;
+                `uvm_info("",$sformatf("[%0t] ERROR: Detected pattern %b does not match expected 11110000", $time, expected_pattern), UVM_LOW);
+               if (error_counter > i_error_threshold) begin
+               valid_pattern_detected = 1'b0; // Stop the test if we exceed the error threshold
+               end
+              end 
+              bit_idx = 0; // Reset for the next byte
+            end
+
+        end else if (i_rx_encoding == ACTIVE_RX_Active) begin
+
+            if (bit_idx == 8) begin // We have a full byte
+              if (expected_pattern == 8'b00000000) begin
+                `uvm_info("ACTIVE",$sformatf("[%0t] IDLE: Detected pattern during active", $time, expected_pattern), UVM_LOW);
+              end
+
+              else if (expected_pattern != 8'b11110000) begin
+                `uvm_info("ACTIVE",$sformatf("[%0t] ERROR: Detected pattern %b does not match expected 11110000 during active", $time, expected_pattern), UVM_LOW);
+              
+               valid_pattern_detected = 1'b0; // Stop the test if we exceed the error threshold
+
+              end 
+              bit_idx = 0; // Reset for the next byte
+            end
+        end
         end
       end
-      // --- ADDED FOR SOLUTION 1: Modified else condition to reset only when state ends ---
+
       else if (!is_valid_pattern) begin
         expected_pattern = 0;
         error_counter = 0;
@@ -219,16 +251,16 @@ import rp_seq_pkg::*;
       end
     end
 
-		//=======================================
+	//=======================================
     // CLK Pattern Detection Logic
     //=======================================
 
 		
-		always @(posedge i_dclk) begin
+	always @(posedge i_dclk) begin
         clk_results = {pattern_detected_track , pattern_detected_clk_n , pattern_detected_clk_p};
     end
 
-		always @(posedge i_clk_l) begin
+	always @(posedge i_clk_l) begin
         if (i_reset) begin
             is_clk_pattern <= 1'b0;
         end else begin
@@ -241,7 +273,7 @@ import rp_seq_pkg::*;
             end
         end
     end
-		always @(posedge i_dclk) begin
+	always @(posedge i_dclk) begin
         if (!clk_pattern_drive) begin 
             if (i_rx_encoding == MBINIT_REPAIRCLK_RX_Pattern_Detection) begin
                     pattern_detected_clk_p = 1'b0;
@@ -312,7 +344,7 @@ import rp_seq_pkg::*;
 
 
   // Valid Property
-  property valid_detect_16_in_128_window;
+    property valid_detect_16_in_128_window;
         @(posedge i_dclk) disable iff(valid_pattern_detected || (i_rx_encoding != MBINIT_REPAIRVAL_RX_Valid_Pattern_Det))
          ($rose(i_valid))|=> 
 
@@ -322,18 +354,17 @@ import rp_seq_pkg::*;
             first_match(first_seq_16_consecutive or ##[0:$] seq_16_consecutive);
     endproperty 
 
-  property valid_active;
+    property valid_active;
         @(posedge i_dclk) disable iff(i_rx_encoding != ACTIVE_RX_Active)
-         $rose(i_valid) |=> 
-        @(posedge valid_sample_pulse) // Sample on the generated valid sample pulse
-            first_seq_8bit_pattern 
+         ($fell(valid_pattern_detected) || $fell(o_valid_results)) |=> 
+        @(posedge i_clk_l) ##3 ((o_valid_results == valid_pattern_detected));
     endproperty
 
-property valid_results_check;
+    property valid_results_check;
         @(posedge i_clk_l) 
         $rose((i_rx_encoding == MBINIT_REPAIRVAL_RX_Send_Result_RESP) || (i_rx_encoding == Data_To_Clock_test_RX_Result_Handshake_RX_Init))
         |-> (o_valid_results == valid_pattern_detected);
-  endproperty
+    endproperty
 
 
     // clk_p Property
@@ -359,11 +390,11 @@ property valid_results_check;
         first_match(##[0:$] track_seq_16_consecutive);
     endproperty
 
-		property clk_results_check;
+	property clk_results_check;
         @(posedge i_clk_l) 
         $rose((i_rx_encoding == MBINIT_REPAIRCLK_RX_Send_RESP))
         |-> (o_clk_results == clk_results);
-  endproperty
+    endproperty
 
 
    // Assertions
@@ -382,8 +413,6 @@ property valid_results_check;
     //`uvm_info("Valid Pattern", "Right pattern detected!", UVM_HIGH)
     
     end else begin
-    // This executes if the pattern is not found within the window (Fail)
-    valid_pattern_detected = 1'b0;
     `uvm_info("Valid Pattern", "Wrong pattern detected in Active State!", UVM_HIGH)
     end
    
