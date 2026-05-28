@@ -36,7 +36,7 @@ module ucie_shift_register #(
     // =========================================================================
     // Calculate number of stages needed
     // =========================================================================
-    localparam STAGES          =    pWIDTH_OUT / 64              ;       // Number of 64-bit stages
+    localparam STAGES          =    (pWIDTH_OUT / 64)-1              ;       // Number of 64-bit stages
 
 
 
