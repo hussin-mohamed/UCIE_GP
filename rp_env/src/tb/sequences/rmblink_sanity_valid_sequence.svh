@@ -27,6 +27,8 @@ typedef enum {
   TEST_INJECT_START,                // Test 3: 16 valid patterns at the absolute start
   TEST_INJECT_MIDDLE,               // Test 4: 16 valid patterns somewhere in the middle
   TEST_INJECT_END,                  // Test 5: 16 valid patterns at the absolute end (Edge case)
+  TEST_SINGLE_ERROR,                // Test 6: Ideal stream, but 1 bit flipped (Below Threshold)
+  TEST_MULTI_ERR_ABOVE_THRESH,      // Test 8: Ideal stream, 5+ errors injected (Above Threshold)
   TEST_IDEAL_VALID_RANDOM_CLKS,     // Test 9: Perfect Valid (0F), but Clocks/Track are pure random noise
   TEST_RESET
 } valid_test_mode_e;
@@ -141,6 +143,22 @@ task rmblink_sanity_valid_sequence::body();
       for (int i = 0; i < 16; i++) req.val_stream[start_idx + i] = 8'b0000_1111;
     end
 
+
+    TEST_SINGLE_ERROR: begin
+      foreach (req.val_stream[i]) req.val_stream[i] = 8'b0000_1111;
+      start_idx = $urandom_range(VALID_CLK_PATTERN_STREAM_LEN - 1, 0);
+      req.val_stream[start_idx] = 8'b0100_1011; // Inject 1 error
+    end
+
+    TEST_MULTI_ERR_ABOVE_THRESH: begin
+      foreach (req.val_stream[i]) req.val_stream[i] = 8'b0000_1111;
+      // Assuming threshold is at least 2
+      for (int i=0; i<2; i++) begin
+        start_idx = $urandom_range(VALID_CLK_PATTERN_STREAM_LEN - 1, 0);
+        req.val_stream[start_idx] = 8'b0100_1011;
+      end
+    end
+    
     TEST_IDEAL_VALID_RANDOM_CLKS: begin
       foreach (req.val_stream[i]) req.val_stream[i] = 8'b0000_1111;
       // Valid stream is perfect, but scramble the physical clocks
@@ -150,7 +168,21 @@ task rmblink_sanity_valid_sequence::body();
     end
     
   endcase
-  req.val_stream[VALID_CLK_PATTERN_STREAM_LEN] = 8'b0000_1111;
+
+  // =========================================================
+  // HARDCODE FINAL BITS (Overrides any randomization above)
+  // =========================================================
+  
+  // 1. Force the last bit of the Valid stream to 0.
+  // Using index [size - 1] gets the last byte. 
+  req.val_stream[VALID_CLK_PATTERN_STREAM_LEN - 1][7] = 1'b0; 
+
+  // 2. Force the last bits of the 1-bit clock and track arrays
+  req.clk_stream_p[CLK_STREAM_LEN_VALID_PAT - 1] = 1'b0;
+  req.clk_stream_n[CLK_STREAM_LEN_VALID_PAT - 1] = 1'b1;
+  req.track_stream[CLK_STREAM_LEN_VALID_PAT - 1] = 1'b0;
+
+  // =========================================================
   req.idle_ui_cnt = 0;
   req.rp_opmode = VAL_PATTERN;
   req.data  = {default: '0}; 
