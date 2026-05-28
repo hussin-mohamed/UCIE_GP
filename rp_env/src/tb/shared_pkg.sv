@@ -14,7 +14,7 @@
 // *                                                                          *
 // ****************************************************************************
 
-package shared_pkg;
+package rp_shared_pkg;
 
   // --- RTL Paramters ---
   parameter pNUM_LANES  = 16;
@@ -403,4 +403,4 @@ package shared_pkg;
     L1_RX_Refuse,
     EXIT_HS_RX_Exit_Handshake
    };
-endpackage : shared_pkg
+endpackage : rp_shared_pkg
