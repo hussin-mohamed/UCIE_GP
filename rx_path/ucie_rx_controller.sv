@@ -266,6 +266,7 @@ module ucie_rx_controller #(
         // Reload LFSR seed during explicit clear substate and on LINKINIT entry behavior.
         if ((i_rx_encoding == ENC_TX_EYE_LFSR_CLEAR) || (i_rx_encoding == ENC_RX_EYE_LFSR_CLEAR) || (i_rx_encoding == ENC_LINKINIT)) begin
             o_rx_lfsr_load = 1'b1;
+            o_rx_lfsr_enable = 16'hffff;
         end
 
         // ACTIVE keeps LFSR enabled for scrambling but disables train mode.
