@@ -66,12 +66,14 @@ run 0ns
 add wave -group PRD_State -position insertpoint \
  -color Cyan sim:/uvm_test_top/env/sb/prd/current_rx_encoding \
  -color Cyan sim:/uvm_test_top/env/sb/prd/previous_rx_encoding \
+ -color Cyan sim:/uvm_test_top/env/sb/prd/t_rx_encoding \
  sim:/uvm_test_top/env/sb/prd/current_lane_map_code \
  sim:/uvm_test_top/env/sb/prd/current_error_threshold \
  sim:/uvm_test_top/env/sb/prd/expected_bit \
  sim:/uvm_test_top/env/sb/prd/l2b_iter_cnt \
  sim:/uvm_test_top/env/sb/prd/per_lane_iter_cnt \
- sim:/uvm_test_top/env/sb/prd/lfsr_train_iter_cnt
+ sim:/uvm_test_top/env/sb/prd/lfsr_train_iter_cnt \
+ sim:/uvm_test_top/env/sb/prd/is_d2c_valid_train_state
 
 add wave -group PRD_PerLane_Counts -position insertpoint \
  sim:/uvm_test_top/env/sb/prd/per_lane_pat_cnt \
