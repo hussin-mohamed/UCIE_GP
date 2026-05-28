@@ -54,7 +54,7 @@ class rp_pred extends uvm_component;
 
   int l2b_iter_cnt;
   logic [pNBYTES-1:0][7:0] rdi_data_buffer;
-  logic success_arr [pNUM_LANES-1:0];
+  logic success_arr [pNUM_LANES];
   
   logic [pLFSR_TAPS-1:0] lfsr_state [pNUM_LANES-1:0];
   logic [pLFSR_TAPS-1:0] lfsr_last_state [pNUM_LANES-1:0];
@@ -78,6 +78,8 @@ class rp_pred extends uvm_component;
   rx_encoding_t     previous_rx_encoding;
   lane_map_code_t   current_lane_map_code;
   logic [15:0]      current_error_threshold;
+
+  bit is_d2c_PerLaneID_train_state, is_d2c_valid_train_state;
 
   // ------------------------------------------------------------------------
   // Constructor
@@ -130,6 +132,48 @@ class rp_pred extends uvm_component;
     if ((t.rx_encoding >= MBINIT_REPAIRCLK_RX_Init_Handshake && t.rx_encoding <= MBINIT_REPAIRCLK_RX_Done_Handshake) ||
         (t.rx_encoding >= MBINIT_REPAIRVAL_RX_Init_Handshake && t.rx_encoding <= MBINIT_REPAIRVAL_RX_Done_Handshake)) begin
       `uvm_info("PRD", "Discarding MBINIT.REPAIRCLK/MBINIT.REPAIRVAL input LTSM transaction. Fully modelled via SVAs.", UVM_DEBUG)
+      return;
+    end
+
+    if (t.rx_encoding == Data_To_Clock_test_RX_INIT_Handshake_RX_Init &&
+          (
+            previous_rx_encoding == MBTRAIN_VALVREF_RX_Start_Handshake        ||  
+            previous_rx_encoding == MBTRAIN_VALTRAINCENTER_RX_Start_Handshake ||
+            previous_rx_encoding == MBTRAIN_VALTRAINVREF_RX_Start_Handshake
+          )
+    ) begin
+      is_d2c_valid_train_state = 1;
+      return;
+    end
+
+    if (is_d2c_valid_train_state) begin
+      if (t.rx_encoding == Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init) begin
+        return;
+      end
+      if (t.rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) begin
+        is_d2c_valid_train_state = 0;
+        return;
+      end
+    end
+
+    if (t.rx_encoding == RESET_Reset) begin
+      // Clear all tracking logic variables upon system reset
+      l2b_iter_cnt = 0;
+      per_lane_iter_cnt = 0;
+      lfsr_train_iter_cnt = 0;
+      expected_bit = 1'b0;
+      
+      current_rx_encoding = RESET_Reset;
+      previous_rx_encoding = RESET_Reset;
+      current_error_threshold = 16'h0;
+      rdi_data_buffer = '{default: 8'h0};
+      
+      for (int i = 0; i < pNUM_LANES; i++) begin
+        per_lane_pat_cnt[i] = 0;
+        lfsr_state[i] = 23'h0;
+        lfsr_last_state[i] = 23'h0;
+        lane_error_count[i] = 0;
+      end
       return;
     end
 
@@ -187,7 +231,19 @@ class rp_pred extends uvm_component;
       // Reset tracking vars for next sequence
       lfsr_train_iter_cnt = 0; 
       per_lane_iter_cnt = 0;
+
+      if (is_d2c_PerLaneID_train_state) begin
+        is_d2c_PerLaneID_train_state = 0;
+      end
     end
+
+    if (current_rx_encoding  == Data_To_Clock_test_RX_INIT_Handshake_TX_Init && 
+        previous_rx_encoding == MBINIT_REPAIRMB_RX_Init_Handshake) begin
+      is_d2c_PerLaneID_train_state = 1;
+    end
+    
+    `uvm_info("PRDDDDD", $sformatf("current state is %s", current_rx_encoding.name()), UVM_LOW) 
+    `uvm_info("PRDDDDD", $sformatf("previous state is %s", previous_rx_encoding.name()), UVM_LOW) 
   endfunction : write_ltsmc
 
   virtual function void write_rmblink(rmblink_seq_item t);
@@ -196,13 +252,13 @@ class rp_pred extends uvm_component;
     logic [(pDATA_WIDTH/8)-1:0][7:0]   l2b_lanes [pNUM_LANES];
     logic [pDATA_WIDTH-1:0]            lfsr_out_data [pNUM_LANES-1:0];
 
+
     // ========================================================================
     // PER-LANE ID PATTERN DETECTION
     // ========================================================================
     if (current_rx_encoding == MBINIT_REVERSAL_RX_Per_Lane_ID_Det ||
-       ((current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_TX_Init || 
-         current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) && 
-         previous_rx_encoding == MBINIT_REPAIRMB_RX_Init_Handshake)) begin
+       (current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_TX_Init  && 
+        is_d2c_PerLaneID_train_state)) begin
 
       // Repack array for 16-bit blocks
       for (int i = 0; i < pNUM_LANES; i++) begin
@@ -217,8 +273,9 @@ class rp_pred extends uvm_component;
     // ========================================================================
     // LFSR PATTERN DETECTION
     // ========================================================================
-    else if (current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_TX_Init || 
-             current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) begin
+    else if ((current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_TX_Init || 
+              current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) &&
+             !is_d2c_PerLaneID_train_state) begin
       rx_lfsr(1'b1, 1'b0, t.data, current_error_threshold, success_arr, lfsr_out_data);
     end
     
@@ -251,11 +308,11 @@ class rp_pred extends uvm_component;
   // ------------------------------------------------------------------------
   // Extracted Block Models
   // ------------------------------------------------------------------------
-
+  
   function void get_per_lane_id_results(
-     input  logic [(pDATA_WIDTH/16)-1:0][15:0] _lanes [pNUM_LANES],
-     input  logic [2:0]                        _lane_map_code,
-     output logic                              _lanes_success [pNUM_LANES]
+      input  logic [(pDATA_WIDTH/16)-1:0][15:0] _lanes [pNUM_LANES],
+      input  logic [2:0]                        _lane_map_code,
+      output logic                              _lanes_success [pNUM_LANES]
   );
     int start_lane;
     int num_active_lanes;
@@ -273,9 +330,11 @@ class rp_pred extends uvm_component;
       default: `uvm_fatal("PRD_PERLANE", $sformatf("Unsupported lane_map_code: %0b", _lane_map_code))
     endcase
 
+
     for (int lane_idx = start_lane; lane_idx < (start_lane + num_active_lanes); lane_idx++) begin
       for (int pat_idx = 0; pat_idx < pDATA_WIDTH/16; pat_idx++) begin
-        if (_lanes[lane_idx][pat_idx] == {4'b1010, 8'(lane_idx), 4'b1010}) begin
+        logic [15:0] expected = {4'b1010, 8'(lane_idx), 4'b1010};
+        if (_lanes[lane_idx][pat_idx] == expected) begin
           per_lane_pat_cnt[lane_idx]++;
         end else begin
           per_lane_pat_cnt[lane_idx] = 0;
@@ -291,10 +350,17 @@ class rp_pred extends uvm_component;
       end
     end
 
+    // Debugging the counter logic
     if (per_lane_iter_cnt == ((128*16)/(pDATA_WIDTH))) begin
       per_lane_iter_cnt = 0;
     end else begin
       per_lane_iter_cnt++;
+    end
+
+    for (int i = 0; i < pNUM_LANES; i++) begin
+      if (i < start_lane || i >= (start_lane + num_active_lanes)) begin
+        _lanes_success[i] = 1'b1;
+      end
     end
   endfunction : get_per_lane_id_results
 

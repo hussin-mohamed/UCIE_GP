@@ -15,6 +15,20 @@
 // ****************************************************************************
 
 //-----------------------------------------------------------------------------
+// ENUM: per_lane_scenario_e
+// Defines the stress test scenarios for the Per-Lane ID detector
+//-----------------------------------------------------------------------------
+typedef enum {
+  SCENARIO_IDEAL,
+  SCENARIO_FAIL_MIDWAY,
+  SCENARIO_NOISE_THEN_IDEAL,
+  SCENARIO_WRONG_LANE_ID,
+  SCENARIO_RANDOM_INTERLEAVED,
+  SCENARIO_MIXED_SUCCESS,
+  SCENARIO_LATE_SUCCESS
+} per_lane_scenario_e;
+
+//-----------------------------------------------------------------------------
 //
 // CLASS: rmblink_sanity_PerLaneID_sequence
 //
@@ -24,37 +38,16 @@
 class rmblink_sanity_PerLaneID_sequence extends rp_sequence_base #(rmblink_seq_item);
   `uvm_object_utils(rmblink_sanity_PerLaneID_sequence)
 
-  ltsmc_sequencer seqr;
-  rx_encoding_t   current_state_enc;
-  rx_encoding_t   previous_state_enc;
-  rx_encoding_t   resume_state_enc;
+  rmblink_sequencer seqr;
 
-  // Local Configuration Storage
-  lane_map_code_t m_lane_map_code;
-  logic [15:0]    m_error_threshold;
-  logic           m_half_rate;
-
+  // --- Configuration Knobs for Virtual Sequence ---
+  per_lane_scenario_e scenario       = SCENARIO_IDEAL;
+  int                 num_iterations = 32;
   bit is_first_data_pat;
 
-
-  // Function: new
-  //
-  // Creates a new rmblink_sanity_PerLaneID_sequence instance with the given name.
-
   extern function new(string name = "rmblink_sanity_PerLaneID_sequence");
-
-
-  // Task: body
-  //
-  // Sends randomized RX items and synchronizes with the reactive FIFO.
-
-  extern task body();
-
-  // Task: pre_body
-  //
-  // Captures the typed sequencer handle before the sequence starts.
-
   extern task pre_body();
+  extern task body();
 
 endclass : rmblink_sanity_PerLaneID_sequence
 
@@ -63,26 +56,9 @@ endclass : rmblink_sanity_PerLaneID_sequence
 // IMPLEMENTATION
 //-----------------------------------------------------------------------------
 
-//-----------------------------------------------------------------------------
-//
-// CLASS: rmblink_sanity_PerLaneID_sequence
-//
-//-----------------------------------------------------------------------------
-
-
-// new
-// ---
-
 function rmblink_sanity_PerLaneID_sequence::new(string name = "rmblink_sanity_PerLaneID_sequence");
   super.new(name);
-  current_state_enc = RESET_Reset;
-  resume_state_enc  = RESET_Reset;
-  is_first_data_pat = 1;
 endfunction : new
-
-
-// pre_body
-// --------
 
 task rmblink_sanity_PerLaneID_sequence::pre_body();
   super.pre_body();
@@ -90,21 +66,72 @@ task rmblink_sanity_PerLaneID_sequence::pre_body();
 endtask : pre_body
 
 
-// body
-// ----
-
 task rmblink_sanity_PerLaneID_sequence::body();
-  start_item(req);
+  for (int cycle = 0; cycle < num_iterations; cycle++) begin
+    start_item(req);
+    assert(req.randomize());
 
-  // req.data         = get_ideal_PerLaneID_pattern();
-  assert(req.randomize());
-  req.val_stream   = get_ideal_valid_stream(pDATA_WIDTH/8);
-  req.clk_stream_p = get_ideal_clkp_stream(pDATA_WIDTH);
-  req.clk_stream_n = get_ideal_clkn_stream(pDATA_WIDTH);
-  req.track_stream = get_ideal_clkp_stream(pDATA_WIDTH);
-  req.idle_ui_cnt  = 0;
-  req.rp_opmode    = DATA_PATTERN;
-  req.is_first_data_pat = is_first_data_pat;
-  is_first_data_pat = 0;
-  finish_item(req);
+    // Standard generic streams
+    req.val_stream   = get_ideal_valid_stream(pDATA_WIDTH/8);
+    req.clk_stream_p = get_ideal_clkp_stream(pDATA_WIDTH);
+    req.clk_stream_n = get_ideal_clkn_stream(pDATA_WIDTH);
+    req.track_stream = get_ideal_clkp_stream(pDATA_WIDTH);
+    req.rp_opmode    = DATA_PATTERN;
+    req.idle_ui_cnt  = 0;
+    if (cycle == 0) begin
+      req.is_first_data_pat = 1;
+    end else begin
+      req.is_first_data_pat = 0;
+    end
+
+    // Generate specific payload based on the requested scenario
+    for (int lane = 0; lane < pNUM_LANES; lane++) begin
+      for (int word = 0; word < pDATA_WIDTH/16; word++) begin
+        
+        logic [15:0] chunk;
+        
+        case (scenario)
+          SCENARIO_IDEAL: begin
+            chunk = {4'b1010, 8'(lane), 4'b1010};
+          end
+          
+          SCENARIO_FAIL_MIDWAY: begin
+            chunk = (cycle == 10) ? 16'hDEAD : {4'b1010, 8'(lane), 4'b1010};
+          end
+          
+          SCENARIO_NOISE_THEN_IDEAL: begin
+            chunk = (cycle < 15) ? $urandom() : {4'b1010, 8'(lane), 4'b1010};
+          end
+          
+          SCENARIO_WRONG_LANE_ID: begin
+            chunk = {4'b1010, 8'((lane + 1) % pNUM_LANES), 4'b1010}; // Cross-talk / shift simulation
+          end
+          
+          SCENARIO_RANDOM_INTERLEAVED: begin
+            chunk = ($urandom_range(0, 1)) ? {4'b1010, 8'(lane), 4'b1010} : $urandom();
+          end
+
+          SCENARIO_MIXED_SUCCESS: begin
+            // Even lanes send correct framing, Odd lanes send bad framing
+            chunk = (lane % 2 == 0) ? {4'b1010, 8'(lane), 4'b1010} : 16'hBADD;
+          end
+
+          SCENARIO_LATE_SUCCESS: begin
+            // 32 cycles * 4 words/cycle = 128 words.
+            // The last 16 words perfectly align with the last 4 cycles (cycles 28, 29, 30, 31).
+            // Even lanes pass at the end, Odd lanes fail completely.
+            if ((lane % 2 == 0) && (cycle >= 28)) begin
+              chunk = {4'b1010, 8'(lane), 4'b1010};
+            end else begin
+              chunk = 16'hBADD;
+            end
+          end
+        endcase
+        
+        req.data[lane][word*16 +: 16] = chunk;
+      end
+    end
+    finish_item(req);
+  end
+
 endtask : body
