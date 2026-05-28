@@ -244,7 +244,7 @@ module rx_path #(
         .i_clk          (i_clk_l),
         .i_reset        (reset),
         .i_enable       (L2B_enable),
-        .i_lane_map_code(lane_map),
+        .i_lane_map_code(i_lane_map_code),
         .i_lane_0       (lane_LFSR_out[0]),
         .i_lane_1       (lane_LFSR_out[1]),
         .i_lane_2       (lane_LFSR_out[2]),
@@ -256,11 +256,11 @@ module rx_path #(
         .i_lane_8       (lane_LFSR_out[8]),
         .i_lane_9       (lane_LFSR_out[9]),
         .i_lane_10      (lane_LFSR_out[10]),
-        .i_lane_11      (lane_LFSR_out[10]),   // BUG? should be [11]
-        .i_lane_12      (lane_LFSR_out[11]),   // BUG? should be [12]
-        .i_lane_13      (lane_LFSR_out[12]),   // BUG? should be [13]
-        .i_lane_14      (lane_LFSR_out[13]),   // BUG? should be [14]
-        .i_lane_15      (lane_LFSR_out[14]),   // BUG? should be [15]
+        .i_lane_11      (lane_LFSR_out[11]),   
+        .i_lane_12      (lane_LFSR_out[12]),   
+        .i_lane_13      (lane_LFSR_out[13]),   
+        .i_lane_14      (lane_LFSR_out[14]),   
+        .i_lane_15      (lane_LFSR_out[15]),   
         .o_pl_data      (o_pl_data),
         .o_pl_valid     (o_pl_valid)
     );
