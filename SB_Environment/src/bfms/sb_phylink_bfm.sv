@@ -15,7 +15,7 @@
 // ****************************************************************************
 
 `include "uvm_macros.svh"
-import shared_pkg::*;
+import sb_shared_pkg::*;
 import uvm_pkg::*;
 
 
