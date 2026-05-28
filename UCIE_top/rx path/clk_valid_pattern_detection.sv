@@ -680,6 +680,7 @@ module clk_valid_pattern_detection (
         else if (w_enable_p_q) begin
             w_serialized_clk_p_q <= {w_serialized_clk_p_q[46:0], i_clk_p};
             counter_clk_p_q      <= counter_clk_p_q + 1;
+            
         end
 
         // Every 48 samples: evaluate clk_p and track independently

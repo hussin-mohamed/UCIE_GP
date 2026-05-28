@@ -14,21 +14,37 @@
 // *                                                                          *
 // ****************************************************************************
 
-// Interface: rp_ltsm_bfm
+// Interface: rp_ltsmc_bfm
 // Description: Control and status interface between RX-Path and Link Training
 //              State Machine (LTSM).
 //******************************************************************************
 
-interface rp_ltsm_bfm(
+`include "uvm_macros.svh"
+import shared_pkg::*;
+import uvm_pkg::*;
+
+interface rp_ltsmc_bfm(
    input  logic clk
   ,input  logic reset
 );
+  
+  logic [2:0]             i_lane_map_code;    // Selects lane mapping configuration.
+  logic [8:0]             i_rx_encoding;      // Current state of the RX FSM.
+  logic [15:0]            i_error_threshold;  // Error threshold for the valid and data pattern detection.
+  logic                   i_half_rate;        // Rate mode selector.
+  logic                   o_rx_done;          // Indicates that the RX datapath has finished its opertaion.
+  logic [pDATA_WIDTH-1:0] o_rx_data_results;  // One bit for each lane which indicates the successful detection of the LFSR pattern on that lane.
+  logic [2:0]             o_clk_result;       // Indicates the successful detection of the clock pattern.
+  logic                   o_valid_result;     // Indicates the successful detection of the valid pattern.
 
   //============================================================================
   // Methods
   //============================================================================
   task clear();
-    // ...
+    i_lane_map_code    <= 3'b011;     
+    i_rx_encoding      <= RESET_Reset;
+    i_error_threshold  <= 0;
+    i_half_rate        <= 1;
   endtask : clear
 
-endinterface : rp_ltsm_bfm
+endinterface : rp_ltsmc_bfm

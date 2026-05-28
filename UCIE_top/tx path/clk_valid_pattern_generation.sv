@@ -466,6 +466,8 @@ module clk_valid_pattern_generation (
             valid_counter <= valid_counter - 1;
         end
     end
-    assign o_valid = w_venable && valid_pattern_reg[valid_counter];
+    always_ff @( i_dclk or posedge i_reset ) begin
+        o_valid <= w_venable && valid_pattern_reg[valid_counter];
+    end
 
 endmodule

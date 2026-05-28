@@ -25,10 +25,10 @@ module serializer
   
   //---- SIGNAL DECLARATIONS ---------------------------------------------------
   reg  [pSER_WIDTH-1:0] shift_reg;
-  reg  [5:0]            bit_counter;
+  reg  [6:0]            bit_counter;
   reg                   clk_en_ff;  
   
-  wire flag_63 = (bit_counter == 6'd63);
+  wire flag_63 = (bit_counter == 7'd64);
 
   //---- FSM STATE REGISTER ----------------------------------------------------
   always @(posedge i_clk or posedge i_reset) begin
@@ -63,12 +63,15 @@ module serializer
   //---- COUNTER ---------------------------------------------------------------
   always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
-      bit_counter <= 6'd0;
+      bit_counter <= 7'd0;
     end else begin
-      if (state == ST_IDLE || (state == ST_TX && flag_63)) begin
-        bit_counter <= 6'd0;
-      end else if (state == ST_TX) begin
-        bit_counter <= bit_counter + 6'd1;
+    else if (state == ST_IDLE ) begin
+        bit_counter <= 7'd0;
+    else if ((state == ST_TX && flag_63)) begin
+      bit_counter <= 7'd1;
+    end
+    end else if (state == ST_TX) begin
+        bit_counter <= bit_counter + 7'd1;
       end
     end
   end

@@ -1,55 +1,58 @@
 module UCIe_phy #(
     parameter int pNUM_LANES  = 16,
-    parameter int pDATA_RDI_WIDTH   = 2048
+    parameter int pDATA_RDI_WIDTH   = 2048,
+    parameter int pDATA_WIDTH   = 64,
+    parameter int NBYTES   = 256
 )(
-    input                       i_clk_32, // connected
-    input                       i_clk_24, // connected
-    input                       i_clk_16, // connected
-    input                       i_clk_12, // connected
-    input                       i_clk_8, // connected
-    input                       i_clk_4, // connected
-    input                       i_clk_sb_800_m, // connected
-    input                       i_clk_sb_100_m, // connected
-    input                       i_reset, // connected
-    input                       i_pll_stable, // connected
-    input                       i_supply_stable, // connected
-    input                       i_clk_p,
-    input                       i_clk_n,
-    input                       i_track,
-    input                       i_valid,
-    input  [pNUM_LANES-1:0]     i_data_in,
-    input                       i_rx_sb_clk, // connected
-    input                       i_rx_sb_data, // connected
-    input  [3:0]                i_lp_state_req,   // connected   
-    input                       i_lp_linkerror,   // connected  
-    input                       i_lp_stallack,     // connected 
-    input                       i_lp_clk_ack,    // connected
-    input                       i_lp_irdy,
-    input                       i_lp_valid,
-    input [pDATA_RDI_WIDTH-1:0] i_lp_data,       
-    input                       i_lp_wake_req,  // connected
-    output  [3:0]               o_pl_state_sts,   // connected   
-    output                      o_pl_inband_pres,    // connected
-    output                      o_pl_error,          // connected
-    output                      o_pl_cerror,         // connected
-    output                      o_pl_nferror,        // connected
-    output                      o_pl_trainerror,     // connected
-    output                      o_pl_phyinrecenter,  // connected
-    output                      o_pl_stallreq,       // connected
-    output                      o_pl_max_speedmode,  // connected
-    output  [2:0]               o_pl_speedmode,       // connected      
-    output  [2:0]               o_pl_lnk_cfg,        // connected
-    output                      o_pl_clk_req,       // connected 
-    output                      o_pl_wake_ack,     // connected
-    output                      o_pl_trdy,
-    output                      o_tx_sb_data, // connected
-    output                      o_tx_sb_clk, // connected
-    output [pDATA_RDI_WIDTH-1:0]o_pl_data,
-    output [pNUM_LANES-1:0]     o_data_out,
-    output                      o_clk_p,
-    output                      o_clk_n,
-    output                      o_track,
-    output                      o_valid       
+    input                       i_clk_32,  
+    input                       i_clk_24,  
+    input                       i_clk_16,  
+    input                       i_clk_12,  
+    input                       i_clk_8,  
+    input                       i_clk_4,  
+    input                       i_clk_sb_800_m,  
+    input                       i_clk_sb_100_m,  
+    input                       i_reset,  
+    input                       i_pll_stable,  
+    input                       i_supply_stable,  
+    input                       i_clk_p,  
+    input                       i_clk_n,  
+    input                       i_track,  
+    input                       i_valid,  
+    input  [pNUM_LANES-1:0]     i_data_in,  
+    input                       i_rx_sb_clk,  
+    input                       i_rx_sb_data,  
+    input  [3:0]                i_lp_state_req,       
+    input                       i_lp_linkerror,      
+    input                       i_lp_stallack,       
+    input                       i_lp_clk_ack,     
+    input                       i_lp_irdy,       
+    input                       i_lp_valid,      
+    input [NBYTES-1:0][7:0]     i_lp_data,        
+    input                       i_lp_wake_req,   
+    output  [3:0]               o_pl_state_sts,       
+    output                      o_pl_inband_pres,     
+    output                      o_pl_error,           
+    output                      o_pl_cerror,          
+    output                      o_pl_nferror,         
+    output                      o_pl_trainerror,      
+    output                      o_pl_phyinrecenter,   
+    output                      o_pl_stallreq,        
+    output                      o_pl_max_speedmode,   
+    output  [2:0]               o_pl_speedmode,              
+    output  [2:0]               o_pl_lnk_cfg,         
+    output                      o_pl_clk_req,         
+    output                      o_pl_wake_ack,      
+    output                      o_pl_trdy,       
+    output                      o_pl_valid,      
+    output                      o_tx_sb_data,  
+    output                      o_tx_sb_clk,  
+    output [pDATA_RDI_WIDTH-1:0]o_pl_data,     
+    output [pNUM_LANES-1:0]     o_data_out,   
+    output                      o_clk_p,     
+    output                      o_clk_n,    
+    output                      o_track,   
+    output                      o_valid      
 );
     wire clk_mb_f; // full rate clock used in mainband
     wire clk_mb_h; // half rate clock used in mainband
@@ -116,6 +119,37 @@ module UCIe_phy #(
     ,.reset(i_reset)
     ,.o_sb_ready(sb_ready)
   );
+  
+  rp_reset_intf  reset_intf(
+     .clk(clk_l)
+    ,.reset(i_reset)
+  );
+
+  // D2D Adapter interface (RDI)
+  rp_rdi_bfm     rdi_bfm(
+     .clk(clk_l)
+    ,.reset(i_reset)
+  );
+
+  // LTSM controller interface
+  rp_ltsmc_bfm    ltsmc_bfm(
+     .clk(clk_l)
+    ,.reset(i_reset)
+  );
+  
+  // Physical link interface
+  rp_rmblink_bfm rmblink_bfm(
+     .clk(clk_l)
+    ,.reset(i_reset)
+    ,.i_hclk(clk_mb_h)
+    ,.i_dclk(clk_mb_f)
+  );
+
+  rdi_if  #(.NBYTES(256)) rdi_intf  (.clk(clk_l), .rst(i_reset));
+
+  ltsm_if                 ltsm_intf (.clk(clk_l), .rst(i_reset));
+
+  tx2link_if              tx2link_intf (.clk(clk_l), .ui_clk(clk_mb_f), .rst(i_reset));
 
     // interface connections
 
@@ -179,6 +213,46 @@ module UCIe_phy #(
     assign phylink_bfm.i_rx_sb_data = i_rx_sb_data;
     assign phylink_bfm.i_rx_sb_clk = i_rx_sb_clk;
 
+    assign o_data_out =tx2link_intf.tx_data;
+    assign o_valid =tx2link_intf.tx_valid;
+    assign o_track =tx2link_intf.tx_track;
+    assign o_clk_p =tx2link_intf.tx_clkp;
+    assign o_clk_n =tx2link_intf.tx_clkn;
+
+    assign rdi_intf.lp_data = i_lp_data;
+    assign rdi_intf.lp_irdy = i_lp_irdy;
+    assign rdi_intf.lp_valid = i_lp_valid;
+    assign o_pl_trdy = rdi_intf.pl_trdy;
+
+    assign ltsm_intf.tx_encoding = LTSM_controllers_vif.o_tx_encoding;
+    assign ltsm_intf.lane_map = LTSM_controllers_vif.o_lane_map_tx;
+    assign LTSM_controllers_vif.i_tx_done = ltsm_intf.tx_done;
+
+    assign rmblink_bfm.i_rx_encoding = ltsmc_bfm.i_rx_encoding;
+    assign rmblink_bfm.i_clk_p=i_clk_p;
+    assign rmblink_bfm.i_clk_n=i_clk_n;
+    assign rmblink_bfm.i_track=i_track;
+    assign rmblink_bfm.i_data=i_data_in;
+    assign rmblink_bfm.i_valid=i_valid;
+
+    assign o_pl_data=rdi_bfm.pl_data;
+    assign o_pl_valid=rdi_bfm.pl_valid;
+
+    assign LTSM_controllers_vif.i_rx_done = ltsmc_bfm.o_rx_done;
+    assign LTSM_controllers_vif.i_rx_data_results = ltsmc_bfm.o_rx_data_results;
+    assign LTSM_controllers_vif.i_clk_results = ltsmc_bfm.o_clk_result;
+    assign LTSM_controllers_vif.i_rx_valid_results = ltsmc_bfm.o_valid_result;
+    assign ltsmc_bfm.i_rx_encoding = LTSM_controllers_vif.o_rx_encoding;
+    assign ltsmc_bfm.i_lane_map_code = LTSM_controllers_vif.o_lane_map_rx;
+    assign ltsmc_bfm.i_error_threshold = 1;
+    assign ltsmc_bfm.i_half_rate = 1;
+
+
+
+
+
+
+
     valid_decoder decoder_rx
     (
         .i_clk(clk_l),
@@ -194,7 +268,7 @@ module UCIe_phy #(
         .o_info(rx_fsm_sb_if.i_rx_info),
         .o_req(rx_fsm_sb_if.i_sb_rx_req),
         .o_rsp(rx_fsm_sb_if.i_sb_rx_rsp),
-        .o_done(rx_fsm_sb_if.i_sb_rx_done)
+        .o_done(rx_bfm.i_sb_rx_done)
     );
 
     valid_decoder decoder_tx
@@ -212,7 +286,7 @@ module UCIe_phy #(
         .o_info(tx_fsm_sb_if.i_tx_info),
         .o_req(tx_fsm_sb_if.i_sb_tx_req),
         .o_rsp(tx_fsm_sb_if.i_sb_tx_rsp),
-        .o_done(tx_fsm_sb_if.i_sb_tx_done)
+        .o_done(tx_bfm.i_sb_tx_done)
     );
 
    // top instantiation of all blocks
@@ -246,13 +320,13 @@ module UCIe_phy #(
              .i_rx_error        (LTSM_controllers_vif.i_rx_error),
              .i_rx_done         (LTSM_controllers_vif.i_rx_done),
              .i_tx_done         (LTSM_controllers_vif.i_tx_done),
-             .i_rx_valid_results       (LTSM_controllers_vif.i_rx_valid_results),
-             .i_rx_data_results (LTSM_controllers_vif.i_rx_data_results),
-             .i_rx_clk_results     (LTSM_controllers_vif.i_clk_results), // 1st iissue
-             .o_sb_init_start    (LTSM_controllers_vif.o_sbinit_start),
-             .i_sb_ready        (LTSM_controllers_vif.i_sb_ready),
-             //.o_t1_ms           (LTSM_controllers_vif.o_t1_ms),
-             .i_reset           (LTSM_controllers_vif.i_reset),
+             .i_rx_valid_results        (LTSM_controllers_vif.i_rx_valid_results),
+             .i_rx_data_results         (LTSM_controllers_vif.i_rx_data_results),
+             .i_rx_clk_results          (LTSM_controllers_vif.i_clk_results),
+             .o_sb_init_start           (LTSM_controllers_vif.o_sbinit_start),
+             .i_sb_ready                (LTSM_controllers_vif.i_sb_ready),
+             .o_timer1ms                (ltsm_ctrl_bfm.i_timer_1ms),
+             .i_reset                   (LTSM_controllers_vif.i_reset),
              //.i_par_check_done  (LTSM_controllers_vif.i_par_check_done), // needs to be fixed in the verification model and sequences 
              .i_sb_cur_msg_done (LTSM_controllers_vif.i_sb_cur_msg_done),
              .o_lane_map_tx     (LTSM_controllers_vif.o_lane_map_tx),
@@ -275,20 +349,17 @@ module UCIe_phy #(
              .i_lp_clk_ack      (ltsm_rdi_if_inst.i_lp_clk_ack),
              .i_lp_wake_req     (ltsm_rdi_if_inst.i_lp_wake_req),
              .i_lp_linkerror    (ltsm_rdi_if_inst.i_lp_linkerror),
-             .i_speedreg                            (LTSM_controllers_vif.i_speedreg),
-             .o_speedreg                            (LTSM_controllers_vif.o_speedreg),
+             .i_speedreg                              (LTSM_controllers_vif.i_speedreg),
+             .o_speedreg                              (LTSM_controllers_vif.o_speedreg),
              //.i_local_cap                           (LTSM_controllers_vif.i_local_cap),
-             .i_Runtime_Link_Test_status_register   (LTSM_controllers_vif.i_Runtime_Link_Test_status_register),
-             .o_Runtime_Link_Test_status_register   (LTSM_controllers_vif.o_Runtime_Link_Test_status_register),
-             .i_Runtime_Link_Test_Control_register   (LTSM_controllers_vif.i_Runtime_Link_Test_Control_register),
-             .o_Runtime_Link_Test_Control_register   (LTSM_controllers_vif.o_Runtime_Link_Test_Control_register).
+             .i_Runtime_Link_Test_status_register     (LTSM_controllers_vif.i_Runtime_Link_Test_status_register),
+             .o_Runtime_Link_Test_status_register     (LTSM_controllers_vif.o_Runtime_Link_Test_status_register),
+             .i_Runtime_Link_Test_Control_register    (LTSM_controllers_vif.i_Runtime_Link_Test_Control_register),
+             .o_Runtime_Link_Test_Control_register    (LTSM_controllers_vif.o_Runtime_Link_Test_Control_register).
              .o_timer1ms (ltsm_ctrl_bfm.i_timer_1ms)
              );
 
-    ucie_sb_top #(
-            .pFIFO_DEPTH(TX_FIFO_SIZE)
-    )
-    sideband
+    ucie_sb_top sideband
     (
             // Clock and reset
             .i_clk                 (i_clk_sb_100_m)
@@ -336,4 +407,65 @@ module UCIe_phy #(
             ,.o_tx_sb_data         (phylink_bfm.o_tx_sb_data)
             ,.o_tx_sb_clk          (phylink_bfm.o_tx_sb_clk)
     );
+    
+    tx_dut_rtl_wrapper #(
+      .NBYTES(256),
+      .DATA_WIDTH(64),
+      .LANES_NUMBER(16)
+    ) dut_rtl (
+            .clk(clk_l),
+            .ui_clk(clk_mb_f),
+            .rst(i_reset),
+
+            // RDI
+            .lp_data(rdi_intf.lp_data),
+            .lp_valid(rdi_intf.lp_valid),
+            .lp_irdy(rdi_intf.lp_irdy),
+            .pl_trdy(rdi_intf.pl_trdy),
+
+            // LTSM
+            .tx_encoding(ltsm_intf.tx_encoding),
+            .lane_map(ltsm_intf.lane_map),
+            .pll_stable(ltsm_intf.pll_stable),
+            .supply_stable(ltsm_intf.supply_stable),
+            .tx_done(ltsm_intf.tx_done),
+
+            // TX2LINK
+            .tx_data(tx2link_intf.tx_data),
+            .tx_clkp(tx2link_intf.tx_clkp),
+            .tx_clkn(tx2link_intf.tx_clkn),
+            .tx_valid(tx2link_intf.tx_valid),
+            .tx_track(tx2link_intf.tx_track)
+    );
+
+    rx_path dut (
+    // Clocks & resets
+    .i_clk_l           (clk_l),
+    .i_clk_p           (rmblink_bfm.i_clk_p),
+    .i_clk_n           (rmblink_bfm.i_clk_n),
+    .i_hclk            (clk_mb_h),
+    .i_dclk            (clk_mb_f),
+    .i_track           (rmblink_bfm.i_track),
+    .i_reset           (i_reset),
+
+    // Data inputs
+    .i_lanes           (rmblink_bfm.i_data),
+    .i_valid           (rmblink_bfm.i_valid),
+    .i_halfrate        (ltsmc_bfm.i_half_rate),
+
+    // Configuration
+    .i_rx_encoding     (ltsmc_bfm.i_rx_encoding),
+    .i_lane_map_code   (ltsmc_bfm.i_lane_map_code),
+    .i_error_threshold (ltsmc_bfm.i_error_threshold),
+
+    // Outputs
+    .o_pl_data         (rdi_bfm.pl_data),
+    .o_pl_valid        (rdi_bfm.pl_valid),
+    .o_rx_done         (ltsmc_bfm.o_rx_done),
+    .o_rx_data_results (ltsmc_bfm.o_rx_data_results),
+    .o_rx_error        (LTSM_controllers_vif.i_rx_error),
+    .o_clk_results     (ltsmc_bfm.o_clk_result),
+    .o_valid_results   (ltsmc_bfm.o_valid_result)
+  );
+
 endmodule

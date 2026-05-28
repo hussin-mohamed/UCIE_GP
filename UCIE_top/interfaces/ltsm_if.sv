@@ -11,7 +11,7 @@
 
 interface ltsm_if (
   input logic clk,
-  input logic rst_n
+  input logic rst
 );
 
   import tx_defs_pkg::*;
@@ -50,19 +50,19 @@ interface ltsm_if (
 
   // Driver side (TB drives encoding + lane_map; samples DUT responses)
   modport drv_mp (
-    input  clk, rst_n, pll_stable, supply_stable, tx_done,
+    input  clk, rst, pll_stable, supply_stable, tx_done,
     output tx_encoding, lane_map
   );
 
   // Monitor side (TB samples all signals passively)
   modport mon_mp (
-    input clk, rst_n, tx_encoding, lane_map,
+    input clk, rst, tx_encoding, lane_map,
           pll_stable, supply_stable, tx_done
   );
 
   // DUT side (DUT receives encoding + lane_map; drives status outputs)
   modport dut_mp (
-    input  clk, rst_n, tx_encoding, lane_map,
+    input  clk, rst, tx_encoding, lane_map,
     output pll_stable, supply_stable, tx_done
   );
 
