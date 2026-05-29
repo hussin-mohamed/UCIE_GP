@@ -295,7 +295,7 @@ module ucie_rx_controller #(
                     o_fifo_rd_en     = 16'hffff;
                     //o_l2b_enable   = 1'b1;
             end
-            if (!i_fifo_empty) begin
+            if (!i_fifo_empty || !empty1) begin
                 o_l2b_enable   = 1'b1;
             end
             o_error_threshold = error_threshold;
