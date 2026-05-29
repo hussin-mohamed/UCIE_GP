@@ -295,8 +295,16 @@ module ucie_rx_controller #(
                     o_fifo_rd_en     = 16'hffff;
                     //o_l2b_enable   = 1'b1;
             end
-            if (!i_fifo_empty ^ !empty2) begin
+            if (!i_fifo_empty) begin
                 o_l2b_enable   = 1'b1;
+            end
+            else begin
+                if (!i_fifo_empty ^ !empty) begin
+                    o_l2b_enable   = 1'b0;
+                end
+                else begin
+                    o_l2b_enable   = 1'b1;
+                end
             end
             o_error_threshold = error_threshold;
             o_rx_lfsr_train  = 1'b0;
