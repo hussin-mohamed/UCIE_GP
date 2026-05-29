@@ -84,7 +84,7 @@ module ucie_shift_register #(
         else begin
             shift_reg         <=    shift_reg_next              ;
             count             <=   count_next                   ;
-            if (count_next<=STAGES+1) begin
+            if (count_next==STAGES+1) begin
                 first<=1;
             end
         end
