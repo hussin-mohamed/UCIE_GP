@@ -40,24 +40,19 @@ module deser_h #(
       if (i_valid && !enable) begin
         shift_reg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]};  
         enable <= 1'b1;
+        bit_counter <= bit_counter + 1;
       end
       else if (enable) begin
-        shift_reg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]};
-      end
-
-      if (bit_counter == 7'd63) begin
-        bit_counter      <= 'd0;
-        if (i_valid) begin
+        if (bit_counter == 7'd63) begin
+          bit_counter      <= 'd0;
           o_fifo_deser_msg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]};
-        end
+          enable           <= 0;
+          data_rdy_toggle  <= ~data_rdy_toggle;
+        end 
         else begin
-          enable<=0;
+          shift_reg <= {i_rx_data, shift_reg[pDESER_WIDTH-1:1]};
+          bit_counter <= bit_counter + 1;
         end
-        
-        data_rdy_toggle  <= ~data_rdy_toggle;
-      end 
-      else begin
-        bit_counter <= bit_counter + 1;
       end
     end
   end
