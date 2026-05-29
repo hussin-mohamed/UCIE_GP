@@ -278,12 +278,18 @@ module ucie_rx_controller #(
          if (i_rx_encoding == ENC_ACTIVE) begin
             if (i_lane_map_code == 3'b011) begin
                 o_rx_lfsr_enable = {16{!empty}}|{16{!empty1}};
+                if (!i_fifo_empty || !empty) begin
+                    fifo_rd_en     = 16'hffff;
+                    o_l2b_enable   = 1'b1;
+                end
             end
             else begin
-                o_rx_lfsr_enable = {16{!empty}}|{16{!empty1}}|{16{!empty2}}|{16{!empty3}};    
+                o_rx_lfsr_enable = {16{!empty}}|{16{!empty1}}|{16{!empty2}}|{16{!empty3}}; 
+                if (!i_fifo_empty || !empty || !empty1 || !empty2 || !empty3) begin
+                    fifo_rd_en     = 16'hffff;
+                    o_l2b_enable   = 1'b1;
+                end   
             end
-            fifo_rd_en     = 16'hffff;
-            o_l2b_enable   = 1'b1;
             o_error_threshold = error_threshold;
             o_rx_lfsr_train  = 1'b0;
             valid_results   = i_valid_results; 
