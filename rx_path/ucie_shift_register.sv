@@ -54,11 +54,15 @@ module ucie_shift_register #(
     // Output assignment (select upper pWIDTH_OUT bits)
     // =========================================================================
     assign data_out         =    shift_reg[pWIDTH_OUT-1:0]       ;
-
+    logic first;
 
 
     always_comb begin
         if (count == STAGES+1) begin
+            count_next  =   1'b1                                ;
+            data_valid  =   1'b1                                ;
+        end
+        else if (count == STAGES && first) begin
             count_next  =   1'b1                                ;
             data_valid  =   1'b1                                ;
         end else begin
@@ -75,11 +79,14 @@ module ucie_shift_register #(
         if (rst) begin
             shift_reg         <=    {pWIDTH_OUT{1'b0}}          ;
             count             <=   8'b0                         ;
+            first             <=   0                            ;
         end 
         else begin
             shift_reg         <=    shift_reg_next              ;
             count             <=   count_next                   ;
-
+            if (count_next<=STAGES+1) begin
+                first<=1;
+            end
         end
     end
 
