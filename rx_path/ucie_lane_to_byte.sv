@@ -269,7 +269,7 @@ module ucie_lane_to_byte #(
     // =========================================================================
     // Data valid generation using reduction operators
     // =========================================================================
-    assign o_pl_data       = (&reg_x16_valid) || (&reg_x8_valid) || (&reg_x4_valid) ;                                    
+    assign data_valid       = (&reg_x16_valid) || (&reg_x8_valid) || (&reg_x4_valid) ;                                    
    
    
     // =========================================================================
@@ -284,7 +284,7 @@ module ucie_lane_to_byte #(
         end 
         else if (i_enable) begin
             o_pl_data     <=  data_out                         ;
-            //o_pl_valid   <=  data_valid                       ;  // Use registered ready signal
+            o_pl_valid   <=  data_valid                       ;  // Use registered ready signal
             
         end
         

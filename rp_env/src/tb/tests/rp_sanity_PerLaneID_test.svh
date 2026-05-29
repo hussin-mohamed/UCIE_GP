@@ -68,7 +68,7 @@ endfunction : new
 // -----------
 
 function void rp_sanity_PerLaneID_test::build_phase(uvm_phase phase);
-  virtual_sequence_base::type_id::set_type_override(rp_sanity_PerLaneID_vseq::get_type());
+  virtual_sequence_base::type_id::set_type_override(rp_active_vseq::get_type());
   
   // env_cfg.is_reactive_tx = 1;
   // env_cfg.is_reactive_rx = 1;

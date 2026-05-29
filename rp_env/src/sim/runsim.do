@@ -96,6 +96,15 @@ add wave -group Assertions -position insertpoint \
  sim:/rp_tb_top/dut/rp_sva_inst/assert_clk_pattern_result_check \
  sim:/rp_tb_top/dut/rp_sva_inst/chk_async_reset_zeros \
  sim:/rp_tb_top/dut/rp_sva_inst/chk_async_reset_ones
+
+ add wave -position insertpoint  \
+{sim:/rp_tb_top/dut/LFSR/lane_gen[0]/u_LFSR/gen/pLANE_ID_SEED} \
+{sim:/rp_tb_top/dut/LFSR/lane_gen[0]/u_LFSR/gen/pDATA_WIDTH} \
+{sim:/rp_tb_top/dut/LFSR/lane_gen[0]/u_LFSR/gen/pclk} \
+{sim:/rp_tb_top/dut/LFSR/lane_gen[0]/u_LFSR/gen/i_load} \
+{sim:/rp_tb_top/dut/LFSR/lane_gen[0]/u_LFSR/gen/pattern} \
+{sim:/rp_tb_top/dut/LFSR/lane_gen[0]/u_LFSR/gen/LFSR} \
+{sim:/rp_tb_top/dut/LFSR/lane_gen[0]/u_LFSR/gen/next}
   
 
 # ====================================================================
