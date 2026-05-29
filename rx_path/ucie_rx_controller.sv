@@ -47,7 +47,6 @@ module ucie_rx_controller #(
         ENC_MBINIT_REVERSAL_PER_LANE = 9'h032,
         ENC_MBINIT_REVERSAL_APPLY    = 9'h034,
         ENC_MBINIT_REPAIRMB          = 9'h038,
-        ENC_MBINIT_REPAIRMB_PAT_DET  = 9'h039,
         ENC_MBINIT_REPAIRMB_APPLY_DEGRADE = 9'h03A,
         ENC_MBTRAIN_VALVREF          = 9'h080,
         ENC_MBTRAIN_DATAVREF         = 9'h088,
@@ -380,7 +379,7 @@ module ucie_rx_controller #(
             o_mb_clk_p_en  = 1'b1;
             o_mb_clk_n_en  = 1'b1;
             o_mb_track_en  = 1'b1;
-            o_mb_lanes_en  = lane_mask_q;
+            o_mb_lanes_en  = lane_mask_from_code;
             o_pattern_type = PATTERN_VALID_ONLY; // MBINIT.REPAIRVAL always drives valid-only pattern
             o_mb_valid_en = 1'b1;
             
@@ -390,14 +389,14 @@ module ucie_rx_controller #(
             o_mb_clk_n_en = 1'b1;
             o_mb_valid_en = 1'b1;
             o_mb_track_en = 1'b1;
-            o_mb_lanes_en = lane_mask_q;
+            o_mb_lanes_en = lane_mask_from_code;
         end 
         else if (is_main_mbtrain) begin
             o_mb_clk_p_en = 1'b1;
             o_mb_clk_n_en = 1'b1;
             o_mb_valid_en = 1'b1;
             o_mb_track_en = 1'b1;
-            o_mb_lanes_en = lane_mask_q;
+            o_mb_lanes_en = lane_mask_from_code;
             // MBTRAIN.VALVREF always drives valid-only pattern
             if (i_rx_encoding == ENC_MBTRAIN_VALVREF) begin
                 o_pattern_type = PATTERN_VALID_ONLY;
@@ -408,7 +407,7 @@ module ucie_rx_controller #(
             o_mb_clk_n_en = 1'b1;
             o_mb_valid_en = 1'b1;
             o_mb_track_en = 1'b1;
-            o_mb_lanes_en = lane_mask_q;
+            o_mb_lanes_en = lane_mask_from_code;
         end
 
         // o_detection_type assertion per requirements:
