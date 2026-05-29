@@ -125,6 +125,9 @@ module ucie_rx_controller #(
     logic is_main_l1;
     logic [15:0] fifo_rd_en;
     logic empty;
+    logic empty1;
+    logic empty2;
+    logic empty3;
 
     // Encodings observed on i_rx_encoding from the LTSM RX FSM.
     // These values are used to drive datapath mode selects and AFE enables.
@@ -274,7 +277,12 @@ module ucie_rx_controller #(
         // ACTIVE keeps LFSR enabled for scrambling but disables train mode.
          if (i_rx_encoding == ENC_ACTIVE) begin
             if(!i_fifo_empty )begin
-            o_rx_lfsr_enable = {16{empty}};
+            if (i_lane_map_code == 3'b011) begin
+                o_rx_lfsr_enable = {16{empty}}|{16{empty1}};
+            end
+            else begin
+                o_rx_lfsr_enable = {16{empty}}|{16{empty1}}|{16{empty2}}|{16{empty3}};    
+            end
             fifo_rd_en     = 16'hffff;
             o_l2b_enable   = 1'b1;
             end
@@ -403,10 +411,16 @@ module ucie_rx_controller #(
         o_valid_results      <= 1'b1;
         o_rx_path_reset      <= 1'b1;
         empty<=1;
+        empty1<=1;
+        empty2<=1;
+        empty3<=1;
         end 
         else begin
         o_fifo_rd_en      <= fifo_rd_en;
         empty             <=i_fifo_empty;
+        empty1            <=empty;
+        empty2            <=empty1;
+        empty3            <=empty2;
         enc_q             <= ltsm_states_e'(i_rx_encoding);
         o_rx_data_results <= {48'hFFFF_FFFF_FFFF, rx_data_results};
         o_clk_results     <= clk_results;
