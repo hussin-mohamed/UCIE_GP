@@ -75,6 +75,10 @@ add wave -group PRD_State -position insertpoint \
  sim:/uvm_test_top/env/sb/prd/lfsr_train_iter_cnt \
  sim:/uvm_test_top/env/sb/prd/is_d2c_valid_train_state
 
+add wave -group PRD_Data_Output -position insertpoint \
+ -color Gold sim:/uvm_test_top/env/sb/prd/lfsr_out_data \
+ -color Gold sim:/uvm_test_top/env/sb/prd/rdi_data_buffer \
+
 add wave -group PRD_PerLane_Counts -position insertpoint \
  sim:/uvm_test_top/env/sb/prd/per_lane_pat_cnt \
  -color Red   sim:/uvm_test_top/env/sb/prd/lane_error_count \
