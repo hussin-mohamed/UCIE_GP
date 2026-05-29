@@ -1,5 +1,5 @@
 module reversal #(
-    parameter int pDATA_WIDTH = 32,
+    parameter int pDATA_WIDTH = 64,
     parameter int pNUM_LANES  = 16
 ) (
     input  logic                                     sel,
