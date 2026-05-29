@@ -4,7 +4,7 @@
 //------------------------------------------------------------------------------
 module fifo
 #(//---- PARAMETER DECLARATIONS ------------------------------------------------
-  parameter  pFIFO_WIDTH      = 128,  // Width of data bus
+  parameter  pFIFO_WIDTH      = 64,  // Width of data bus
   parameter  pFIFO_DEPTH      = 8    // Depth of the FIFO memory (Must be power of 2)
 )
 (//---- PORT DECLARATIONS -----------------------------------------------------

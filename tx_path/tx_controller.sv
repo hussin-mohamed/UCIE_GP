@@ -1,12 +1,13 @@
 module tx_controller #(
     parameter int unsigned MB_LANES = 16
 ) (
-    input  logic                  I_clk,
-    input  logic                  I_reset,
+    input  logic                  i_clk,
+    input  logic                  i_reset,
     input  logic [8:0]            i_tx_encoding,
     input  logic [2:0]            i_lane_map_code,
     //input  logic                  i_lp_irdy,
     input  logic                  i_lp_valid,
+    input  logic                  i_pl_tready,
     output logic[MB_LANES-1:0]    o_tx_lfsr_enable,
     output logic                  o_tx_lfsr_load,
     output logic                  o_tx_lfsr_train,
@@ -48,7 +49,7 @@ module tx_controller #(
         ENC_MBTRAIN_DATAVREF         = 9'h088,
         ENC_MBTRAIN_DTC1             = 9'h090,
         ENC_MBTRAIN_RXCLKCAL         = 9'h098,
-        ENC_MBTRAIN_VALTRAINVREF     = 9'h0A0,
+        ENC_MBTRAIN_VALTRAINVREF     = 9'h0E8,
         ENC_MBTRAIN_RXDESKEW         = 9'h0A8,
         ENC_MBTRAIN_DTC2             = 9'h0B0,
         ENC_MBTRAIN_LINKSPEED        = 9'h0B8,
@@ -57,7 +58,7 @@ module tx_controller #(
         ENC_MBTRAIN_TXSELFCAL        = 9'h0D0,
         ENC_PHYRETRAIN               = 9'h0D8,
         ENC_TRAINERROR               = 9'h040,
-        ENC_MBTRAIN_VALTRAINCENTER   = 9'h0E8,
+        ENC_MBTRAIN_VALTRAINCENTER   = 9'h0A0,
         ENC_MBTRAIN_DATATRAINVREF    = 9'h0F0,
         ENC_LINKINIT                 = 9'h100,
         ENC_ACTIVE                   = 9'h108,
@@ -99,6 +100,12 @@ module tx_controller #(
     logic                o_tx_reverse_q;
     logic                i_lp_valid_d1;
     logic                i_lp_valid_d2;
+    logic                i_lp_valid_d3;
+    logic                i_lp_valid_d4;
+    logic                i_pl_tready_d1;
+    logic                i_pl_tready_d2;
+    logic                i_pl_tready_d3;
+    logic                i_pl_tready_d4;
     logic [11:0] done_cnt_q;
     logic [11:0] done_target;
     logic        done_state;
@@ -151,7 +158,9 @@ module tx_controller #(
         is_main_trainerror = 1'b0;
         is_main_l1         = 1'b0;
 
-        case (i_tx_encoding[8:3])
+        // When in a shared D2C eye-pattern state (encoding 0x18X), decode the
+        // parent state stored in ltsm_current_state_q so AFE enables persist.
+        case ( (i_tx_encoding[8:7] == 2'b11) ? ltsm_current_state_q[8:3] : i_tx_encoding[8:3] )
             6'h00, 6'h01, 6'h02, 6'h03: is_main_reset_like = 1'b1; // RESET/SBINIT/MBINIT.PARAM/CAL
             6'h04: is_main_repairclk = 1'b1; // MBINIT.REPAIRCLK
             6'h05: is_main_repairval = 1'b1; // MBINIT.REPAIRVAL
@@ -179,27 +188,24 @@ module tx_controller #(
         eye_uses_per_lane_id  = 1'b0;
         eye_uses_valid_pattern = 1'b0;
 
-        if (i_tx_encoding == ENC_TX_EYE_PAT_GEN) begin
+        if (i_tx_encoding == ENC_TX_EYE_PAT_GEN || i_tx_encoding == ENC_RX_EYE_PAT_GEN) begin
             case (ltsm_current_state_q)
-                // MBINIT.REPAIRMB uses per-lane ID pattern in its eye-pattern phase.
+
                 ENC_MBINIT_REPAIRMB: eye_uses_per_lane_id = 1'b1;
-
-                // Valid vref subflow that uses 0x182 in this training context.
-                // the TX-LTSM eye-sweep encoding table.
-                ENC_MBTRAIN_VALTRAINCENTER: eye_uses_valid_pattern = 1'b1;
-
-                // Other TX-initiated eye-pattern contexts are treated as LFSR-based.
-                default: eye_tx_uses_lfsr = 1'b1;
-            endcase
-        end
-
-        if (i_tx_encoding == ENC_RX_EYE_PAT_GEN) begin
-            case (ltsm_current_state_q)
+                
                 // RX-initiated eye pattern in valid-related train states.
-                ENC_MBTRAIN_VALVREF,ENC_MBTRAIN_VALTRAINVREF: eye_uses_valid_pattern = 1'b1;
+                ENC_MBTRAIN_VALVREF,ENC_MBTRAIN_VALTRAINVREF,ENC_MBTRAIN_VALTRAINCENTER: begin
+                    eye_uses_valid_pattern = 1'b1;
+                    eye_rx_uses_lfsr = 1'b0;
+                    eye_tx_uses_lfsr = 1'b0;
+                end
 
                 // Other RX-initiated eye-pattern contexts are treated as LFSR-based.
-                default: eye_rx_uses_lfsr = 1'b1;
+                default: begin
+                    eye_rx_uses_lfsr = 1'b1;
+                    eye_tx_uses_lfsr = 1'b1;
+                    eye_uses_valid_pattern = 1'b0;
+                end 
             endcase
         end
     end
@@ -248,10 +254,21 @@ module tx_controller #(
         // ACTIVE keeps LFSR enabled for scrambling but disables train mode.
         if (i_tx_encoding == ENC_ACTIVE) begin
             // o_tx_lfsr_enable must be a 2 cycle delayed version of the valid
-            o_tx_lfsr_enable = {MB_LANES{i_lp_valid_d2}};
+            if (i_lane_map_code == 'b11) begin
+                o_tx_lfsr_enable = ({MB_LANES{i_lp_valid_d1}} & {MB_LANES{i_pl_tready_d1}}) | ({MB_LANES{i_lp_valid_d2}} & {MB_LANES{i_pl_tready_d2}});
+                fifo_wr_en = ({MB_LANES{i_lp_valid_d1}} & {MB_LANES{i_pl_tready_d1}}) | ({MB_LANES{i_lp_valid_d2}} & {MB_LANES{i_pl_tready_d2}});
+            end else begin
+                o_tx_lfsr_enable = ({MB_LANES{i_lp_valid_d1}} & {MB_LANES{i_pl_tready_d1}}) | ({MB_LANES{i_lp_valid_d2}} & {MB_LANES{i_pl_tready_d2}} | {MB_LANES{i_lp_valid_d3}} & {MB_LANES{i_pl_tready_d3}}) | ({MB_LANES{i_lp_valid_d4}} & {MB_LANES{i_pl_tready_d4}});
+                fifo_wr_en = ({MB_LANES{i_lp_valid_d1}} & {MB_LANES{i_pl_tready_d1}}) | ({MB_LANES{i_lp_valid_d2}} & {MB_LANES{i_pl_tready_d2}} | {MB_LANES{i_lp_valid_d3}} & {MB_LANES{i_pl_tready_d3}}) | ({MB_LANES{i_lp_valid_d4}} & {MB_LANES{i_pl_tready_d4}});
+            end
+            
             // wr_en the same as o_tx_lfsr_enable
-            fifo_wr_en = o_tx_lfsr_enable;
+            
             o_tx_lfsr_train  = 1'b0;
+
+            o_data_pattern_type = 1'b1;
+
+
             // Pattern type in ACTIVE depends on RDI inputs
             o_pattern_type = PATTERN_ACTIVE_DATA;
         end
@@ -328,29 +345,36 @@ module tx_controller #(
         end
     end
 
+    logic o_tx_done_reg;
+
     // Done pulse generation:
     // - Counter resets on encoding change
     // - Counter runs only in pattern states (done_state=1)
     // - o_tx_done pulses high for one cycle when done_target is reached
-    always_ff @(posedge I_clk or posedge I_reset) begin
-        if (I_reset) begin
+    always_ff @(posedge i_clk or posedge i_reset) begin
+        if (i_reset) begin
             enc_q               <= ENC_RESET;
             ltsm_current_state_q <= ENC_RESET;
             lane_mask_q <= {MB_LANES{1'b1}};
             done_cnt_q <= 12'd0;
-            o_tx_done  <= 1'b0;
+            o_tx_done_reg  <= 1'b0;
             o_tx_reverse_q <= 1'b0;
             o_tx_reverse <= 1'b0;
             i_lp_valid_d1 <= 1'b0;
             i_lp_valid_d2 <= 1'b0;
             // o_pl_trdy  <= 1'b0;
-            o_b2l_enable <= 1'b0;
         end else begin
             enc_q     <= ltsm_states_e'(i_tx_encoding);
-            o_tx_done <= 1'b0;
+            o_tx_done_reg <= 1'b0;
 
             i_lp_valid_d1 <= i_lp_valid;
             i_lp_valid_d2 <= i_lp_valid_d1;
+            i_lp_valid_d3 <= i_lp_valid_d2;
+            i_lp_valid_d4 <= i_lp_valid_d3;
+            i_pl_tready_d1 <= i_pl_tready;
+            i_pl_tready_d2 <= i_pl_tready_d1;
+            i_pl_tready_d3 <= i_pl_tready_d2;
+            i_pl_tready_d4 <= i_pl_tready_d3;
 
             // Track parent main-state context (substate 000) except module 11 eye-test encodings.
             if ((i_tx_encoding[8:7] != 2'b11) && (i_tx_encoding[2:0] == 3'b000)) begin
@@ -379,7 +403,7 @@ module tx_controller #(
                 if (done_cnt_q == (done_target - 12'd1)) begin
                     // Target duration reached: reset counter and assert done pulse for one cycle
                     done_cnt_q <= 12'd0;
-                    o_tx_done  <= 1'b1;
+                    o_tx_done_reg  <= 1'b1;
                 end else begin
                     done_cnt_q <= done_cnt_q + 12'd1;
                 end
@@ -392,19 +416,14 @@ module tx_controller #(
             if (i_tx_encoding == ENC_MBINIT_REVERSAL_APPLY) begin
                 o_tx_reverse <= 1'b1;
             end
+        end
+    end
 
-            // RDI data transmission readiness and enable control
-            /*
-            if (is_main_active) begin
-                o_pl_trdy <= 1'b1;
-                o_b2l_enable <= (i_lp_irdy && i_lp_valid) ? 1'b1 : 1'b0;
-            
-            end
-            */
-            else begin
-                // o_pl_trdy <= 1'b0;
-                o_b2l_enable <= 1'b0;
-            end
+    always_comb begin
+        if (done_state) begin
+            o_tx_done = o_tx_done_reg;
+        end else begin
+            o_tx_done = 1;
         end
     end
 
