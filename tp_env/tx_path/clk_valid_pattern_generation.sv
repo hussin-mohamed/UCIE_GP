@@ -176,13 +176,13 @@ module clk_valid_pattern_generation (
             counter_h<=0;
             
         end
-        else if (counter_h == 23 || i_pattern_type != 2'b01) begin
+        else if (counter_h == 22 || i_pattern_type != 2'b01) begin
 
             counter_h <=0;
 
         end
         
-        else if(w_enable_counting_h && counter_h !=23) begin
+        else if(w_enable_counting_h && counter_h !=22) begin
 
             counter_h <= counter_h + 1;
 
@@ -481,14 +481,14 @@ module clk_valid_pattern_generation (
         else
             w_venable_q1 <= w_venable;
     end
-
+    logic o_valid_active;
     // Registered version (glitch-free)
     always_ff @(posedge i_dclk or posedge i_reset) begin
         if (i_reset)
             o_valid_reg <= 1'b0;
         else
             o_valid_reg <= w_valid_raw;
-            o_valid <= (w_venable && !w_venable_q1) ? w_valid_raw : o_valid_reg;
+            o_valid_active <= (w_venable && !w_venable_q1) ? w_valid_raw : o_valid_reg;
     end
-
+    assign o_valid=(i_pattern_type==00)?w_venable && valid_pattern_reg[valid_counter]:o_valid_active;
 endmodule
