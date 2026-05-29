@@ -51,9 +51,8 @@ module ucie_shift_register #(
     data_sent        = 1'b0;
 
     if (active) begin
-
         // Last chunk
-        if (stage_count == NUM_STAGES - 1) begin
+        if (stage_count == (NUM_STAGES - 1)) begin
             data_sent = 1'b1;
 
             if (data_in_valid) begin

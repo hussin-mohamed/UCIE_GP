@@ -23,6 +23,11 @@ class rdi_seq_item extends uvm_sequence_item;
   logic lp_irdy;
   logic pl_trdy;
 
+  `ifdef UCIE_SYS_LVL
+    // PL State Status: indicates current link/PHY state
+    logic [3:0] pl_state_sts;
+  `endif
+
   // -------------------------------------------------------------------------
   //  UVM Registration (no automation macros — manual do_* methods only)
   // -------------------------------------------------------------------------

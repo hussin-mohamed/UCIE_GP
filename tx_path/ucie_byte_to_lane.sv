@@ -219,7 +219,7 @@ module ucie_byte_to_lane #(
     // =========================================================================
     always_comb begin  
         if(!i_clk)begin
-            enable     =    i_enable && i_lp_irdy               ;
+            enable     =    i_enable         ;
         end
     end
 

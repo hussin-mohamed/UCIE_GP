@@ -118,12 +118,13 @@ module ucie_LTSM #(
     output logic [36:0] o_Runtime_Link_Test_Control_register,
     output logic        o_Runtime_Link_Test_status_register
 );
-  assign o_timer1ms = w_timer_1ms;
+  
   logic w_timer_1ms;
   logic w_timer_4ms;
   logic w_timer_8ms;
   logic w_timer_1us;
   logic w_timer_2us;
+  assign o_timer1ms = w_timer_1ms;
 
   logic w_init_train_en;
   logic w_tx_train_link_init_en;

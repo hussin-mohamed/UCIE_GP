@@ -1,5 +1,5 @@
 vlib work
-vlog -sv tb/packages/tx_defs_pkg.sv tb/ref_model/B2L_modelling.sv tb/ref_model/LFSR_modelling.sv tb/ref_model/per_lane_id_modelling.sv tb/ref_model/reversal_modelling.sv tb/ref_model/TX_controller_modelling.sv tb/ref_model/tx_predictor.sv tb/packages/tx_tb_pkg.sv tb/ref_model/dut_copy/dut_B2L_modelling.sv tb/ref_model/dut_copy/dut_LFSR_modelling.sv tb/ref_model/dut_copy/dut_per_lane_id_modelling.sv tb/ref_model/dut_copy/dut_TX_controller_modelling.sv tb/ref_model/dut_copy/dut_tx_tb_pkg.sv tb/interfaces/*.sv tb/assertions/tx_sva.sv tb/top/model_dut_stub.sv tb/top/tx_tb_top.sv +incdir+tb/packages +incdir+tb/interfaces +incdir+tb/seq_items +incdir+tb/seq_lib +incdir+tb/agents/rdi_agent +incdir+tb/agents/ltsm_agent +incdir+tb/agents/tx2link_agent +incdir+tb/ref_model +incdir+tb/ref_model/dut_copy +incdir+tb/scoreboard +incdir+tb/coverage +incdir+tb/env +incdir+tb/tests -l compile.log
+vlog -sv tb/packages/tx_defs_pkg.sv tb/ref_model/B2L_modelling.sv tb/ref_model/LFSR_modelling.sv tb/ref_model/per_lane_id_modelling.sv tb/ref_model/reversal_modelling.sv tb/ref_model/TX_controller_modelling.sv tb/ref_model/tx_predictor.sv tb/packages/tx_tb_pkg.sv tb/ref_model/dut_copy/dut_B2L_modelling.sv tb/ref_model/dut_copy/dut_LFSR_modelling.sv tb/ref_model/dut_copy/dut_per_lane_id_modelling.sv tb/ref_model/dut_copy/dut_TX_controller_modelling.sv tb/ref_model/dut_copy/dut_tx_tb_pkg.sv tb/interfaces/*.sv tb/assertions/tx_sva.sv tb/top/tx_tb_top.sv +incdir+tb/packages +incdir+tb/interfaces +incdir+tb/seq_items +incdir+tb/seq_lib +incdir+tb/agents/rdi_agent +incdir+tb/agents/ltsm_agent +incdir+tb/agents/tx2link_agent +incdir+tb/ref_model +incdir+tb/ref_model/dut_copy +incdir+tb/scoreboard +incdir+tb/coverage +incdir+tb/env +incdir+tb/tests -l compile.log
 vlog -sv -suppress 7033 \
   tb/packages/tx_defs_pkg.sv \
   tb/packages/tx_tb_pkg.sv \
@@ -62,6 +62,9 @@ sim:/tx_tb_top/dut_rtl/tx_path_dut/empty_result \
 sim:/tx_tb_top/dut_rtl/tx_path_dut/no_data \
 sim:/tx_tb_top/dut_rtl/tx_path_dut/pattern_type_sync
 
+add wave /tx_tb_top/sva_inst/clkp_assertion
+add wave /tx_tb_top/sva_inst/clkn_assertion /tx_tb_top/sva_inst/valid_assertion
+
 # Run simulation
 run
 
@@ -71,5 +74,8 @@ add wave -position insertpoint  \
 sim:/@tx2link_monitor@1
 add wave -position insertpoint  \
 sim:/@rdi_monitor@1
+
+add wave -position insertpoint  \
+sim:/tx_tb_top/sva_inst/counter
 
 run -all

@@ -30,6 +30,11 @@ interface rdi_if #(parameter int NBYTES = 256) (
   // When de-asserted, the adapter must hold lp_data, lp_valid, lp_irdy stable
   logic pl_trdy;
 
+  `ifdef UCIE_SYS_LVL
+    // PL State Status: indicates current link/PHY state
+    logic [3:0] pl_state_sts;
+  `endif
+
   // -------------------------------------------------------------------------
   //  Modports
   // -------------------------------------------------------------------------

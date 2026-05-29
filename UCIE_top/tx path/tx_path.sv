@@ -95,6 +95,7 @@ module tx_path #(
         .i_tx_encoding           (i_tx_encoding),
         .i_lane_map_code         (i_lane_map_code),
         .i_lp_valid              (i_lp_valid),
+        .i_pl_tready             (o_pl_trdy),
         .o_tx_lfsr_enable        (enable_lfsr),
         .o_tx_lfsr_load          (load),
         .o_tx_lfsr_train         (train),
@@ -207,7 +208,7 @@ module tx_path #(
                 .i_fifo_empty  (empty[i]),
                 .o_tx_sb_data  (serializer_out[i]),
                 .o_fifo_rd_en  (rd_en[i]),
-                .o_msg_done    (msg_done[i]),
+                .o_cur_msg_done(msg_done[i]),
                 .o_active      (active[i])
             );
 
@@ -218,7 +219,7 @@ module tx_path #(
     // Clock and valid pattern generation
     // -------------------------------------------------------------------------
 
-    clk_valid_pattern_generation dut(
+    clk_valid_pattern_generation clk_valid_pattern_generation_dut(
         .i_no_data(no_data),
         .i_dclk(i_dclk),
         .i_halfrate(i_halfrate),

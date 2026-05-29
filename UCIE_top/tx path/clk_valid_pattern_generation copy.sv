@@ -12,8 +12,7 @@ module clk_valid_pattern_generation (
     // generating the quadrature with phase difference of 90 degree
     wire w_qclk_1,w_qclk_2;
     wire w_hclk_1;
-    logic no_data;
-    parameter logic [7:0]p_VALID_PATTERN =8'b0000_1111; 
+    parameter logic [15:0]p_VALID_PATTERN =16'b1111_1111_0000_0000; 
     clock_divider ca (
         .i_clk(!i_dclk),
         .i_enable(1'b1),
@@ -33,14 +32,6 @@ module clk_valid_pattern_generation (
         .i_reset(i_reset),
         .o_clk(w_qclk_2)
     );
-    always @(posedge i_dclk or posedge i_reset) begin
-        if (i_reset) begin
-            no_data<=1;
-        end
-        else begin
-            no_data<=i_no_data;
-        end
-    end
     
     // clock divider by 24 for each half rate clock and quadrature clock
 
@@ -185,13 +176,10 @@ module clk_valid_pattern_generation (
             counter_h<=0;
             
         end
-        else if (i_pattern_type != 2'b01) begin
+        else if (counter_h == 23 || i_pattern_type != 2'b01) begin
 
             counter_h <=0;
 
-        end
-        else if (counter_h == 23) begin
-            counter_h <=0;
         end
         
         else if(w_enable_counting_h && counter_h !=23) begin
@@ -200,11 +188,11 @@ module clk_valid_pattern_generation (
 
         end
     end
-    always_ff @( negedge w_hclk_1 or posedge i_reset ) begin 
+    always_ff @( posedge w_hclk_1 or posedge i_reset ) begin 
         if (i_reset) begin
             w_enable_h<=0;
         end
-        else if (i_pattern_type != 2'b01 || (counter_h > 15 )) begin
+        else if (i_pattern_type != 2'b01 || (counter_h >= 16)) begin
             w_enable_h<=0;
         end
         else begin
@@ -228,7 +216,7 @@ module clk_valid_pattern_generation (
     logic [4:0] counter_q_1;
     logic w_enable_q_1;
     logic w_enable_counting_q_1;
-    always_ff @( posedge w_qclk_1 or posedge i_reset) begin 
+    always_ff @( posedge w_qclk_1 ) begin 
 
         if(i_reset)begin
 
@@ -241,13 +229,13 @@ module clk_valid_pattern_generation (
 
         end
         
-        if(w_enable_counting_q_1 && counter_q_1 !=16) begin
+        if(w_enable_counting_q_1 && counter_q_1 !=23) begin
 
             counter_q_1 <= counter_q_1 + 1;
 
         end
     end
-    always_ff @( w_qclk_1 or posedge i_reset) begin 
+    always_ff @( w_qclk_1 ) begin 
         if (i_reset) begin
             w_enable_q_1<=0;
             w_enable_counting_q_1<=0;
@@ -364,8 +352,7 @@ module clk_valid_pattern_generation (
                     end
                 endcase
             end
-                if(!o_valid) begin
-                    case (i_pattern_type)
+                case (i_pattern_type)
                     2'b00: begin
                         // Valid only: suppress clock, pass valid
                         w_venable = 1'b0;
@@ -380,11 +367,9 @@ module clk_valid_pattern_generation (
                     end
                     default: begin
                         // Idle: suppress both
-                        w_venable = no_data ? 1'b0 : 1'b1; // For idle pattern, valid is low if no_data is true, otherwise high
+                        w_venable = i_no_data ? 1'b0 : 1'b1; // For idle pattern, valid is low if no_data is true, otherwise high
                     end
                 endcase
-                end
-                
             // When i_hclk is HIGH: enables hold their latched value (latch transparent on LOW)
 
             // Gate the half-rate clock with its enable
@@ -467,27 +452,47 @@ module clk_valid_pattern_generation (
     // Zero-latency start with glitch-free steady state operation
     //-------------------------------------------------------------------------
     logic [3:0] valid_counter ;
-    reg [7:0] valid_pattern_reg;
+    reg [15:0] valid_pattern_reg;
     logic w_valid_raw;
     logic o_valid_reg;
     logic w_venable_q1;  // Delayed version for edge detection
 
-    always_ff @(posedge i_dclk or posedge i_reset ) begin
+    always_ff @(i_dclk or posedge i_reset ) begin
         if (i_reset) begin
             valid_pattern_reg<= p_VALID_PATTERN;
-            valid_counter <= 0;
         end
         if (!w_venable) begin
-            valid_counter <= 0;
+            valid_counter <= 15;
         end
-        else if (valid_counter == 7) begin
-            valid_counter <= 0;
+        else if (valid_counter == 0) begin
+            valid_counter <= 15;
         end
         else begin
-            valid_counter <= valid_counter + 1;
+            valid_counter <= valid_counter - 1;
         end
     end
 
-    assign o_valid = (i_reset)?0:(w_venable && valid_pattern_reg[valid_counter]);
+    assign w_valid_raw = w_venable && valid_pattern_reg[valid_counter];
+
+    // Register w_venable for edge detection
+    always_ff @(posedge i_dclk or posedge i_reset) begin
+        if (i_reset)
+            w_venable_q1 <= 1'b0;
+        else
+            w_venable_q1 <= w_venable;
+    end
+
+    // Registered version (glitch-free)
+    always_ff @(posedge i_dclk or posedge i_reset) begin
+        if (i_reset)
+            o_valid_reg <= 1'b0;
+        else
+            o_valid_reg <= w_valid_raw;
+    end
+
+    // Zero-latency mux: combinatorial on rising edge, registered otherwise
+    // When w_venable rises (w_venable=1, w_venable_q1=0): use combinatorial (no latency)
+    // Otherwise: use registered (glitch-free)
+    assign o_valid = (w_venable && !w_venable_q1) ? w_valid_raw : o_valid_reg;
 
 endmodule

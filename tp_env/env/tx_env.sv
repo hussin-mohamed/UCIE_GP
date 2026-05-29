@@ -58,7 +58,7 @@ class tx_env extends uvm_env;
 
     // Propagate virtual interfaces to agents
     uvm_config_db#(virtual rdi_if)::set(this, "rdi_agt.*", "rdi_vif", cfg.rdi_vif);
-    uvm_config_db#(virtual ltsm_if)::set(this, "ltsm_agt.*", "ltsm_vif", cfg.ltsm_vif);
+    uvm_config_db#(virtual ltsm_if)::set(this, "*", "ltsm_vif", cfg.ltsm_vif);
     uvm_config_db#(virtual tx2link_if)::set(this, "tx2link_agt.*", "tx2link_vif", cfg.tx2link_vif);
 
     // Instantiate agents

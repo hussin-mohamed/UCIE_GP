@@ -82,8 +82,8 @@ module tx_controller #(
 
     // Required pattern durations (in TX controller clock cycles) before asserting o_tx_done.
     localparam int unsigned DONE_CYCLES_LFSR       = 31; // 2000 clk form the fast clk , 31 from mine
-    localparam int unsigned DONE_CYCLES_VALID      = 16;
-    localparam int unsigned DONE_CYCLES_CLOCK      = 48;
+    localparam int unsigned DONE_CYCLES_VALID      = 14;
+    localparam int unsigned DONE_CYCLES_CLOCK      = 94;
     localparam int unsigned DONE_CYCLES_PER_LANEID = 32;
 
     // Registered copy of the previous encoding is used to detect state entry

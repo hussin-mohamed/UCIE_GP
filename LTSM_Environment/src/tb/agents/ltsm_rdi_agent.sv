@@ -29,7 +29,7 @@ class ltsm_rdi_agent extends uvm_agent;
     uvm_analysis_port #(ltsm_rdi_sequence_item) ap_in, ap_out;
     ltsm_rdi_driver #(virtual ltsm_rdi_if) drvr;
     ltsm_rdi_monitor #(ltsm_rdi_sequence_item, virtual ltsm_rdi_if) mntr;
-    ltsm_rdi_sequencer #(ltsm_rdi_sequence_item) seqr ;
+    ltsm_rdi_sequencer seqr ;
 
 
     rdi_agent_cfg_type#(virtual ltsm_rdi_if) rdi_cfg;

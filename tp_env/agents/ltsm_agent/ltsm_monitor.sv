@@ -65,10 +65,9 @@ class ltsm_monitor extends uvm_monitor;
         txn.encoding          = ltsm_encoding_e'(ltsm_vif.tx_encoding);
         txn.lane_map          = ltsm_vif.lane_map;
 
-        `uvm_info("LTSM_MON", $sformatf("State transition: %s -> %s (lane_map=3'b%03b)",
-                  prev_encoding.name(), txn.encoding.name(), txn.lane_map), UVM_MEDIUM)
+        // `uvm_info("LTSM_MON", $sformatf("State transition: %s -> %s (lane_map=3'b%03b)",
+        //           prev_encoding.name(), txn.encoding.name(), txn.lane_map), UVM_MEDIUM)
 
-        $display("ltsm_write");
         ap.write(txn);
         prev_encoding = ltsm_encoding_e'(ltsm_vif.tx_encoding);
       end

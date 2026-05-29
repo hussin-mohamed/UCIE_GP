@@ -6,7 +6,7 @@ module pattern_generation_decoder (
     input i_clk,
     output logic o_no_data
 );
-    logic done ;
+    logic no_data ;
     logic no_data_reg ;
     always @(*) begin
         case (i_pattern_type)
@@ -16,25 +16,25 @@ module pattern_generation_decoder (
         default: begin
             if (i_empty) begin
                 begin
-                    if (done )
+                    if (i_done)
                      o_no_data= 1'b1;
                      else
-                     o_no_data = 1'b0;
+                     o_no_data = no_data_reg;
                 end
             end
             else begin
-                o_no_data <= 1'b0;
+                o_no_data = no_data_reg;
             end
         end
     endcase
     end
     
-    always @(posedge i_clk or negedge i_empty) begin
+    always @(posedge i_clk ) begin
         if (!i_empty) begin
-            done <= 0;
+            no_data_reg <= 0;
         end
-        else if(i_empty && i_done)begin
-            done <= o_no_data;
+        else begin
+            no_data_reg <= o_no_data;
         end
     end
 endmodule

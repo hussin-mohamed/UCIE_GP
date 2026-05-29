@@ -26,8 +26,8 @@
 //
 //------------------------------------------------------------------------------
 
-class ltsm_rdi_sequencer#(type rdi_sequence_item) extends uvm_sequencer #(rdi_sequence_item);
-  `uvm_component_utils(ltsm_rdi_sequencer#(rdi_sequence_item))
+class ltsm_rdi_sequencer extends uvm_sequencer #(rdi_sequence_item);
+  `uvm_component_utils(ltsm_rdi_sequencer)
 
 
   // Function: new

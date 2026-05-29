@@ -80,6 +80,19 @@ module rx_path #(
     logic                   enable_data_drive;
     logic                   mb_clk_n_en;
     logic                   mb_track_en;
+    logic                   empty_result;
+
+    always @(*) begin
+    case (i_lane_map_code)
+           3'b000 : empty_result = 1'b1;
+           3'b001 : empty_result = &empty[7:0];
+           3'b010 : empty_result = &empty[15:8];
+           3'b011 : empty_result = &empty;
+           3'b100 : empty_result = &empty[3:0];
+           3'b101 : empty_result = &empty[15:12];
+           default: empty_result = 1'b1;
+    endcase
+    end
 
     // -------------------------------------------------------------------------
     // Driver — maps raw inputs to recovered lanes/clocks
@@ -157,7 +170,7 @@ module rx_path #(
     generate
         for (i = 0; i < pNUM_LANES; i++) begin : gen_lane
 
-            deserializer_h #(
+            deser_h #(
                 .pDESER_WIDTH(pDATA_WIDTH)
             ) deser (
                 .i_clk_p          (clk_p),
@@ -231,7 +244,7 @@ module rx_path #(
         .i_clk          (i_clk_l),
         .i_reset        (reset),
         .i_enable       (L2B_enable),
-        .i_lane_map_code(lane_map),
+        .i_lane_map_code(i_lane_map_code),
         .i_lane_0       (lane_LFSR_out[0]),
         .i_lane_1       (lane_LFSR_out[1]),
         .i_lane_2       (lane_LFSR_out[2]),
@@ -243,11 +256,11 @@ module rx_path #(
         .i_lane_8       (lane_LFSR_out[8]),
         .i_lane_9       (lane_LFSR_out[9]),
         .i_lane_10      (lane_LFSR_out[10]),
-        .i_lane_11      (lane_LFSR_out[10]),   // BUG? should be [11]
-        .i_lane_12      (lane_LFSR_out[11]),   // BUG? should be [12]
-        .i_lane_13      (lane_LFSR_out[12]),   // BUG? should be [13]
-        .i_lane_14      (lane_LFSR_out[13]),   // BUG? should be [14]
-        .i_lane_15      (lane_LFSR_out[14]),   // BUG? should be [15]
+        .i_lane_11      (lane_LFSR_out[11]),   
+        .i_lane_12      (lane_LFSR_out[12]),   
+        .i_lane_13      (lane_LFSR_out[13]),   
+        .i_lane_14      (lane_LFSR_out[14]),   
+        .i_lane_15      (lane_LFSR_out[15]),   
         .o_pl_data      (o_pl_data),
         .o_pl_valid     (o_pl_valid)
     );
@@ -261,7 +274,7 @@ module rx_path #(
         .i_reset                (i_reset),
         .i_rx_encoding          (i_rx_encoding),
         .i_lane_map_code        (i_lane_map_code),
-        .i_fifo_empty           (empty),
+        .i_fifo_empty           (empty_result),
         .i_rx_LFSR_results      (lane_lfsr_success),
         .i_rx_lane_id_results   (lane_id_success),
         .i_clk_results          (clk_result_synced),
