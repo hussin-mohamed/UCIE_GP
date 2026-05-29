@@ -277,7 +277,7 @@ module ucie_rx_controller #(
         // ACTIVE keeps LFSR enabled for scrambling but disables train mode.
          if (i_rx_encoding == ENC_ACTIVE) begin
             if (i_lane_map_code == 3'b011) begin
-                o_rx_lfsr_enable = {16{!empty}};
+                o_rx_lfsr_enable = {16{!i_fifo_empty}};
                 if (!i_fifo_empty || !empty) begin
                     o_fifo_rd_en     = 16'hffff;
                     o_l2b_enable   = 1'b1;
