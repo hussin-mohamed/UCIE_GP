@@ -71,8 +71,8 @@ module ucie_rx_controller #(
         ENC_TX_EYE_LFSR_CLEAR        = 9'h181,
         ENC_TX_EYE_PAT_DET           = 9'h182,
         ENC_TX_EYE_RES_HS            = 9'h183, 
-        ENC_RX_EYE_LFSR_CLEAR        = 9'h188,
-        ENC_RX_EYE_LFSR_START        = 9'h189,
+        ENC_RX_EYE_LFSR_START        = 9'h188,
+        ENC_RX_EYE_LFSR_CLEAR        = 9'h189,
         ENC_RX_EYE_PAT_DET           = 9'h18A,
         ENC_RX_EYE_RES_HS            = 9'h18B
     } ltsm_states_e;
@@ -420,6 +420,12 @@ module ucie_rx_controller #(
         else begin
             o_detection_type = 1'b1;
         end
+
+        if (enc_q == ENC_RESET || enc_q == ENC_RX_EYE_LFSR_CLEAR || enc_q == ENC_TX_EYE_LFSR_CLEAR) begin
+            o_rx_path_reset = 1'b1;
+        end else begin
+            o_rx_path_reset = 1'b0;
+        end
     end
 
 
@@ -468,11 +474,7 @@ module ucie_rx_controller #(
        
 
         // Path reset on RESET state
-        if (enc_q == ENC_RESET || enc_q == ENC_RX_EYE_LFSR_CLEAR || enc_q == ENC_TX_EYE_LFSR_CLEAR) begin
-            o_rx_path_reset <= 1'b1;
-        end else begin
-            o_rx_path_reset <= 1'b0;
-        end
+        
 
         // RDI enable
         
