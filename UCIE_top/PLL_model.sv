@@ -1,7 +1,7 @@
 module PLL_model (
     input [2:0] i_sel,
     input i_clk_32,i_clk_24,i_clk_16,i_clk_12,i_clk_8,i_clk_4,i_reset,
-    output logic o_clk_s, o_clk_h,o_clk_l;
+    output logic o_clk_s, o_clk_h,o_clk_l
 );
     logic clk_S,clk_h;
     always_comb begin

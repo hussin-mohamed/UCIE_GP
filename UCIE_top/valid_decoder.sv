@@ -11,7 +11,7 @@ module valid_decoder (
     output logic [63:0] o_data,
     output logic [7:0] o_info,
     output logic o_req,
-    output logic o_rsp
+    output logic o_rsp,
     output logic o_done
 );
     always_ff @(posedge i_clk) begin

@@ -39,7 +39,7 @@ class virtual_sequencer extends uvm_sequencer;
   rx_fsm_sb_sequencer #(rx_fsm_sb_sequence_item) rx_seqr;
   tx_fsm_sb_sequencer #(tx_fsm_sb_sequence_item) tx_seqr;
   LTSM_controllers_sqr #(LTSM_controllers_seq_item) LTSM_ctrl_seqr;
-  ltsm_rdi_sequencer #(ltsm_rdi_sequence_item) ltsm_rdi_seqr;
+  ltsm_rdi_sequencer ltsm_rdi_seqr;
   
 endclass : virtual_sequencer
 
