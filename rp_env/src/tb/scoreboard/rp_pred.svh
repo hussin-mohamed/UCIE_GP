@@ -56,12 +56,12 @@ class rp_pred extends uvm_component;
   logic [pNBYTES-1:0][7:0] rdi_data_buffer;
   logic success_arr [pNUM_LANES];
   
-  logic [pLFSR_TAPS-1:0] lfsr_state [pNUM_LANES-1:0];
-  logic [pLFSR_TAPS-1:0] lfsr_last_state [pNUM_LANES-1:0];
-  int lane_error_count [pNUM_LANES-1:0];
+  logic [pLFSR_TAPS-1:0] lfsr_state [pNUM_LANES];
+  logic [pLFSR_TAPS-1:0] lfsr_last_state [pNUM_LANES];
+  int lane_error_count [pNUM_LANES];
   logic expected_bit;
   int lfsr_train_iter_cnt;
-  logic [pDATA_WIDTH-1:0] lfsr_out_data [pNUM_LANES-1:0];
+  logic [pDATA_WIDTH-1:0] lfsr_out_data [pNUM_LANES];
   logic [pDATA_WIDTH-1:0] lfsr_in_data  [pNUM_LANES];
 
   logic [pLFSR_TAPS-1:0] LANE_ID [0:7] = '{
@@ -195,9 +195,9 @@ class rp_pred extends uvm_component;
         t.rx_encoding == Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init ||
         t.rx_encoding == LINKINIT_RX_PL_Clk_Req_Handshake) begin
       
-      logic [pDATA_WIDTH-1:0] dummy_data    [pNUM_LANES-1:0];
-      logic                   dummy_success [pNUM_LANES-1:0];
-      logic [pDATA_WIDTH-1:0] dummy_out     [pNUM_LANES-1:0];
+      logic [pDATA_WIDTH-1:0] dummy_data    [pNUM_LANES];
+      logic                   dummy_success [pNUM_LANES];
+      logic [pDATA_WIDTH-1:0] dummy_out     [pNUM_LANES];
 
       dummy_data = '{default: 64'h0};
       rx_lfsr(1'b0, 1'b1, dummy_data, current_error_threshold, dummy_success, dummy_out);
@@ -252,8 +252,6 @@ class rp_pred extends uvm_component;
       is_d2c_PerLaneID_train_state = 1;
     end
     
-    `uvm_info("PRDDDDD", $sformatf("current state is %s", current_rx_encoding.name()), UVM_LOW) 
-    `uvm_info("PRDDDDD", $sformatf("previous state is %s", previous_rx_encoding.name()), UVM_LOW) 
   endfunction : write_ltsmc
 
   virtual function void write_rmblink(rmblink_seq_item t);
@@ -416,7 +414,7 @@ class rp_pred extends uvm_component;
     end
   endfunction : lane2byte
 
-  function void load_lfsr_state(int _bit_index, ref logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES-1:0]);
+  function void load_lfsr_state(int _bit_index, ref logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES]);
     for (int i = 0; i < pNUM_LANES; i++) begin
       lfsr_state[i] = LANE_ID[i % 8];
       _out_data[i][_bit_index] = lfsr_state[i][pLFSR_TAPS-1];
@@ -424,11 +422,11 @@ class rp_pred extends uvm_component;
   endfunction : load_lfsr_state
 
   function void train_detection(
-     input  logic [pDATA_WIDTH-1:0] _data [pNUM_LANES-1:0],
+     input  logic [pDATA_WIDTH-1:0] _data [pNUM_LANES],
      input  int                     _error_threshold,
      input  int                     _bit_index,
-     output logic                   _success [pNUM_LANES-1:0],
-     ref    logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES-1:0]
+     output logic                   _success [pNUM_LANES],
+     ref    logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES]
   );
     for (int i = 0; i < pNUM_LANES; i++) begin
       expected_bit = lfsr_state[i][pLFSR_TAPS-1];
@@ -460,9 +458,9 @@ class rp_pred extends uvm_component;
   endfunction : update_lfsr_state
 
   function void descramble_data(
-     input  logic [pDATA_WIDTH-1:0] _data [pNUM_LANES-1:0],
+     input  logic [pDATA_WIDTH-1:0] _data [pNUM_LANES],
      input  int                     _bit_index,
-     ref    logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES-1:0]
+     ref    logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES]
   );
     for (int i = 0; i < pNUM_LANES; i++) begin
       _out_data[i][_bit_index] = _data[i][_bit_index] ^ lfsr_state[i][pLFSR_TAPS-1];
@@ -472,10 +470,10 @@ class rp_pred extends uvm_component;
   function void rx_lfsr(
      input  bit                     _train,
      input  bit                     _load,
-     input  logic [pDATA_WIDTH-1:0] _data [pNUM_LANES-1:0],
+     input  logic [pDATA_WIDTH-1:0] _data [pNUM_LANES],
      input  int                     _error_threshold,
-     output logic                   _success [pNUM_LANES-1:0],
-     output logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES-1:0]
+     output logic                   _success [pNUM_LANES],
+     output logic [pDATA_WIDTH-1:0] _out_data [pNUM_LANES]
   );
     _out_data = '{default: 64'h0}; // Prevent X-propagation logic bugs
     for (int bit_index = 0; bit_index < pDATA_WIDTH; bit_index++) begin
