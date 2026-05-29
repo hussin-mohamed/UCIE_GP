@@ -58,7 +58,7 @@ module ucie_shift_register #(
 
 
     always_comb begin
-        if (count == STAGES) begin
+        if (count == STAGES+1) begin
             count_next  =   1'b1                                ;
             data_valid  =   1'b1                                ;
         end else begin
