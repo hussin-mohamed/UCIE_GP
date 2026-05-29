@@ -104,6 +104,7 @@ package rp_pkg;
   `include "sequences/rmblink_sanity_clk_sequence.svh"
   `include "sequences/rmblink_sanity_PerLaneID_sequence.svh"
   `include "sequences/rmblink_active_sequence.svh"
+  `include "sequences/rmblink_sanity_lfsr_sequence.svh"
 
   // Group: Virtual Sequences
   //
@@ -112,6 +113,7 @@ package rp_pkg;
   `include "virtual_sequences/rp_clk_sanity_vseq.svh"
   `include "virtual_sequences/rp_sanity_PerLaneID_vseq.svh"
   `include "virtual_sequences/rp_active_vseq.svh"
+  `include "virtual_sequences/rp_sanity_lfsr_vseq.svh"
 
   // Group: Tests
   //
@@ -120,5 +122,6 @@ package rp_pkg;
   `include "tests/rp_sanity_valid_test.svh"
   `include "tests/rp_sanity_clk_test.svh"
   `include "tests/rp_sanity_PerLaneID_test.svh"
+  `include "tests/rp_sanity_lfsr_test.svh"
 
 endpackage : rp_pkg
