@@ -227,16 +227,16 @@ import rp_seq_pkg::*;
         end else if (i_rx_encoding == ACTIVE_RX_Active) begin
 
             if (bit_idx == 8) begin // We have a full byte
-              if (expected_pattern == 8'b00000000) begin
-                `uvm_info("ACTIVE",$sformatf("[%0t] IDLE: Detected pattern during active", $time, expected_pattern), UVM_LOW);
-              end
+              if (expected_pattern != 8'b00000000) begin
 
-              else if (expected_pattern != 8'b11110000) begin
+               if (expected_pattern != 8'b11110000) begin
                 `uvm_info("ACTIVE",$sformatf("[%0t] ERROR: Detected pattern %b does not match expected 11110000 during active", $time, expected_pattern), UVM_LOW);
               
                valid_pattern_detected = 1'b0; // Stop the test if we exceed the error threshold
 
               end 
+
+              end
               bit_idx = 0; // Reset for the next byte
             end
         end
