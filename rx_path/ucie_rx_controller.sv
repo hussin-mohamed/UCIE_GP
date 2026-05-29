@@ -217,7 +217,8 @@ module ucie_rx_controller #(
             endcase
         end
     end
-
+    logic l2b_enable;
+    assign l2b_enable = !i_fifo_empty ^ !empty ;
     // Main control decode:
     // 1) generate datapath control outputs (LFSR/per-lane/reversal/pattern type)
     // 2) Select AFE tri-state enables according to current LTSM state/substate
@@ -299,7 +300,7 @@ module ucie_rx_controller #(
                 o_l2b_enable   = 1'b1;
             end
             else begin
-                if (!i_fifo_empty ^ !empty) begin
+                if (l2b_enable) begin
                     o_l2b_enable   = 1'b0;
                 end
                 else begin
