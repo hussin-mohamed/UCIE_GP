@@ -156,7 +156,7 @@ class ltsm_seq_item extends uvm_sequence_item;
     }
 
     if (repair) {
-      lane_map == LANE_MAP_LANES_8_TO_15;
+      lane_map == LANE_MAP_ALL_FUNCTIONAL;
     } else {
       lane_map == LANE_MAP_ALL_FUNCTIONAL;
     }

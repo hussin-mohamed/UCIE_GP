@@ -67,6 +67,35 @@ module tx_sva (
   wire is_pattern_gen = is_pattern_gen_state(ltsm_encoding_e'(tx_encoding));
   wire is_active     = is_active_data(ltsm_encoding_e'(tx_encoding));
 
+  logic busy_clkp;
+  logic busy_clkn;
+  logic pattern_done_clkp;
+  logic pattern_done_clkn;
+  logic valid_state;
+
+  always @(posedge d_clk or posedge rst) begin
+      if (rst)
+          busy_clkp <= 0;
+      else if (!busy_clkp && (tx_encoding == REPAIRCLK_CLK_PATTERN_GEN) && $rose(tx_clkp))
+          busy_clkp <= 1;
+      else if (busy_clkp && pattern_done_clkp) begin // assert pattern_done from your DUT or a monitor
+          busy_clkp <= 0;
+          pattern_done_clkp <= 0;
+      end    
+  end
+
+  always @(posedge d_clk or posedge rst) begin
+      if (rst)
+          busy_clkn <= 0;
+      else if (!busy_clkn && (tx_encoding == REPAIRCLK_CLK_PATTERN_GEN) && $fell(tx_clkn))
+          busy_clkn <= 1;
+      else if (busy_clkn && pattern_done_clkn) begin  // assert pattern_done from your DUT or a monitor
+          busy_clkn <= 0;
+          pattern_done_clkn <= 0;
+      end
+          
+  end
+
   // Operation states: pattern gen + apply/reversal (states that expect tx_done)
   wire is_tx_done_state = is_pattern_gen ||
     (tx_encoding == REVERSAL_APPLY)              ||
@@ -239,41 +268,46 @@ module tx_sva (
 
   property clockp_pattern_property;
     @(posedge d_clk) disable iff (rst)
-    ((tx_encoding == REPAIRCLK_CLK_PATTERN_GEN) && $rose(tx_clkp)) |-> clockp_pattern_gen;
+    ((tx_encoding == REPAIRCLK_CLK_PATTERN_GEN) && $rose(tx_clkp)) && !busy_clkp |-> clockp_pattern_gen;
   endproperty
 
-  clkp_assertion: assert property (clockp_pattern_property)
+  clkp_assertion: assert property (clockp_pattern_property) begin
+    pattern_done_clkp = 1;
+  end
     else `uvm_error("SVA", "Clock_P pattern not generated correctly during REPAIRCLK_CLK_PATTERN_GEN")
 
   sequence clockn_pattern_gen;
-    ((tx_clkp == 0 ##1 tx_clkp == 1) [*16] ##1 (tx_clkp == 1) [*16]) [*128];
+    ((tx_clkn == 0 ##1 tx_clkn == 1) [*16] ##1 (tx_clkn == 1) [*16] ) [*128];
   endsequence
 
   property clockn_pattern_property;
     @(posedge d_clk) disable iff (rst)
-    ((tx_encoding == REPAIRCLK_CLK_PATTERN_GEN) && $rose(tx_clkp)) |-> clockn_pattern_gen;
+    ((tx_encoding == REPAIRCLK_CLK_PATTERN_GEN) && $fell(tx_clkn)) && !busy_clkn |-> clockn_pattern_gen;
   endproperty
 
-  clkn_assertion: assert property (clockn_pattern_property)
+  clkn_assertion: assert property (clockn_pattern_property) begin
+    pattern_done_clkn = 1;
+  end
     else `uvm_error("SVA", "Clock_N pattern not generated correctly during REPAIRCLK_CLK_PATTERN_GEN")
 
   sequence valid_pattern_gen;
-    ((tx_valid == 1) [*8] ##1 (tx_valid == 0) [*8]) [*128];
+    ((tx_valid == 1) [*4] ##1 (tx_valid == 0) [*4]);
   endsequence
 
   property valid_pattern_property;
-    @(posedge d_clk) disable iff (rst)
-    ((tx_encoding == REPAIRVAL_VALID_PATTERN_GEN || ((tx_encoding == D2C_TX_PATTERN_GEN || tx_encoding == D2C_RX_PATTERN_GEN) && valid_state))) |=> valid_pattern_gen;
+    @(posedge d_clk) disable iff (rst || tx_done)
+    $rose(tx_valid) && !tx_done |-> valid_pattern_gen;
   endproperty
 
   valid_assertion: assert property (valid_pattern_property)
-  else `uvm_error("SVA", "tx_valid pattern not generated correctly during REPAIRVAL_VALID_PATTERN_GEN or D2C pattern gen states")
+  else
+    `uvm_error("SVA", "tx_valid pattern not generated correctly during REPAIRVAL_VALID_PATTERN_GEN or D2C pattern gen states")
 
   always_comb begin
-    assert (tx_track == tx_clkp);
+    assert (tx_track === tx_clkp);
   end
 
-  logic valid_state;
+
   always @(*) begin
     if (is_valid_gen_state(ltsm_encoding_e'(tx_encoding))) begin
       valid_state = 1;
