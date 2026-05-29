@@ -75,14 +75,16 @@ add wave -group PRD_State -position insertpoint \
  sim:/uvm_test_top/env/sb/prd/lfsr_train_iter_cnt \
  sim:/uvm_test_top/env/sb/prd/is_d2c_valid_train_state
 
-add wave -group PRD_PerLane_Counts -position insertpoint \
- sim:/uvm_test_top/env/sb/prd/per_lane_pat_cnt \
- -color Red   sim:/uvm_test_top/env/sb/prd/lane_error_count \
- -color Magenta sim:/uvm_test_top/env/sb/prd/success_arr
+add wave -group PRD_Data_Output -position insertpoint \
+ -color Gold sim:/uvm_test_top/env/sb/prd/rdi_data_buffer \
 
-add wave -group PRD_LFSR_State -position insertpoint \
+add wave -group PRD_LFSR -position insertpoint \
+ -color Red   sim:/uvm_test_top/env/sb/prd/lane_error_count \
+ -color Magenta sim:/uvm_test_top/env/sb/prd/success_arr \
  sim:/uvm_test_top/env/sb/prd/lfsr_state \
- sim:/uvm_test_top/env/sb/prd/lfsr_last_state
+ sim:/uvm_test_top/env/sb/prd/lfsr_last_state \
+ -color Gold sim:/uvm_test_top/env/sb/prd/lfsr_in_data \
+ -color Gold sim:/uvm_test_top/env/sb/prd/lfsr_out_data 
 
 add wave -group Assertions -position insertpoint \
  sim:/rp_tb_top/dut/rp_sva_inst/assert_valid_pattern_16_frame \

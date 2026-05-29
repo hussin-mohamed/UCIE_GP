@@ -61,6 +61,8 @@ class rp_pred extends uvm_component;
   int lane_error_count [pNUM_LANES-1:0];
   logic expected_bit;
   int lfsr_train_iter_cnt;
+  logic [pDATA_WIDTH-1:0] lfsr_out_data [pNUM_LANES-1:0];
+  logic [pDATA_WIDTH-1:0] lfsr_in_data  [pNUM_LANES];
 
   logic [pLFSR_TAPS-1:0] LANE_ID [0:7] = '{
     23'h1DBFBC, // Lanes 0,8
@@ -258,7 +260,8 @@ class rp_pred extends uvm_component;
     logic [(pDATA_WIDTH/16)-1:0][15:0] lanes [pNUM_LANES];
     
     logic [(pDATA_WIDTH/8)-1:0][7:0]   l2b_lanes [pNUM_LANES];
-    logic [pDATA_WIDTH-1:0]            lfsr_out_data [pNUM_LANES-1:0];
+
+    lfsr_in_data = t.data;
 
 
     // ========================================================================
