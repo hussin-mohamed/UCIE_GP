@@ -102,8 +102,8 @@ endtask
 
 task rp_active_vseq::body();
 
-  // Test standard X16 mode ACTIVE data transfer
-  execute_active_scenario(X8_LOWER_MODE, "Simple Directed Data Transfer in ACTIVE State");
+  // Test standard X8 mode ACTIVE data transfer
+  execute_active_scenario(X8_UPPER_MODE, "Simple Directed Data Transfer in ACTIVE State");
 
   `uvm_info("VSEQ_ACTIVE", "ACTIVE state data transfer completed successfully.", UVM_LOW)
 

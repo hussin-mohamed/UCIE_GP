@@ -123,5 +123,6 @@ package rp_pkg;
   `include "tests/rp_sanity_clk_test.svh"
   `include "tests/rp_sanity_PerLaneID_test.svh"
   `include "tests/rp_sanity_lfsr_test.svh"
+  `include "tests/rp_active_test.svh"
 
 endpackage : rp_pkg

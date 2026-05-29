@@ -58,6 +58,49 @@ task rp_sanity_PerLaneID_vseq::execute_scenario(lane_map_code_t map_code, per_la
   `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
   `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
 
+  // // 1. Force a clean RESET
+  // ltsmc_seq.configure(
+  //    ._next_state_type(CUSTOM)
+  //   ,._lane_map_code(map_code)
+  //   ,._error_threshold(0)
+  //   ,._half_rate(1'b1)
+  //   ,._target_rx_enc(RESET_Reset)
+  // );
+  // ltsmc_seq.start(ltsmc_seqr);
+
+  // // 2. Traverse along the FSM up to the Per-Lane ID Detection state
+  // ltsmc_seq.configure(
+  //    ._next_state_type(TRAVERSE)
+  //   ,._lane_map_code(map_code)
+  //   ,._error_threshold(0)
+  //   ,._half_rate(1'b1)
+  //   ,._target_rx_enc(MBINIT_REVERSAL_RX_Per_Lane_ID_Det)
+  // );
+  // ltsmc_seq.start(ltsmc_seqr);
+
+  // // 3. Configure and fire the RMBLINK physical stimulus burst
+  // // Note: The physical sequence drives all 16 lanes, but the DUT/Scoreboard 
+  // // will only evaluate the active subset based on the map_code.
+  // rmblink_seq.scenario       = scen;
+  // rmblink_seq.num_iterations = iters;
+  // rmblink_seq.start(rmblink_seqr);
+
+  // // 4. Conclude the FSM sub-routine Handshake
+  // ltsmc_seq.configure(
+  //    ._next_state_type(TRAVERSE)
+  //   ,._lane_map_code(map_code)
+  //   ,._error_threshold(0)
+  //   ,._half_rate(1'b1)
+  //   ,._target_rx_enc(MBINIT_REVERSAL_RX_Done_Handshake)
+  // );
+  // ltsmc_seq.start(ltsmc_seqr);
+
+
+
+
+
+
+
   // 1. Force a clean RESET
   ltsmc_seq.configure(
      ._next_state_type(CUSTOM)
@@ -70,11 +113,19 @@ task rp_sanity_PerLaneID_vseq::execute_scenario(lane_map_code_t map_code, per_la
 
   // 2. Traverse along the FSM up to the Per-Lane ID Detection state
   ltsmc_seq.configure(
+     ._next_state_type(CUSTOM)
+    ,._lane_map_code(map_code)
+    ,._error_threshold(0)
+    ,._half_rate(1'b1)
+    ,._target_rx_enc(MBINIT_REPAIRMB_RX_Init_Handshake)
+  );
+  ltsmc_seq.start(ltsmc_seqr);
+  ltsmc_seq.configure(
      ._next_state_type(TRAVERSE)
     ,._lane_map_code(map_code)
     ,._error_threshold(0)
     ,._half_rate(1'b1)
-    ,._target_rx_enc(MBINIT_REVERSAL_RX_Per_Lane_ID_Det)
+    ,._target_rx_enc(Data_To_Clock_test_RX_Pattern_Detection_TX_Init)
   );
   ltsmc_seq.start(ltsmc_seqr);
 
@@ -91,9 +142,14 @@ task rp_sanity_PerLaneID_vseq::execute_scenario(lane_map_code_t map_code, per_la
     ,._lane_map_code(map_code)
     ,._error_threshold(0)
     ,._half_rate(1'b1)
-    ,._target_rx_enc(MBINIT_REVERSAL_RX_Done_Handshake)
+    ,._target_rx_enc(MBINIT_REPAIRMB_RX_Done_Handshake)
   );
   ltsmc_seq.start(ltsmc_seqr);
+
+
+
+
+
   
   // Brief delay between scenarios to separate waveform transactions visually
   #50ns; 
@@ -145,3 +201,49 @@ task rp_sanity_PerLaneID_vseq::body();
   `uvm_info("VSEQ_SCENARIO", "All Per-Lane ID Detection Scenarios for X16 Mode and X8 Modes Completed Successfully.", UVM_LOW)
 
 endtask : body
+
+
+// // 1. Force a clean RESET
+//   ltsmc_seq.configure(
+//      ._next_state_type(CUSTOM)
+//     ,._lane_map_code(map_code)
+//     ,._error_threshold(0)
+//     ,._half_rate(1'b1)
+//     ,._target_rx_enc(RESET_Reset)
+//   );
+//   ltsmc_seq.start(ltsmc_seqr);
+
+//   // 2. Traverse along the FSM up to the Per-Lane ID Detection state
+//   ltsmc_seq.configure(
+//      ._next_state_type(CUSTOM)
+//     ,._lane_map_code(map_code)
+//     ,._error_threshold(0)
+//     ,._half_rate(1'b1)
+//     ,._target_rx_enc(MBINIT_REPAIRMB_RX_Init_Handshake)
+//   );
+//   ltsmc_seq.start(ltsmc_seqr);
+//   ltsmc_seq.configure(
+//      ._next_state_type(TRAVERSE)
+//     ,._lane_map_code(map_code)
+//     ,._error_threshold(0)
+//     ,._half_rate(1'b1)
+//     ,._target_rx_enc(Data_To_Clock_test_RX_Pattern_Detection_TX_Init)
+//   );
+//   ltsmc_seq.start(ltsmc_seqr);
+
+//   // 3. Configure and fire the RMBLINK physical stimulus burst
+//   // Note: The physical sequence drives all 16 lanes, but the DUT/Scoreboard 
+//   // will only evaluate the active subset based on the map_code.
+//   rmblink_seq.scenario       = scen;
+//   rmblink_seq.num_iterations = iters;
+//   rmblink_seq.start(rmblink_seqr);
+
+//   // 4. Conclude the FSM sub-routine Handshake
+//   ltsmc_seq.configure(
+//      ._next_state_type(TRAVERSE)
+//     ,._lane_map_code(map_code)
+//     ,._error_threshold(0)
+//     ,._half_rate(1'b1)
+//     ,._target_rx_enc(MBINIT_REPAIRMB_RX_Done_Handshake)
+//   );
+//   ltsmc_seq.start(ltsmc_seqr);
