@@ -291,7 +291,7 @@ module ucie_rx_controller #(
             //     end   
             // end
             o_rx_lfsr_enable = {16{!i_fifo_empty}};
-                if (!i_fifo_empty || !empty) begin
+                if (!i_fifo_empty ) begin
                     o_fifo_rd_en     = 16'hffff;
                     o_l2b_enable   = 1'b1;
             end
