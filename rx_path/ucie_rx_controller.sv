@@ -273,7 +273,7 @@ module ucie_rx_controller #(
         // ACTIVE keeps LFSR enabled for scrambling but disables train mode.
          if (i_rx_encoding == ENC_ACTIVE) begin
             if(!i_fifo_empty )begin
-            o_rx_lfsr_enable = 16'hffff;
+            o_rx_lfsr_enable = {16{empty}};
             fifo_rd_en     = 16'hffff;
             o_l2b_enable   = 1'b1;
             end
@@ -387,7 +387,7 @@ module ucie_rx_controller #(
         end
     end
 
-
+logic empty;
    always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
         enc_q                <= ENC_RESET;
@@ -401,9 +401,11 @@ module ucie_rx_controller #(
         o_clk_results        <= 3'b111;
         o_valid_results      <= 1'b1;
         o_rx_path_reset      <= 1'b1;
+        empty<=1;
         end 
         else begin
         o_fifo_rd_en      <= fifo_rd_en;
+        empty             <=i_fifo_empty;
         enc_q             <= ltsm_states_e'(i_rx_encoding);
         o_rx_data_results <= {48'hFFFF_FFFF_FFFF, rx_data_results};
         o_clk_results     <= clk_results;
