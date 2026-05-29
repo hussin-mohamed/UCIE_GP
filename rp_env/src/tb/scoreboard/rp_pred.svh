@@ -285,7 +285,26 @@ class rp_pred extends uvm_component;
     else if ((current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_TX_Init || 
               current_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) &&
              !is_d2c_PerLaneID_train_state) begin
+      int start_lane;
+      int num_active_lanes;
+
       rx_lfsr(1'b1, 1'b0, t.data, current_error_threshold, success_arr, lfsr_out_data);
+
+    case (current_lane_map_code)
+      3'b001: begin start_lane = 0; num_active_lanes = 8;  end // x8 lower
+      3'b010: begin start_lane = 8; num_active_lanes = 8;  end // x8 upper
+      3'b011: begin start_lane = 0; num_active_lanes = 16; end // x16 
+      3'b100: begin start_lane = 0; num_active_lanes = 4;  end // x4 lower
+      3'b101: begin start_lane = 4; num_active_lanes = 4;  end // x4 upper
+      default: `uvm_fatal("PRD_PERLANE", $sformatf("Unsupported lane_map_code: %0b", current_lane_map_code))
+    endcase
+    
+      for (int i = 0; i < pNUM_LANES; i++) begin
+      if (i < start_lane || i >= (start_lane + num_active_lanes)) begin
+        success_arr[i] = 1'b1;
+      end
+    end
+
     end
     
     // ========================================================================
@@ -371,6 +390,7 @@ class rp_pred extends uvm_component;
         _lanes_success[i] = 1'b1;
       end
     end
+    
   endfunction : get_per_lane_id_results
 
   function void lane2byte(

@@ -439,7 +439,6 @@ module ucie_rx_controller #(
         o_rx_data_results    <= 64'hFFFF_FFFF_FFFF_FFFF;
         o_clk_results        <= 3'b111;
         o_valid_results      <= 1'b1;
-        o_rx_path_reset      <= 1'b1;
         empty<=1;
         empty1<=1;
         empty2<=1;
