@@ -124,6 +124,7 @@ module ucie_rx_controller #(
     logic is_main_trainerror;
     logic is_main_l1;
     logic [15:0] fifo_rd_en;
+    logic empty;
 
     // Encodings observed on i_rx_encoding from the LTSM RX FSM.
     // These values are used to drive datapath mode selects and AFE enables.
@@ -387,7 +388,7 @@ module ucie_rx_controller #(
         end
     end
 
-logic empty;
+x
    always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
         enc_q                <= ENC_RESET;
