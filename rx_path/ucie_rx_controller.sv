@@ -237,7 +237,7 @@ module ucie_rx_controller #(
         o_mb_lanes_en            = '0;
         o_error_threshold        = 16'd0;
         error_threshold          = error_threshold_q;  // Use registered value in combinational logic
-        fifo_rd_en               = 16'h0000;
+        o_fifo_rd_en               = 16'h0000;
         o_data_det_type          = 1'b0;
         rx_data_results[15:0]    = o_rx_data_results[15:0]; // Default to all 1's (no errors) for LFSR and lane ID patterns
         clk_results              = o_clk_results; // Default to all 1's (no errors)
@@ -277,19 +277,20 @@ module ucie_rx_controller #(
         // ACTIVE keeps LFSR enabled for scrambling but disables train mode.
          if (i_rx_encoding == ENC_ACTIVE) begin
             if (i_lane_map_code == 3'b011) begin
-                o_rx_lfsr_enable = {16{!empty}}|{16{!empty1}};
+                o_rx_lfsr_enable = {16{!empty}};
                 if (!i_fifo_empty || !empty) begin
-                    fifo_rd_en     = 16'hffff;
+                    o_fifo_rd_en     = 16'hffff;
                     o_l2b_enable   = 1'b1;
                 end
             end
             else begin
                 o_rx_lfsr_enable = {16{!empty}}|{16{!empty1}}|{16{!empty2}}|{16{!empty3}}; 
                 if (!i_fifo_empty || !empty || !empty1 || !empty2 || !empty3) begin
-                    fifo_rd_en     = 16'hffff;
+                    o_fifo_rd_en     = 16'hffff;
                     o_l2b_enable   = 1'b1;
                 end   
             end
+
             o_error_threshold = error_threshold;
             o_rx_lfsr_train  = 1'b0;
             valid_results   = i_valid_results; 
@@ -409,7 +410,6 @@ module ucie_rx_controller #(
         error_threshold_q    <= 16'h0000;
         o_rx_done            <= 1'b1;   // idle = 1
         
-        o_fifo_rd_en         <= 16'h0000;
         o_rx_data_results    <= 64'hFFFF_FFFF_FFFF_FFFF;
         o_clk_results        <= 3'b111;
         o_valid_results      <= 1'b1;
@@ -420,7 +420,6 @@ module ucie_rx_controller #(
         empty3<=1;
         end 
         else begin
-        o_fifo_rd_en      <= fifo_rd_en;
         empty             <=i_fifo_empty;
         empty1            <=empty;
         empty2            <=empty1;
