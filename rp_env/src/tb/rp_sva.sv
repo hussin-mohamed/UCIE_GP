@@ -72,7 +72,7 @@ import rp_seq_pkg::*;
     logic [8:0] previous_encoding;
     logic [8:0] current_enc_q;
     logic is_valid_pattern = 0;
-		logic is_clk_pattern = 0;
+	logic is_clk_pattern = 0;
     logic data_to_clk_test_armed = 0; // NEW: Sequence tracker flag
 
 
@@ -159,8 +159,11 @@ import rp_seq_pkg::*;
             else if ((i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) && data_to_clk_test_armed) begin
                 is_valid_pattern <= 1'b1;
             end 
+            else if (valid_pattern_drive) begin
+                is_valid_pattern <= is_valid_pattern;
+            end
             else begin
-                is_valid_pattern <= 1'b0;
+                is_valid_pattern <= 0;
             end
         end
     end
@@ -200,7 +203,7 @@ import rp_seq_pkg::*;
         end
     end
 
-    always @(posedge i_dclk) begin
+    always @(posedge valid_sample_pulse) begin
 
       if (is_valid_pattern && ((i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) || (i_rx_encoding == ACTIVE_RX_Active))) begin
         if (!first) begin
@@ -362,7 +365,7 @@ import rp_seq_pkg::*;
 
     property valid_results_check;
         @(posedge i_clk_l) 
-        $rose((i_rx_encoding == MBINIT_REPAIRVAL_RX_Send_Result_RESP) || (i_rx_encoding == Data_To_Clock_test_RX_Result_Handshake_RX_Init))
+        (($rose((i_rx_encoding == MBINIT_REPAIRVAL_RX_Send_Result_RESP) || (i_rx_encoding == Data_To_Clock_test_RX_Result_Handshake_RX_Init))) && is_valid_pattern)
         |-> (o_valid_results == valid_pattern_detected);
     endproperty
 
