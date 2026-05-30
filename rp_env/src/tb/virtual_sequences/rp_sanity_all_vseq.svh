@@ -91,6 +91,12 @@ task rp_sanity_all_vseq::execute_scenario(lane_map_code_t map_code,per_lane_scen
   // REPAIRCLK
   // ===============================
 
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" scenario:    %0s", clk_test_mode.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+
   ltsmc_seq.configure(
      ._next_state_type(TRAVERSE)
     ,._lane_map_code(map_code)
@@ -107,6 +113,12 @@ task rp_sanity_all_vseq::execute_scenario(lane_map_code_t map_code,per_lane_scen
   // REPAIRVAL
   // ===============================
 
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" scenario:    %0s", valid_test_mode_init.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+
   ltsmc_seq.configure(
      ._next_state_type(TRAVERSE)
     ,._lane_map_code(map_code)
@@ -122,6 +134,12 @@ task rp_sanity_all_vseq::execute_scenario(lane_map_code_t map_code,per_lane_scen
   // ===============================
   // REVERSAL
   // ===============================
+
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" scenario:    %0s", scen_rev.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
 
   ltsmc_seq.configure(
      ._next_state_type(TRAVERSE)
@@ -144,6 +162,12 @@ task rp_sanity_all_vseq::execute_scenario(lane_map_code_t map_code,per_lane_scen
   // REPAIRMB
   // ===============================
 
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" scenario:    %0s", scen_repmb.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+
   ltsmc_seq.configure(
      ._next_state_type(TRAVERSE)
     ,._lane_map_code(map_code)
@@ -165,6 +189,12 @@ task rp_sanity_all_vseq::execute_scenario(lane_map_code_t map_code,per_lane_scen
   // VALVREF
   // ===============================
 
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" scenario:    %0s", valid_test_mode_vref.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+
   ltsmc_seq.configure(
      ._next_state_type(TRAVERSE)
     ,._lane_map_code(map_code)
@@ -180,6 +210,12 @@ task rp_sanity_all_vseq::execute_scenario(lane_map_code_t map_code,per_lane_scen
   // ===============================
   // DATAVREF
   // ===============================
+
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" scenario:    %0s", scen_dvref.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
 
   ltsmc_seq.configure(
      ._next_state_type(TRAVERSE)
@@ -210,6 +246,12 @@ task rp_sanity_all_vseq::execute_scenario(lane_map_code_t map_code,per_lane_scen
   // VALTRAINCENTER
   // ===============================
 
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" scenario:    %0s", valid_test_mode_vtc.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+
   ltsmc_seq.configure(
      ._next_state_type(TRAVERSE)
     ,._lane_map_code(map_code)
@@ -226,6 +268,12 @@ task rp_sanity_all_vseq::execute_scenario(lane_map_code_t map_code,per_lane_scen
   // VALTRAINVREF
   // ===============================
 
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" scenario:    %0s", valid_test_mode_vtref.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+
   ltsmc_seq.configure(
      ._next_state_type(TRAVERSE)
     ,._lane_map_code(map_code)
@@ -241,6 +289,12 @@ task rp_sanity_all_vseq::execute_scenario(lane_map_code_t map_code,per_lane_scen
   // ===============================
   // DTC1
   // ===============================
+
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" scenario:    %0s", scen_dtc1.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
 
   ltsmc_seq.configure(
      ._next_state_type(TRAVERSE)
@@ -270,6 +324,12 @@ task rp_sanity_all_vseq::execute_scenario(lane_map_code_t map_code,per_lane_scen
   // ===============================
   // DTVREF
   // ===============================
+
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" scenario:    %0s", scen_dtvref.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
 
   ltsmc_seq.configure(
      ._next_state_type(TRAVERSE)
@@ -301,6 +361,12 @@ task rp_sanity_all_vseq::execute_scenario(lane_map_code_t map_code,per_lane_scen
   // DTC2
   // ===============================
 
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" scenario:    %0s", scen_dtc2.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+
   ltsmc_seq.configure(
      ._next_state_type(TRAVERSE)
     ,._lane_map_code(map_code)
@@ -330,6 +396,12 @@ task rp_sanity_all_vseq::execute_scenario(lane_map_code_t map_code,per_lane_scen
   // ===============================
   // LINKSPEED
   // ===============================
+
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" scenario:    %0s", scen_linkspeed.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
 
   ltsmc_seq.configure(
      ._next_state_type(TRAVERSE)
@@ -361,8 +433,24 @@ task rp_sanity_all_vseq::execute_scenario(lane_map_code_t map_code,per_lane_scen
   // ACTIVE
   // ===============================
 
+  // 1. Force a clean RESET
   ltsmc_seq.configure(
-     ._next_state_type(TRAVERSE)
+     ._next_state_type(CUSTOM)
+    ,._lane_map_code(map_code)
+    ,._error_threshold(16'b1)
+    ,._half_rate(1'b1)
+    ,._target_rx_enc(RESET_Reset)
+  );
+  ltsmc_seq.start(ltsmc_seqr);
+
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf(" scenario:   ACTIVE_SCENARIO_IDEAL"), UVM_LOW)
+  `uvm_info("VSEQ_SCENARIO", $sformatf("========================================"), UVM_LOW)
+
+  ltsmc_seq.configure(
+     ._next_state_type(CUSTOM)
     ,._lane_map_code(map_code)
     ,._error_threshold(16'b1)
     ,._half_rate(1'b1)
@@ -397,12 +485,12 @@ task rp_sanity_all_vseq::body();
   // ============================================================================
 // Group 1: Ideal & Baseline Scenarios (Exact Match)
 // ============================================================================
-/*execute_scenario(X8_LOWER_MODE, SCENARIO_IDEAL, SCENARIO_IDEAL, MIXED_ALTERNATING, MIXED_ALTERNATING, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, 32, 64, 100, "Ideal_Baseline_Active100", TEST_CLK_IDEAL_ALL, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
+execute_scenario(X8_LOWER_MODE, SCENARIO_IDEAL, SCENARIO_IDEAL, MIXED_ALTERNATING, MIXED_ALTERNATING, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, 32, 64, 100, "Ideal_Baseline_Active100", TEST_CLK_IDEAL_ALL, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
 execute_scenario(X8_LOWER_MODE, SCENARIO_IDEAL, SCENARIO_IDEAL, MIXED_RANDOM, MIXED_RANDOM, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, 32, 64, 75, "Ideal_Baseline_RandMixed_Active75", TEST_CLK_IDEAL_ALL, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
 execute_scenario(X8_LOWER_MODE, SCENARIO_IDEAL, SCENARIO_IDEAL, MIXED_ALTERNATING, MIXED_ALTERNATING, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, 32, 64, 50, "Ideal_Baseline_Active50", TEST_CLK_IDEAL_ALL, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
 execute_scenario(X8_LOWER_MODE, SCENARIO_IDEAL, SCENARIO_IDEAL, MIXED_RANDOM, MIXED_RANDOM, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, 32, 64, 25, "Ideal_Baseline_RandMixed_Active25", TEST_CLK_IDEAL_ALL, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
 execute_scenario(X8_LOWER_MODE, SCENARIO_IDEAL, SCENARIO_IDEAL, MIXED_ALTERNATING, MIXED_ALTERNATING, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, 32, 64, 1, "Ideal_Baseline_EdgeCase_Active1", TEST_CLK_IDEAL_ALL, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
-*/
+
 // ============================================================================
 // Group 2: Per-Lane Anomalies (Fail Midway, Noise, Threshold Teasers)
 // ============================================================================
@@ -416,7 +504,7 @@ execute_scenario(X8_LOWER_MODE, SCENARIO_THRESHOLD_TEASER, SCENARIO_THRESHOLD_TE
 execute_scenario(X8_LOWER_MODE, SCENARIO_FAIL_MIDWAY, SCENARIO_THRESHOLD_TEASER, MIXED_ALTERNATING, MIXED_ALTERNATING, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, 32, 64, 55, "Rev_FailMid_Repmb_ThreshTeaser_Active55", TEST_CLK_IDEAL_ALL, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
 execute_scenario(X8_LOWER_MODE, SCENARIO_NOISE_THEN_IDEAL, SCENARIO_WRONG_LANE_ID, MIXED_RANDOM, MIXED_ALTERNATING, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, 32, 64, 88, "Rev_NoiseIdeal_Repmb_WrongID_Active88", TEST_CLK_IDEAL_ALL, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
 execute_scenario(X8_LOWER_MODE, SCENARIO_MIXED_SUCCESS, SCENARIO_LATE_SUCCESS, MIXED_ALTERNATING, MIXED_RANDOM, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, 32, 64, 12, "Rev_MixSuc_Repmb_LateSuc_Active12", TEST_CLK_IDEAL_ALL, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
-/*
+
 // ============================================================================
 // Group 3: LFSR Scenarios (Error Injections Below & Above Threshold)
 // ============================================================================
@@ -510,7 +598,7 @@ execute_scenario(X8_LOWER_MODE, SCENARIO_IDEAL, SCENARIO_IDEAL, MIXED_ALTERNATIN
 execute_scenario(X8_LOWER_MODE, SCENARIO_IDEAL, SCENARIO_IDEAL, MIXED_RANDOM, MIXED_RANDOM, SCENARIO_ERROR_ABOVE_THRESH_START, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_ERROR_BELOW_THRESH_END, 32, 64, 31, "LFSRCombo_DVREF_AboveStart_LinkSpeed_BelowEnd_Active31", TEST_CLK_IDEAL_ALL, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
 execute_scenario(X8_LOWER_MODE, SCENARIO_IDEAL, SCENARIO_IDEAL, MIXED_ALTERNATING, MIXED_RANDOM, SCENARIO_EXACT_MATCH, SCENARIO_ERROR_BELOW_THRESH_START, SCENARIO_ERROR_BELOW_THRESH_END, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, 32, 64, 67, "LFSRCombo_DTC1_BelowStart_DTVREF_BelowEnd_Active67", TEST_CLK_IDEAL_ALL, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
 execute_scenario(X8_LOWER_MODE, SCENARIO_IDEAL, SCENARIO_IDEAL, MIXED_RANDOM, MIXED_ALTERNATING, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_ERROR_ABOVE_THRESH_START, SCENARIO_ERROR_ABOVE_THRESH_END, 32, 64, 16, "LFSRCombo_DTC2_AboveStart_LinkSpeed_AboveEnd_Active16", TEST_CLK_IDEAL_ALL, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
-/*
+
 // ============================================================================
 // Group 11: Active Error Handling in Valid Mode
 // ============================================================================
@@ -541,7 +629,7 @@ execute_scenario(X8_LOWER_MODE, SCENARIO_RANDOM_INTERLEAVED, SCENARIO_WRONG_LANE
 execute_scenario(X8_LOWER_MODE, SCENARIO_FAIL_MIDWAY, SCENARIO_FAIL_MIDWAY, MIXED_ALTERNATING, MIXED_ALTERNATING, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, SCENARIO_EXACT_MATCH, 32, 64, 4, "Stress_SymmetricFailMidway_EarlyActive_Active4", TEST_CLK_IDEAL_ALL, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
 execute_scenario(X8_LOWER_MODE, SCENARIO_LATE_SUCCESS, SCENARIO_LATE_SUCCESS, MIXED_RANDOM, MIXED_RANDOM, SCENARIO_ERROR_ABOVE_THRESH_RANDOM, SCENARIO_ERROR_ABOVE_THRESH_RANDOM, SCENARIO_ERROR_ABOVE_THRESH_RANDOM, SCENARIO_ERROR_ABOVE_THRESH_RANDOM, SCENARIO_ERROR_ABOVE_THRESH_RANDOM, 32, 64, 78, "Stress_SymmetricLateSuccess_HeavyLFSRErrors_Active78", TEST_CLK_INJECT_MIDDLE, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F, TEST_IDEAL_ALL_0F);
  
- */
+ 
  
   // ========================================================================
   // PHASE 2: X8 UPPER MODE (Lanes 8-15)
