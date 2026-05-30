@@ -100,7 +100,7 @@ task rp_active_vseq::execute_active_scenario(lane_map_code_t map_code, active_sc
   );
   rmblink_seq.start(rmblink_seqr);
 
-  #50ns;
+  #100ns;
 endtask
 
 
@@ -109,19 +109,19 @@ task rp_active_vseq::body();
   // ========================================================================
   // X16 MODE TESTS
   // ========================================================================
-  execute_active_scenario(X16_MODE, ACTIVE_SCENARIO_IDEAL, 20, "X16: Ideal Data Transfer (10 Chunks)");
+  execute_active_scenario(X16_MODE, ACTIVE_SCENARIO_IDEAL, 10, "X16: Ideal Data Transfer (10 Chunks)");
   // execute_active_scenario(X16_MODE, ACTIVE_SCENARIO_VALID_ERROR, 10, "X16: Data Transfer with Valid Stream Error Injection");
 
   // ========================================================================
   // X8 LOWER MODE TESTS
   // ========================================================================
-  execute_active_scenario(X8_LOWER_MODE, ACTIVE_SCENARIO_IDEAL, 20, "X8_LOWER: Ideal Data Transfer (10 Chunks)");
+  execute_active_scenario(X8_LOWER_MODE, ACTIVE_SCENARIO_IDEAL, 10, "X8_LOWER: Ideal Data Transfer (10 Chunks)");
   // execute_active_scenario(X8_LOWER_MODE, ACTIVE_SCENARIO_VALID_ERROR, 10, "X8_LOWER: Data Transfer with Valid Stream Error Injection");
 
   // ========================================================================
   // X8 UPPER MODE TESTS
   // ========================================================================
-  execute_active_scenario(X8_UPPER_MODE, ACTIVE_SCENARIO_IDEAL, 20, "X8_UPPER: Ideal Data Transfer (10 Chunks)");
+  execute_active_scenario(X8_UPPER_MODE, ACTIVE_SCENARIO_IDEAL, 10, "X8_UPPER: Ideal Data Transfer (10 Chunks)");
   // execute_active_scenario(X8_UPPER_MODE, ACTIVE_SCENARIO_VALID_ERROR, 10, "X8_UPPER: Data Transfer with Valid Stream Error Injection");
 
   `uvm_info("VSEQ_ACTIVE", "ACTIVE state generic data transfers completed successfully for all map modes.", UVM_LOW)

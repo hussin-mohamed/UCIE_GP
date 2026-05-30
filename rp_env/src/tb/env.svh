@@ -141,7 +141,9 @@ function void rp_env::build_phase(uvm_phase phase);
   
   // cvg = rp_coverage_collector::type_id::create("cvg", this);
 
-  rst_drvr = reset_driver::type_id::create("rst_drvr", this);
+  `ifndef UCIE_SYS_LVL
+    rst_drvr = reset_driver::type_id::create("rst_drvr", this);
+  `endif
 
   rdi_agt       = rdi_agent::type_id::create("rdi_agt", this);
   ltsmc_agt      = ltsmc_agent::type_id::create("ltsmc_agt", this);
