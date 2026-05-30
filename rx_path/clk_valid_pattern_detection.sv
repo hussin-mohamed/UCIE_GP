@@ -255,6 +255,7 @@ module clk_valid_pattern_detection (
     // --- Compare / Error-Count Detection Signals ---
     logic [7:0]  w_serialized_compare_h;       // Shift register accumulating valid samples
     logic [3:0]  counter_v_compare_h;          // Sample counter; triggers check at 8
+    logic [3:0]  counter_v_compare_h_reg;          // Sample counter; triggers check at 8
     logic [15:0] counter_error_h;              // Cumulative mismatch counter
     logic        w_clk_p_enable_valid_compare_h; // Clock gate: enables once per-lane result is valid
     logic        w_clk_n_enable_valid_compare_h; // Clock gate: enables once per-lane result is valid
@@ -308,13 +309,16 @@ module clk_valid_pattern_detection (
     always @(posedge w_dclk_compare_h or posedge i_reset) begin
         if (i_reset )begin
             counter_error_h <= 0;
+            counter_v_compare_h_reg<=0;
         end
         // Every 8 samples: accumulate error on mismatch
-        else if (!i_pattern_type[1]) begin
-            if (counter_v_compare_h == 8) begin
+        else if (counter_v_compare_h == 8 && counter_v_compare_h_reg!= counter_v_compare_h) begin
             if (w_serialized_compare_h != 8'b11110000)
                 counter_error_h <= counter_error_h + 1;
         end
+        counter_v_compare_h_reg<=counter_v_compare_h;
+        else begin
+            counter_v_compare_h_reg<=counter_v_compare_h;
         end
     end
     
