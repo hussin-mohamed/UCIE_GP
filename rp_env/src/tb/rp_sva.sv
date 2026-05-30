@@ -206,10 +206,10 @@ import rp_seq_pkg::*;
     always @(posedge valid_sample_pulse) begin
 
       if (is_valid_pattern && ((i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) || (i_rx_encoding == ACTIVE_RX_Active))) begin
-        if (!first) begin
+        /*if (!first) begin
           first = 1;
         end
-        else begin
+        else begin*/
           
         expected_pattern = {expected_pattern[6:0], i_valid}; // Shift in the new bit
         bit_idx = bit_idx + 1; // Increment bit index
@@ -242,7 +242,7 @@ import rp_seq_pkg::*;
               end
               bit_idx = 0; // Reset for the next byte
             end
-        end
+       // end
         end
       end
 
