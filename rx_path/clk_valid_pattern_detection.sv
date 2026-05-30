@@ -211,20 +211,20 @@ module clk_valid_pattern_detection (
         if (i_reset) begin
             w_serialized_per_lane_h    <= 0;
             counter_v_per_lane_h       <= 0;
-            o_enable_valid <= 0;
+            // o_enable_valid <= 0;
         end
         else if (!i_pattern_type[1]) begin
             // Valid detection disabled by pattern_type
             w_serialized_per_lane_h <= 0;
             counter_v_per_lane_h    <= 0;
-            o_enable_valid <= 0;
+            // o_enable_valid <= 0;
         end
         
         else begin
             // Continue shifting in valid samples
             w_serialized_per_lane_h <= {w_serialized_per_lane_h[6:0], i_valid};
             counter_v_per_lane_h    <= counter_v_per_lane_h + 1;
-            o_enable_valid <= 1;
+            // o_enable_valid <= 1;
             if (counter_v_per_lane_h == 8) begin
                 counter_v_per_lane_h <= 1;
             end
@@ -283,20 +283,20 @@ module clk_valid_pattern_detection (
         if (i_reset) begin
             w_serialized_compare_h <= 0;
             counter_v_compare_h    <= 0;
-            o_enable_valid <= 0;
+            // o_enable_valid <= 0;
         end
         else if (!i_pattern_type[1]) begin
             // Valid detection disabled by pattern_type
             w_serialized_compare_h <= 0;
             counter_v_compare_h    <= 0;
-            o_enable_valid <= 0;
+            // o_enable_valid <= 0;
         end
         
         else begin
             // Continue shifting (gated by per-lane enable flag)
             w_serialized_compare_h <= {w_serialized_compare_h[6:0], i_valid};
             counter_v_compare_h    <= counter_v_compare_h + 1;
-            o_enable_valid <= 1;
+            // o_enable_valid <= 1;
             if (counter_v_compare_h == 8) begin
                 counter_v_compare_h <= 1;
             end
