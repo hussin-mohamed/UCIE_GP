@@ -160,6 +160,7 @@ vlog -sv -suppress 2732,7063,2912 \
   ../../tx_path/ucie_byte_to_lane.sv \
   ../../tx_path/tx_controller.sv \
   ../../tx_path/tx_path.sv \
+  ../../tp_env/top/tx_dut_rtl_wrapper.sv \
   ../../tx_path/per_lane_id_generator_top.svh 
 
 #set tx_path_files [list \
