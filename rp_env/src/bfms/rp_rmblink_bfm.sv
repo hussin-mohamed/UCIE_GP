@@ -99,7 +99,7 @@ interface rp_rmblink_bfm(
     end
 
     // Deassert everything during the idle period
-    @(negedge i_dclk);
+    // @(posedge i_dclk);
     i_clk_p <= 1'b0;
     i_clk_n <= 1'b1;
     i_data  <= '0;
