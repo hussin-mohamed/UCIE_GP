@@ -80,9 +80,24 @@ task ltsmc_monitor::collect_item_out(output ltsmc_seq_item _item);
 
   do begin
     @(bfm.i_rx_encoding);
-  end while (bfm.i_rx_encoding !== Data_To_Clock_test_RX_Result_Handshake_TX_Init &&
-             bfm.i_rx_encoding !== Data_To_Clock_test_RX_Result_Handshake_RX_Init &&
-             bfm.i_rx_encoding !== MBINIT_REVERSAL_RX_Result_Handshake);
+  end while (bfm.i_rx_encoding !== MBINIT_REVERSAL_RX_Init_Handshake        &&       
+             bfm.i_rx_encoding !== MBINIT_REPAIRMB_RX_Init_Handshake        &&       
+             bfm.i_rx_encoding !== MBTRAIN_DATAVREF_RX_Start_Handshake      &&         
+             bfm.i_rx_encoding !== MBTRAIN_DTC1_RX_Start_Handshake          &&     
+             bfm.i_rx_encoding !== MBTRAIN_DATATRAINVREF_RX_Start_Handshake &&               
+             bfm.i_rx_encoding !== MBTRAIN_DTC2_RX_Start_Handshake          &&     
+             bfm.i_rx_encoding !== MBTRAIN_LINKSPEED_RX_Start_Handshake);
+
+  if (bfm.i_rx_encoding == MBINIT_REVERSAL_RX_Init_Handshake) begin
+    do begin
+      @(bfm.i_rx_encoding);
+    end while (bfm.i_rx_encoding !== MBINIT_REVERSAL_RX_Result_Handshake);
+  end else begin
+    do begin
+      @(bfm.i_rx_encoding);
+    end while (bfm.i_rx_encoding !== Data_To_Clock_test_RX_Result_Handshake_TX_Init &&
+               bfm.i_rx_encoding !== Data_To_Clock_test_RX_Result_Handshake_RX_Init);
+  end
   
   @(posedge bfm.clk);
   _item.lane_map_code   = bfm.i_lane_map_code;
