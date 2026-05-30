@@ -315,8 +315,8 @@ module clk_valid_pattern_detection (
         else if (counter_v_compare_h == 8 && counter_v_compare_h_reg!= counter_v_compare_h) begin
             if (w_serialized_compare_h != 8'b11110000)
                 counter_error_h <= counter_error_h + 1;
-        end
         counter_v_compare_h_reg<=counter_v_compare_h;
+        end
         else begin
             counter_v_compare_h_reg<=counter_v_compare_h;
         end

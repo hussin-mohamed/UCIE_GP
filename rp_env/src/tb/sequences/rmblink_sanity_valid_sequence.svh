@@ -28,6 +28,8 @@ typedef enum {
   TEST_INJECT_MIDDLE,               // Test 4: 16 valid patterns somewhere in the middle
   TEST_INJECT_END,                  // Test 5: 16 valid patterns at the absolute end (Edge case)
   TEST_SINGLE_ERROR,                // Test 6: Ideal stream, but 1 bit flipped (Below Threshold)
+  TEST_SINGLE_ERROR_AT_LAST,
+  TEST_SINGLE_ERROR_AT_START,
   TEST_MULTI_ERR_ABOVE_THRESH,      // Test 8: Ideal stream, 5+ errors injected (Above Threshold)
   TEST_ACTIVE_IDLE,                 // Test 7: Alternating ACTIVE/IDLE patterns to test tracking logic
   TEST_ACTIVE_ERROR_INJECTION,        // Test 8: Inject errors only during ACTIVE periods to test error handling
@@ -150,6 +152,18 @@ task rmblink_sanity_valid_sequence::body();
     TEST_SINGLE_ERROR: begin
       foreach (req.val_stream[i]) req.val_stream[i] = 8'b0000_1111;
       start_idx = $urandom_range(VALID_CLK_PATTERN_STREAM_LEN - 1, 0);
+      req.val_stream[start_idx] = 8'b0100_1011; // Inject 1 error
+    end
+
+    TEST_SINGLE_ERROR_AT_LAST: begin
+      foreach (req.val_stream[i]) req.val_stream[i] = 8'b0000_1111;
+      start_idx = (VALID_CLK_PATTERN_STREAM_LEN - 1);
+      req.val_stream[start_idx] = 8'b0100_1011; // Inject 1 error
+    end
+
+    TEST_SINGLE_ERROR_AT_START: begin
+      foreach (req.val_stream[i]) req.val_stream[i] = 8'b0000_1111;
+      start_idx = (0);
       req.val_stream[start_idx] = 8'b0100_1011; // Inject 1 error
     end
 

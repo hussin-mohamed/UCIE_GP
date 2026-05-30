@@ -48,7 +48,6 @@ import rp_seq_pkg::*;
    logic valid_active_drive       = 0;
 
     int bit_idx;
-    logic first;
     logic [7:0] expected_pattern;
     logic [15:0] error_counter;
     
@@ -184,6 +183,9 @@ import rp_seq_pkg::*;
             if ((i_rx_encoding == MBINIT_REPAIRVAL_RX_Done_Handshake) || (i_rx_encoding == Data_To_Clock_test_RX_End_Init_Handshake_RX_Init)) begin
                 valid_pattern_detected = 1'b0;
                 valid_pattern_drive = 1'b0; // Reset drive flag when we leave the states that control the pattern detection
+                expected_pattern = 0;
+                error_counter = 0;
+                bit_idx = 0;
             end
         end
     end
@@ -206,17 +208,15 @@ import rp_seq_pkg::*;
     always @(posedge valid_sample_pulse) begin
 
       if (is_valid_pattern && ((i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) || (i_rx_encoding == ACTIVE_RX_Active))) begin
-        /*if (!first) begin
-          first = 1;
-        end
-        else begin*/
+       
           
         expected_pattern = {expected_pattern[6:0], i_valid}; // Shift in the new bit
         bit_idx = bit_idx + 1; // Increment bit index
 
         if (i_rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init)begin
 
-            if ((bit_idx == 8) && pattern_burst_active) begin // We have a full byte
+            if (bit_idx == 8) begin // We have a full byte
+            if (pattern_burst_active) begin
               if (expected_pattern != 8'b11110000) begin
                 error_counter++;
                 `uvm_info("",$sformatf("[%0t] ERROR: Detected pattern %b does not match expected 11110000", $time, expected_pattern), UVM_LOW);
@@ -224,6 +224,7 @@ import rp_seq_pkg::*;
                valid_pattern_detected = 1'b0; // Stop the test if we exceed the error threshold
                end
               end 
+            end
               bit_idx = 0; // Reset for the next byte
             end
 
@@ -242,7 +243,6 @@ import rp_seq_pkg::*;
               end
               bit_idx = 0; // Reset for the next byte
             end
-       // end
         end
       end
 
@@ -250,7 +250,6 @@ import rp_seq_pkg::*;
         expected_pattern = 0;
         error_counter = 0;
         bit_idx = 0;
-        first = 0;
       end
     end
 
