@@ -1,26 +1,26 @@
 // ****************************************************************************
-// * *
+// *                                                                          *
 // * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
-// * *
+// *                                                                          *
 // * Synopsys Proprietary and Confidential. This file contains confidential   *
 // * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
 // * reproduction is prohibited without the prior express written permission  *
 // * of Synopsys, Inc.                                                        *
-// * *
+// *                                                                          *
 // * Synopsys, Inc.                                                           *
 // * 700 East Middlefield Road                                                *
 // * Mountain View, California 94043                                          *
 // * (800) 541-7737                                                           *
-// * *
+// *                                                                          *
 // ****************************************************************************
-
 
 //-----------------------------------------------------------------------------
 //
 // CLASS: rp_active_vseq
 //
 // Virtual sequence to test direct jumps into the ACTIVE state and execute 
-// standard data transactions on the rmblink interface.
+// standard data transactions on the rmblink interface across multiple 
+// lane configurations and scenarios.
 //
 //-----------------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ class rp_active_vseq extends virtual_sequence_base;
   extern task body();
   
   // Helper task to jump to active and send data
-  extern task execute_active_scenario(lane_map_code_t map_code, string scen_name);
+  extern task execute_active_scenario(lane_map_code_t map_code, active_scenario_e scen, int chunks, string scen_name);
 
 endclass : rp_active_vseq
 
@@ -55,10 +55,11 @@ task rp_active_vseq::pre_body();
 endtask : pre_body
 
 
-task rp_active_vseq::execute_active_scenario(lane_map_code_t map_code, string scen_name);
+task rp_active_vseq::execute_active_scenario(lane_map_code_t map_code, active_scenario_e scen, int chunks, string scen_name);
   `uvm_info("VSEQ_ACTIVE", $sformatf("========================================"), UVM_LOW)
   `uvm_info("VSEQ_ACTIVE", $sformatf(" RUNNING: %s", scen_name), UVM_LOW)
   `uvm_info("VSEQ_ACTIVE", $sformatf(" MODE:    %0s", map_code.name()), UVM_LOW)
+  `uvm_info("VSEQ_ACTIVE", $sformatf(" CHUNKS:  %0d (256-Byte Blocks)", chunks), UVM_LOW)
   `uvm_info("VSEQ_ACTIVE", $sformatf("========================================"), UVM_LOW)
 
   // 1. Force a clean RESET
@@ -91,9 +92,12 @@ task rp_active_vseq::execute_active_scenario(lane_map_code_t map_code, string sc
   );
   ltsmc_seq.start(ltsmc_seqr);
 
-  // 4. Fire the RMBLINK physical stimulus burst (Directed Data)
-  rmblink_seq.num_iterations = 1000;               // Send 20 cycles of data
-  rmblink_seq.directed_data  = $urandom();         // Alternating 0/1 directed payload
+  // 4. Fire the RMBLINK physical stimulus burst using the new generic sequence
+  rmblink_seq.configure(
+    ._num_256b_chunks(chunks),
+    ._lane_map_code(map_code),
+    ._scenario(scen)
+  );
   rmblink_seq.start(rmblink_seqr);
 
   #50ns;
@@ -102,9 +106,24 @@ endtask
 
 task rp_active_vseq::body();
 
-  // Test standard X8 mode ACTIVE data transfer
-  execute_active_scenario(X8_UPPER_MODE, "Simple Directed Data Transfer in ACTIVE State");
+  // ========================================================================
+  // X16 MODE TESTS
+  // ========================================================================
+  execute_active_scenario(X16_MODE, ACTIVE_SCENARIO_IDEAL, 20, "X16: Ideal Data Transfer (10 Chunks)");
+  // execute_active_scenario(X16_MODE, ACTIVE_SCENARIO_VALID_ERROR, 10, "X16: Data Transfer with Valid Stream Error Injection");
 
-  `uvm_info("VSEQ_ACTIVE", "ACTIVE state data transfer completed successfully.", UVM_LOW)
+  // ========================================================================
+  // X8 LOWER MODE TESTS
+  // ========================================================================
+  execute_active_scenario(X8_LOWER_MODE, ACTIVE_SCENARIO_IDEAL, 20, "X8_LOWER: Ideal Data Transfer (10 Chunks)");
+  // execute_active_scenario(X8_LOWER_MODE, ACTIVE_SCENARIO_VALID_ERROR, 10, "X8_LOWER: Data Transfer with Valid Stream Error Injection");
+
+  // ========================================================================
+  // X8 UPPER MODE TESTS
+  // ========================================================================
+  execute_active_scenario(X8_UPPER_MODE, ACTIVE_SCENARIO_IDEAL, 20, "X8_UPPER: Ideal Data Transfer (10 Chunks)");
+  // execute_active_scenario(X8_UPPER_MODE, ACTIVE_SCENARIO_VALID_ERROR, 10, "X8_UPPER: Data Transfer with Valid Stream Error Injection");
+
+  `uvm_info("VSEQ_ACTIVE", "ACTIVE state generic data transfers completed successfully for all map modes.", UVM_LOW)
 
 endtask : body

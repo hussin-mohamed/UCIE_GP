@@ -79,9 +79,8 @@ endfunction : new
 task rdi_monitor::collect_item_out(output rdi_seq_item _item);
   _item = rdi_seq_item::type_id::create("_item");
 
-  do begin
-    @(negedge bfm.clk);
-  end while (bfm.pl_valid !== 1'b1);
+  @(posedge bfm.pl_valid);
+  @(negedge bfm.clk);
   _item.data = bfm.pl_data;
 endtask : collect_item_out
 
