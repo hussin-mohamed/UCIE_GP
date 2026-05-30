@@ -310,9 +310,11 @@ module clk_valid_pattern_detection (
             counter_error_h <= 0;
         end
         // Every 8 samples: accumulate error on mismatch
-        else if (counter_v_compare_h == 8) begin
+        else if (!i_pattern_type[1]) begin
+            if (counter_v_compare_h == 8) begin
             if (w_serialized_compare_h != 8'b11110000)
                 counter_error_h <= counter_error_h + 1;
+        end
         end
     end
     
