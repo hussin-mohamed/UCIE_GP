@@ -108,7 +108,14 @@ function void ltsmc_sequence::configure(
     int found_idx = -1;
     
     // Search for the target state in the linear array
-    foreach (rx_flow_array[i]) begin
+    /*foreach (rx_flow_array[i]) begin
+      if (rx_flow_array[i] == _target_rx_enc) begin
+        found_idx = i;
+        break;
+      end
+    end*/
+
+    for (int i = flow_index+1; i < rx_flow_array.size(); i++) begin
       if (rx_flow_array[i] == _target_rx_enc) begin
         found_idx = i;
         break;

@@ -114,6 +114,7 @@ package rp_pkg;
   `include "virtual_sequences/rp_sanity_PerLaneID_vseq.svh"
   `include "virtual_sequences/rp_active_vseq.svh"
   `include "virtual_sequences/rp_sanity_lfsr_vseq.svh"
+  `include "virtual_sequences/rp_sanity_all_vseq.svh"
 
   // Group: Tests
   //
@@ -124,5 +125,6 @@ package rp_pkg;
   `include "tests/rp_sanity_PerLaneID_test.svh"
   `include "tests/rp_sanity_lfsr_test.svh"
   `include "tests/rp_active_test.svh"
+  `include "tests/rp_sanity_all_test.svh"
 
 endpackage : rp_pkg
