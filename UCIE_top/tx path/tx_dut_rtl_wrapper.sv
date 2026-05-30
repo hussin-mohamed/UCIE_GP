@@ -59,17 +59,6 @@ module tx_dut_rtl_wrapper #(
   end
 
   // -------------------------------------------------------------------------
-  //  pll_stable and supply_stable Generation
-  // -------------------------------------------------------------------------
-  initial begin
-    pll_stable = 1'b0;
-    supply_stable = 1'b0;
-    #50;
-    pll_stable = 1'b1;
-    supply_stable = 1'b1;
-  end
-
-  // -------------------------------------------------------------------------
   //  Packed to Unpacked Conversion for tx_data
   // -------------------------------------------------------------------------
   always_comb begin

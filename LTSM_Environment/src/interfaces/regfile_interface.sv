@@ -20,4 +20,4 @@ interface regfile_interface(input logic clk);
     logic i_Runtime_Link_Test_status_register,o_Runtime_Link_Test_status_register;
     logic [36:0] i_Runtime_Link_Test_Control_register,o_Runtime_Link_Test_Control_register;
 
-endinterface : LTSM_controllers_if
+endinterface : regfile_interface

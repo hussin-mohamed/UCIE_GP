@@ -101,7 +101,7 @@ function void ltsm_rdi_agent::build_phase(uvm_phase phase);
 
     if(is_active == UVM_ACTIVE) begin
         drvr = ltsm_rdi_driver #(virtual ltsm_rdi_if)::type_id::create("drvr", this);
-        seqr = ltsm_rdi_sequencer #(ltsm_rdi_sequence_item)::type_id::create("seqr", this);
+        seqr = ltsm_rdi_sequencer::type_id::create("seqr", this);
     end
 
     ap_out = new("ap_out", this);

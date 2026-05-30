@@ -208,20 +208,20 @@ module UCIe_phy #(
       tx_bfm.i_tx_encoding = tx_fsm_sb_if.o_tx_encoding;
       tx_bfm.i_tx_data = tx_fsm_sb_if.o_tx_data;
       tx_bfm.i_tx_info = tx_fsm_sb_if.o_tx_info;
-      tx_bfm.i_sb_tx_req = tx_fsm_sb_if.o_tx_sb_req;
-      tx_bfm.i_sb_tx_rsp = tx_fsm_sb_if.o_tx_sb_rsp;
+      tx_bfm.i_tx_sb_req = tx_fsm_sb_if.o_tx_sb_req;
+      tx_bfm.i_tx_sb_rsp = tx_fsm_sb_if.o_tx_sb_rsp;
 
       tx_fsm_sb_if.i_sb_tx_done = tx_bfm.o_sb_tx_done;
 
       rx_bfm.i_rx_encoding = rx_fsm_sb_if.o_rx_encoding;
       rx_bfm.i_rx_data = rx_fsm_sb_if.o_rx_data;
       rx_bfm.i_rx_info = rx_fsm_sb_if.o_rx_info;
-      rx_bfm.i_sb_rx_req = rx_fsm_sb_if.o_rx_sb_req;
-      rx_bfm.i_sb_rx_rsp = rx_fsm_sb_if.o_rx_sb_rsp;
+      rx_bfm.i_rx_sb_req = rx_fsm_sb_if.o_rx_sb_req;
+      rx_bfm.i_rx_sb_rsp = rx_fsm_sb_if.o_rx_sb_rsp;
 
       rx_fsm_sb_if.i_sb_rx_done = rx_bfm.o_sb_rx_done;
 
-      ltsm_ctrl_bfm.i_sb_init_start = LTSM_controllers_vif.o_sb_init_start;
+      ltsm_ctrl_bfm.i_sb_init_start = LTSM_controllers_vif.o_sbinit_start;
        LTSM_controllers_vif.i_sb_ready = sb_ready;
 
       o_tx_sb_data = phylink_bfm.o_tx_sb_data;
@@ -240,28 +240,28 @@ module UCIe_phy #(
       rdi_intf.lp_valid = i_lp_valid;
       o_pl_trdy = rdi_intf.pl_trdy;
 
-      ltsm_intf.tx_encoding = LTSM_controllers_vif.o_tx_encoding;
+      ltsm_intf.tx_encoding = tx_defs_pkg::ltsm_encoding_e'(LTSM_controllers_vif.o_tx_encoding);
       ltsm_intf.lane_map = LTSM_controllers_vif.o_lane_map_tx;
       LTSM_controllers_vif.i_tx_done = ltsm_intf.tx_done;
 
-      rmblink_bfm.i_rx_encoding = ltsmc_bfm.i_rx_encoding;
-      rmblink_bfm.i_clk_p=i_clk_p;
-      rmblink_bfm.i_clk_n=i_clk_n;
-      rmblink_bfm.i_track=i_track;
-      rmblink_bfm.i_data=i_data_in;
-      rmblink_bfm.i_valid=i_valid;
+      rp_rmblink_bfm_inst.i_rx_encoding = rp_ltsmc_bfm_inst.i_rx_encoding;
+      rp_rmblink_bfm_inst.i_clk_p=i_clk_p;
+      rp_rmblink_bfm_inst.i_clk_n=i_clk_n;
+      rp_rmblink_bfm_inst.i_track=i_track;
+      rp_rmblink_bfm_inst.i_data=i_data_in;
+      rp_rmblink_bfm_inst.i_valid=i_valid;
 
-      o_pl_data=rdi_bfm.pl_data;
-      o_pl_valid=rdi_bfm.pl_valid;
+      o_pl_data=rp_rdi_bfm_inst.pl_data;
+      o_pl_valid=rp_rdi_bfm_inst.pl_valid;
 
-      LTSM_controllers_vif.i_rx_done = ltsmc_bfm.o_rx_done;
-      LTSM_controllers_vif.i_rx_data_results = ltsmc_bfm.o_rx_data_results;
-      LTSM_controllers_vif.i_clk_results = ltsmc_bfm.o_clk_result;
-      LTSM_controllers_vif.i_rx_valid_results = ltsmc_bfm.o_valid_result;
-      ltsmc_bfm.i_rx_encoding = LTSM_controllers_vif.o_rx_encoding;
-      ltsmc_bfm.i_lane_map_code = LTSM_controllers_vif.o_lane_map_rx;
-      ltsmc_bfm.i_error_threshold = 1;
-      ltsmc_bfm.i_half_rate = 1;
+      LTSM_controllers_vif.i_rx_done = rp_ltsmc_bfm_inst.o_rx_done;
+      LTSM_controllers_vif.i_rx_data_results = rp_ltsmc_bfm_inst.o_rx_data_results;
+      LTSM_controllers_vif.i_clk_results = rp_ltsmc_bfm_inst.o_clk_result;
+      LTSM_controllers_vif.i_rx_valid_results = rp_ltsmc_bfm_inst.o_valid_result;
+      rp_ltsmc_bfm_inst.i_rx_encoding = rp_shared_pkg::rx_encoding_t'(LTSM_controllers_vif.o_rx_encoding);
+      rp_ltsmc_bfm_inst.i_lane_map_code = rp_shared_pkg::lane_map_code_t'(LTSM_controllers_vif.o_lane_map_rx);
+      rp_ltsmc_bfm_inst.i_error_threshold = 1;
+      rp_ltsmc_bfm_inst.i_half_rate = 1;
     end
 
 

@@ -9,7 +9,7 @@ module rx_error_decoder #(
     input  logic [2:0]                      i_lane_map,
     input  logic                            i_valid_results,
     output logic [63:0]                     o_rx_data_results,
-    output logic                            o_rx_error,
+    output logic                            o_rx_error
 );
     assign o_rx_data_results [63:16] = '1;
     always @(*) begin
