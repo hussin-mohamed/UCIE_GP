@@ -50,12 +50,14 @@ interface sb_tx_bfm(
   // Methods
   //============================================================================
   task clear();
+  `ifndef UCIE_SYS_LVL
     i_tx_sb_req   <= 0;
     i_tx_sb_rsp   <= 0;
     i_tx_sb_done  <= 0;
     i_tx_encoding <= 0;
     i_tx_data     <= 0;
     i_tx_info     <= 0;
+  `endif
   endtask : clear
 
 endinterface : sb_tx_bfm

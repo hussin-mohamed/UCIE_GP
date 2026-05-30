@@ -49,12 +49,14 @@ interface sb_rx_bfm(
   // Methods
   //============================================================================
   task clear();
+  `ifndef UCIE_SYS_LVL
     i_rx_sb_req   <= 0;
     i_rx_sb_rsp   <= 0;
     i_rx_sb_done  <= 0;
     i_rx_encoding <= 0;
     i_rx_data     <= 0;
     i_rx_info     <= 0;
+  `endif
   endtask : clear
 
 endinterface : sb_rx_bfm

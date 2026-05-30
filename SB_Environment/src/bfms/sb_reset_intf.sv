@@ -19,8 +19,16 @@
 //              interfaces.
 //******************************************************************************
 
-interface sb_reset_intf(
-   input  logic clk
-  ,output logic reset
+interface sb_reset_intf (
+`ifndef UCIE_SYS_LVL
+    input  logic clk,
+    output logic reset
+`else
+    input  logic clk
+`endif
+
 );
+`ifdef UCIE_SYS_LVL
+    logic reset; // Internal signal only, not a port!
+`endif
 endinterface : sb_reset_intf

@@ -159,7 +159,9 @@ function void sb_env::build_phase(uvm_phase phase);
   
   cvg = sb_coverage_collector::type_id::create("cvg", this);
 
+`ifndef UCIE_SYS_LVL
   rst_drvr = reset_driver::type_id::create("rst_drvr", this);
+`endif
 
   ltsm_ctrl_agt = ltsm_ctrl_agent::type_id::create("ltsm_ctrl_agt", this);
   tx_agt        = tx_agent::type_id::create("tx_agt", this);
