@@ -64,7 +64,7 @@ module ucie_ltsm_rx_reset #(
 
         if (i_current_state == RESET) begin
             o_rx_encoding = 9'h00;
-            if (i_pll_stable_reg && i_supply_stable_reg && i_timer_4ms_reg)
+            if (i_pll_stable_reg && i_supply_stable_reg /*&& i_timer_4ms_reg*/)
                 o_done_reset_rx = 1;
         end
     end

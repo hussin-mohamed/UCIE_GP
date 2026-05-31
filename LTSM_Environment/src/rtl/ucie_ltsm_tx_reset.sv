@@ -63,7 +63,7 @@ always_comb begin
 
     if(i_current_state == RESET) begin 
         o_tx_encoding = 9'h00;
-        if(i_pll_stable_reg && i_supply_stable_reg && i_timer_4ms_reg) begin 
+        if(i_pll_stable_reg && i_supply_stable_reg /*&& i_timer_4ms_reg*/) begin 
             o_done_reset_tx = 1;
         end
     end

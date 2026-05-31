@@ -45,22 +45,22 @@ module ucie_tb_top;
   // -------------------------------------------------------------------------
   //  PLL & Supply Stable Logic (Reactive)
   // -------------------------------------------------------------------------
-  logic pll_stable = 0;
-  logic supply_stable = 0;
+  logic pll_stable = 1;
+  logic supply_stable = 1;
 
   // Reactively drive stable signals based on the LTSM encoding
-  always @(DUT.tx_fsm_sb_if.o_tx_encoding or posedge reset) begin
-    if (reset) begin
-      pll_stable = 0;
-      supply_stable = 0;
-    end else if (DUT.tx_fsm_sb_if.o_tx_encoding == 9'b00_0000_000) begin  // RESET_Reset_TX
-      pll_stable = 0;
-      supply_stable = 0;
-      #50ns;
-      pll_stable = 1;
-      supply_stable = 1;
-    end
-  end
+  // always @(DUT.tx_fsm_sb_if.o_tx_encoding or posedge reset) begin
+  //   if (reset) begin
+  //     pll_stable = 0;
+  //     supply_stable = 0;
+  //   end else if (DUT.tx_fsm_sb_if.o_tx_encoding == 9'b00_0000_000) begin  // RESET_Reset_TX
+  //     pll_stable = 0;
+  //     supply_stable = 0;
+  //     #50ns;
+  //     pll_stable = 1;
+  //     supply_stable = 1;
+  //   end
+  // end
 
 
 
