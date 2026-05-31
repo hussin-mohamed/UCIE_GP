@@ -137,7 +137,7 @@ module UCIe_phy #(
 
   // LTSM controller interface
   rp_ltsmc_bfm rp_ltsmc_bfm_inst (
-        .clk  (clk_l)
+        .clk  (i_clk_sb_100_m)
       , .reset(i_reset)
   );
 
