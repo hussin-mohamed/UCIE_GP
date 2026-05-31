@@ -68,7 +68,7 @@ module ucie_ltsm_tx_trainerror #(
     if (i_reset) done_ack <= 0;
     else if (i_sb_tx_done) begin
       done_ack <= 1;
-    end else begin
+    end else if (i_sb_tx_rsp || i_sb_tx_req) begin
       done_ack <= 0;
     end
   end
