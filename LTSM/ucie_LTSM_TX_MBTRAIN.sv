@@ -273,8 +273,8 @@ always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
         o_tx_encoding_old <= 0;  // Register to track previous encoding for done_ack logic
         substates_done_old <= 0;  // Register to track previous substate completion
-        o_speedreg_old <= 5;
-        o_pl_speedmode_old <= 5;
+        o_speedreg_old <= o;
+        o_pl_speedmode_old <= o;
         phyretrain_linkspeed_transition_old <= 0;
         done_ack_old <= 0;
     end else begin
