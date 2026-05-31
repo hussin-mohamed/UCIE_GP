@@ -95,19 +95,25 @@ task phylink_driver::drive_item(inout phylink_seq_item req, output phylink_seq_i
 
 
   if (req.op_mode == SBINIT) begin
+    // $display("aaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     rsp = new("rsp");
     fork
       begin
+        // $display("bbbbbbbbbbbbbbbbbbbbbbbbbbb");
         bfm.serialize_pattern(req.pattern, req.idle_ui_cnt, req.out_of_rst_ui_cnt);
         rsp.pat_detected = bfm.pat_detected;
+        $display("%0t: >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   %0b", $time, bfm.pat_detected);
       end
-      
+
       begin
+        // $display("ccccccccccccccccccccccccccccc");
         @(timeout_triggered);
         rsp.timeout_detected = 1;
       end
     join_any
+        // $display("ddddddddddddddddddddddddddddd");
     disable fork;
+        // $display("eeeeeeeeeeeeeeeeeeeeeeeeeeeeee");
   end else if (req.op_mode == ACTIVE) begin
     msg = item2struct(req);
 

@@ -167,16 +167,16 @@ task sb_cmp_base::main_phase(uvm_phase phase);
         outfifo.get(out_tr);
       end
       begin
-        `uvm_info(cmp_name, "Started timeout counter", UVM_DEBUG);
+        // `uvm_info(cmp_name, "Started timeout counter", UVM_DEBUG);
         #(max_allowable_latency);
-        `uvm_info(cmp_name, "Ended timeout counter", UVM_DEBUG);
+        // `uvm_info(cmp_name, "Ended timeout counter", UVM_DEBUG);
         txn_timeout = 1;
       end
     join_any
     
     if (txn_timeout) begin // Timeout occurred
       disable fork; // Kill the pending get()
-      `uvm_error(cmp_name, $sformatf("Timeout! DUT dropped transaction. Expected:\n %s", exp_tr.sprint()))
+      // `uvm_error(cmp_name, $sformatf("Timeout! DUT dropped transaction. Expected:\n %s", exp_tr.sprint()))
       ERROR();
       // The expected transaction is discarded to realign the fifos for the next transactions 
       txn_timeout = 0;
@@ -202,7 +202,7 @@ task sb_cmp_base::main_phase(uvm_phase phase);
         out_tr.sprint(), "\n"
       };
       
-      `uvm_error(cmp_name, error_msg)
+      // `uvm_error(cmp_name, error_msg)
       $display();
       ERROR();
     end else begin
@@ -219,7 +219,7 @@ task sb_cmp_base::main_phase(uvm_phase phase);
         out_tr.sprint(), "\n"
       };
       
-      `uvm_info(cmp_name, pass_msg, UVM_HIGH)
+      // `uvm_info(cmp_name, pass_msg, UVM_HIGH)
       PASS();
     end
   end

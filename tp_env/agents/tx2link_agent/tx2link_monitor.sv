@@ -89,7 +89,7 @@ class tx2link_monitor extends uvm_monitor;
         ltsm_seq_item state_txn;
         ltsm_state_fifo.get(state_txn);
         current_state = state_txn.encoding;
-        `uvm_info("EGR_MON", $sformatf("LTSM state updated: %s", current_state.name()), UVM_HIGH)
+        // `uvm_info("EGR_MON", $sformatf("LTSM state updated: %s", current_state.name()), UVM_HIGH)
       end
 
       // Sampler - detect tx_valid rising edge (serializer active)

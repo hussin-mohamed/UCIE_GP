@@ -6,7 +6,7 @@
 //              config_db.
 //=============================================================================
 
-`timescale 1fs / 1fs
+`timescale 1ns / 1ps
 
 module ucie_tb_top;
 
@@ -27,14 +27,14 @@ module ucie_tb_top;
   logic reset;
 
   // Assume standard clock periods (just arbitrary examples for the PLL)
-  always #15.625fs clk_32 = ~clk_32;
-  always #20.833fs clk_24 = ~clk_24;
-  always #31.250fs clk_16 = ~clk_16;
-  always #41.666fs clk_12 = ~clk_12;
-  always #62.500fs clk_8 = ~clk_8;
-  always #125.00fs clk_4 = ~clk_4;
-  always #625fs clk_sb_800_m = ~clk_sb_800_m;
-  always #5000fs clk_sb_100_m = ~clk_sb_100_m;
+  always #3ns clk_32 = ~clk_32;
+  always #4ns clk_24 = ~clk_24;
+  always #6ns clk_16 = ~clk_16;
+  always #8ns clk_12 = ~clk_12;
+  always #12ns clk_8 = ~clk_8;
+  always #24ns clk_4 = ~clk_4;
+  always #120ns clk_sb_800_m = ~clk_sb_800_m;
+  always #960ns clk_sb_100_m = ~clk_sb_100_m;
 
   initial begin
     reset = 1;

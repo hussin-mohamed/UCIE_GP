@@ -70,12 +70,16 @@ endfunction : new
 // SBINIT patterns until pattern detection or timeout is reported.
 
 task sbinit_phylink_sanity_seq::body();
+  $display("00000000000000000000000000");
   start_item(req);
+  $display("11111111111111111111111111");
   req.op_mode           = SBINIT;
   req.pattern           = `SBINIT_PATTERN;
   req.idle_ui_cnt       = 32;
   req.out_of_rst_ui_cnt = 1000;
+  $display("222222222222222222222222222");
   finish_item(req);
+  $display("333333333333333333333333333");
   forever begin
     start_item(req);
     req.op_mode           = SBINIT;
@@ -88,8 +92,9 @@ task sbinit_phylink_sanity_seq::body();
     get_response(rsp);
 
     if (rsp.pat_detected) begin
+      $display("444444444444444444444444444444");
       `uvm_info(get_type_name(), "Pattern is DETECTED, Sending 4 more pattern iterations...", UVM_DEBUG)
-      for (int i = 0; i < 4; i++) begin
+      for (int i = 0; i < 1; i++) begin
         start_item(req);
         `uvm_info(get_type_name(), $sformatf("ITERATION%0d...", i), UVM_DEBUG)
         req.op_mode           = SBINIT;

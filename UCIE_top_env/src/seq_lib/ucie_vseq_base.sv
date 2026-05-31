@@ -18,6 +18,7 @@ class ucie_vseq_base extends uvm_sequence;
   active_phylink_sequence      active_phylink_seq;
   sb_pkg::ltsm_seq_item        sb_ltsm_item;
   int                          ltsm2link_msg_cnt;
+  sbinit_phylink_sanity_seq  sbinit_phylink_seq;
 
 
   // -------------------------------------------------------------------------
@@ -33,6 +34,7 @@ class ucie_vseq_base extends uvm_sequence;
     rp_rmblink_seqr    = p_sequencer.rp_rmblink_seqr;
     tx_rdi_seqr        = p_sequencer.tx_rdi_seqr;
     active_phylink_seq = active_phylink_sequence::type_id::create("active_phylink_seq");
+    sbinit_phylink_seq = sbinit_phylink_sanity_seq::type_id::create("sbinit_phylink_seq");
     sb_ltsm_item = new("sb_ltsm_item");
     fork
       begin // Sideband ltsm2link Transmission Thread
@@ -57,9 +59,13 @@ class ucie_vseq_base extends uvm_sequence;
     // sb_ltsm_item.wait_cycles = 30;
     // sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_PARAM_TX_Config_Handshake);
 
+    sbinit_phylink_seq.start(sb_phylink_seqr);
+
     p_sequencer.rx_fifo.get(sb_ltsm_item);
 
-    send_sb_msg(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send_sb_msg(sb_ltsm_item);
 
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask

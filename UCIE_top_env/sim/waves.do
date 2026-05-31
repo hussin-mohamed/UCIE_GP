@@ -227,7 +227,7 @@ vlog {*}$vlog_args \
 vopt +acc ucie_tb_top -o opt_ucie_tb_top
 
 # 12. Launch simulation in GUI mode
-vsim opt_ucie_tb_top -classdebug +UVM_TESTNAME=$UVM_TESTNAME
+vsim opt_ucie_tb_top -classdebug +UVM_TESTNAME=$UVM_TESTNAME +UVM_VERBOSITY=UVM_DEBUG
 
 # =============================================================================
 #  WAVEFORM CONFIGURATION — Add all interface signals in organized groups
@@ -546,18 +546,18 @@ add wave -noupdate -group {SB_Environment — sb_rdi_bfm} \
 
 # ---- SB_Environment/src/bfms/sb_phylink_bfm.sv ----
 add wave -noupdate -group {SB_Environment — sb_phylink_bfm} \
-    /ucie_tb_top/DUT/phylink_bfm/clk \
-    /ucie_tb_top/DUT/phylink_bfm/clk_800MHz \
-    /ucie_tb_top/DUT/phylink_bfm/reset \
-    /ucie_tb_top/DUT/phylink_bfm/o_sb_ready \
-    /ucie_tb_top/DUT/phylink_bfm/i_rx_sb_data \
-    /ucie_tb_top/DUT/phylink_bfm/i_rx_sb_clk \
-    /ucie_tb_top/DUT/phylink_bfm/o_tx_sb_data \
-    /ucie_tb_top/DUT/phylink_bfm/o_tx_sb_clk \
-    /ucie_tb_top/DUT/phylink_bfm/tms \
-    /ucie_tb_top/DUT/phylink_bfm/timeout \
-    /ucie_tb_top/DUT/phylink_bfm/start \
-    /ucie_tb_top/DUT/phylink_bfm/pat_detected
+    /ucie_tb_top/phylink_bfm/clk \
+    /ucie_tb_top/phylink_bfm/clk_800MHz \
+    /ucie_tb_top/phylink_bfm/reset \
+    /ucie_tb_top/phylink_bfm/o_sb_ready \
+    /ucie_tb_top/phylink_bfm/i_rx_sb_data \
+    /ucie_tb_top/phylink_bfm/i_rx_sb_clk \
+    /ucie_tb_top/phylink_bfm/o_tx_sb_data \
+    /ucie_tb_top/phylink_bfm/o_tx_sb_clk \
+    /ucie_tb_top/phylink_bfm/tms \
+    /ucie_tb_top/phylink_bfm/timeout \
+    /ucie_tb_top/phylink_bfm/start \
+    /ucie_tb_top/phylink_bfm/pat_detected
 
 # =============================================================================
 #  Final waveform settings
