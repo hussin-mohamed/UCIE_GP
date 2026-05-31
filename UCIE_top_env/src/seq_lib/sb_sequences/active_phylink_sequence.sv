@@ -31,10 +31,14 @@ class active_phylink_sequence extends sb_sequence_base #(phylink_seq_item);
   extern function new(string name = "active_phylink_sequence");
 
 
+  // Task: pre_body
+  //
+  // Overrides the base sequence's pre_body to avoid overwriting the pre-assigned req.
+  extern task pre_body();
+
   // Task: body
   //
   // Generates a bounded batch of ACTIVE phylink items for basic checking.
-
   extern task body();
 
 endclass : active_phylink_sequence
@@ -60,10 +64,21 @@ function active_phylink_sequence::new(string name = "active_phylink_sequence");
   super.new(name);
 endfunction : new
 
+// pre_body
+// --------
+
+task active_phylink_sequence::pre_body();
+  seq_print("Entered active_phylink_sequence pre_body (custom override)");
+endtask : pre_body
+
 // body
 // ----
 
 task active_phylink_sequence::body();
+  if (req.idle_ui_cnt < 32) begin
+    req.idle_ui_cnt = 100;
+  end
+  `uvm_info(get_type_name(), $sformatf("Driving phylink item: op_mode=%s, fullcode=%s, idle_ui_cnt=%0d", req.op_mode.name(), req.fullcode.name(), req.idle_ui_cnt), UVM_LOW)
   start_item(req);
   finish_item(req);
 endtask : body

@@ -123,7 +123,7 @@ module ucie_tb_top;
 
       // SB Partner Inputs (Routed internally in DUT via its own SB BFMs)
       .i_rx_sb_clk (phylink_bfm.i_rx_sb_clk),  // Dummy connection, driven internally by sb bfms
-      .i_rx_sb_data(phylink_bfm.i_rx_sb_clk),  // Dummy connection, driven internally by sb bfms
+      .i_rx_sb_data(phylink_bfm.i_rx_sb_data),  // Dummy connection, driven internally by sb bfms
 
       // TX RDI Inputs (Driven by TX rdi_vif)
       .i_lp_irdy (rdi_intf.lp_irdy),

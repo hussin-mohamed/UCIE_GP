@@ -42,16 +42,11 @@ class ucie_vseq_base extends uvm_sequence;
     `uvm_info("UCIE_VSEQ", "Starting system-level sanity virtual sequence", UVM_LOW)
     fork
       begin
-        // forever begin
-          $display("eeeeeeeeeeeeeeeeeee");
           p_sequencer.link_fifo.get(phylink_item);
-          $display("nnnnnnnnnnnnnnnnnn");
           active_phylink_seq.req = phylink_item;
           active_phylink_seq.start(sb_phylink_seqr);
-          $display("mmmmmmmmmmmmmmmmmm");
-        // end
       end
-      
+
       begin
         sb_ltsm_item.data        = 64'habcd1234abcd1234;
         sb_ltsm_item.info        = 16'h5678;

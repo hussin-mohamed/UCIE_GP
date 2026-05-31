@@ -19,7 +19,7 @@ class ucie_sanity_test extends ucie_base_test;
   // -------------------------------------------------------------------------
   //  Run Phase
   // -------------------------------------------------------------------------
-  virtual task run_phase(uvm_phase phase);
+  virtual task main_phase(uvm_phase phase);
     ucie_vseq_base vseq;
     
     phase.raise_objection(this);
