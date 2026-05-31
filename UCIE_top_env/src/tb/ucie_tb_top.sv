@@ -98,6 +98,9 @@ module ucie_tb_top;
       , .reset(reset)
   );
 
+    assign  phylink_bfm.tms     = DUT.ltsm_ctrl_bfm.tms;
+    assign  phylink_bfm.timeout = DUT.ltsm_ctrl_bfm.timeout;
+    assign  phylink_bfm.start   = DUT.ltsm_ctrl_bfm.i_sb_init_start;
   // -------------------------------------------------------------------------
   //  DUT Instantiation
   // -------------------------------------------------------------------------
