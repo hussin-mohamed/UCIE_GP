@@ -68,10 +68,17 @@ import shared_ltsm_pkg::*;
             counter = 0;
         end
         if (counter == (timeout+1) && cntxt.currentstate_tx != ResetState_tx::Instance()) begin
-            nextState_tx = trainerror_tx::Instance();
-            nextState_rx = trainerror_rx::Instance();
-            error_enter =1;
+            if (cntxt.currentstate_tx == SbInitState_tx::Instance()) begin
+                nextState_tx=ResetState_tx::Instance();
+                nextState_rx=ResetState_rx::Instance();
+            end
+            else begin
+                nextState_tx = trainerror_tx::Instance();
+                nextState_rx = trainerror_rx::Instance();
+                error_enter =1;
+            end
         end
+
         if (trainerror && item_controllers_in.i_tx_done && cntxt.currentstate_tx == mbtrain_tx_speedidle::Instance()) begin
             nextState_tx = trainerror_tx::Instance();
             nextState_rx = trainerror_rx::Instance();
