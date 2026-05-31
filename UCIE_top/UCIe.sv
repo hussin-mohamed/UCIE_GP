@@ -58,6 +58,7 @@ module UCIe_phy #(
     wire clk_mb_h; // half rate clock used in mainband
     wire clk_l;     // Logical clock used in mainband & LTSM
     logic sb_ready;
+    bit t1_ms;
     PLL_model PLL(
         .i_sel(LTSM_controllers_vif.o_speedreg),
         .i_reset(LTSM_controllers_vif.i_reset),
@@ -90,7 +91,7 @@ module UCIe_phy #(
   // LTSM control interface
   sb_ltsm_ctrl_bfm ltsm_ctrl_bfm (
       .clk(i_clk_sb_100_m),
-      .clk_800(i_clk_sb_100_m)
+      .clk_800(clk_l)
       , .reset(i_reset)
       , .o_sb_ready(sb_ready)
   );
@@ -302,6 +303,19 @@ module UCIe_phy #(
         .o_done(tx_bfm.i_tx_sb_done)
     );
 
+    always_ff @(posedge i_clk_sb_100_m or posedge i_reset) begin
+        if (i_reset) begin
+            ltsm_ctrl_bfm.i_timer_1ms <= 0;
+        end else begin
+            if (!ltsm_ctrl_bfm.i_timer_1ms) begin
+                ltsm_ctrl_bfm.i_timer_1ms <= t1_ms;
+            end
+            else begin
+                ltsm_ctrl_bfm.i_timer_1ms <= 0;
+            end
+        end
+    end
+
    // top instantiation of all blocks
    ucie_LTSM LTSM (.i_clk(clk_l),
              .i_tx_decoding         (tx_fsm_sb_if.i_tx_decoding),
@@ -338,7 +352,7 @@ module UCIe_phy #(
              .i_rx_clk_results          (LTSM_controllers_vif.i_clk_results),
              .o_sb_init_start           (LTSM_controllers_vif.o_sbinit_start),
              .i_sb_ready                (LTSM_controllers_vif.i_sb_ready),
-             .o_timer1ms                (ltsm_ctrl_bfm.i_timer_1ms),
+             .o_timer1ms                (t1_ms),
              .i_reset                   (LTSM_controllers_vif.i_reset),
              //.i_par_check_done  (LTSM_controllers_vif.i_par_check_done), // needs to be fixed in the verification model and sequences 
              .i_sb_cur_msg_done (LTSM_controllers_vif.i_sb_cur_msg_done),
