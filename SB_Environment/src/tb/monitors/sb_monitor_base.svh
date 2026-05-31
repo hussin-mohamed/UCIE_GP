@@ -130,7 +130,7 @@ task sb_monitor_base::run_phase(uvm_phase phase);
     @(negedge bfm.reset);
 
     // Wait for the SBINIT to finish
-    @(negedge bfm.o_sb_ready);
+    // @(negedge bfm.o_sb_ready);
 
     fork
       monitor_items_out();

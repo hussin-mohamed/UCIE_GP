@@ -17,6 +17,7 @@ class ucie_vseq_base extends uvm_sequence;
   phylink_seq_item             phylink_item;
   active_phylink_sequence      active_phylink_seq;
   sb_pkg::ltsm_seq_item        sb_ltsm_item;
+  int                          ltsm2link_msg_cnt;
 
 
   // -------------------------------------------------------------------------
@@ -33,6 +34,15 @@ class ucie_vseq_base extends uvm_sequence;
     tx_rdi_seqr        = p_sequencer.tx_rdi_seqr;
     active_phylink_seq = active_phylink_sequence::type_id::create("active_phylink_seq");
     sb_ltsm_item = new("sb_ltsm_item");
+    fork
+      begin // Sideband ltsm2link Transmission Thread
+        forever begin
+          p_sequencer.link_fifo.get(phylink_item);
+          active_phylink_seq.req = phylink_item;
+          active_phylink_seq.start(sb_phylink_seqr);
+        end
+      end
+    join_none
   endtask : pre_body
 
   // -------------------------------------------------------------------------
@@ -40,23 +50,16 @@ class ucie_vseq_base extends uvm_sequence;
   // -------------------------------------------------------------------------
   virtual task body();
     `uvm_info("UCIE_VSEQ", "Starting system-level sanity virtual sequence", UVM_LOW)
-    fork
-      begin
-          p_sequencer.link_fifo.get(phylink_item);
-          active_phylink_seq.req = phylink_item;
-          active_phylink_seq.start(sb_phylink_seqr);
-      end
 
-      begin
-        sb_ltsm_item.data        = 64'habcd1234abcd1234;
-        sb_ltsm_item.info        = 16'h5678;
-        sb_ltsm_item.msgtype     = REQ_MSG;
-        sb_ltsm_item.wait_cycles = 30;
-        sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_PARAM_TX_Config_Handshake);
-    
-        send_sb_msg(sb_ltsm_item);
-      end
-    join
+    // sb_ltsm_item.data        = 64'habcd1234abcd1234;
+    // sb_ltsm_item.info        = 16'h5678;
+    // sb_ltsm_item.msgtype     = REQ_MSG;
+    // sb_ltsm_item.wait_cycles = 30;
+    // sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_PARAM_TX_Config_Handshake);
+
+    p_sequencer.rx_fifo.get(sb_ltsm_item);
+
+    send_sb_msg(sb_ltsm_item);
 
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask
@@ -67,6 +70,7 @@ class ucie_vseq_base extends uvm_sequence;
     end else begin
       p_sequencer.prd_ltsm2link.write_rx(sb_ltsm_item);
     end
+    ltsm2link_msg_cnt++;
   endfunction : send_sb_msg
 
 endclass : ucie_vseq_base

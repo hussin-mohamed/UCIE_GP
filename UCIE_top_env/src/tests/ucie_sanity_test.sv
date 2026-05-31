@@ -30,6 +30,8 @@ class ucie_sanity_test extends ucie_base_test;
     vseq = ucie_vseq_base::type_id::create("vseq");
     vseq.start(env.vseqr);
 
+    wait(env.sb_env_i.phylink_agt.mntr.txn_in_cnt == vseq.ltsm2link_msg_cnt);
+
     // Wait a bit to let things settle after sequence finishes
     #100ns;
     

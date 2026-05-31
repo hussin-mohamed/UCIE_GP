@@ -227,7 +227,7 @@ vlog {*}$vlog_args \
 vopt +acc ucie_tb_top -o opt_ucie_tb_top
 
 # 12. Launch simulation in GUI mode
-vsim opt_ucie_tb_top -classdebug +UVM_TESTNAME=$UVM_TESTNAME
+vsim opt_ucie_tb_top -classdebug +UVM_TESTNAME=$UVM_TESTNAME +UVM_VERBOSITY=UVM_DEBUG
 
 # =============================================================================
 #  WAVEFORM CONFIGURATION — Add all interface signals in organized groups
