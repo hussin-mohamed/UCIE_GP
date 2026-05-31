@@ -184,7 +184,7 @@ task sb_pred_ltsm2link::main_phase(uvm_phase phase);
         // Give TX the priority to start if both have existing items
         if(tx_mb.try_get(ltsm_item)) begin
           phylink_item = get_predicted_item(ltsm_item);
-          results_ap_phy.write(phylink_item);          
+          results_ap_phy.write(phylink_item);
         end
         if(rx_mb.try_get(ltsm_item)) begin
           phylink_item = get_predicted_item(ltsm_item);

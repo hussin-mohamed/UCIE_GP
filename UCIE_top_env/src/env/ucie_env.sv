@@ -102,6 +102,7 @@ class ucie_env extends uvm_env;
 
     // Any system-level scoreboard or cross-environment TLM connections would go here.
     // Currently relying on existing sub-environment scoreboards.
+    sb_env_i.phylink_agt.out_ap.connect(vseqr.axp_in);
   endfunction
 
 endclass : ucie_env

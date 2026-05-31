@@ -13,20 +13,21 @@ class ucie_sanity_test extends ucie_base_test;
   // -------------------------------------------------------------------------
   function new(string name="ucie_sanity_test", uvm_component parent=null);
     super.new(name, parent);
+    uvm_top.set_timeout(50us, 0);
   endfunction
 
   // -------------------------------------------------------------------------
   //  Run Phase
   // -------------------------------------------------------------------------
-  virtual task run_phase(uvm_phase phase);
-    ucie_sanity_vseq vseq;
+  virtual task main_phase(uvm_phase phase);
+    ucie_vseq_base vseq;
     
     phase.raise_objection(this);
     
     // Wait for reset to deassert before starting (handled in vseq or here)
     // Assume TB logic handles reset duration and sequence can just start.
     
-    vseq = ucie_sanity_vseq::type_id::create("vseq");
+    vseq = ucie_vseq_base::type_id::create("vseq");
     vseq.start(env.vseqr);
 
     // Wait a bit to let things settle after sequence finishes
