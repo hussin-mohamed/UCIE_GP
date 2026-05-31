@@ -44,6 +44,7 @@ module ucie_rx_controller #(
         ENC_MBINIT_REPAIRVAL         = 9'h028,
         ENC_MBINIT_REPAIRVAL_PAT_DET = 9'h029,
         ENC_MBINIT_REVERSAL          = 9'h030,
+        ENC_MBINIT_REVERSAL_CLEAR    = 9'h031,
         ENC_MBINIT_REVERSAL_PER_LANE = 9'h032,
         ENC_MBINIT_REVERSAL_APPLY    = 9'h034,
         ENC_MBINIT_REPAIRMB          = 9'h038,
@@ -420,7 +421,7 @@ module ucie_rx_controller #(
             o_detection_type = 1'b1;
         end
 
-        if (enc_q == ENC_RESET || enc_q == ENC_RX_EYE_LFSR_CLEAR || enc_q == ENC_TX_EYE_LFSR_CLEAR) begin
+        if (enc_q == ENC_RESET || enc_q == ENC_RX_EYE_LFSR_CLEAR || enc_q == ENC_TX_EYE_LFSR_CLEAR || enc_q == ENC_MBINIT_REVERSAL_CLEAR) begin
             o_rx_path_reset = 1'b1;
         end else begin
             o_rx_path_reset = 1'b0;
