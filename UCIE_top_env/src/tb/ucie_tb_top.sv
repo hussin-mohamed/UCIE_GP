@@ -6,7 +6,7 @@
 //              config_db.
 //=============================================================================
 
-`timescale 1fs / 0.001fs
+`timescale 1fs / 1fs
 
 module ucie_tb_top;
 
