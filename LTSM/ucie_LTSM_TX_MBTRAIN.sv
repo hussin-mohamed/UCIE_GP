@@ -541,10 +541,7 @@ always @(*) begin
                                         next_substate = 1;
                                         o_tx_sb_req_reg = 0;
                                         o_tx_sb_rsp_reg = 0;
-                                        if (first_attempt) begin
-                                            o_speedreg = 'h5;
-                                            o_pl_speedmode = 'h5;
-                                        end else if (!L1_access) begin
+                                        if (!L1_access) begin
                                             o_pl_speedmode = i_speedreg - 1;
                                             o_speedreg = i_speedreg - 1;
                                         end else if (L1_access) begin
@@ -557,7 +554,18 @@ always @(*) begin
                                         end
                                     end else begin
                                         // Speed mismatch error
-                                        trainerror = 1;
+                                        if (first_attempt) begin
+                                            o_speedreg = 'h5;
+                                            o_pl_speedmode = 'h5;
+                                            o_tx_encoding_reg = 'hCA;
+                                            next_substate = 1;
+                                            o_tx_sb_req_reg = 0;
+                                            o_tx_sb_rsp_reg = 0;
+                                        end
+                                        else begin
+                                            trainerror = 1;    
+                                        end
+                                        
                                     end
                                 end
                             end  
