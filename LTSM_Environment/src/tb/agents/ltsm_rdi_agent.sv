@@ -121,6 +121,10 @@ function void ltsm_rdi_agent::connect_phase(uvm_phase phase);
 
     if(is_active == UVM_ACTIVE) begin
         drvr.seq_item_port.connect(seqr.seq_item_export);
+        `ifdef UCIE_SYS_LVL
+        drvr.vif = rdi_cfg.vif_drive;
+        `else
         drvr.vif = rdi_cfg.vif;
+        `endif 
     end
 endfunction : connect_phase

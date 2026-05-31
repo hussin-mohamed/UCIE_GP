@@ -38,6 +38,8 @@ class ucie_base_test extends uvm_test;
     // LTSM Env VIFs
     if (!uvm_config_db#(virtual ltsm_rdi_if)::get(this, "", "ltsm_rdi_vif", m_cfg.ltsm_cfg.ltsm_rdi_vif))
       `uvm_fatal("NO_VIF", "ltsm_rdi_vif not set")
+    if (!uvm_config_db#(virtual ltsm_rdi_if)::get(this, "", "ltsm_rdi_if_driver_only", m_cfg.ltsm_cfg.ltsm_rdi_vif_drive))
+      `uvm_fatal("NO_VIF", "ltsm_rdi_vif not set")
     if (!uvm_config_db#(virtual TX_FSM_SB)::get(this, "", "tx_fsm_sb_vif", m_cfg.ltsm_cfg.tx_fsm_sb_if))
       `uvm_fatal("NO_VIF", "tx_fsm_sb_vif not set")
     if (!uvm_config_db#(virtual RX_FSM_SB)::get(this, "", "rx_fsm_sb_vif", m_cfg.ltsm_cfg.rx_fsm_sb_if))
@@ -56,6 +58,8 @@ class ucie_base_test extends uvm_test;
       `uvm_fatal("NO_VIF", "sb_rx_bfm not set")
     if (!uvm_config_db#(virtual sb_phylink_bfm)::get(this, "", "sb_phylink_bfm", m_cfg.sb_cfg.phylink_bfm))
       `uvm_fatal("NO_VIF", "sb_phylink_bfm not set")
+    if (!uvm_config_db#(virtual sb_phylink_bfm)::get(this, "", "sb_phylink_bfm_driver_only", m_cfg.sb_cfg.phylink_bfm_drive))
+      `uvm_fatal("NO_VIF", "sb_phylink_bfm not set")
 
     // RX-Path Env VIFs
     if (!uvm_config_db#(virtual rp_reset_intf)::get(this, "", "rp_reset_vif", m_cfg.rp_cfg.reset_intf))
@@ -66,9 +70,13 @@ class ucie_base_test extends uvm_test;
       `uvm_fatal("NO_VIF", "rp_ltsmc_bfm not set")
     if (!uvm_config_db#(virtual rp_rmblink_bfm)::get(this, "", "rp_rmblink_bfm", m_cfg.rp_cfg.rmblink_bfm))
       `uvm_fatal("NO_VIF", "rp_rmblink_bfm not set")
+    if (!uvm_config_db#(virtual rp_rmblink_bfm)::get(this, "", "rp_rmblink_bfm_driver_only", m_cfg.rp_cfg.rmblink_bfm_drive))
+      `uvm_fatal("NO_VIF", "rp_rmblink_bfm not set")
 
     // TX-Path Env VIFs
     if (!uvm_config_db#(virtual rdi_if)::get(this, "", "tx_rdi_vif", m_cfg.tx_cfg.rdi_vif))
+      `uvm_fatal("NO_VIF", "tx_rdi_vif not set")
+    if (!uvm_config_db#(virtual rdi_if)::get(this, "", "rdi_if_driver_only", m_cfg.tx_cfg.rdi_vif_drive))
       `uvm_fatal("NO_VIF", "tx_rdi_vif not set")
     if (!uvm_config_db#(virtual ltsm_if)::get(this, "", "tx_ltsm_vif", m_cfg.tx_cfg.ltsm_vif))
       `uvm_fatal("NO_VIF", "tx_ltsm_vif not set")

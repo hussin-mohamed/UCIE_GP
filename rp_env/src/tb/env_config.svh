@@ -31,6 +31,7 @@ class env_config extends uvm_object;
   virtual rp_rdi_bfm        rdi_bfm;
   virtual rp_ltsmc_bfm      ltsmc_bfm;
   virtual rp_rmblink_bfm    rmblink_bfm;
+  virtual rp_rmblink_bfm    rmblink_bfm_drive;
 
   bit disable_checking [5]; // Five flags for the five scoreboards
 

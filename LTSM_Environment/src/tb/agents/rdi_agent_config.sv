@@ -30,6 +30,7 @@
 class rdi_agent_cfg_type #(type INTF_T) extends uvm_object;
 
     INTF_T vif;
+    INTF_T vif_drive;
 
     uvm_active_passive_enum is_active = UVM_ACTIVE;
 

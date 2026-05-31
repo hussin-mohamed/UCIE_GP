@@ -30,6 +30,7 @@
 class agent_config #(type INTF_T = virtual sb_tx_bfm) extends uvm_object;
 
   INTF_T bfm;
+  INTF_T bfm_drive;
 
   uvm_active_passive_enum is_active = UVM_ACTIVE;
   bit is_reactive;

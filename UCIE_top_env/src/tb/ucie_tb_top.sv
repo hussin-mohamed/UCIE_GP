@@ -62,43 +62,40 @@ module ucie_tb_top;
     end
   end
 
-  // -------------------------------------------------------------------------
-  //  TX-Path Interfaces (Not inside DUT)
-  // -------------------------------------------------------------------------
-  rdi_if tx_rdi_vif (
-      clk_8,
-      reset
-  );
-  ltsm_if tx_ltsm_vif (
-      clk_8,
-      reset
-  );
-  tx2link_if tx2link_vif (
-      clk_8,
-      clk_16,
-      reset
+
+
+  rp_rmblink_bfm rp_rmblink_bfm_inst (
+      .clk(DUT.clk_l)
+      , .reset(reset)
+      , .i_hclk(DUT.clk_mb_h)
+      , .i_dclk(DUT.clk_mb_f)
   );
 
-  // -------------------------------------------------------------------------
-  //  RX-Path Interfaces (Not inside DUT)
-  // -------------------------------------------------------------------------
-  rp_reset_intf rp_rst_vif (
-      clk_sb_100_m
-      // reset
+  sb_phylink_bfm phylink_bfm (
+      .clk(clk_sb_100_m)
+      , .clk_800MHz(clk_sb_800_m)
+      , .reset(reset)
+      , .o_sb_ready(DUT.sb_ready)
   );
-  rp_rdi_bfm rp_rdi_vif (
-      clk_16,
-      reset
+
+  tx2link_if tx2link_intf (
+      .clk(DUT.clk_l),
+      .ui_clk(DUT.clk_mb_f),
+      .rst(reset)
   );
-  rp_ltsmc_bfm rp_ltsmc_vif (
-      clk_16,
-      reset
+
+  ltsm_rdi_if ltsm_rdi_if_inst (.clk(clk_l));
+
+  rdi_if #(
+      .NBYTES(256)
+  ) rdi_intf (
+      .clk(DUT.clk_l),
+      .rst(reset)
   );
-  rp_rmblink_bfm rp_rmblink_vif (
-      clk_32,
-      clk_16,
-      clk_8,
-      reset
+
+  rp_rdi_bfm rp_rdi_bfm_inst (
+        .clk  (DUT.clk_l)
+      , .reset(reset)
   );
 
   // -------------------------------------------------------------------------
@@ -118,44 +115,42 @@ module ucie_tb_top;
       .i_supply_stable(supply_stable),
 
       // RX Mainband Inputs from Partner (Driven by RP rmblink_bfm)
-      .i_clk_p  (rp_rmblink_vif.i_clk_p),
-      .i_clk_n  (rp_rmblink_vif.i_clk_n),
-      .i_track  (rp_rmblink_vif.i_track),
-      .i_valid  (rp_rmblink_vif.i_valid),
-      .i_data_in(rp_rmblink_vif.i_data),
+      .i_clk_p  (rp_rmblink_bfm_inst.i_clk_p),
+      .i_clk_n  (rp_rmblink_bfm_inst.i_clk_n),
+      .i_track  (rp_rmblink_bfm_inst.i_track),
+      .i_valid  (rp_rmblink_bfm_inst.i_valid),
+      .i_data_in(rp_rmblink_bfm_inst.i_data),
 
       // SB Partner Inputs (Routed internally in DUT via its own SB BFMs)
-      .i_rx_sb_clk (1'b0),  // Dummy connection, driven internally by sb bfms
-      .i_rx_sb_data(1'b0),  // Dummy connection, driven internally by sb bfms
+      .i_rx_sb_clk (phylink_bfm.i_rx_sb_clk),  // Dummy connection, driven internally by sb bfms
+      .i_rx_sb_data(phylink_bfm.i_rx_sb_clk),  // Dummy connection, driven internally by sb bfms
 
       // TX RDI Inputs (Driven by TX rdi_vif)
-      .i_lp_irdy (tx_rdi_vif.lp_irdy),
-      .i_lp_valid(tx_rdi_vif.lp_valid),
-      .i_lp_data (tx_rdi_vif.lp_data),
+      .i_lp_irdy (rdi_intf.lp_irdy),
+      .i_lp_valid(rdi_intf.lp_valid),
+      .i_lp_data (rdi_intf.lp_data),
 
       // LTSM RDI Inputs (Routed internally via ltsm_rdi_if_inst)
       // Connecting to dummy signals since ltsm_rdi_if_inst inside DUT will be driven directly by UVM agent
-      .i_lp_state_req(4'b0),
-      .i_lp_linkerror(1'b0),
-      .i_lp_stallack (1'b0),
-      .i_lp_clk_ack  (1'b0),
-      .i_lp_wake_req (1'b0),
+      .i_lp_state_req(ltsm_rdi_if_inst.i_lp_state_req),
+      .i_lp_linkerror(ltsm_rdi_if_inst.i_lp_linkerror),
+      .i_lp_stallack (ltsm_rdi_if_inst.i_lp_stallack),
+      .i_lp_clk_ack  (ltsm_rdi_if_inst.i_lp_clk_ack),
+      .i_lp_wake_req (ltsm_rdi_if_inst.i_lp_wake_req),
 
       // Outputs to Adapter
-`ifdef UCIE_SYS_LVL
-      .o_pl_state_sts(tx_rdi_vif.pl_state_sts),
-`else
-      .o_pl_state_sts(),
-`endif
-      .o_pl_data(rp_rdi_vif.pl_data),
-      .o_pl_trdy(),
+
+      .o_pl_state_sts(ltsm_rdi_if_inst.o_pl_state_sts),
+
+      .o_pl_data     (rp_rdi_bfm_inst.pl_data),
+      .o_pl_trdy     (rp_rdi_bfm_inst.pl_valid),
 
       // Outputs to Partner (Monitored by TX tx2link_vif)
-      .o_data_out(tx2link_vif.tx_data),
-      .o_clk_p(tx2link_vif.tx_clkp),
-      .o_clk_n(tx2link_vif.tx_clkn),
-      .o_track(tx2link_vif.tx_track),
-      .o_valid(tx2link_vif.tx_valid)
+      .o_data_out(tx2link_intf.tx_data),
+      .o_clk_p(tx2link_intf.tx_clkp),
+      .o_clk_n(tx2link_intf.tx_clkn),
+      .o_track(tx2link_intf.tx_track),
+      .o_valid(tx2link_intf.tx_valid)
   );
 
   // -------------------------------------------------------------------------
@@ -176,17 +171,22 @@ module ucie_tb_top;
     uvm_config_db#(virtual sb_rx_bfm)::set(null, "*", "sb_rx_bfm", DUT.rx_bfm);
     uvm_config_db#(virtual sb_phylink_bfm)::set(null, "*", "sb_phylink_bfm", DUT.phylink_bfm);
 
-    // RX-Path Environment Interfaces (Instantiated HERE)
-    uvm_config_db#(virtual rp_reset_intf)::set(null, "*", "rp_reset_vif", rp_rst_vif);
-    uvm_config_db#(virtual rp_rdi_bfm)::set(null, "*", "rp_rdi_bfm", rp_rdi_vif);
-    uvm_config_db#(virtual rp_ltsmc_bfm)::set(null, "*", "rp_ltsmc_bfm", rp_ltsmc_vif);
-    uvm_config_db#(virtual rp_rmblink_bfm)::set(null, "*", "rp_rmblink_bfm", rp_rmblink_vif);
+    // RX-Path Environment Interfaces (Located INSIDE the DUT)
+    uvm_config_db#(virtual rp_reset_intf)::set(null, "*", "rp_reset_vif", DUT.rp_reset_intf_inst);
+    uvm_config_db#(virtual rp_rdi_bfm)::set(null, "*", "rp_rdi_bfm", DUT.rp_rdi_bfm_inst);
+    uvm_config_db#(virtual rp_ltsmc_bfm)::set(null, "*", "rp_ltsmc_bfm", DUT.rp_ltsmc_bfm_inst);
+    uvm_config_db#(virtual rp_rmblink_bfm)::set(null, "*", "rp_rmblink_bfm", DUT.rp_rmblink_bfm_inst);
 
-    // TX-Path Environment Interfaces (Instantiated HERE)
-    uvm_config_db#(virtual rdi_if)::set(null, "*", "tx_rdi_vif", tx_rdi_vif);
-    uvm_config_db#(virtual ltsm_if)::set(null, "*", "tx_ltsm_vif", tx_ltsm_vif);
-    uvm_config_db#(virtual tx2link_if)::set(null, "*", "tx2link_vif", tx2link_vif);
+    // TX-Path Environment Interfaces (Located INSIDE the DUT)
+    uvm_config_db#(virtual rdi_if)::set(null, "*", "tx_rdi_vif", DUT.rdi_intf);
+    uvm_config_db#(virtual ltsm_if)::set(null, "*", "tx_ltsm_vif", DUT.ltsm_intf);
+    uvm_config_db#(virtual tx2link_if)::set(null, "*", "tx2link_vif", DUT.tx2link_intf);
 
+    // drive interfaces only not needed for the monitor the monitors will take the internal interfaces instantiated here
+    uvm_config_db#(virtual rp_rmblink_bfm)::set(null, "*", "rp_rmblink_bfm_driver_only", rp_rmblink_bfm_inst);
+    uvm_config_db#(virtual sb_phylink_bfm)::set(null, "*", "sb_phylink_bfm_driver_only", phylink_bfm);
+    uvm_config_db#(virtual rdi_if)::set(null, "*", "rdi_if_driver_only", rdi_intf);
+    uvm_config_db#(virtual ltsm_rdi_if)::set(null, "*", "ltsm_rdi_if_driver_only", ltsm_rdi_if_inst);
     // Run Test
     run_test();
   end

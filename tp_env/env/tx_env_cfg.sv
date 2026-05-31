@@ -15,6 +15,7 @@ class tx_env_cfg extends uvm_object;
   // -------------------------------------------------------------------------
 
   virtual rdi_if    rdi_vif;
+  virtual rdi_if    rdi_vif_drive;
   virtual ltsm_if   ltsm_vif;
   virtual tx2link_if  tx2link_vif;
 

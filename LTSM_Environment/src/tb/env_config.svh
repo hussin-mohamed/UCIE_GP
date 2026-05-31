@@ -32,6 +32,7 @@ class env_config extends uvm_object;
     virtual RX_FSM_SB         rx_fsm_sb_if;
     virtual LTSM_controllers_if vif;
     virtual ltsm_rdi_if         ltsm_rdi_vif;
+    virtual ltsm_rdi_if         ltsm_rdi_vif_drive;
 
     uvm_active_passive_enum is_active_rdi             = UVM_ACTIVE;
     uvm_active_passive_enum is_active_LTSM_controllers      = UVM_ACTIVE;

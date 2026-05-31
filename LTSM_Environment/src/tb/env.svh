@@ -213,5 +213,6 @@ endfunction : configure_LTSM_controller_agent
 
 function void LTSM_env::configure_rdi_agent();
     rdi_cfg.vif                     =   env_cfg.ltsm_rdi_vif;
+    rdi_cfg.vif_drive                     =   env_cfg.ltsm_rdi_vif_drive;
     rdi_cfg.is_active               =   env_cfg.is_active_rdi;
 endfunction : configure_rdi_agent

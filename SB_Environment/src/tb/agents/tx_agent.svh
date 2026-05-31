@@ -28,7 +28,8 @@ class tx_agent extends agent_base #(
   .ITEM_T(ltsm_seq_item),
   .SEQR_T(tx_sequencer),
   .DRVR_T(tx_driver),
-  .MNTR_T(tx_monitor)
+  .MNTR_T(tx_monitor),
+  .inter(0)
 );
   `uvm_component_utils(tx_agent)
 

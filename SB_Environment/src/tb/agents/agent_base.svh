@@ -30,7 +30,8 @@ virtual class agent_base #(
   type   ITEM_T   = ltsm_seq_item,
   type   SEQR_T   = tx_sequencer, // Parameterized Sequencer
   type   DRVR_T   = tx_driver,    // Parameterized Driver
-  type   MNTR_T   = tx_monitor    // Parameterized Monitor
+  type   MNTR_T   = tx_monitor,   // Parameterized Monitor
+  bit inter
 ) extends uvm_agent;
 
   INTF_T            bfm;
@@ -124,7 +125,16 @@ function void agent_base::connect_phase(uvm_phase phase);
   if(is_active == UVM_ACTIVE) begin
     drvr.seq_item_port.connect(seqr.seq_item_export);
     mntr.reactive_ap.connect(seqr.reactive_exp);
+    `ifdef UCIE_SYS_LVL
+    if (inter) begin
+      drvr.bfm = cfg.bfm_drive;
+    end
+    else begin
+      drvr.bfm = cfg.bfm;
+    end
+    `else
     drvr.bfm = cfg.bfm;
+    `endif
   end
 endfunction : connect_phase
 

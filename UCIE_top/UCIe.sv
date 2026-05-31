@@ -118,7 +118,7 @@ module UCIe_phy #(
   // Physical link interface
   sb_phylink_bfm phylink_bfm (
       .clk(i_clk_sb_100_m)
-      , .clk_800MHz(i_clk_sb_100_m)
+      , .clk_800MHz(i_clk_sb_800_m)
       , .reset(i_reset)
       , .o_sb_ready(sb_ready)
   );
@@ -374,8 +374,8 @@ module UCIe_phy #(
     (
             // Clock and reset
             .i_clk                 (i_clk_sb_100_m)
-            ,.i_reset              (reset_wire)
-            ,.i_800MHz_clk         (clk_800MHz)
+            ,.i_reset              (i_reset)
+            ,.i_800MHz_clk         (i_clk_sb_800_m)
 
             // TX path signals
             ,.i_tx_sb_req          (tx_bfm.i_tx_sb_req)

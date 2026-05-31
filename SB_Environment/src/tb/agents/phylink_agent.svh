@@ -28,7 +28,8 @@ class phylink_agent extends agent_base #(
   .ITEM_T(phylink_seq_item),
   .SEQR_T(phylink_sequencer),
   .DRVR_T(phylink_driver),
-  .MNTR_T(phylink_monitor)
+  .MNTR_T(phylink_monitor),
+  .inter(1)
 );
   `uvm_component_utils(phylink_agent)
 

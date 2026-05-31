@@ -27,8 +27,13 @@ class rdi_driver extends uvm_driver #(rdi_seq_item);
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    `ifdef UCIE_SYS_LVL
+    if (!uvm_config_db#(virtual rdi_if)::get(this, "", "rdi_if_driver_only", rdi_vif))
+      `uvm_fatal("RDI_DRV", "Failed to get rdi_vif from config_db")
+    `else
     if (!uvm_config_db#(virtual rdi_if)::get(this, "", "rdi_vif", rdi_vif))
       `uvm_fatal("RDI_DRV", "Failed to get rdi_vif from config_db")
+    `endif
   endfunction
 
   // -------------------------------------------------------------------------

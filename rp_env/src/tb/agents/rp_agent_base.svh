@@ -122,7 +122,11 @@ function void rp_agent_base::connect_phase(uvm_phase phase);
   if(is_active == UVM_ACTIVE) begin
     drvr.seq_item_port.connect(seqr.seq_item_export);
     mntr.reactive_ap.connect(seqr.reactive_exp);
+    `ifdef UCIE_SYS_LVL
+    drvr.bfm = cfg.bfm_drive;
+    `else
     drvr.bfm = cfg.bfm;
+    `endif
   end
 endfunction : connect_phase
 

@@ -226,6 +226,7 @@ endfunction : configure_rdi_agent
 
 function void rp_env::configure_rmblink_agent();
   rmblink_cfg.bfm         =   env_cfg.rmblink_bfm;
+  rmblink_cfg.bfm_drive         =   env_cfg.rmblink_bfm_drive;
   rmblink_cfg.is_active   =   env_cfg.is_active_rmblink;
   rmblink_cfg.is_reactive =   env_cfg.is_reactive_rmblink;
 endfunction : configure_rmblink_agent

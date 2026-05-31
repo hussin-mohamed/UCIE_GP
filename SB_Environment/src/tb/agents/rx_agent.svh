@@ -28,7 +28,8 @@ class rx_agent extends agent_base #(
   .ITEM_T(ltsm_seq_item),
   .SEQR_T(rx_sequencer),
   .DRVR_T(rx_driver),
-  .MNTR_T(rx_monitor)
+  .MNTR_T(rx_monitor),
+  .inter(0)
 );
   `uvm_component_utils(rx_agent)
 
