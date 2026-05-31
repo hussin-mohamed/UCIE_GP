@@ -59,7 +59,7 @@ module UCIe_phy #(
     wire clk_l;     // Logical clock used in mainband & LTSM
     logic sb_ready;
     PLL_model PLL(
-        .i_sel(LTSM_controllers_vif.i_speedreg),
+        .i_sel(LTSM_controllers_vif.o_speedreg),
         .i_reset(LTSM_controllers_vif.i_reset),
         .i_clk_32(i_clk_32),
         .i_clk_24(i_clk_24),
@@ -89,7 +89,8 @@ module UCIe_phy #(
 
   // LTSM control interface
   sb_ltsm_ctrl_bfm ltsm_ctrl_bfm (
-      .clk(i_clk_sb_100_m)
+      .clk(i_clk_sb_100_m),
+      .clk_800(i_clk_sb_800_m)
       , .reset(i_reset)
       , .o_sb_ready(sb_ready)
   );
@@ -417,6 +418,7 @@ module UCIe_phy #(
             ,.i_rx_sb_clk          (phylink_bfm.i_rx_sb_clk)
             ,.o_tx_sb_data         (phylink_bfm.o_tx_sb_data)
             ,.o_tx_sb_clk          (phylink_bfm.o_tx_sb_clk)
+            ,.o_sb_cur_msg_done    (LTSM_controllers_vif.i_sb_cur_msg_done)
     );
     
     tx_dut_rtl_wrapper #(

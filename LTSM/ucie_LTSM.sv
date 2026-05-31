@@ -13,7 +13,7 @@ module ucie_LTSM #(
     input logic i_reset,
 
     // -------------------------------------------------------------------------
-    // RDI – Adapter ? PHY
+    // RDI ï¿½ Adapter ? PHY
     // -------------------------------------------------------------------------
     input logic [3:0] i_lp_state_req,     // Adapter request for state change
     input logic       i_lp_linkerror,     // Adapter ? PHY: error requiring link down
@@ -44,13 +44,13 @@ module ucie_LTSM #(
     // -------------------------------------------------------------------------
     input logic [DECODING_WIDTH-1:0] i_tx_decoding,  // Decoded SB message on TX path
     input logic [DECODING_WIDTH-1:0] i_rx_decoding,  // Decoded SB message on RX path
-    input logic [DATA_WIDTH-1:0] i_tx_data,  // Payload of incoming SB message – TX path
-    input logic [DATA_WIDTH-1:0] i_rx_data,  // Payload of incoming SB message – RX path
-    input logic [INFO_WIDTH-1:0] i_tx_info,  // Info field of incoming SB message – TX path
-    input logic [INFO_WIDTH-1:0] i_rx_info,  // Info field of incoming SB message – RX path
+    input logic [DATA_WIDTH-1:0] i_tx_data,  // Payload of incoming SB message ï¿½ TX path
+    input logic [DATA_WIDTH-1:0] i_rx_data,  // Payload of incoming SB message ï¿½ RX path
+    input logic [INFO_WIDTH-1:0] i_tx_info,  // Info field of incoming SB message ï¿½ TX path
+    input logic [INFO_WIDTH-1:0] i_rx_info,  // Info field of incoming SB message ï¿½ RX path
 
     // -------------------------------------------------------------------------
-    // Sideband handshake – SB ? LTSM
+    // Sideband handshake ï¿½ SB ? LTSM
     // -------------------------------------------------------------------------
     input logic i_sb_tx_req,   // SB ? TX: REQ message received
     input logic i_sb_tx_rsp,   // SB ? TX: RSP message received
@@ -70,7 +70,7 @@ module ucie_LTSM #(
     input        i_Runtime_Link_Test_status_register,
 
     // -------------------------------------------------------------------------
-    // RDI – PHY ? Adapter
+    // RDI ï¿½ PHY ? Adapter
     // -------------------------------------------------------------------------
     output logic [3:0] o_pl_state_sts,      // PHY ? Adapter: interface status
     output logic       o_pl_inband_pres,    // Link trained, ready for Active / Stage 3
@@ -87,19 +87,20 @@ module ucie_LTSM #(
     output logic [2:0] o_pl_lnk_cfg,        // Current link configuration / width
     output logic       o_pl_clk_req,        // Request to ungate adapter clocks
     output logic       o_pl_wake_ack,       // Ack of lp_wake_req
+    output logic       o_timer1ms,       // Ack of lp_wake_req
 
     // -------------------------------------------------------------------------
     // Sideband message encoding (LTSM ? SB / TX-RX controllers)
     // -------------------------------------------------------------------------
-    output logic [DECODING_WIDTH-1:0] o_tx_encoding,  // Outgoing message encoding – TX path
-    output logic [DECODING_WIDTH-1:0] o_rx_encoding,  // Outgoing message encoding – RX path
-    output logic [    DATA_WIDTH-1:0] o_tx_data,      // Outgoing message payload – TX path
-    output logic [    DATA_WIDTH-1:0] o_rx_data,      // Outgoing message payload – RX path
-    output logic [    INFO_WIDTH-1:0] o_tx_info,      // Outgoing message info – TX path
-    output logic [    INFO_WIDTH-1:0] o_rx_info,      // Outgoing message info – RX path
+    output logic [DECODING_WIDTH-1:0] o_tx_encoding,  // Outgoing message encoding ï¿½ TX path
+    output logic [DECODING_WIDTH-1:0] o_rx_encoding,  // Outgoing message encoding ï¿½ RX path
+    output logic [    DATA_WIDTH-1:0] o_tx_data,      // Outgoing message payload ï¿½ TX path
+    output logic [    DATA_WIDTH-1:0] o_rx_data,      // Outgoing message payload ï¿½ RX path
+    output logic [    INFO_WIDTH-1:0] o_tx_info,      // Outgoing message info ï¿½ TX path
+    output logic [    INFO_WIDTH-1:0] o_rx_info,      // Outgoing message info ï¿½ RX path
 
     // -------------------------------------------------------------------------
-    // Sideband handshake – LTSM ? SB
+    // Sideband handshake ï¿½ LTSM ? SB
     // -------------------------------------------------------------------------
     output logic o_tx_sb_req,   // TX ? SB: send REQ message
     output logic o_tx_sb_rsp,   // TX ? SB: send RSP message
@@ -195,6 +196,8 @@ module ucie_LTSM #(
   logic w_wait_1us_en;
 
   logic [3:0] w_timer_rx_encoding;
+
+  assign o_timer1ms= w_timer_1ms;
 
   always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
@@ -537,7 +540,7 @@ module ucie_LTSM #(
 
       .valid_error(!(&i_rx_valid_results)),
 
-      // RDI interface — from Adapter
+      // RDI interface ï¿½ from Adapter
       .i_lp_clk_ack  (i_lp_clk_ack),
       .i_lp_wake_req (i_lp_wake_req),
       .i_lp_state_req(i_lp_state_req),
@@ -584,7 +587,7 @@ module ucie_LTSM #(
       .o_tx_info(w_active_tx_info),
       .o_rx_info(w_active_rx_info),
 
-      // RDI outputs — to Adapter
+      // RDI outputs ï¿½ to Adapter
       .o_pl_clk_req(o_pl_clk_req),
       .o_pl_inband_pres(o_pl_inband_pres),
       .o_pl_wake_ack(o_pl_wake_ack),
