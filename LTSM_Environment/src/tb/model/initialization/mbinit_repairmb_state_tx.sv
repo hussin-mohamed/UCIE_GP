@@ -79,7 +79,7 @@ class MbInitRepairMbState_tx extends State;
                [5:3]: Valid Pattern (0h: Functional pattern)
                [2:0]: Data pattern (0h: LFSR, 1h: Per Lane ID)
          */
-         o_tx_data_exp[2:0] = 1'h1;
+         o_tx_data_exp[2:0] = 1'h0;
          o_tx_data_exp[10] = 1'b0; // per lane id pattern
          
          if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp &&  o_tx_data_exp[2:0]==item_tx_fsm_sb_out.o_tx_data[2:0] )
@@ -161,7 +161,7 @@ class MbInitRepairMbState_tx extends State;
          o_tx_encoding_exp = 'h184;
          o_tx_sb_req_exp = 1;
          o_tx_info_exp = 15'h0;
-         `uvm_info("183 state" , $sformatf("tx_lane_map = %b" , lane_map_code_tx) , UVM_LOW)
+         //`uvm_info("183 state" , $sformatf("tx_lane_map = %b" , lane_map_code_tx) , UVM_LOW)
          
          if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp && item_tx_fsm_sb_out.o_tx_info == o_tx_info_exp)
             begin

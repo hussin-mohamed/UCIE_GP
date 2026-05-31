@@ -108,7 +108,7 @@ class StateTransitionUtil_tx extends State;
         case (cntxt.currentstate_tx.getStateId())
             fsm_tx_reset: begin
 
-              if (item_controllers_in.i_supply_stable===1'b1 && item_controllers_in.i_pll_stable===1'b1 && item_controllers_in.i_reset===1'b0 && counter > ((((timeout/2)-4)))) begin
+              if (item_controllers_in.i_supply_stable===1'b1 && item_controllers_in.i_pll_stable===1'b1 && item_controllers_in.i_reset===1'b0 && counter > ((((timeout/2)-5)))) begin
                   return SbInitState_tx::Instance();
                end
                else begin
@@ -188,7 +188,7 @@ class StateTransitionUtil_tx extends State;
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
-               else if (item_tx_fsm_sb_in.i_tx_decoding == MBINIT_REPAIRMB_TX_Done_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1) begin
+               else if (item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_VALVREF_TX_Start_Handshake && item_rx_fsm_sb_in.i_sb_rx_req == 1'b1) begin
                   return mbtrain_tx_valvref::Instance();
                   state_done = 1;
                end

@@ -180,7 +180,7 @@ class mbtrain_tx_valtrainvref extends State;
             error_count++;
             ////$display("error_count = %0d at time = %0t",error_count,$time);
             if (error_count == 4) begin
-                o_tx_encoding_expected = RX_TRAINERROR_Handshake;
+                o_tx_encoding_expected = DATA_TO_CLOCK_RX_RX_RESULT_HANDSHAKE;
                 o_tx_info_expected = 16'h0000;
                 o_tx_sb_req_expected = 1'b1;
             end

@@ -35,6 +35,7 @@ import shared_ltsm_pkg::*;
 
     static bit tx_done;
     static bit rx_done;
+    static bit error_enter;
 
     static logic[2:0]lane_map_code_tx;
     
@@ -57,7 +58,7 @@ import shared_ltsm_pkg::*;
         if ((nextState_rx == cntxt.currentstate_rx ) 
         && cntxt.currentstate_tx != trainerror_tx::Instance() && cntxt.currentstate_rx != trainerror_rx::Instance() 
         && cntxt.currentstate_tx != active_state_tx::Instance() && cntxt.currentstate_rx != active_state_rx::Instance() 
-        && cntxt.currentstate_tx != l1_state_tx::Instance() && cntxt.currentstate_rx != l1_state_rx::Instance()) begin
+        && cntxt.currentstate_tx != l1_state_tx::Instance() && cntxt.currentstate_rx != l1_state_rx::Instance()  && !item_controllers_in.i_reset) begin
             counter++;  
         end
         // else if (item_controllers_in.i_reset) begin
@@ -68,12 +69,18 @@ import shared_ltsm_pkg::*;
         end
         if (counter == (timeout+1) && cntxt.currentstate_tx != ResetState_tx::Instance()) begin
             nextState_tx = trainerror_tx::Instance();
+            nextState_rx = trainerror_rx::Instance();
+            error_enter =1;
         end
         if (trainerror && item_controllers_in.i_tx_done && cntxt.currentstate_tx == mbtrain_tx_speedidle::Instance()) begin
             nextState_tx = trainerror_tx::Instance();
+            nextState_rx = trainerror_rx::Instance();
+            error_enter =1;
+            return 1;
         end
         if (error_count == 4 && !item_tx_fsm_sb_in.i_tx_info[4]) begin
             nextState_tx = trainerror_tx::Instance();
+            nextState_rx = trainerror_rx::Instance();
             error_count  = 0;
         end
         if ((cntxt.currentstate_tx == mbtrain_tx_linkspeed::Instance() || cntxt.currentstate_rx == mbtrain_rx_linkspeed::Instance() ) && nextState_tx!=nextState_rx) begin
@@ -86,11 +93,13 @@ import shared_ltsm_pkg::*;
         end
         if (cntxt.currentstate_tx == mbtrain_tx_repair::Instance() && apply && lane_map_tx == 3'b000) begin
             nextState_tx = trainerror_tx::Instance();
+            nextState_rx = trainerror_rx::Instance();
         end
         if (item_rx_fsm_sb_in.i_rx_decoding == RX_TRAINERROR_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
             nextState_rx = trainerror_rx::Instance();
             nextState_tx = trainerror_tx::Instance();
-            
+            error_enter =1;
+            return 1;
         end
         if (cntxt.currentstate_tx != nextState_tx || cntxt.currentstate_rx != nextState_rx) begin
             `uvm_info("state", $sformatf("Current State: TX: %s, RX: %s, Next State: TX: %s, RX: %s", cntxt.currentstate_tx.getStateId(), cntxt.currentstate_rx.getStateId(), nextState_tx.getStateId(), nextState_rx.getStateId()), UVM_MEDIUM)

@@ -30,7 +30,7 @@ class trainerror_rx extends State;
 
     virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_seq_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
                                               LTSM_controllers_seq_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
-        if(cntxt.currentstate_rx != trainerror_rx::Instance() && item_rx_fsm_sb_in.i_rx_decoding == RX_TRAINERROR_Handshake && item_rx_fsm_sb_in.i_sb_rx_req == 1'b1) begin
+        if(item_rx_fsm_sb_in.i_rx_decoding == RX_TRAINERROR_Handshake && item_rx_fsm_sb_in.i_sb_rx_req == 1'b1) begin
             o_rx_encoding_expected = RX_TRAINERROR_Handshake;
             o_rx_info_expected = 16'h0000; // No specific info expected during handshake
             o_rx_sb_rsp_expected = 1'b1; // Expecting a request during handshake

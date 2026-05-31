@@ -109,7 +109,7 @@ task mbtrain_datatrainvref_timeout::body();
             start_rx.start(rx_fsm_sb_seqr);
         end
     join
-    repeat(timeout)begin
+    repeat(timeout/2+1)begin
         nothing.start(tx_fsm_sb_seqr);
     end
     error_rx.start(rx_fsm_sb_seqr);

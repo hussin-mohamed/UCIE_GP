@@ -30,10 +30,11 @@ class trainerror_tx extends State;
 
     virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_seq_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
                                               LTSM_controllers_seq_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
-        if(cntxt.currentstate_tx != trainerror_tx::Instance()) begin
+        if(cntxt.currentstate_tx != trainerror_tx::Instance() || error_enter) begin
             o_tx_encoding_expected = TRAINERROR_TX_Handshake;
             o_tx_info_expected = 16'h0000;
             o_tx_sb_req_expected = 1'b1;
+            error_enter =0;
             if (o_tx_encoding_expected==item_tx_fsm_sb_out.o_tx_encoding && o_tx_info_expected==item_tx_fsm_sb_out.o_tx_info && o_tx_sb_req_expected == item_tx_fsm_sb_out.o_tx_sb_req) begin
                 match = 1;
             end else begin

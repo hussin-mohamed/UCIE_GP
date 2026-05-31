@@ -81,9 +81,9 @@ class MbInitRepairMbState_rx extends State;
       end
 
       // pattern detection
-      else if( item_rx_fsm_sb_in.i_rx_decoding == 'h182 && item_rx_fsm_sb_in.i_sb_rx_done == 1'b1) begin
-         o_rx_encoding_exp = 'h182;
-
+      else if( item_rx_fsm_sb_in.i_rx_decoding == 'h183 && item_rx_fsm_sb_in.i_sb_rx_req == 1'b1) begin
+         o_rx_encoding_exp = 'h183;
+         o_rx_info_exp = 15'h20;
          if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp)
            begin
             match = 1;
@@ -184,7 +184,7 @@ class MbInitRepairMbState_rx extends State;
       else if(item_rx_fsm_sb_in.i_sb_rx_done == 1'b1 && item_rx_fsm_sb_in.i_rx_decoding == 'h3C) begin
          o_rx_encoding_exp = 'h3D;
          if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)begin
-               `uvm_info("MbInitRepairMbState_rx_pass", $sformatf("Expected o_rx_encoding: %0h, Actual o_rx_encoding: %0h", o_rx_encoding_exp, item_controllers_out.o_rx_encoding), UVM_LOW)
+               //`uvm_info("MbInitRepairMbState_rx_pass", $sformatf("Expected o_rx_encoding: %0h, Actual o_rx_encoding: %0h", o_rx_encoding_exp, item_controllers_out.o_rx_encoding), UVM_LOW)
                match = 1;
          end
             
