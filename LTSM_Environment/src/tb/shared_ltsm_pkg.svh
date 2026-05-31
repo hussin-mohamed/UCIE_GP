@@ -37,7 +37,7 @@ package shared_ltsm_pkg;
     3'h0,          // [5:3]   Valid Pattern (Functional)
     3'h0           // [2:0]   Data Pattern (LFSR)
 };
-  parameter timeout = 80000; // number of cycles to wait for a response before declaring a timeout will be provided by design team in the future
+  parameter timeout = 564; // number of cycles to wait for a response before declaring a timeout will be provided by design team in the future
   
   `define RESULT_THRESHOLD 16'b0000000111111111
 `define LANE_MAP_CODE 3'b011 // all lanes are functional    

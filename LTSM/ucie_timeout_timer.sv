@@ -1,7 +1,7 @@
 `define SIM
 
 module ucie_timeout_timer #(
-    parameter int SIM_8MS_CYCLES = 80000,
+    parameter int SIM_8MS_CYCLES = 564,
     parameter DECODING_WIDTH = 9,
     parameter real CLK_PERIOD_NS = 1.0 
 ) (

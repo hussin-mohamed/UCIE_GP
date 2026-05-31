@@ -127,11 +127,14 @@ module ucie_tb_top;
       // SB Partner Inputs (Routed internally in DUT via its own SB BFMs)
       .i_rx_sb_clk (phylink_bfm.i_rx_sb_clk),  // Dummy connection, driven internally by sb bfms
       .i_rx_sb_data(phylink_bfm.i_rx_sb_data),  // Dummy connection, driven internally by sb bfms
+      .o_tx_sb_data(phylink_bfm.o_tx_sb_data),  // Dummy connection, driven internally by sb bfms
+      .o_tx_sb_clk(phylink_bfm.o_tx_sb_clk),  // Dummy connection, driven internally by sb bfms
 
       // TX RDI Inputs (Driven by TX rdi_vif)
       .i_lp_irdy (rdi_intf.lp_irdy),
       .i_lp_valid(rdi_intf.lp_valid),
       .i_lp_data (rdi_intf.lp_data),
+      .o_pl_trdy (rdi_intf.pl_trdy),
 
       // LTSM RDI Inputs (Routed internally via ltsm_rdi_if_inst)
       // Connecting to dummy signals since ltsm_rdi_if_inst inside DUT will be driven directly by UVM agent
@@ -146,7 +149,7 @@ module ucie_tb_top;
       .o_pl_state_sts(ltsm_rdi_if_inst.o_pl_state_sts),
 
       .o_pl_data     (rp_rdi_bfm_inst.pl_data),
-      .o_pl_trdy     (rp_rdi_bfm_inst.pl_valid),
+      .o_pl_valid     (rp_rdi_bfm_inst.pl_valid),
 
       // Outputs to Partner (Monitored by TX tx2link_vif)
       .o_data_out(tx2link_intf.tx_data),
