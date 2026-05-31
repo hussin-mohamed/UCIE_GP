@@ -90,7 +90,7 @@ module UCIe_phy #(
   // LTSM control interface
   sb_ltsm_ctrl_bfm ltsm_ctrl_bfm (
       .clk(i_clk_sb_100_m),
-      .clk_800(i_clk_sb_800_m)
+      .clk_800(DUT.clk_l)
       , .reset(i_reset)
       , .o_sb_ready(sb_ready)
   );
