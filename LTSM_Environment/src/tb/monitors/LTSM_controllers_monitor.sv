@@ -91,6 +91,7 @@ task LTSM_controllers_monitor::collect_transaction();
                     item_out.o_Runtime_Link_Test_status_register     = vif.o_Runtime_Link_Test_status_register;
                     item_out.o_Runtime_Link_Test_Control_register    = vif.o_Runtime_Link_Test_Control_register;
                     ap_out.write(item_out);
+                    transaction_count_out++;
                 end 
         end
         // input thread
@@ -115,6 +116,7 @@ task LTSM_controllers_monitor::collect_transaction();
                 item_in.i_Runtime_Link_Test_status_register  = vif.i_Runtime_Link_Test_status_register;
                 item_in.i_Runtime_Link_Test_Control_register = vif.i_Runtime_Link_Test_Control_register;
                 ap_in.write(item_in);
+                transaction_count_in++;
             end
         end
     join_any

@@ -35,7 +35,8 @@ virtual class LTSM_monitor_base #(type ITEM_T, type INTF_T) extends uvm_monitor;
     INTF_T vif;
     ITEM_T item_in,item_out;
     uvm_analysis_port #(ITEM_T) ap_in,ap_out;
-    int unsigned transaction_count = 0;
+    int unsigned transaction_count_in = 0;
+    int unsigned transaction_count_out = 0;
 
 
     // Function: new
@@ -117,5 +118,6 @@ endtask
 
 function void LTSM_monitor_base::report_phase(uvm_phase phase);
     super.report_phase(phase);
-    `uvm_info(get_type_name(), $sformatf("MONITORED %0d TRANSACTIONS", transaction_count), UVM_LOW)
+    `uvm_info(get_type_name(), $sformatf("MONITORED %0d input TRANSACTIONS", transaction_count_in), UVM_LOW)
+    `uvm_info(get_type_name(), $sformatf("MONITORED %0d output TRANSACTIONS", transaction_count_out), UVM_LOW)
 endfunction

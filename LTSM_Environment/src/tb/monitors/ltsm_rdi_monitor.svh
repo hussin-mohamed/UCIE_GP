@@ -89,6 +89,7 @@ task ltsm_rdi_monitor::collect_transaction();
                 item_out.o_pl_cerror = vif.o_pl_cerror;
                 item_out.o_pl_nferror = vif.o_pl_nferror;
                 ap_out.write(item_out);
+                transaction_count_out++;
             end 
             end
         // input thread
@@ -102,6 +103,7 @@ task ltsm_rdi_monitor::collect_transaction();
                 item_in.i_lp_wake_req = vif.i_lp_wake_req;
                 item_in.i_lp_linkerror = vif.i_lp_linkerror;
                 ap_in.write(item_in);
+                transaction_count_in++;
             end
         end
     join_any

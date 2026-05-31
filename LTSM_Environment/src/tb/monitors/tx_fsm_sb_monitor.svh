@@ -86,6 +86,7 @@ task tx_fsm_sb_monitor::collect_transaction();
                     item_out.o_tx_sb_done = vif.o_tx_sb_done;
                     item_out.o_tx_info = vif.o_tx_info;
                     ap_out.write(item_out);
+                    transaction_count_out++;
                 // end
                 
                 
@@ -105,6 +106,7 @@ task tx_fsm_sb_monitor::collect_transaction();
                 item_in.i_tx_info     = vif.i_tx_info;
                 item_in.i_reset       = vif.i_reset;
                 ap_in.write(item_in);
+                transaction_count_in++;
             end
         end
     join_any
