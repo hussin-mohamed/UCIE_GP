@@ -126,6 +126,8 @@ interface sb_phylink_bfm(
     int      num_pkt;
     int      bit_idx;
 
+    $display("",);
+
     if (_idle_ui_cnt < 32) begin
       `uvm_fatal("PHYLINK_BFM", $sformatf("Invalid idle_ui_cnt: %0d, valid count range: 32 UI or more", _idle_ui_cnt))
     end

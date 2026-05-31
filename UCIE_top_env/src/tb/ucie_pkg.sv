@@ -45,7 +45,9 @@ package ucie_pkg;
   // -------------------------------------------------------------------------
   //  System-Level Sequences
   // -------------------------------------------------------------------------
+  `include "sb_sequences/active_phylink_sequence.sv"
   `include "ucie_sanity_vseq.sv"
+  `include "ucie_vseq_base.sv"
 
   // -------------------------------------------------------------------------
   //  System-Level Tests

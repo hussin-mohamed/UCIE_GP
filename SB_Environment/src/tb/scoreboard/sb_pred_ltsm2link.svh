@@ -145,9 +145,11 @@ endtask : pre_reset_phase
 // --------
 
 function void sb_pred_ltsm2link::write_tx(ltsm_seq_item t);
+  $display(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
   if(!tx_mb.try_put(t)) begin
     `uvm_fatal("LTSM2PHY", "Invalid case: TX mailbox is full; a new item is trying to enter")
   end
+  $display("tx_mb.num() = %0d", tx_mb.num());
 endfunction : write_tx
 
 // write_rx
@@ -174,33 +176,43 @@ endfunction : write_rdi
 task sb_pred_ltsm2link::main_phase(uvm_phase phase);
   super.main_phase(phase);
   forever begin
+    $display("00000000000000000000000000");
+    $display("fffffffffffffffff");
     // Block until at least one mailbox has an item
     wait(tx_mb.num() > 0 || rx_mb.num() > 0);
+    $display("11111111111111111111111111");
 
     // If both mailboxes have items, alternate between sending TX and RX items
     if (tx_mb.num() > 0 && rx_mb.num() > 0) begin
+      $display("iffffffff11111111111111111");
       // Alternate between sending TX and RX items till sending all the existing items
       for (int i = 0; tx_mb.num() > 0 || rx_mb.num() > 0; i++) begin
         // Give TX the priority to start if both have existing items
         if(tx_mb.try_get(ltsm_item)) begin
           phylink_item = get_predicted_item(ltsm_item);
-          results_ap_phy.write(phylink_item);          
+          $display("222222222222222222222222");
+          results_ap_phy.write(phylink_item);
         end
         if(rx_mb.try_get(ltsm_item)) begin
           phylink_item = get_predicted_item(ltsm_item);
+          $display("333333333333333333333333333");
           results_ap_phy.write(phylink_item);           
         end
       end
     // Else if TX mailbox only has items, send all the existing TX items
     end else if (tx_mb.num() > 0) begin
+      $display("iffffffff222222222222222");
       while(tx_mb.try_get(ltsm_item)) begin
         phylink_item = get_predicted_item(ltsm_item);
+        $display("444444444444444444444444444");
         results_ap_phy.write(phylink_item);
       end
     // Else if RX mailbox only has items, send all the existing RX items
     end else if (rx_mb.num() > 0) begin
+      $display("iffffffff33333333333333333333333");
       while(rx_mb.try_get(ltsm_item)) begin
         phylink_item = get_predicted_item(ltsm_item);
+        $display("5555555555555555555555555555");
         results_ap_phy.write(phylink_item);
       end
     end
