@@ -120,6 +120,7 @@ vlog {*}$vlog_args \
 
 # 7. Compile DUT Sideband RTL
 vlog {*}$vlog_args \
+    ../../Sideband/Toggle_sync.sv \
     ../../Sideband/ucie_sb_rx_path.sv \
     ../../Sideband/ucie_sb_top.sv \
     ../../Sideband/ucie_sb_traffic.sv \
