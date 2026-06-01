@@ -101,15 +101,13 @@ task rx_monitor::collect_item_out(output ltsm_seq_item _item);
   _item.valid   = bfm.o_rx_valid;
 
   // Wait a randomized number of cycles before asserting the done signal
-  if (!std::randomize(wait_cycles) with {wait_cycles inside {[0 : 2]};}) begin
+  if (!std::randomize(wait_cycles) with { wait_cycles inside {[0:2]}; }) begin
     `uvm_error(get_type_name(), "Failed to randomize wait_cycles")
   end
-`ifndef UCIE_SYS_LVL
   repeat (wait_cycles) @(negedge bfm.clk);
   bfm.i_rx_sb_done = 1;
   @(negedge bfm.clk);
   bfm.i_rx_sb_done = 0;
-`endif
 endtask : collect_item_out
 
 

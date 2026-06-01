@@ -48,7 +48,7 @@ class ucie_mbinit_bringup_vseq extends ucie_vseq_base;
     // get sbinit done resp
     p_sequencer.tx_fifo.get(sb_ltsm_item);
     `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT333\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
+    
     // send sbinit done resp
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::SBINIT_RX_Done_Handshake);
     send_sb_msg(sb_ltsm_item);
@@ -56,7 +56,7 @@ class ucie_mbinit_bringup_vseq extends ucie_vseq_base;
     // get mbinit param req
     p_sequencer.rx_fifo.get(sb_ltsm_item);
     `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT444\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
+    
     // send mbinit param req
     sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_PARAM_TX_Config_Handshake);
     send_sb_msg(sb_ltsm_item);
@@ -84,65 +84,7 @@ class ucie_mbinit_bringup_vseq extends ucie_vseq_base;
     // send mbinit param resp
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_CAL_RX_Done_Handshake);
     send_sb_msg(sb_ltsm_item);
-
-    // get mbinit repairclk init req
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT777\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    // send mbinit repairclk init req
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_TX_Init_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // get mbinit repairclk init resp
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT888\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    // send mbinit repairclk init resp
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_RX_Init_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // send RMBLink Clock Pattern Sequence
-    `uvm_info("UCIE_VSEQ", "Starting rmblink_clk_seq on rp_rmblink_seqr", UVM_LOW)
-    rmblink_clk_seq.test_mode = TEST_CLK_IDEAL_ALL;
-    rmblink_clk_seq.start(rp_rmblink_seqr);
-    `uvm_info("UCIE_VSEQ", "rmblink_clk_seq completed", UVM_LOW)
-
-    // get mbinit repairclk result req
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT999\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    // send mbinit repairclk result req
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_TX_Result_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // get mbinit repairclk result resp
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT1000\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    // send mbinit repairclk result resp
-    sb_ltsm_item.data        = 64'hFFFFFFFFFFFFFFFF;
-    sb_ltsm_item.info        = 16'hFFFF;
-    sb_ltsm_item.msgtype     = RSP_MSG;
-    sb_ltsm_item.wait_cycles = 30;
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_RX_Send_RESP);
-    send_sb_msg(sb_ltsm_item);
-
-    // get mbinit repairclk done req
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT1111\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    // send mbinit repairclk done req
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_TX_Done_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // get mbinit repairclk done resp
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT1212\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    // send mbinit repairclk done resp
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_RX_Done_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
+    
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask
 endclass : ucie_mbinit_bringup_vseq
