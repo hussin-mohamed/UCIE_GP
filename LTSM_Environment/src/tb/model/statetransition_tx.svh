@@ -108,7 +108,7 @@ class StateTransitionUtil_tx extends State;
         case (cntxt.currentstate_tx.getStateId())
             fsm_tx_reset: begin
 
-              if (item_controllers_in.i_supply_stable===1'b1 && item_controllers_in.i_pll_stable===1'b1 && item_controllers_in.i_reset===1'b0 && counter > ((((timeout/2)-5)))) begin
+              if (item_controllers_in.i_supply_stable===1'b1 && item_controllers_in.i_pll_stable===1'b1 && item_controllers_in.i_reset===1'b0 && counter > ((((timeout/2)-6)))) begin
                   return SbInitState_tx::Instance();
                end
                else begin

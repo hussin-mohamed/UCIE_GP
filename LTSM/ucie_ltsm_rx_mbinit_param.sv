@@ -107,11 +107,17 @@ module ucie_ltsm_rx_mbinit_param #(
   // clears when new i_sb_rx_req arrives
   // -------------------------------------------------------------------------
   always_ff @(posedge i_clk or posedge i_reset) begin
-    if (i_reset) done_ack <= 0;
-    else if (i_sb_rx_done) done_ack <= 1;
-    else if (i_sb_rx_req) done_ack <= 0;
-  end
+        if (i_reset)
+            done_ack <= 1;
+        else if (i_sb_rx_done)
+            done_ack <= 1;
+        else if (i_sb_rx_req && (i_rx_decoding == 9'h10))
+            done_ack <= 0;
+    end
 
+  always_comb begin 
+        o_rx_sb_rsp = done_ack ? 0 : 1;
+    end 
   // -------------------------------------------------------------------------
   // Next-state / output combinational logic
   // -------------------------------------------------------------------------
@@ -120,11 +126,11 @@ module ucie_ltsm_rx_mbinit_param #(
     o_rx_data              = '0;
     o_rx_info              = '0;
     o_rx_sb_req            = 0;
-    o_rx_sb_rsp            = 0;
+    // o_rx_sb_rsp            = 0;
     o_rx_sb_done           = 0;
     o_train_error          = 0;
     o_done_mbinit_param_rx = 0;
-    next_substate          = WAIT_CONFIG_REQ;
+    next_substate          = CHECK_PARAMETERS;
 
     if (!substates_done && o_timer_8ms) begin
       o_train_error = 1;
@@ -144,7 +150,7 @@ module ucie_ltsm_rx_mbinit_param #(
             if (i_sb_rx_req && i_rx_decoding == 9'h10) begin
               o_rx_sb_done  = 1;
 
-              next_substate = CHECK_PARAMETERS;
+              next_substate = WAIT_CONFIG_REQ;
             end else begin
               next_substate = WAIT_CONFIG_REQ;
             end
@@ -174,7 +180,7 @@ module ucie_ltsm_rx_mbinit_param #(
           o_rx_data = {{(DATA_WIDTH - 4) {1'b0}}, w_common_speed};
 
           if (!substates_done) begin
-            o_rx_sb_rsp = done_ack ? 0 : 1;
+            // o_rx_sb_rsp = done_ack ? 0 : 1;
 
             if (i_sb_rx_done) begin
               o_done_mbinit_param_rx = 1;
