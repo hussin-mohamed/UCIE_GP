@@ -61,11 +61,16 @@ module ucie_ltsm_rx_mbinit_cal #(
   // RSP / Done handshake register
   // -------------------------------------------------------------------------
   always_ff @(posedge i_clk or posedge i_reset) begin
-    if (i_reset) done_ack <= 0;
-    else if (i_sb_rx_done) done_ack <= 1;
-    else if (i_sb_rx_req) done_ack <= 0;
-  end
-
+        if (i_reset)
+            done_ack <= 1;
+        else if (i_sb_rx_done)
+            done_ack <= 1;
+        else if (i_sb_rx_req && i_rx_decoding == 9'h18)
+            done_ack <= 0;
+    end
+  always_comb begin 
+        o_rx_sb_rsp = done_ack ? 0 : 1;
+    end 
   // -------------------------------------------------------------------------
   // Next-state / output combinational logic
   // CAL is simple: single DONE_HANDSHAKE substate.
@@ -76,7 +81,7 @@ module ucie_ltsm_rx_mbinit_cal #(
     o_rx_data            = '0;
     o_rx_info            = '0;
     o_rx_sb_req          = 0;
-    o_rx_sb_rsp          = 0;
+    // o_rx_sb_rsp          = 0;
     o_rx_sb_done         = 0;
     o_train_error        = 0;
     o_done_mbinit_cal_rx = 0;
@@ -96,9 +101,9 @@ module ucie_ltsm_rx_mbinit_cal #(
         // --------------------------------------------------------------
         DONE_HANDSHAKE: begin
           o_rx_encoding = 9'h18;
-          o_rx_sb_rsp = 1'b1;
+          // o_rx_sb_rsp = 1'b1;
           if (!substates_done) begin
-            o_rx_sb_rsp = done_ack ? 0 : 1;
+            // o_rx_sb_rsp = done_ack ? 0 : 1;
 
             if (i_sb_rx_req && i_rx_decoding == 9'h18) begin
               o_done_mbinit_cal_rx = 1;
