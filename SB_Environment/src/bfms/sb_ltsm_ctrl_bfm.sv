@@ -44,7 +44,7 @@ interface sb_ltsm_ctrl_bfm(
     if (reset) begin
       tms <= 0;
     end else begin
-      if (i_timer_1ms) begin
+      if (i_timer_1ms && i_sb_init_start) begin
         tms <= tms + 1;
       end
     end
