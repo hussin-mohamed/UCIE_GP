@@ -315,7 +315,8 @@ module UCIe_phy #(
             end
         end
     end
-
+    assign LTSM_controllers_vif.i_Runtime_Link_Test_status_register =0;
+    assign LTSM_controllers_vif.i_Runtime_Link_Test_Control_register =0;
    // top instantiation of all blocks
    ucie_LTSM LTSM (.i_clk(clk_l),
              .i_tx_decoding         (tx_fsm_sb_if.i_tx_decoding),
