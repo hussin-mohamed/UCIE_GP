@@ -77,7 +77,6 @@ task tx_monitor::collect_item_out(output ltsm_seq_item _item);
   bit is_req;
 
   _item = ltsm_seq_item::type_id::create("_item");
-  $display("%0t: $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$", $time);
   fork
     begin
       @(posedge bfm.o_sb_tx_req);
@@ -122,25 +121,19 @@ task tx_monitor::collect_item_in(output ltsm_seq_item _item);
 
   fork
     begin
-  $display("%0t: uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", $time);
       @(posedge bfm.i_tx_sb_req);
       is_req = 1;
-  $display("%0t: wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww", $time);
     end
 
     begin
-  $display("%0t: rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr", $time);
       @(posedge bfm.i_tx_sb_rsp);
       is_req = 0;
-  $display("%0t: qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq", $time);
     end
   join_any
 
   disable fork;
 
-  $display("%0t: ttttttttttttttttttttttttttttttttttttttttttttttttttt", $time);
   @(negedge bfm.clk);
-  $display("%0t: ttttttttttttttttttttttttttttttttttttttttttttttttttt", $time);
   _item.set_tx_encoding(tx_encoding_t'(bfm.i_tx_encoding));
   _item.msgtype = (is_req)? REQ_MSG : RSP_MSG;
   _item.data    = bfm.i_tx_data;

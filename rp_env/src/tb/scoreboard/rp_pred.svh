@@ -139,11 +139,6 @@ class rp_pred extends uvm_component;
       return;
     end
 
-    $display("%0t: t.rx_encoding        = %s", $time, t.rx_encoding.name());
-    $display("%0t: previous_rx_encoding = %s", $time, previous_rx_encoding.name());
-
-    
-
     if (is_d2c_valid_train_state) begin
       if (t.rx_encoding == Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init ||
           t.rx_encoding == Data_To_Clock_test_RX_Pattern_Detection_RX_Init) begin

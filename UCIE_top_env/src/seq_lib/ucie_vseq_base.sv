@@ -47,59 +47,7 @@ class ucie_vseq_base extends uvm_sequence;
     join_none
   endtask : pre_body
 
-  // -------------------------------------------------------------------------
-  //  Body Task
-  // -------------------------------------------------------------------------
-  virtual task body();
-    `uvm_info("UCIE_VSEQ", "Starting system-level sanity virtual sequence", UVM_LOW)
-
-
-    sbinit_phylink_seq.start(sb_phylink_seqr);
-
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-
-    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT111\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    sb_ltsm_item.data        = 64'h0;
-    sb_ltsm_item.info        = 16'h0;
-    sb_ltsm_item.msgtype     = REQ_MSG;
-    sb_ltsm_item.wait_cycles = 30;
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::SBINIT_TX_Out_Of_Reset_MSG);
-    send_sb_msg(sb_ltsm_item);
-
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT222\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    // p_sequencer.rx_fifo.get(sb_ltsm_item);
-    // `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT333\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    // p_sequencer.tx_fifo.get(sb_ltsm_item);
-    // `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT444\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    // sb_ltsm_item.set_tx_encoding(sb_shared_pkg::SBINIT_TX_Done_Handshake);
-    // send_sb_msg(sb_ltsm_item);
-
-    // p_sequencer.rx_fifo.get(sb_ltsm_item);
-    // `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT555\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    // sb_ltsm_item.set_rx_encoding(sb_shared_pkg::SBINIT_RX_Done_Handshake);
-    // send_sb_msg(sb_ltsm_item);
-
-    // sb_ltsm_item.data        = 64'h0;
-    // sb_ltsm_item.info        = 16'h0;
-    // sb_ltsm_item.msgtype     = RSP_MSG;
-    // sb_ltsm_item.wait_cycles = 30;
-    // sb_ltsm_item.set_rx_encoding(sb_shared_pkg::SBINIT_RX_Done_Handshake);
-    // send_sb_msg(sb_ltsm_item);
-    
-    // send_sb_msg(sb_ltsm_item);
-
-
-    // p_sequencer.rx_fifo.get(sb_ltsm_item);
-    // `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT333\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
-  endtask
-
-  function void send_sb_msg(sb_pkg::ltsm_seq_item sb_ltsm_item);
+  virtual function void send_sb_msg(sb_pkg::ltsm_seq_item sb_ltsm_item);
     if (sb_ltsm_item.get_tx_encoding() != NOP_TX) begin
       p_sequencer.prd_ltsm2link.write_tx(sb_ltsm_item);
     end else begin
@@ -109,3 +57,19 @@ class ucie_vseq_base extends uvm_sequence;
   endfunction : send_sb_msg
 
 endclass : ucie_vseq_base
+
+
+// function void send_sb_msg(sb_pkg::ltsm_seq_item sb_ltsm_item);
+//   if (sb_ltsm_item.get_dir() == MSG_TO_RX) begin
+//     sb_ltsm_item.set_tx_encoding(rx2tx_enc_lut[sb_ltsm_item.get_rx_encoding()]);
+//   end else if (sb_ltsm_item.get_dir() == MSG_TO_TX) begin
+//     sb_ltsm_item.set_rx_encoding(tx2rx_enc_lut[sb_ltsm_item.get_tx_encoding()]);
+//   end
+
+//   if (sb_ltsm_item.get_tx_encoding() != NOP_TX) begin
+//     p_sequencer.prd_ltsm2link.write_tx(sb_ltsm_item);
+//   end else begin
+//     p_sequencer.prd_ltsm2link.write_rx(sb_ltsm_item);
+//   end
+//   ltsm2link_msg_cnt++;
+// endfunction : send_sb_msg

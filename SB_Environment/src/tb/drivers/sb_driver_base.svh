@@ -184,11 +184,9 @@ task sb_driver_base::drive_items();
 
     // Trigger item driving completion for the sequence with/without sending response
     if(rsp != null) begin
-      $display("Yeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeees ");
       rsp.set_id_info(req); // Preserve transaction ID
       seq_item_port.item_done(rsp);
     end else begin
-      $display("Nooooooooooooooooooooooooooooooooooooooooooooooooo");
       seq_item_port.item_done();
     end
   end
