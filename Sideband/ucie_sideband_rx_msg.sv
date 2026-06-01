@@ -147,12 +147,18 @@ module ucie_sideband_rx_msg
   );
 
   always_ff @(posedge i_clk or posedge i_reset) begin
-    if (i_reset)
+    if (i_reset) begin
       o_sb_rx_done <= 1'b0;
-    else if ( i_rx_sb_req || i_rx_sb_rsp)
+    end
+    else if (i_rx_sb_req && rx_in_req) begin
       o_sb_rx_done <= 1'b1;
-    else 
+    end
+    else if (i_rx_sb_rsp && rx_in_rsp) begin 
+      o_sb_rx_done <= 1'b1;
+    end
+    else begin
       o_sb_rx_done <= 1'b0;
+    end
   end
 
 endmodule
