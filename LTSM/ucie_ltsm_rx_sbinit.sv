@@ -125,7 +125,7 @@ module ucie_ltsm_rx_sbinit #(
                 DONE_HANDSHAKE: begin
                     o_rx_encoding = 9'h09;
                     if (!substates_done) begin
-                        o_rx_sb_rsp = done_ack ? 0 : 1;
+                        o_rx_sb_rsp = (done_ack && i_rx_decoding == 9'h09) ? 0 : 1;
 
                         if (i_rx_decoding == 9'h09 && i_sb_rx_req) begin
                             next_substate    = WAIT_OUT_OF_RESET_MSG;
