@@ -39,6 +39,7 @@ logic [2:0] next_substate;                      // next substate
 
 logic done_ack;
 logic substates_done;
+logic [DECODING_WIDTH-1:0] o_tx_encoding_old;
 
 
 // State Memory Logic
@@ -59,10 +60,19 @@ always_ff @(posedge i_clk or posedge i_reset) begin
     end
 end
 
+always @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) begin
+        o_tx_encoding_old <= 0; 
+    end else begin
+        o_tx_encoding_old <= o_tx_encoding;  
+    end
+end
+
 
 // REQ & Done Handshake 
 always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) done_ack <= 0;
+    else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;  
     else if (i_sb_tx_done) begin
         done_ack <= 1;
     end else if (i_sb_tx_rsp || i_sb_tx_req) begin
