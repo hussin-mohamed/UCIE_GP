@@ -174,7 +174,7 @@ module ucie_ltsm_rx_mbinit_param #(
         //   [3:0]   : Max IO Link Speed   → w_common_speed
         // --------------------------------------------------------------
         CHECK_PARAMETERS: begin
-          o_rx_encoding = 9'h11;  // 2nd error
+          o_rx_encoding = 9'h12;  // 2nd error
 
           // Build response: only [3:0] carries the negotiated speed
           o_rx_data = {{(DATA_WIDTH - 4) {1'b0}}, w_common_speed};
