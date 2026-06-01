@@ -304,7 +304,7 @@ typedef enum logic [pDECODING_WIDTH-1:0] {
       stall_flag      <= 1'b0;
     end
     else begin
-    if (i_done || invalid_dec) begin
+    if (i_done || (invalid_dec && !stall_flag)) begin
       stall_flag      <= 1'b0; // Clear stall flag on done signal
       o_req           <= 1'b0;
       o_resp          <= 1'b0;
