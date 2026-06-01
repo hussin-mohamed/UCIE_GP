@@ -150,13 +150,13 @@ module ucie_sideband_rx_msg
     if (i_reset) begin
       o_sb_rx_done <= 1'b0;
     end
-    else if (i_rx_sb_req && rx_in_req) begin
+    else if (rx_in_req) begin
       o_sb_rx_done <= 1'b1;
     end
-    else if (i_rx_sb_rsp && rx_in_rsp) begin 
+    else if (rx_in_rsp) begin 
       o_sb_rx_done <= 1'b1;
     end
-    else begin
+    else if (!i_rx_sb_rsp && !i_rx_sb_req) begin
       o_sb_rx_done <= 1'b0;
     end
   end
