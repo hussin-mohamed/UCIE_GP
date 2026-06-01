@@ -116,7 +116,7 @@ module ucie_ltsm_tx_mbinit_param #(
           o_tx_info = 0;  // added
 
           // Capability word sits in bits [15:0]; bits [63:16] are reserved (0)
-          o_tx_data = {{(DATA_WIDTH - 16) {1'b0}}, r_local_cap};
+          o_tx_data =0;
 
           if (!substates_done) begin
             // TX Sending REQ Handshake
