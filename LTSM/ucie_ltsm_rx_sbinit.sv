@@ -75,12 +75,16 @@ module ucie_ltsm_rx_sbinit #(
     // -------------------------------------------------------------------------
     always_ff @(posedge i_clk or posedge i_reset) begin
         if (i_reset)
-            done_ack <= 0;
+            done_ack <= 1;
         else if (i_sb_rx_done)
             done_ack <= 1;
-        else if (i_sb_rx_req)
+        else if (i_sb_rx_req && i_rx_decoding == 9'h09)
             done_ack <= 0;
     end
+
+    always_comb begin 
+        o_rx_sb_rsp = done_ack ? 0 : 1;
+    end 
 
     // -------------------------------------------------------------------------
     // Next-state / output combinational logic
@@ -90,12 +94,12 @@ module ucie_ltsm_rx_sbinit #(
         o_rx_data       = '0;       // FIX 9: was never driven
         o_rx_info       = '0;       // FIX 9: was never driven
         o_rx_sb_req     = 0;
-        o_rx_sb_rsp     = 0;
+        // o_rx_sb_rsp     = 0;
         o_rx_sb_done    = 0;
         o_train_error   = 0;
         o_sb_init_start = 0;
         o_done_sbinit_rx = 0;
-        next_substate   = WAIT_OUT_OF_RESET_MSG;
+        next_substate   = DONE_HANDSHAKE;
 
         if (!substates_done && o_timer_8ms) begin
             o_train_error = 1;
@@ -125,14 +129,10 @@ module ucie_ltsm_rx_sbinit #(
                 DONE_HANDSHAKE: begin
                     o_rx_encoding = 9'h09;
                     if (!substates_done) begin
-                        if (i_sb_rx_req && i_rx_decoding == 9'h09) begin
-                            o_rx_sb_rsp = (i_sb_rx_done || done_ack) ? 0 : 1;
-                        end else begin
-                            o_rx_sb_rsp = 0;
-                        end
+                        // o_rx_sb_rsp = done_ack ? 0 : 1;
 
                         if (i_rx_decoding == 9'h09 && i_sb_rx_req) begin
-                            next_substate    = WAIT_OUT_OF_RESET_MSG;
+                            next_substate    = DONE_HANDSHAKE;
                             o_done_sbinit_rx = 1;
                         end else begin
                             next_substate = DONE_HANDSHAKE;
