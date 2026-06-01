@@ -20,6 +20,8 @@ class ucie_vseq_base extends uvm_sequence;
   int                          ltsm2link_msg_cnt;
   sbinit_phylink_sanity_seq    sbinit_phylink_seq;
   rmblink_sanity_clk_sequence  rmblink_clk_seq;
+  rmblink_sanity_valid_sequence rmblink_valid_seq;
+  rmblink_sanity_lfsr_sequence rmblink_lfsr_seq;
 
 
 
@@ -38,6 +40,8 @@ class ucie_vseq_base extends uvm_sequence;
     active_phylink_seq = active_phylink_sequence::type_id::create("active_phylink_seq");
     sbinit_phylink_seq = sbinit_phylink_sanity_seq::type_id::create("sbinit_phylink_seq");
     rmblink_clk_seq    = rmblink_sanity_clk_sequence::type_id::create("rmblink_clk_seq");
+    rmblink_valid_seq    = rmblink_sanity_valid_sequence::type_id::create("rmblink_valid_seq");
+    rmblink_lfsr_seq    = rmblink_sanity_lfsr_sequence::type_id::create("rmblink_lfsr_seq");
     sb_ltsm_item       = new("sb_ltsm_item");
     fork
       begin  // Sideband ltsm2link Transmission Thread

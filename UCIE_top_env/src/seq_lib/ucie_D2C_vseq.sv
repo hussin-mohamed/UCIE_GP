@@ -1,21 +1,32 @@
 //=============================================================================
-// File       : ucie_mbtrain_vseq.sv
+// File       : ucie_D2C_vseq.sv
 // Project    : UCIe 3.0 System-Level Verification
 // Description: Master virtual sequence for orchestrating the happy path 
 //              across the LTSM, Sideband, RX-Path, and TX-Path agents.
 //=============================================================================
 
-class ucie_mbtrain_vseq extends ucie_vseq_base;
+class ucie_D2C_vseq extends ucie_vseq_base;
 
-  rmblink_sanity_valid_sequence rmblink_valid_seq;
-
-  `uvm_object_utils(ucie_mbtrain_vseq)
+  `uvm_object_utils(ucie_D2C_vseq)
 
   // -------------------------------------------------------------------------
   //  Constructor
   // -------------------------------------------------------------------------
-  function new(string name = "ucie_mbtrain_vseq");
+  function new(string name = "ucie_D2C_vseq");
     super.new(name);
+  endfunction
+
+  protected logic [63:0] data;
+  protected logic [15:0] info;
+  protected logic pattern_type;
+
+  protected bit is_configured;
+
+  function configure (logic [63:0] data, logic [15:0] info, logic pattern_type);
+    this.data = data;
+    this.info = info;
+    this.pattern_type = pattern_type;
+    this.is_configured = 1;
   endfunction
 
   // -------------------------------------------------------------------------
@@ -24,78 +35,12 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
   virtual task body();
     `uvm_info("UCIE_VSEQ", "Starting system-level sanity virtual sequence", UVM_LOW)
 
-    sbinit_phylink_seq.start(sb_phylink_seqr);
+    if (!is_configured) begin
+      `uvm_fatal("SEQ_CFG_ERR", "Sequence must be configured via configure() before starting!")
+    end
 
-    // Valverif_Start_TX_LTSM
-    `uvm_info("VSEQ", $sformatf("Valverif_Start_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+    is_configured = 0;
 
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_VALVREF_TX_Start_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // Valverif_Start_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("Valverif_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_VALVREF_RX_Start_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // Valverif_D2C_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("Valverif_D2C_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    D2C_RX_initiated(0,'hFFFF_FFFF_FFFF_FFFF);
-
-    // Valverif_End_TX_LTSM
-    `uvm_info("VSEQ", $sformatf("Valverif_End_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_VALVREF_TX_End_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // Valverif_End_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("Valverif_End_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_VALVREF_RX_End_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // Dataverif_Start_TX_LTSM
-    `uvm_info("VSEQ", $sformatf("Dataverif_Start_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_DATAVREF_TX_Start_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // Dataverif_Start_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("Dataverif_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_DATAVREF_RX_Start_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // Dataverif_D2C_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("Valverif_D2C_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    D2C_RX_initiated(0,'hFFFF_FFFF_FFFF_FFFF, 1);
-
-    // Dataverif_End_TX_LTSM
-    `uvm_info("VSEQ", $sformatf("Dataverif_End_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_DATAVREF_TX_End_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // Dataverif_End_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("Dataverif_End_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_DATAVREF_RX_End_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
-  endtask
-
-  task D2C_RX_initiated (logic [63:0] data, logic [15:0] info, logic data);
     // D2C_RX_initiated_INIT_TX_LTSM
     `uvm_info("VSEQ", $sformatf("D2C_RX_initiated__TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
@@ -127,8 +72,9 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     // D2C_RX_initiated_Pattern_detection_RX_LTSM
     `uvm_info("VSEQ", $sformatf("D2C_RX_initiated_Pattern_detection_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
     
-    if (data) begin
-      
+    if (pattern_type) begin
+      rmblink_lfsr_seq.start(rp_rmblink_seqr);
+      rmblink_valid_seq.test_mode = SCENARIO_EXACT_MATCH;
     end else begin
       rmblink_valid_seq.start(rp_rmblink_seqr);
       rmblink_valid_seq.test_mode = TEST_IDEAL_ALL_0F;
@@ -178,4 +124,4 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake);
     send_sb_msg(sb_ltsm_item);
   endtask 
-endclass : ucie_mbtrain_vseq
+endclass : ucie_D2C_vseq
