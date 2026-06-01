@@ -303,7 +303,7 @@ module UCIe_phy #(
         .o_done(tx_bfm.i_tx_sb_done)
     );
 
-    always_ff @(posedge i_clk_sb_100_m or posedge i_reset) begin
+    always_ff @(posedge clk_l or posedge i_reset) begin
         if (i_reset) begin
             ltsm_ctrl_bfm.i_timer_1ms <= 0;
         end else begin

@@ -13,7 +13,7 @@ class ucie_sanity_test extends ucie_base_test;
   // -------------------------------------------------------------------------
   function new(string name="ucie_sanity_test", uvm_component parent=null);
     super.new(name, parent);
-    uvm_top.set_timeout(1s, 0);
+    uvm_top.set_timeout(4900000ns, 0);
   endfunction
 
   // -------------------------------------------------------------------------

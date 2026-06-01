@@ -643,6 +643,7 @@ module ucie_ltsm_init_fsm #(
       .DATA_WIDTH    (DATA_WIDTH)
   ) u_tx_sbinit (
       .i_clk           (i_clk),
+      .i_rx_decoding   (i_rx_decoding),
       .i_reset         (i_reset),
       .i_tx_decoding   (i_tx_decoding),
       .i_sb_tx_req     (i_sb_tx_req),

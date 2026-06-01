@@ -12,6 +12,7 @@ module ucie_ltsm_tx_sbinit #(
     input                               i_sb_ready,
     input   [3:0]                       i_current_state,
     input                               o_timer_8ms,
+    input   [DECODING_WIDTH-1:0]        i_rx_decoding,
  
     output  logic [DECODING_WIDTH-1:0]  o_tx_encoding,
     output  logic                       o_tx_sb_req, 
@@ -110,7 +111,7 @@ always_comb begin
                     if (done_ack) o_tx_sb_req = 0;
                     else o_tx_sb_req = 1;
 
-                    if (i_tx_decoding == 9'h09) next_substate = DONE_HANDSHAKE;
+                    if (i_tx_decoding == 9'h09 || i_rx_decoding == 9'h08) next_substate = DONE_HANDSHAKE;
                     else next_substate = OUT_OF_RESET_MSG;
                 end
             end
