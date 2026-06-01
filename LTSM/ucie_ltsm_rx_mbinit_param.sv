@@ -150,7 +150,7 @@ module ucie_ltsm_rx_mbinit_param #(
             if (i_sb_rx_req && i_rx_decoding == 9'h10) begin
               o_rx_sb_done  = 1;
 
-              next_substate = WAIT_CONFIG_REQ;
+              next_substate = CHECK_PARAMETERS;
             end else begin
               next_substate = WAIT_CONFIG_REQ;
             end
@@ -184,7 +184,7 @@ module ucie_ltsm_rx_mbinit_param #(
 
             if (i_sb_rx_done) begin
               o_done_mbinit_param_rx = 1;
-              next_substate          = WAIT_CONFIG_REQ;
+              next_substate          = CHECK_PARAMETERS;
             end else next_substate = CHECK_PARAMETERS;
           end else next_substate = CHECK_PARAMETERS;
         end
