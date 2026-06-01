@@ -58,6 +58,7 @@ module UCIe_phy #(
     wire clk_mb_h; // half rate clock used in mainband
     wire clk_l;     // Logical clock used in mainband & LTSM
     logic sb_ready;
+    logic sb_ready_reg;
     bit t1_ms;
     PLL_model PLL(
         .i_sel(LTSM_controllers_vif.o_speedreg),
@@ -224,7 +225,7 @@ module UCIe_phy #(
       rx_fsm_sb_if.i_sb_rx_done = rx_bfm.o_sb_rx_done;
 
       ltsm_ctrl_bfm.i_sb_init_start = LTSM_controllers_vif.o_sbinit_start;
-       LTSM_controllers_vif.i_sb_ready = sb_ready;
+       LTSM_controllers_vif.i_sb_ready = sb_ready | sb_ready_reg;
 
       o_tx_sb_data = phylink_bfm.o_tx_sb_data;
       o_tx_sb_clk = phylink_bfm.o_tx_sb_clk;
@@ -314,6 +315,9 @@ module UCIe_phy #(
                 ltsm_ctrl_bfm.i_timer_1ms <= 0;
             end
         end
+    end
+    always @(posedge i_clk_sb_100_m) begin
+        sb_ready_reg <= sb_ready;
     end
     assign LTSM_controllers_vif.i_Runtime_Link_Test_status_register =0;
     assign LTSM_controllers_vif.i_Runtime_Link_Test_Control_register =0;
