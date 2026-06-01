@@ -1,10 +1,10 @@
 module ucie_LTSM #(
-    parameter DECODING_WIDTH  = 9,      // Width of encoding/decoding signals
-    parameter DATA_WIDTH      = 64,     // Width of data bus
-    parameter INFO_WIDTH      = 16,     // Width of info/control bus
-    parameter SIM_8MS_CYCLES  = 2000,
+    parameter DECODING_WIDTH  = 9,     // Width of encoding/decoding signals
+    parameter DATA_WIDTH      = 64,    // Width of data bus
+    parameter INFO_WIDTH      = 16,    // Width of info/control bus
+    parameter SIM_8MS_CYCLES  = 4000,
     parameter CLK_PERIOD_NS   = 1.0,
-    parameter ERROR_THRESHOLD = 1       // Threshold for acceptable training errors 
+    parameter ERROR_THRESHOLD = 0      // Threshold for acceptable training errors 
 ) (
     // -------------------------------------------------------------------------
     // Clock & Reset
@@ -87,7 +87,7 @@ module ucie_LTSM #(
     output logic [2:0] o_pl_lnk_cfg,        // Current link configuration / width
     output logic       o_pl_clk_req,        // Request to ungate adapter clocks
     output logic       o_pl_wake_ack,       // Ack of lp_wake_req
-    output logic       o_timer1ms,       // Ack of lp_wake_req
+    output logic       o_timer1ms,          // Ack of lp_wake_req
 
     // -------------------------------------------------------------------------
     // Sideband message encoding (LTSM ? SB / TX-RX controllers)
@@ -197,7 +197,7 @@ module ucie_LTSM #(
 
   logic [3:0] w_timer_rx_encoding;
 
-  assign o_timer1ms= w_timer_1ms;
+  assign o_timer1ms = w_timer_1ms;
 
   always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
@@ -430,7 +430,7 @@ module ucie_LTSM #(
       .i_tx_decoding    (i_tx_decoding),     // Decoded command from RX
       .i_tx_data        (i_tx_data),         // Data from RX
       .i_tx_info        (i_tx_info),         // Info/control from RX
-      .i_tx_sweep_result(8'b0), // Eye sweep test results
+      .i_tx_sweep_result(8'b0),              // Eye sweep test results
 
 
       // Sideband control inputs
@@ -455,10 +455,10 @@ module ucie_LTSM #(
       .rsp_sent(w_rsp_sent),  // Response sent flag
 
       // TX interface outputs - data going to remote RX
-      .o_tx_encoding(w_train_tx_encoding),  // Encoded command to send
-      .o_tx_data    (w_train_tx_data),      // Data to send
-      .o_tx_info    (w_train_tx_info),      // Info/control to send
-      .failed_test  (w_tx_error),           // Info/control to send
+      .o_tx_encoding  (w_train_tx_encoding),  // Encoded command to send
+      .o_tx_data      (w_train_tx_data),      // Data to send
+      .o_tx_info      (w_train_tx_info),      // Info/control to send
+      .failed_test    (w_tx_error),           // Info/control to send
       .L1_SPEEDIDLE_en(L1_SPEEDIDLE_en),
 
       // Sideband control outputs

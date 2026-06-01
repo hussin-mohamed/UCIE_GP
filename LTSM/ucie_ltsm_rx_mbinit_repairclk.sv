@@ -80,19 +80,30 @@ module ucie_ltsm_rx_mbinit_repairclk #(
         // Latch detection results when RX path finishes or when TX asks early
         if ((current_substate == PATTERN_DETECTION && i_rx_done) ||
                     (current_substate == WAIT_RESULT_REQ &&
-                     i_sb_rx_req && i_rx_decoding == 9'h22)) // edited
+                     i_sb_rx_req && i_rx_decoding == 9'h23)) // edited
           i_rx_clk_results_reg <= i_rx_clk_results;
       end
     end
   end
 
-  // -------------------------------------------------------------------------
-  // RSP / Done handshake register
-  // -------------------------------------------------------------------------
+  // // -------------------------------------------------------------------------
+  // // RSP / Done handshake register
+  // // -------------------------------------------------------------------------
+  // always_ff @(posedge i_clk or posedge i_reset) begin
+  //   if (i_reset) done_ack <= 0;
+  //   else if (i_sb_rx_done) done_ack <= 1;
+  //   else if (i_sb_rx_req) done_ack <= 0;
+  // end
+
   always_ff @(posedge i_clk or posedge i_reset) begin
-    if (i_reset) done_ack <= 0;
+    if (i_reset) done_ack <= 1;
     else if (i_sb_rx_done) done_ack <= 1;
-    else if (i_sb_rx_req) done_ack <= 0;
+    else if (i_sb_rx_req && (i_rx_decoding == 9'h20 || i_rx_decoding == 9'h22 || i_rx_decoding == 9'h23 || i_rx_decoding == 9'h24))
+      done_ack <= 0;
+  end
+
+  always_comb begin
+    o_rx_sb_rsp = done_ack ? 0 : 1;
   end
 
   // -------------------------------------------------------------------------
@@ -110,11 +121,11 @@ module ucie_ltsm_rx_mbinit_repairclk #(
     o_rx_data                  = '0;
     o_rx_info                  = '0;
     o_rx_sb_req                = 0;
-    o_rx_sb_rsp                = 0;
+    // o_rx_sb_rsp                = 0;
     o_rx_sb_done               = 0;
     o_train_error              = 0;
     o_done_mbinit_repairclk_rx = 0;
-    next_substate              = INIT_HANDSHAKE;
+    next_substate              = DONE_HANDSHAKE;
 
     if (!substates_done && o_timer_8ms) begin
       o_train_error = 1;
@@ -129,7 +140,7 @@ module ucie_ltsm_rx_mbinit_repairclk #(
         INIT_HANDSHAKE: begin
           o_rx_encoding = 9'h20;
           if (!substates_done) begin
-            o_rx_sb_rsp = done_ack ? 0 : 1;
+            // o_rx_sb_rsp = done_ack ? 0 : 1;
 
             if (i_sb_rx_req && i_rx_decoding == 9'h20) next_substate = PATTERN_DETECTION;
             else next_substate = INIT_HANDSHAKE;
@@ -146,15 +157,16 @@ module ucie_ltsm_rx_mbinit_repairclk #(
         // FIX 11: was "i_rx_decoding = 9'h22" (assign not compare)
         // --------------------------------------------------------------
         PATTERN_DETECTION: begin
-          o_rx_encoding = 9'h21;
+          o_rx_encoding = o_rx_sb_rsp ? 9'h20 : 9'h21;
 
           if (!substates_done) begin
-            if (i_rx_done) begin
-              // Results ready, wait for TX to ask
-              next_substate = WAIT_RESULT_REQ;
-            end else if (i_sb_rx_req && i_rx_decoding == 9'h21) begin
+            // if (i_rx_done) begin
+            //   // Results ready, wait for TX to ask
+            //   next_substate = WAIT_RESULT_REQ;
+            // end else 
+            if (i_sb_rx_req && i_rx_decoding == 9'h23) begin
               // TX asked before we finished — grab whatever we have now
-              o_rx_sb_rsp   = 1;
+              // o_rx_sb_rsp   = 1;
               next_substate = SEND_RESP;
             end else begin
               next_substate = PATTERN_DETECTION;
@@ -171,7 +183,7 @@ module ucie_ltsm_rx_mbinit_repairclk #(
           o_rx_encoding = 9'h22;
           if (!substates_done) begin
             // Keep RSP asserted so TX knows we're ready
-            o_rx_sb_rsp = done_ack ? 0 : 1;
+            // o_rx_sb_rsp = done_ack ? 0 : 1;
 
             if (i_sb_rx_req && i_rx_decoding == 9'h22)  // 
               next_substate = SEND_RESP;
@@ -190,7 +202,7 @@ module ucie_ltsm_rx_mbinit_repairclk #(
           o_rx_encoding  = 9'h23;
           o_rx_info[2:0] = i_rx_clk_results_reg;
           if (!substates_done) begin
-            o_rx_sb_rsp = 1;
+            // o_rx_sb_rsp = 1;
 
             if (i_sb_rx_done) next_substate = DONE_HANDSHAKE;
             else next_substate = SEND_RESP;
@@ -205,11 +217,11 @@ module ucie_ltsm_rx_mbinit_repairclk #(
         DONE_HANDSHAKE: begin
           o_rx_encoding = 9'h24;
           if (!substates_done) begin
-            o_rx_sb_rsp = done_ack ? 0 : 1;
+            // o_rx_sb_rsp = done_ack ? 0 : 1;
 
             if (i_sb_rx_req && i_rx_decoding == 9'h24) begin
               o_done_mbinit_repairclk_rx = 1;
-              next_substate              = INIT_HANDSHAKE;
+              next_substate              = DONE_HANDSHAKE;
             end else begin
               next_substate = DONE_HANDSHAKE;
             end

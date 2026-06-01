@@ -11,18 +11,18 @@ class ucie_vseqr extends uvm_sequencer;
   // -------------------------------------------------------------------------
   //  Child Sequencer Handles
   // -------------------------------------------------------------------------
-  LTSM_pkg::ltsm_rdi_sequencer ltsm_rdi_seqr;
-  sb_pkg::phylink_sequencer    sb_phylink_seqr;
-  rp_pkg::rmblink_sequencer    rp_rmblink_seqr;
-  tx_tb_pkg::rdi_sequencer     tx_rdi_seqr;
+  LTSM_pkg::ltsm_rdi_sequencer                      ltsm_rdi_seqr;
+  sb_pkg::phylink_sequencer                         sb_phylink_seqr;
+  rp_pkg::rmblink_sequencer                         rp_rmblink_seqr;
+  tx_tb_pkg::rdi_sequencer                          tx_rdi_seqr;
 
-  sb_pkg::sb_pred_link2ltsm    prd_link2ltsm;
-  sb_pkg::sb_pred_ltsm2link    prd_ltsm2link;
+  sb_pkg::sb_pred_link2ltsm                         prd_link2ltsm;
+  sb_pkg::sb_pred_ltsm2link                         prd_ltsm2link;
 
-  uvm_analysis_export   #(phylink_seq_item) axp_in;
+  uvm_analysis_export #(phylink_seq_item)           axp_in;
   uvm_tlm_analysis_fifo #(sb_pkg::ltsm_seq_item)    tx_fifo;
   uvm_tlm_analysis_fifo #(sb_pkg::ltsm_seq_item)    rx_fifo;
-  uvm_tlm_analysis_fifo #(sb_pkg::phylink_seq_item)    link_fifo;
+  uvm_tlm_analysis_fifo #(sb_pkg::phylink_seq_item) link_fifo;
 
   // -------------------------------------------------------------------------
   //  Constructor
@@ -51,8 +51,10 @@ class ucie_vseqr extends uvm_sequencer;
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
     axp_in.connect(prd_link2ltsm.analysis_export);
-    prd_link2ltsm.results_ap_tx.connect(rx_fifo.analysis_export); // Message from DUT's TX to my RX
-    prd_link2ltsm.results_ap_rx.connect(tx_fifo.analysis_export); // Message from DUT's RX to my TX
+    prd_link2ltsm.results_ap_tx.connect(
+        rx_fifo.analysis_export);  // Message from DUT's TX to my RX
+    prd_link2ltsm.results_ap_rx.connect(
+        tx_fifo.analysis_export);  // Message from DUT's RX to my TX
     prd_ltsm2link.results_ap_phy.connect(link_fifo.analysis_export);
   endfunction : connect_phase
 

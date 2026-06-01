@@ -69,7 +69,7 @@ module ucie_LTSM_RX_MBTRAIN_TB ();
 parameter DECODING_WIDTH  = 9;
 parameter DATA_WIDTH      = 64;
 parameter INFO_WIDTH      = 16;
-parameter ERROR_THRESHOLD = 1;
+parameter ERROR_THRESHOLD = 0;
 
 // -----------------------------------------------------------------------
 // DUT Signal Declarations

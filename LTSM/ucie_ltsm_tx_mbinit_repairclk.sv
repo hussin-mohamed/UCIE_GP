@@ -29,11 +29,13 @@ module ucie_ltsm_tx_mbinit_repairclk #(
 );
 
 
-  logic [2:0] current_substate;  // current substate 
-  logic [2:0] next_substate;  // next substate
+  logic [               2:0] current_substate;  // current substate 
+  logic [               2:0] next_substate;  // next substate
 
-  logic       done_ack;
-  logic       substates_done;
+  logic                      done_ack;
+  logic                      substates_done;
+  logic [DECODING_WIDTH-1:0] o_tx_encoding_old;
+
 
   // Local Parameters for states names
   localparam MBINIT_REPAIRCLK = 4'b0100;
@@ -68,10 +70,21 @@ module ucie_ltsm_tx_mbinit_repairclk #(
 
 
   always @(posedge i_clk or posedge i_reset) begin
-    if (i_reset) done_ack <= 0;
+    if (i_reset) begin
+      o_tx_encoding_old <= 0;
+    end else begin
+      o_tx_encoding_old <= o_tx_encoding;
+    end
+  end
+
+
+  // REQ & Done Handshake 
+  always @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) done_ack <= 1;
+    else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;
     else if (i_sb_tx_done) begin
       done_ack <= 1;
-    end else  begin
+    end else if (i_sb_tx_rsp || i_sb_tx_req) begin
       done_ack <= 0;
     end
   end
@@ -112,8 +125,8 @@ module ucie_ltsm_tx_mbinit_repairclk #(
           o_tx_encoding = 9'h21;
 
           if (!substates_done) begin
-            if (done_ack) o_tx_sb_req = 0;
-            else o_tx_sb_req = 1;
+            // if (done_ack) o_tx_sb_req = 0;
+            // else o_tx_sb_req = 1;
 
             if (i_tx_done) next_substate = RESULT_HANDSHAKE;
             else next_substate = PATTERN_GENERATION;
