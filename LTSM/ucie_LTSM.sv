@@ -4,7 +4,7 @@ module ucie_LTSM #(
     parameter INFO_WIDTH      = 16,     // Width of info/control bus
     parameter SIM_8MS_CYCLES  = 2000,
     parameter CLK_PERIOD_NS   = 1.0,
-    parameter ERROR_THRESHOLD = 0       // Threshold for acceptable training errors 
+    parameter ERROR_THRESHOLD = 1       // Threshold for acceptable training errors 
 ) (
     // -------------------------------------------------------------------------
     // Clock & Reset

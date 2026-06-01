@@ -267,7 +267,7 @@ always @(*) begin
 
                     // Wait for done signal
                     if (i_sb_xx_done) begin
-                        o_xx_info = i_xx_info;  // Send error threshold parameter
+                        o_xx_info = ERROR_THRESHOLD;  // Send error threshold parameter
                         o_xx_encoding = 'h189;  // LFSR setup encoding
                         NS = LFSR_HANDSHAKE;
                         o_xx_sb_req = 0;

@@ -6,8 +6,8 @@
 //
 //   RESET ? SBINIT ? MBINIT_PARAM ? MBINIT_CAL ? MBINIT_REPAIRCLK ?
 //   MBINIT_REPAIRVAL ? MBINIT_REVERSAL ? MBINIT_REPAIRMB --(stay)--
-//                                                              ¦
-//                                        i_train_active_error  ¦
+//                                                              ï¿½
+//                                        i_train_active_error  ï¿½
 //                                                              ?
 //                                                        TRAINERROR ? RESET
 //
@@ -141,7 +141,7 @@ module ucie_ltsm_init_fsm #(
   assign o_current_state = current_state;
 
   // =========================================================================
-  // Done latches — per state, for TX and RX independently
+  // Done latches ï¿½ per state, for TX and RX independently
   // Each sub-FSM asserts its done for exactly one cycle; we latch here and
   // clear on state transition.
   // =========================================================================
@@ -234,7 +234,7 @@ module ucie_ltsm_init_fsm #(
   end
 
   // =========================================================================
-  // Done latch always_ff  — latch each raw done pulse; clear on state exit
+  // Done latch always_ff  ï¿½ latch each raw done pulse; clear on state exit
   // =========================================================================
   always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
@@ -345,8 +345,7 @@ module ucie_ltsm_init_fsm #(
   // =========================================================================
   always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) init_train_en_reg <= 0;
-    else if (current_state == MBINIT_REPAIRMB && repair_done &&
-                 i_rx_decoding == 'h80 && i_sb_rx_req)
+    else if (current_state == MBINIT_REPAIRMB && repair_done)
       init_train_en_reg <= 1;
     else if (current_state != MBINIT_REPAIRMB) init_train_en_reg <= 0;
   end
@@ -360,7 +359,7 @@ module ucie_ltsm_init_fsm #(
   end
 
   // =========================================================================
-  // Main FSM  — sequential
+  // Main FSM  ï¿½ sequential
   // =========================================================================
   // always_ff @(posedge i_clk or posedge i_reset) begin
   //   if (i_reset) current_state <= RESET;
@@ -373,7 +372,7 @@ module ucie_ltsm_init_fsm #(
   // end
 
   // =========================================================================
-  // Main FSM  — combinational next-state logic
+  // Main FSM  ï¿½ combinational next-state logic
   // Priority (highest first):
   //   1. SBINIT train error       ? RESET
   //   2. Any other train error    ? TRAINERROR
@@ -402,7 +401,7 @@ module ucie_ltsm_init_fsm #(
     end else if (init_train_en_reg && i_train_active_error) begin
       next_state = TRAINERROR;
     end else begin
-      // Normal sequencing — only override next_state if transition
+      // Normal sequencing ï¿½ only override next_state if transition
       case (current_state)
         RESET: begin
           // Next state if:
@@ -688,7 +687,7 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp     (rx_sb_rsp_sbinit),
       .o_rx_sb_done    (rx_sb_done_sbinit),
       .o_train_error   (te_rx_sbinit),
-      .o_sb_init_start (  /* open — TX drives this */),
+      .o_sb_init_start (  /* open ï¿½ TX drives this */),
       .o_done_sbinit_rx(raw_done_rx_sbinit)
   );
 
@@ -1093,7 +1092,7 @@ module ucie_ltsm_init_fsm #(
   );
 
   // =========================================================================
-  // Output MUX  — select active sub-FSM outputs based on current_state
+  // Output MUX  ï¿½ select active sub-FSM outputs based on current_state
   // =========================================================================
 
   // Internal wire needed for feedback to TX REPAIRVAL/REVERSAL/REPAIRMB

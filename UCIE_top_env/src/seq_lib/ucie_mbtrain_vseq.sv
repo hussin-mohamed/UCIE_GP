@@ -7,7 +7,7 @@
 
 class ucie_mbtrain_vseq extends ucie_vseq_base;
 
-
+  rmblink_sanity_valid_sequence rmblink_valid_seq;
 
   `uvm_object_utils(ucie_mbtrain_vseq)
 
@@ -82,7 +82,7 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask
 
-  task D2C_RX_initiated ();
+  task D2C_RX_initiated (logic [63:0] data, logic [15:0] info);
     // D2C_RX_initiated_INIT_TX_LTSM
     `uvm_info("VSEQ", $sformatf("D2C_RX_initiated__TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
@@ -114,10 +114,9 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     // D2C_RX_initiated_Pattern_detection_RX_LTSM
     `uvm_info("VSEQ", $sformatf("D2C_RX_initiated_Pattern_detection_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
     
-    rmblink_clk_seq.start(rp_rmblink_seqr);
-
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_Result_Handshake);
-    send_sb_msg(sb_ltsm_item);
+    rmblink_valid_seq.start(rp_rmblink_seqr);
+    rmblink_valid_seq.test_mode = TEST_IDEAL_ALL_0F;
+    `uvm_info("VSEQ", $sformatf("End Pattern Detection\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
     // D2C_RX_initiated_Result_handshake_TX_LTSM
     `uvm_info("VSEQ", $sformatf("D2C_RX_initiated_Result_handshake_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
@@ -130,24 +129,36 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     `uvm_info("VSEQ", $sformatf("D2C_RX_initiated_Result_handshake_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
     
     p_sequencer.tx_fifo.get(sb_ltsm_item);
+    sb_ltsm_item.info = info;
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_Result_Handshake);
     send_sb_msg(sb_ltsm_item);
 
-    // D2C_RX_initiated__TX_LTSM
-    `uvm_info("VSEQ", $sformatf("D2C_RX_initiated__TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+    // Data_To_Clock_test_RX_Sweep_Result_Handshake_TX_LTSM
+    `uvm_info("VSEQ", $sformatf("Data_To_Clock_test_RX_Sweep_Result_Handshake_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
     p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.msgtype     = RSP_MSG;
-    sb_ltsm_item.wait_cycles = 30;
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::DATA_TO_CLOCK_RX_RX_INIT_HANDSHAKE);
+    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_Sweep_Result_Handshake);
     send_sb_msg(sb_ltsm_item);
 
-    // D2C_RX_initiated__RX_LTSM
-    `uvm_info("VSEQ", $sformatf("D2C_RX_initiated__RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+    // Data_To_Clock_test_RX_Sweep_Result_Handshake_RX_LTSM
+    `uvm_info("VSEQ", $sformatf("Data_To_Clock_test_RX_Sweep_Result_Handshake_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
     
     p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.msgtype     = REQ_MSG;
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::DATA_TO_CLOCK_RX_RX_INIT_HANDSHAKE);
+    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_Sweep_Result_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+    // Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake_TX_LTSM
+    `uvm_info("VSEQ", $sformatf("Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    p_sequencer.rx_fifo.get(sb_ltsm_item);
+    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+    // Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake_RX_LTSM
+    `uvm_info("VSEQ", $sformatf("Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+    
+    p_sequencer.tx_fifo.get(sb_ltsm_item);
+    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake);
     send_sb_msg(sb_ltsm_item);
   endtask 
 endclass : ucie_mbtrain_vseq

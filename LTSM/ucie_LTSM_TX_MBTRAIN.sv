@@ -9,7 +9,7 @@ module ucie_LTSM_TX_MBTRAIN #(
     parameter DECODING_WIDTH = 9,    // Width of encoding/decoding signals
     parameter DATA_WIDTH = 64,       // Width of data bus
     parameter INFO_WIDTH = 16,       // Width of info/control bus
-    parameter ERROR_THRESHOLD = 0    // Threshold for acceptable training errors
+    parameter ERROR_THRESHOLD = 1    // Threshold for acceptable training errors
 ) (
     // Clock and reset
     input i_clk,
