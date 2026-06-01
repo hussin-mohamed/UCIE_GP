@@ -102,6 +102,8 @@ module ucie_ltsm_rx_mbinit_cal #(
         DONE_HANDSHAKE: begin
           o_rx_encoding = 9'h18;
           // o_rx_sb_rsp = 1'b1;
+          o_rx_data            = '0;
+          o_rx_info            = '0;
           if (!substates_done) begin
             // o_rx_sb_rsp = done_ack ? 0 : 1;
 
