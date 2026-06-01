@@ -150,13 +150,13 @@ module ucie_sideband_tx_msg
     if (i_reset) begin
       o_sb_tx_done <= 1'b0;
     end
-    else if (i_tx_sb_req && tx_in_req) begin
+    else if (tx_in_req) begin
       o_sb_tx_done <= 1'b1;
     end
-    else if (i_tx_sb_rsp && tx_in_rsp) begin 
+    else if (tx_in_rsp) begin 
       o_sb_tx_done <= 1'b1;
     end
-    else begin
+    else if (!i_tx_sb_rsp && !i_tx_sb_req) begin
       o_sb_tx_done <= 1'b0;
     end
   end
