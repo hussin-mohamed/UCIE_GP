@@ -28,7 +28,6 @@ module ucie_sideband_rx_msg_enc_dec
   ,input  wire                  i_empty
   ,output reg                   o_req
   ,output reg                   o_resp
-  ,output reg                   o_done
   ,output reg  [pDATA_WIDTH-1:0] o_data_out
   ,output reg  [pDECODING_WIDTH-1:0] o_decoding
   ,output reg  [pINFO_WIDTH-1:0] o_info_out
@@ -718,7 +717,6 @@ end
     enc_cp          = 1'b0; // Control Parity (even parity over header fields)
     o_msg_out       = {pMSG_WIDTH{1'b0}}; // Construct message
     o_enc_ready     = 1'b0;
-    o_done          = 1'b0;
 
     if (!i_reset) begin
       if ((i_req || i_resp) && !i_full) begin
@@ -1228,7 +1226,6 @@ end
         o_msg_out   = {enc_srcid,{2{pRESERVED}},{5{pRESERVED}},enc_msg_code,{9{pRESERVED}},enc_op_code,enc_dp,enc_cp,{3{pRESERVED}},
                         enc_dstid,i_info_in,enc_msg_subcode,i_data_in[31:0],i_data_in[63:32]}; // Construct message
         o_enc_ready = 1'b1;
-        o_done      = 1'b1;
       end
     end
   end // Encoding_proc

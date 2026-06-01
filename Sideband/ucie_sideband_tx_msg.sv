@@ -28,7 +28,7 @@ module ucie_sideband_tx_msg
   ,input  wire                  i_traffic_tx_fifo_wr_en
   ,output wire                  o_sb_tx_req
   ,output wire                  o_sb_tx_rsp
-  ,output wire                  o_sb_tx_done
+  ,output reg                  o_sb_tx_done
   ,output wire  [pDATA_WIDTH-1:0] o_tx_data
   ,output wire  [pDECODING_WIDTH-1:0] o_tx_decoding
   ,output wire  [pINFO_WIDTH-1:0] o_tx_info
@@ -49,6 +49,10 @@ module ucie_sideband_tx_msg
   wire                         traffic_tx_fifo_empty;
   wire                         traffic_tx_fifo_rd_en;
   wire  [pMSG_WIDTH-1:0]       traffic_tx_fifo_msg;
+
+  // Toggle sync signals
+  wire                         tx_in_req;
+  wire                         tx_in_rsp;
 
   //---- MODULE INSTANTIATIONS -------------------------------------------------
 
@@ -108,8 +112,8 @@ module ucie_sideband_tx_msg
   u_tx_msg_enc_dec (
     .i_clk                (i_clk),
     .i_reset              (i_reset),
-    .i_req                (i_tx_sb_req),
-    .i_resp               (i_tx_sb_rsp),
+    .i_req                (tx_in_req),
+    .i_resp               (tx_in_rsp),
     .i_done               (i_tx_sb_done),
     .i_data_in            (i_tx_data),
     .i_encoding           (i_tx_encoding),
@@ -119,7 +123,6 @@ module ucie_sideband_tx_msg
     .i_empty              (traffic_tx_fifo_empty),
     .o_req                (o_sb_tx_req),
     .o_resp               (o_sb_tx_rsp),
-    .o_done               (o_sb_tx_done),
     .o_data_out           (o_tx_data),
     .o_decoding           (o_tx_decoding),
     .o_info_out           (o_tx_info),
@@ -128,5 +131,28 @@ module ucie_sideband_tx_msg
     .o_dec_ready          (traffic_tx_fifo_rd_en),
     .o_valid              (o_tx_valid)
   );
+
+  toggle_sync u_toggle_sync_req (
+    .i_clk                (i_clk),
+    .i_reset              (i_reset),
+    .i_cnt                (i_tx_sb_req),
+    .o_cnt                (tx_in_req)
+  );
+
+  toggle_sync u_toggle_sync_rsp (
+    .i_clk                (i_clk),
+    .i_reset              (i_reset),
+    .i_cnt                (i_tx_sb_rsp),
+    .o_cnt                (tx_in_rsp)
+  );
+
+  always_ff @(posedge i_clk or posedge i_reset) begin
+    if (i_reset)
+      o_sb_tx_done <= 1'b0;
+    else if ( i_tx_sb_req || i_tx_sb_rsp)
+      o_sb_tx_done <= 1'b1;
+    else 
+      o_sb_tx_done <= 1'b0;
+  end
 
 endmodule
