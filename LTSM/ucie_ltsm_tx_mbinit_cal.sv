@@ -73,6 +73,8 @@ always_comb begin
     o_tx_sb_req = 0;
     o_tx_sb_rsp = 0;
     o_tx_sb_done = 0;
+    o_tx_data = 0;
+    o_tx_info = 0;
     o_train_error = 0;
     o_done_mbinit_cal_tx = 0;
     next_substate = DONE_HANDSHAKE;
