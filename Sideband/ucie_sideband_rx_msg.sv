@@ -54,6 +54,9 @@ module ucie_sideband_rx_msg
   wire                         rx_in_req;
   wire                         rx_in_rsp;
 
+  reg                          rx_was_req;
+  reg                          rx_was_rsp;
+
   //---- MODULE INSTANTIATIONS -------------------------------------------------
 
   // ========== rx Traffic FIFO Instance ==========
@@ -149,15 +152,28 @@ module ucie_sideband_rx_msg
   always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
       o_sb_rx_done <= 1'b0;
+      rx_was_req <= 1'b0;
+      rx_was_rsp <= 1'b0;
     end
     else if (rx_in_req) begin
       o_sb_rx_done <= 1'b1;
+      rx_was_req <= 1'b1;
     end
     else if (rx_in_rsp) begin 
       o_sb_rx_done <= 1'b1;
+      rx_was_rsp <= 1'b1;
     end
-    else if (!i_rx_sb_rsp && !i_rx_sb_req) begin
+    else if (rx_was_req) begin
+      if (!i_rx_sb_req) begin
       o_sb_rx_done <= 1'b0;
+      rx_was_req <= 1'b0;
+      end
+    end
+    else if (rx_was_rsp) begin
+      if (!i_rx_sb_rsp) begin
+      o_sb_rx_done <= 1'b0;
+      rx_was_rsp <= 1'b0;
+      end
     end
   end
 

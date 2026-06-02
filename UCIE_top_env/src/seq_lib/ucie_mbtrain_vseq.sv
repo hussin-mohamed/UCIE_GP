@@ -39,6 +39,10 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
   rxclkcal_vseq = ucie_mbtrain_rxclkcal_vseq::type_id::create("rxclkcal_vseq");
   valtraincenter_vseq = ucie_mbtrain_valtraincenter_vseq::type_id::create("valtraincenter_vseq");
   valtrainverf_vseq = ucie_mbtrain_valtrainverf_vseq::type_id::create("valtrainverf_vseq");
+  DTC1_vseq = ucie_mbtrain_DTC1_vseq::type_id::create("DTC1_vseq");
+  datatrainvref_vseq = ucie_mbtrain_datatrainvref_vseq::type_id::create("datatrainvref_vseq");
+  rxdskew_vseq = ucie_mbtrain_rxdskew_vseq::type_id::create("rxdskew_vseq");
+  DTC2_vseq = ucie_mbtrain_DTC2_vseq::type_id::create("DTC2_vseq");
     valverf_vseq.configure(
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),
@@ -74,32 +78,32 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
         .valid_mode(VALID_CORRECT)
     );
     
-    // DTC1_vseq.configure(
-    //     .D2c_mode(SUCCESS),
-    //     .pattern_mode(PAT_ALL_LANES_VALID),
-    //     .data_mode(LFSR_PATTERN),
-    //     .info_mode(CORRECT),
-    //     .message_mode(ALL_LANES_VALID),
-    //     .valid_mode(VALID_CORRECT)
-    // );
+    DTC1_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
 
-    // datatrainvref_vseq.configure(
-    //     .D2c_mode(SUCCESS),
-    //     .pattern_mode(PAT_ALL_LANES_VALID),
-    //     .data_mode(LFSR_PATTERN),
-    //     .info_mode(CORRECT),
-    //     .message_mode(ALL_LANES_VALID),
-    //     .valid_mode(VALID_CORRECT)
-    // );
+    datatrainvref_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
 
-    // DTC2_vseq.configure(
-    //     .D2c_mode(SUCCESS),
-    //     .pattern_mode(PAT_ALL_LANES_VALID),
-    //     .data_mode(LFSR_PATTERN),
-    //     .info_mode(CORRECT),
-    //     .message_mode(ALL_LANES_VALID),
-    //     .valid_mode(VALID_CORRECT)
-    // );
+    DTC2_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
 
     valverf_vseq.start(p_sequencer);
     dataverf_vseq.start(p_sequencer);
@@ -108,10 +112,10 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     rxclkcal_vseq.start(p_sequencer);
     valtraincenter_vseq.start(p_sequencer);
     valtrainverf_vseq.start(p_sequencer);
-    // DTC1_vseq.start(p_sequencer);
-    // datatrainvref_vseq.start(p_sequencer);
-    // rxdskew_vseq.start(p_sequencer);
-    // DTC2_vseq.start(p_sequencer);
+    DTC1_vseq.start(p_sequencer);
+    datatrainvref_vseq.start(p_sequencer);
+    rxdskew_vseq.start(p_sequencer);
+    DTC2_vseq.start(p_sequencer);
 
   endtask
 endclass : ucie_mbtrain_vseq

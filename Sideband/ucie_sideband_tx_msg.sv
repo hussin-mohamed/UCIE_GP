@@ -53,6 +53,9 @@ module ucie_sideband_tx_msg
   // Toggle sync signals
   wire                         tx_in_req;
   wire                         tx_in_rsp;
+  
+  reg                         tx_was_req;
+  reg                         tx_was_rsp;
 
   //---- MODULE INSTANTIATIONS -------------------------------------------------
 
@@ -149,15 +152,28 @@ module ucie_sideband_tx_msg
   always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
       o_sb_tx_done <= 1'b0;
+      tx_was_req <= 1'b0;
+      tx_was_rsp <= 1'b0;
     end
     else if (tx_in_req) begin
       o_sb_tx_done <= 1'b1;
+      tx_was_req <= 1'b1;
     end
     else if (tx_in_rsp) begin 
       o_sb_tx_done <= 1'b1;
+      tx_was_rsp <= 1'b1;
     end
-    else if (!i_tx_sb_rsp && !i_tx_sb_req) begin
+    else if (tx_was_req) begin
+      if (!i_tx_sb_req) begin
       o_sb_tx_done <= 1'b0;
+      tx_was_req <= 1'b0;
+      end
+    end
+    else if (tx_was_rsp) begin
+      if (!i_tx_sb_rsp) begin
+      o_sb_tx_done <= 1'b0;
+      tx_was_rsp <= 1'b0;
+      end
     end
   end
 
