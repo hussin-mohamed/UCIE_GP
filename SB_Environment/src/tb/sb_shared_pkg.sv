@@ -213,6 +213,8 @@ package sb_shared_pkg;
   Data_To_Clock_test_TX_RX_INIT_Result_Handshake       = 9'b11_0001_011, // Hex: 'h18B
   Data_To_Clock_test_TX_RX_INIT_Sweep_Result_Handshake = 9'b11_0001_100, // Hex: 'h18C
   Data_To_Clock_test_TX_RX_INIT_End_Init_Handshake     = 9'b11_0001_101, // Hex: 'h18D
+
+  ACTIVE_LINKINIT_STATE_REQ                            = 9'h102,
   
   NOP_TX                                               = 9'b11_1111_111  // Hex: 'h1FF, No Operation
 
@@ -383,6 +385,8 @@ package sb_shared_pkg;
   Data_To_Clock_test_RX_RX_INIT_Result_Handshake     = 9'b11_0001_011, // Hex: 'h18B
   Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake   = 9'b11_0001_101, // Hex: 'h18D
   Data_To_Clock_test_RX_Sweep_Result_Handshake       = 9'b11_0001_100, // Hex: 'h18C
+
+  ACTIVE_LINKINIT_STATE_RESP                         = 9'h102,
   
   NOP_RX                                             = 9'b11_1111_111  // Hex: 'h1FF, No Operation
 } rx_encoding_t;
@@ -564,7 +568,10 @@ typedef enum logic [15:0] {
     UNSUPPORTED_CPL_W_64B_DATA_resp                    = 16'hF007,
     UNSUPPORTED_CPL_WO_DATA_resp                       = 16'hF008,
     UNSUPPORTED_PRIORITY_PKT_0_req                     = 16'hF009,
-    UNSUPPORTED_PRIORITY_PKT_1_req                     = 16'hF00A
+    UNSUPPORTED_PRIORITY_PKT_1_req                     = 16'hF00A,
+
+    LinkMgmt_RDI_Req_Active                            = 16'h0101,
+    LinkMgmt_RDI_Rsp_Active                            = 16'h0201
 } fullcode_t;
 
 typedef enum logic [4:0] {
@@ -680,7 +687,7 @@ rx_encoding_t tx2rx_enc_lut [tx_encoding_t] = '{
   MBTRAIN_DTC2_TX_Start_Handshake:                      MBTRAIN_DTC2_RX_Start_Handshake,
   MBTRAIN_DTC2_TX_End_Handshake:                        MBTRAIN_DTC2_RX_End_Handshake,
   MBTRAIN_LINKSPEED_TX_Start_Handshake:                 MBTRAIN_LINKSPEED_RX_Start_Handshake,
-  MBTRAIN_LINKSPEED_TX_LinksSpeed_Done_Hnd:             MBTRAIN_LINKSPEED_RX_Send_Done_RESP,
+  MBTRAIN_LINKSPEED_TX_LinksSpeed_Done_Hnd:             MBTRAIN_LINKSPEED_RX_Wait_REQ,
   MBTRAIN_LINKSPEED_TX_Error_REQ:                       MBTRAIN_LINKSPEED_RX_Send_Error_RESP,
   MBTRAIN_LINKSPEED_TX_Phy_Retrain_Hnd:                 MBTRAIN_LINKSPEED_RX_Send_PhyRetrain_RESP,
   MBTRAIN_LINKSPEED_TX_Exit_Repair_Hnd:                 MBTRAIN_LINKSPEED_RX_Send_Repair_RESP,
@@ -694,7 +701,8 @@ rx_encoding_t tx2rx_enc_lut [tx_encoding_t] = '{
   MBTRAIN_VALTRAINCENTER_TX_Start_Handshake:            MBTRAIN_VALTRAINCENTER_RX_Start_Handshake,
   MBTRAIN_VALTRAINCENTER_TX_End_Handshake:              MBTRAIN_VALTRAINCENTER_RX_End_Handshake,
   MBTRAIN_DATATRAINVREF_TX_Start_Handshake:             MBTRAIN_DATATRAINVREF_RX_Start_Handshake,
-  MBTRAIN_DATATRAINVREF_TX_End_Handshake:               MBTRAIN_DATATRAINVREF_RX_End_Handshake
+  MBTRAIN_DATATRAINVREF_TX_End_Handshake:               MBTRAIN_DATATRAINVREF_RX_End_Handshake,
+  ACTIVE_LINKINIT_STATE_REQ:                            ACTIVE_LINKINIT_STATE_RESP
 };
 
 tx_encoding_t rx2tx_enc_lut [rx_encoding_t] = '{
@@ -752,11 +760,20 @@ tx_encoding_t rx2tx_enc_lut [rx_encoding_t] = '{
   MBTRAIN_VALTRAINVREF_RX_Start_Handshake:            MBTRAIN_VALTRAINVREF_TX_Start_Handshake,
   MBTRAIN_VALTRAINVREF_RX_End_Handshake:              MBTRAIN_VALTRAINVREF_TX_End_Handshake,
   MBTRAIN_DATATRAINVREF_RX_Start_Handshake:           MBTRAIN_DATATRAINVREF_TX_Start_Handshake,
-  MBTRAIN_DATATRAINVREF_RX_End_Handshake:             MBTRAIN_DATATRAINVREF_TX_End_Handshake
+  MBTRAIN_DATATRAINVREF_RX_End_Handshake:             MBTRAIN_DATATRAINVREF_TX_End_Handshake,
+  ACTIVE_LINKINIT_STATE_RESP:                         ACTIVE_LINKINIT_STATE_REQ
 };
 
 // Messages transmitted by TX FSM to the partner's RX FSM
-message_t tx_messages [tx_encoding_t] = '{
+message_t tx_messages [tx_encoding_t] = '{ 
+  ACTIVE_LINKINIT_STATE_REQ: '{
+    fullcode: LinkMgmt_RDI_Req_Active,
+    opcode:   MSG_WO_DATA,
+    srcid:    SRC_PHY,
+    dstid:    DST_PHY,
+    info:     '0, data: '0, cp: '0, dp: '0,
+    rsvd1:    '0, rsvd2: '0, rsvd3: '0, rsvd4: '0
+  },
   Data_To_Clock_test_TX_TX_INIT_Handshake: '{
     fullcode: Start_Tx_Init_D_to_C_eye_sweep_req,
     opcode:   MSG_W_64B_DATA,
@@ -1217,6 +1234,14 @@ message_t tx_messages [tx_encoding_t] = '{
 
 // Messages transmitted by RX FSM to the partner's TX FSM
 message_t rx_messages [rx_encoding_t] = '{
+  ACTIVE_LINKINIT_STATE_RESP: '{
+    fullcode: LinkMgmt_RDI_Rsp_Active,
+    opcode:   MSG_WO_DATA,
+    srcid:    SRC_PHY,
+    dstid:    DST_PHY,
+    info:     '0, data: '0, cp: '0, dp: '0,
+    rsvd1:    '0, rsvd2: '0, rsvd3: '0, rsvd4: '0
+  },
   Data_To_Clock_test_RX_TX_INIT_Handshake: '{
     fullcode: Start_Tx_Init_D_to_C_eye_sweep_resp,
     opcode:   MSG_WO_DATA,

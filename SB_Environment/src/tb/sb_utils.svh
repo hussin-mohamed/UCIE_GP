@@ -90,9 +90,9 @@ function void extract_codes(
 endfunction : extract_codes
 
 function msgtype_t get_msgtype_by_fullcode(fullcode_t _fullcode);
-  if (_fullcode[11:8] == 'h5) begin
+  if (_fullcode[11:8] == 'h5 || _fullcode == LinkMgmt_RDI_Req_Active) begin
     return REQ_MSG;
-  end else if (_fullcode[11:8] == 'hA) begin
+  end else if (_fullcode[11:8] == 'hA || _fullcode == LinkMgmt_RDI_Rsp_Active) begin
     return RSP_MSG;
   end else if (_fullcode == SBINIT_out_of_Reset || _fullcode == Rx_Init_D_to_C_sweep_done_with_results) begin
     return REQ_MSG;
