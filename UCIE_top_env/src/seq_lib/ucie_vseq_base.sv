@@ -42,6 +42,13 @@ typedef enum{
         PER_LANE_ID_PATTERN
     }data_mode_e;
 
+    typedef enum {
+        ALL_LANES,
+        UPPER_8_LANES,
+        LOWER_8_LANES,
+        NO_LANES
+    }lane_map_code_e;
+
 class ucie_vseq_base extends uvm_sequence;
 
   `uvm_object_utils(ucie_vseq_base)
@@ -59,12 +66,14 @@ class ucie_vseq_base extends uvm_sequence;
   rmblink_sanity_clk_sequence  rmblink_clk_seq;
   rmblink_sanity_valid_sequence rmblink_valid_seq;
   rmblink_sanity_lfsr_sequence rmblink_lfsr_seq;
+  rmblink_sanity_PerLaneID_sequence rmblink_PerLaneID_seq;
   protected D2c_mode_e                   D2c_mode;
   protected pattern_mode_e               pattern_mode;
   protected data_mode_e                  data_mode;
   protected info_mode_e                  info_mode;
   protected message_mode_e               message_mode;
   protected valid_mode_e                 valid_mode;
+  protected lane_map_code_e              lane_map_code;
 
 
 
@@ -85,6 +94,7 @@ class ucie_vseq_base extends uvm_sequence;
     rmblink_clk_seq    = rmblink_sanity_clk_sequence::type_id::create("rmblink_clk_seq");
     rmblink_valid_seq    = rmblink_sanity_valid_sequence::type_id::create("rmblink_valid_seq");
     rmblink_lfsr_seq    = rmblink_sanity_lfsr_sequence::type_id::create("rmblink_lfsr_seq");
+    rmblink_PerLaneID_seq    = rmblink_sanity_PerLaneID_sequence::type_id::create("rmblink_PerLaneID_seq");
     sb_ltsm_item       = new("sb_ltsm_item");
     fork
       begin  // Sideband ltsm2link Transmission Thread
