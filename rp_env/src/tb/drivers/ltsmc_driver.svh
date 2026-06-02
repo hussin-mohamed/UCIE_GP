@@ -66,7 +66,7 @@ endfunction : new
 // ----------
 
 task ltsmc_driver::drive_item(inout ltsmc_seq_item req, output ltsmc_seq_item rsp);
-  if (!std::randomize(next_state_wait_cycles) with { next_state_wait_cycles inside {[5:40]}; }) begin
+  if (!std::randomize(next_state_wait_cycles) with { next_state_wait_cycles inside {[10:40]}; }) begin
     `uvm_error(get_type_name(), "Failed to randomize next_state_wait_cycles")
   end
   repeat(next_state_wait_cycles) @(posedge bfm.clk);

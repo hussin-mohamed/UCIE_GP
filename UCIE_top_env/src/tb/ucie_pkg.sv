@@ -41,7 +41,8 @@ package ucie_pkg;
   `include "ucie_env_cfg.sv"
   `include "ucie_vseqr.sv"
   `include "ucie_env.sv"
-
+  typedef class ucie_RX_D2C_vseq;
+  typedef class ucie_TX_D2C_vseq;
   // -------------------------------------------------------------------------
   //  System-Level Sequences
   // -------------------------------------------------------------------------
@@ -49,6 +50,20 @@ package ucie_pkg;
   `include "ucie_sanity_vseq.sv"
   `include "ucie_vseq_base.sv"
   `include "ucie_mbinit_bringup_vseq.sv"
+  `include "ucie_TX_D2C_vseq.sv"
+  `include "ucie_RX_D2C_vseq.sv"
+  `include "ucie_mbtrain_valverf_vseq.sv"
+  `include "ucie_mbtrain_valtrainverf_vseq.sv"
+  `include "ucie_mbtrain_dataverf_vseq.sv"
+  `include "ucie_mbtrain_speedidle_vseq.sv"
+  `include "ucie_mbtrain_valtraincenter_vseq.sv"
+  `include "ucie_mbtrain_txselfcal_vseq.sv"
+  `include "ucie_mbtrain_rxclkcal_vseq.sv"
+  `include "ucie_mbtrain_DTC1_vseq.sv"
+  `include "ucie_mbtrain_datatrainvref_vseq.sv"
+  `include "ucie_mbtrain_rxdskew_vseq.sv"
+  `include "ucie_mbtrain_DTC2_vseq.sv"  
+  `include "ucie_mbtrain_vseq.sv"
 
   // -------------------------------------------------------------------------
   //  System-Level Tests

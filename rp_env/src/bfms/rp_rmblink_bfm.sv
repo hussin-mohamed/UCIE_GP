@@ -62,7 +62,8 @@ interface rp_rmblink_bfm (
     int val_num_bytes;
 
     val_num_bytes = pDATA_WIDTH / 8;
-
+    val_bit_idx = 0; // Explicitly initialize for safety across back-to-back calls
+    
     if (_val_stream.size() != val_num_bytes) begin
       `uvm_fatal("RMBLINK_BFM", $sformatf("Invalid val_stream size: %0d, valid size must be: %0d",
                                           _val_stream.size(), val_num_bytes))
@@ -82,9 +83,9 @@ interface rp_rmblink_bfm (
 
     // Iterate through each bit position (Time dimension)
     for (int dat_bit_idx = 0; dat_bit_idx < pDATA_WIDTH; dat_bit_idx++) begin
-
+      
+      // 1. Update Data and Valid exactly at posedge
       @(posedge i_dclk);
-      // At this specific time instant, iterate through all lanes (Space dimension)
       for (int lane_idx = 0; lane_idx < pNUM_LANES; lane_idx++) begin
         i_data[lane_idx] <= _data[lane_idx][dat_bit_idx];
       end
@@ -92,21 +93,30 @@ interface rp_rmblink_bfm (
       i_valid <= _val_stream[val_byte_idx][val_bit_idx];
       val_bit_idx++;
 
+      // 2. Update Clocks and Track exactly at negedge
       @(negedge i_dclk);
       i_clk_p <= _clk_stream_p[dat_bit_idx];
       i_clk_n <= _clk_stream_n[dat_bit_idx];
       i_track <= _track_stream[dat_bit_idx];
     end
+    
+    if (_idle_ui_cnt > 0) begin
+      
+      // Wait for the posedge to ensure bit 63 clock gets its full half-cycle
+      @(posedge i_dclk);
+      
+      i_clk_p <= 1'b0;
+      i_clk_n <= 1'b1;
+      i_track <= 1'b0;
+      i_data  <= '0;
+      i_valid <= 1'b0;
+      
+      // Wait for any remaining requested idle UI
+      if (_idle_ui_cnt > 1) begin
+        repeat(_idle_ui_cnt - 1) @(posedge i_dclk);
+      end
+    end
 
-    // Deassert everything during the idle period
-    @(posedge i_dclk);
-    i_clk_p <= 1'b0;
-    i_clk_n <= 1'b1;
-    i_data  <= '0;
-    i_valid <= 1'b0;
-
-    // Wait for _idle_ui_cnt UI
-    repeat (_idle_ui_cnt) @(posedge i_dclk);
   endtask : serialize_data
 
   task deserialize_data(output logic [pDATA_WIDTH-1:0] _data[pNUM_LANES]
