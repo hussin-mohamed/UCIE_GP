@@ -16,11 +16,28 @@ class ucie_mbtrain_dataverf_vseq extends ucie_vseq_base;
     super.new(name);
   endfunction
 
+  function configure (D2c_mode_e D2c_mode, pattern_mode_e pattern_mode,
+                      data_mode_e data_mode, info_mode_e info_mode, message_mode_e message_mode, valid_mode_e valid_mode);
+    this.D2c_mode = D2c_mode;
+    this.pattern_mode = pattern_mode;
+    this.data_mode = data_mode;
+    this.info_mode = info_mode;
+    this.message_mode = message_mode;
+    this.valid_mode = valid_mode;
+    is_configured = 1;
+  endfunction
+
   // -------------------------------------------------------------------------
   //  Body Task
   // -------------------------------------------------------------------------
   virtual task body();
     `uvm_info("UCIE_VSEQ", "Starting system-level sanity virtual sequence", UVM_LOW)
+
+    if (!is_configured) begin
+      `uvm_fatal("SEQ_CFG_ERR", "Sequence must be configured via configure() before starting!")
+    end
+
+    is_configured = 0;
 
     // Dataverf_Start_TX_LTSM
     `uvm_info("VSEQ", $sformatf("Dataverf_Start_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
@@ -39,7 +56,15 @@ class ucie_mbtrain_dataverf_vseq extends ucie_vseq_base;
     // Dataverf_D2C_RX_LTSM
     `uvm_info("VSEQ", $sformatf("Dataverf_D2C_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
-    ucie_D2C_vseq.configure(0,'hFFFF_FFFF_FFFF_FFFF, 1);
+    ucie_D2C_vseq.configure(
+      D2c_mode,
+      pattern_mode,
+      data_mode,
+      info_mode,
+      message_mode,
+      valid_mode
+    );
+    
     ucie_D2C_vseq.start();
 
     // Dataverf_End_TX_LTSM
