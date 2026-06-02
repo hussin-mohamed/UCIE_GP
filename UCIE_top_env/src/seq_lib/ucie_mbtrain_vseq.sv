@@ -27,6 +27,7 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
   ucie_mbtrain_datatrainvref_vseq datatrainvref_vseq;
   ucie_mbtrain_rxdskew_vseq rxdskew_vseq;
   ucie_mbtrain_DTC2_vseq DTC2_vseq;
+  ucie_mbtrain_linkspeed_vseq LINKSPEED_vseq;
 
   // -------------------------------------------------------------------------
   //  Body Task
@@ -43,6 +44,7 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
   datatrainvref_vseq = ucie_mbtrain_datatrainvref_vseq::type_id::create("datatrainvref_vseq");
   rxdskew_vseq = ucie_mbtrain_rxdskew_vseq::type_id::create("rxdskew_vseq");
   DTC2_vseq = ucie_mbtrain_DTC2_vseq::type_id::create("DTC2_vseq");
+  LINKSPEED_vseq = ucie_mbtrain_linkspeed_vseq::type_id::create("LINKSPEED_vseq");
     valverf_vseq.configure(
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),
@@ -105,6 +107,16 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
         .valid_mode(VALID_CORRECT)
     );
 
+    LINKSPEED_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .lane_map_code(ALL_LANES)
+    );
+
     valverf_vseq.start(p_sequencer);
     dataverf_vseq.start(p_sequencer);
     speedidle_vseq.start(p_sequencer);
@@ -116,6 +128,7 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     datatrainvref_vseq.start(p_sequencer);
     rxdskew_vseq.start(p_sequencer);
     DTC2_vseq.start(p_sequencer);
+    LINKSPEED_vseq.start(p_sequencer);
 
   endtask
 endclass : ucie_mbtrain_vseq

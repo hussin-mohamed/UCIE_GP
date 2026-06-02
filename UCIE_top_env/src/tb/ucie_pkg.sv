@@ -63,6 +63,7 @@ package ucie_pkg;
   `include "ucie_mbtrain_datatrainvref_vseq.sv"
   `include "ucie_mbtrain_rxdskew_vseq.sv"
   `include "ucie_mbtrain_DTC2_vseq.sv"  
+  `include "ucie_mbtrain_linkspeed_vseq.sv"  
   `include "ucie_mbtrain_vseq.sv"
 
   // -------------------------------------------------------------------------

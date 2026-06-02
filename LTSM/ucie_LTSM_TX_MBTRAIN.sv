@@ -266,7 +266,7 @@ always @(*) begin
     else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;  // New encoding → reset ack
     else if (i_sb_tx_done) begin
         done_ack = 1;  // Set when done received
-    end else if (i_sb_tx_rsp &&  i_tx_decoding != 'h80 && i_tx_decoding != 'h181 && i_tx_decoding== 'h89) begin
+    end else if (i_sb_tx_rsp &&  i_tx_decoding != 'h80 && i_tx_decoding != 'h181 && (i_tx_decoding== 'h89 || i_tx_decoding == 'hb8)) begin
         done_ack = 0;  // Clear on response to allow next transaction
     end
 end
@@ -1369,7 +1369,7 @@ always @(*) begin
                         o_tx_sb_req_reg = 0;
                         o_tx_sb_rsp_reg = 0;
                         substates_done = 0;
-                    end else if (previous_state_done && encoding_rsp_sent == 'hBA && encoding_rsp_received == 'hBA) begin
+                    end else if (previous_state_done && encoding_rsp_sent == 'hBE && encoding_rsp_received == 'hBA) begin
                         train_link_init_en_reg = 1;
                         train_phyretrain_en_reg = 0;
                         o_tx_sb_req_reg = 0;

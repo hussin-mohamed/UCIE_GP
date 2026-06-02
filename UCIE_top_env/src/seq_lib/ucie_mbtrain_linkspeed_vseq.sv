@@ -17,13 +17,14 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
   endfunction
 
   function configure (D2c_mode_e D2c_mode, pattern_mode_e pattern_mode,
-                      data_mode_e data_mode, info_mode_e info_mode, message_mode_e message_mode, valid_mode_e valid_mode);
+                      data_mode_e data_mode, info_mode_e info_mode, message_mode_e message_mode, valid_mode_e valid_mode, lane_map_code_e lane_map_code);
     this.D2c_mode = D2c_mode;
     this.pattern_mode = pattern_mode;
     this.data_mode = data_mode;
     this.info_mode = info_mode;
     this.message_mode = message_mode;
     this.valid_mode = valid_mode;
+    this.lane_map_code = lane_map_code;
     is_configured = 1;
   endfunction
 
@@ -62,7 +63,8 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
       data_mode,
       info_mode,
       message_mode,
-      valid_mode
+      valid_mode,
+      lane_map_code
     );
 
     ucie_TX_D2C.start(p_sequencer);
@@ -76,31 +78,21 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
 
     if (message_mode == ALL_LANES_VALID && pattern_mode == PAT_ALL_LANES_VALID) begin
       p_sequencer.rx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_DTC2_TX_End_Handshake);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_LinksSpeed_Done_Hnd);
       send_sb_msg(sb_ltsm_item);
 
       p_sequencer.tx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_DTC2_TX_End_Handshake);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Send_Done_RESP);
       send_sb_msg(sb_ltsm_item);
     end else if (message_mode != ALL_LANES_VALID && pattern_mode != PAT_ALL_LANES_VALID) begin
-      p_sequencer.rx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_DTC2_TX_End_Handshake);
-      send_sb_msg(sb_ltsm_item);
+      // p_sequencer.rx_fifo.get(sb_ltsm_item);
+      // sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_End_Handshake);
+      // send_sb_msg(sb_ltsm_item);
       
-      p_sequencer.rx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_DTC2_TX_End_Handshake);
-      send_sb_msg(sb_ltsm_item);
+      // p_sequencer.rx_fifo.get(sb_ltsm_item);
+      // sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_End_Handshake);
+      // send_sb_msg(sb_ltsm_item);
     end
 
-    
-
-    // DTC2_End_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("DTC2_End_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_DTC2_RX_End_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask
 endclass : ucie_mbtrain_linkspeed_vseq
