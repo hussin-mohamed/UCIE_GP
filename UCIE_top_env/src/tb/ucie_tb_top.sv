@@ -101,6 +101,7 @@ module ucie_tb_top;
     assign  phylink_bfm.tms     = DUT.ltsm_ctrl_bfm.tms;
     assign  phylink_bfm.timeout = DUT.ltsm_ctrl_bfm.timeout;
     assign  phylink_bfm.start   = DUT.ltsm_ctrl_bfm.i_sb_init_start;
+    assign  ltsm_rdi_if_inst.o_pl_inband_pres   = DUT.ltsm_rdi_if_inst.o_pl_inband_pres;
   // -------------------------------------------------------------------------
   //  DUT Instantiation
   // -------------------------------------------------------------------------
@@ -158,6 +159,8 @@ module ucie_tb_top;
       .o_track(tx2link_intf.tx_track),
       .o_valid(tx2link_intf.tx_valid)
   );
+
+
 
   // -------------------------------------------------------------------------
   //  UVM Configuration DB Registration

@@ -71,24 +71,20 @@ endfunction : new
 // -----
 
 task ltsm_rdi_driver::drive(ltsm_rdi_sequence_item item);
-    item=ltsm_rdi_sequence_item::type_id::create("item");
-    seq_item_port.get_next_item(item);
-    vif.i_lp_state_req <= item.i_lp_state_req;
-    vif.i_lp_stallack <= item.i_lp_stallack;
-    vif.i_lp_clk_ack <= item.i_lp_clk_ack;
-    vif.i_lp_wake_req <= item.i_lp_wake_req;
-    vif.i_lp_linkerror <= item.i_lp_linkerror;
-    vif.i_reset <= item.i_reset;
-    $display("4444444444444444444444");
+    if (vif.o_pl_inband_pres) begin
+        item=ltsm_rdi_sequence_item::type_id::create("item");
+        seq_item_port.get_next_item(item);
+        vif.i_lp_state_req <= item.i_lp_state_req;
+        vif.i_lp_stallack <= item.i_lp_stallack;
+        vif.i_lp_clk_ack <= item.i_lp_clk_ack;
+        vif.i_lp_wake_req <= item.i_lp_wake_req;
+        vif.i_lp_linkerror <= item.i_lp_linkerror;
+        vif.i_reset <= item.i_reset;
         @(posedge vif.clk);
-    $display("555555555555555555555");
-    seq_item_port.item_done();
-    $display("8888888888888888");
-    $display("item.i_lp_state_req: %0d",item.i_lp_state_req);
-    $display("item.i_lp_stallack: %0d",item.i_lp_stallack);
-    $display("item.i_lp_clk_ack: %0d",item.i_lp_clk_ack);
-    $display("item.i_lp_wake_req: %0d",item.i_lp_wake_req);
-    $display("item.i_lp_linkerror: %0d",item.i_lp_linkerror);
+        seq_item_port.item_done();
+    end else begin
+        @(posedge vif.clk);
+    end
     // item=ltsm_rdi_sequence_item::type_id::create("item");
     // seq_item_port.try_next_item(item);
     

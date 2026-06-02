@@ -131,13 +131,16 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     rxdskew_vseq.start(p_sequencer);
     DTC2_vseq.start(p_sequencer);
     LINKSPEED_vseq.start(p_sequencer);
-    $display("ana get hena emta %0t",$time);
 
     wake_req_handshake.start(ltsm_rdi_seqr);
     state_req_handshake.start(ltsm_rdi_seqr);
     
     p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_VALVREF_TX_End_Handshake);
+    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::ACTIVE_LINKINIT_STATE_REQ);
+    send_sb_msg(sb_ltsm_item);
+
+    p_sequencer.tx_fifo.get(sb_ltsm_item);
+    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::ACTIVE_LINKINIT_STATE_RESP);
     send_sb_msg(sb_ltsm_item);
 
   endtask

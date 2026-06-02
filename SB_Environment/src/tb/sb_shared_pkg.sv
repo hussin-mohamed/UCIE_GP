@@ -194,7 +194,7 @@ package sb_shared_pkg;
   // 1. LINKINIT
   LINKINIT_TX_PL_Clk_Req_Handshake                     = 9'b10_0000_000, // Hex: 'h100, Req Adapter Clock
   LINKINIT_TX_LP_Wake_Req_Handshake                    = 9'b10_0000_001, // Hex: 'h101, Wake Adapter
-  LINKINIT_TX_State_Req_Handshake                      = 9'b10_0000_010, // Hex: 'h102, RDI State Exchange
+  // LINKINIT_TX_State_Req_Handshake                      = 9'b10_0000_010, // Hex: 'h102, RDI State Exchange
   
   // 2. ACTIVE
   ACTIVE_TX_Active                                     = 9'b10_0001_000, // Hex: 'h108, Data Flowing
@@ -364,7 +364,7 @@ package sb_shared_pkg;
   // 1. LINKINIT
   LINKINIT_RX_PL_Clk_Req_Handshake                   = 9'b10_0000_000, // Hex: 'h100, Req Adapter Clock
   LINKINIT_RX_LP_Wake_Req_Handshake                  = 9'b10_0000_001, // Hex: 'h101, Wake Adapter
-  LINKINIT_RX_State_Rsp_Handshake                    = 9'b10_0000_010, // Hex: 'h102, Ack State Exch
+  // LINKINIT_RX_State_Rsp_Handshake                    = 9'b10_0000_010, // Hex: 'h102, Ack State Exch
   
   // 2. ACTIVE
   ACTIVE_RX_Active                                   = 9'b10_0001_000, // Hex: 'h108, Data Flowing
