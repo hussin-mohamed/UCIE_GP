@@ -39,6 +39,16 @@ typedef enum {
 } mixed_lane_mode_e;
 
 //-----------------------------------------------------------------------------
+// ENUM: error_inject_region_e
+// Defines which lane regions are allowed to have errors injected during X16_MODE
+//-----------------------------------------------------------------------------
+typedef enum {
+  ERR_INJECT_ALL_LANES,
+  ERR_INJECT_LOWER_LANES_ONLY,
+  ERR_INJECT_UPPER_LANES_ONLY
+} error_inject_region_e;
+
+//-----------------------------------------------------------------------------
 //
 // CLASS: rmblink_sanity_PerLaneID_sequence
 //
@@ -50,21 +60,23 @@ class rmblink_sanity_PerLaneID_sequence extends rp_sequence_base #(rmblink_seq_i
   rmblink_sequencer seqr;
 
   // --- Internal Protected Configuration Variables ---
-  protected bit                 m_is_configured = 0;
-  protected per_lane_scenario_e m_scenario;
-  protected int                 m_num_iterations;
-  protected lane_map_code_t     m_lane_map_code;
-  protected mixed_lane_mode_e   m_mixed_mode;
-  protected bit [31:0]          m_random_success_mask; // Supports up to 32 lanes
+  protected bit                   m_is_configured = 0;
+  protected per_lane_scenario_e   m_scenario;
+  protected int                   m_num_iterations;
+  protected lane_map_code_t       m_lane_map_code;
+  protected mixed_lane_mode_e     m_mixed_mode;
+  protected error_inject_region_e m_err_region;
+  protected bit [31:0]            m_random_success_mask; // Supports up to 32 lanes
 
   extern function new(string name = "rmblink_sanity_PerLaneID_sequence");
   
   // Configuration API
   extern function void configure(
-    per_lane_scenario_e _scenario, 
-    int _num_iterations,
-    lane_map_code_t _lane_map_code = X16_MODE,
-    mixed_lane_mode_e _mixed_mode = MIXED_ALTERNATING
+    per_lane_scenario_e   _scenario, 
+    int                   _num_iterations,
+    lane_map_code_t       _lane_map_code = X16_MODE,
+    mixed_lane_mode_e     _mixed_mode    = MIXED_ALTERNATING,
+    error_inject_region_e _err_region    = ERR_INJECT_ALL_LANES
   );
 
   extern task pre_body();
@@ -83,15 +95,17 @@ endfunction : new
 
 
 function void rmblink_sanity_PerLaneID_sequence::configure(
-  per_lane_scenario_e _scenario, 
-  int _num_iterations, 
-  lane_map_code_t _lane_map_code = X16_MODE,
-  mixed_lane_mode_e _mixed_mode = MIXED_ALTERNATING
+  per_lane_scenario_e   _scenario, 
+  int                   _num_iterations, 
+  lane_map_code_t       _lane_map_code = X16_MODE,
+  mixed_lane_mode_e     _mixed_mode    = MIXED_ALTERNATING,
+  error_inject_region_e _err_region    = ERR_INJECT_ALL_LANES
 );
   m_scenario       = _scenario;
   m_num_iterations = _num_iterations;
   m_lane_map_code  = _lane_map_code;
   m_mixed_mode     = _mixed_mode;
+  m_err_region     = _err_region;
   
   // Pre-compute the random mask so that a "randomly" chosen passing lane 
   // stays consistent throughout the entire iteration loop.
@@ -150,9 +164,21 @@ task rmblink_sanity_PerLaneID_sequence::body();
       
       bit is_lane_active;
       bit lane_should_pass;
+      bit lane_eligible_for_error;
 
       // Check if the current lane is active based on the map code
       is_lane_active = (lane >= start_lane) && (lane < (start_lane + num_active_lanes));
+
+      // --- NEW LOGIC: Determine if this lane is allowed to have errors injected (X16_MODE feature) ---
+      if (m_lane_map_code == X16_MODE) begin
+        case (m_err_region)
+          ERR_INJECT_LOWER_LANES_ONLY: lane_eligible_for_error = (lane < 8);
+          ERR_INJECT_UPPER_LANES_ONLY: lane_eligible_for_error = (lane >= 8);
+          ERR_INJECT_ALL_LANES:        lane_eligible_for_error = 1'b1;
+        endcase
+      end else begin
+        lane_eligible_for_error = 1'b1; // Default behavior for non-X16 modes
+      end
 
       // Determine if this specific lane is designated to pass or fail (used in mixed scenarios)
       if (m_mixed_mode == MIXED_ALTERNATING) begin
@@ -169,6 +195,7 @@ task rmblink_sanity_PerLaneID_sequence::body();
           chunk = 'z; 
         end else begin
           
+          // Generate the chunk based on the selected scenario
           case (m_scenario)
             SCENARIO_IDEAL: begin
               chunk = valid_chunk;
@@ -215,6 +242,12 @@ task rmblink_sanity_PerLaneID_sequence::body();
               end
             end
           endcase
+
+          // If the scenario generated a bad chunk (injected an error), but this lane is 
+          // NOT in the eligible error region, we override it back to a valid chunk.
+          if (!lane_eligible_for_error) begin
+            chunk = valid_chunk;
+          end
 
         end // End Active Lane Block
         
