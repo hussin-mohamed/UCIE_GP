@@ -238,7 +238,7 @@ module ucie_LTSM_RX_MBTRAIN #(
     else if (o_rx_encoding != o_rx_encoding_old) done_ack = 0;  // New encoding → reset ack
     else if (i_sb_rx_done) begin
       done_ack = 1;  // Set when done received
-    end else if (i_sb_rx_rsp && i_rx_decoding != 'h188 && i_rx_decoding != 'h18d) begin
+    end else if (i_sb_rx_rsp) begin
       done_ack = 0;  // Clear on response to allow next transaction
     end
   end
@@ -1283,7 +1283,7 @@ module ucie_LTSM_RX_MBTRAIN #(
             train_link_init_en_reg = 0;
             substates_done = 0;
             next_substate = 0;
-          end else if (tx_self_cal_state_enable && i_sb_rx_req && i_rx_decoding == 'hD1) begin
+          end else if (tx_self_cal_state_enable && i_sb_rx_req && i_rx_decoding == 'hD0) begin
             // Phyretrain module selected TX self-cal path → re-enter TXSELFCAL
             NS = TXSELFCAL;
             o_rx_sb_req_reg = 0;
@@ -1362,7 +1362,7 @@ module ucie_LTSM_RX_MBTRAIN #(
                 if (done_ack) o_rx_sb_rsp_reg = 0;
                 else o_rx_sb_rsp_reg = 1;
 
-                if (i_sb_rx_req && i_rx_decoding == 'hD1) begin
+                if (i_sb_rx_req && i_rx_decoding == 'hD0) begin
                   NS = TXSELFCAL;
                   o_rx_sb_req_reg = 0;
                   o_rx_encoding_reg = 'hD0;

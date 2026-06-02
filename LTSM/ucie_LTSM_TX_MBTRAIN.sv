@@ -263,10 +263,10 @@ assign r_eye_sweep_reset = !clock_to_test_enable && !i_reset;
 always @(*) begin
     done_ack = done_ack_old;
     if (!init_train_en) done_ack = 0;
-    else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;  // New encoding → reset ack
+    else if (o_tx_encoding != o_tx_encoding_old) done_ack = 0;  // New encoding → reset ack
     else if (i_sb_tx_done) begin
         done_ack = 1;  // Set when done received
-    end else if (i_sb_tx_rsp &&  i_tx_decoding != 'h80 && i_tx_decoding != 'h181 && (i_tx_decoding== 'h89 || i_tx_decoding == 'hb8)) begin
+    end else if (i_sb_tx_rsp) begin
         done_ack = 0;  // Clear on response to allow next transaction
     end
 end
