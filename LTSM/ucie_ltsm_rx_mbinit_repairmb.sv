@@ -144,7 +144,7 @@ module ucie_ltsm_rx_mbinit_repairmb #(
     o_rx_data                 = '0;
     o_rx_info                 = '0;
     o_rx_sb_req               = 0;
-    o_rx_sb_rsp               = 0;
+    // o_rx_sb_rsp               = 0;
     o_rx_sb_done              = 0;
     o_train_error             = 0;
     o_done_mbinit_repairmb_rx = 0;
@@ -160,7 +160,7 @@ module ucie_ltsm_rx_mbinit_repairmb #(
         INIT_HANDSHAKE: begin
           o_rx_encoding = 9'h38;
           if (!substates_done) begin
-            o_rx_sb_rsp = ~done_ack;
+            // o_rx_sb_rsp = ~done_ack;
             if (i_sb_rx_req && i_rx_decoding == 9'h38) begin
               clock_to_test_enable = 1;
               next_substate        = DATA_TO_CLOCK_TEST;
@@ -174,7 +174,7 @@ module ucie_ltsm_rx_mbinit_repairmb #(
           o_rx_data            = o_rx_data_sweep;
           o_rx_info            = o_rx_info_sweep;
           o_rx_sb_req          = o_rx_sb_req_sweep;
-          o_rx_sb_rsp          = o_rx_sb_rsp_sweep;
+          // o_rx_sb_rsp          = o_rx_sb_rsp_sweep;
           if (!substates_done) begin
             if (clock_to_test_done) next_substate = WAIT_FOR_DEGRADE_REQ;
             else next_substate = DATA_TO_CLOCK_TEST;
@@ -202,7 +202,7 @@ module ucie_ltsm_rx_mbinit_repairmb #(
         SEND_RESP: begin
           o_rx_encoding = 9'h3C;
           if (!substates_done) begin
-            o_rx_sb_rsp = 1'b1;
+            // o_rx_sb_rsp = 1'b1;
             if (i_sb_rx_done) next_substate = DONE_HANDSHAKE;
             else next_substate = SEND_RESP;
           end else next_substate = SEND_RESP;
@@ -211,7 +211,7 @@ module ucie_ltsm_rx_mbinit_repairmb #(
         DONE_HANDSHAKE: begin
           o_rx_encoding = 9'h3D;
           if (!substates_done) begin
-            o_rx_sb_rsp = ~done_ack;
+            // o_rx_sb_rsp = ~done_ack;
             if (i_sb_rx_req && i_rx_decoding == 9'h3D) begin
               o_done_mbinit_repairmb_rx = 1;
               next_substate             = DONE_HANDSHAKE;
