@@ -349,9 +349,7 @@ module ucie_ltsm_init_fsm #(
   // =========================================================================
   always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) init_train_en_reg <= 0;
-    else if (current_state == MBINIT_REPAIRMB && repair_done &&
-                 i_rx_decoding == 'h80 && i_sb_rx_req)
-      init_train_en_reg <= 1;
+    else if (current_state == MBINIT_REPAIRMB && repair_done) init_train_en_reg <= 1;
     else if (current_state != MBINIT_REPAIRMB) init_train_en_reg <= 0;
   end
 

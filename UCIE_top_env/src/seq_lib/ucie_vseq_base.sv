@@ -76,7 +76,7 @@ class ucie_vseq_base extends uvm_sequence;
   protected lane_map_code_e         lane_map_code;
   ucie_RX_D2C_vseq                  ucie_RX_D2C;
   ucie_TX_D2C_vseq                  ucie_TX_D2C;
-  protected   bit                   is_configured;
+  protected bit                     is_configured;
 
 
   // -------------------------------------------------------------------------
@@ -119,6 +119,8 @@ class ucie_vseq_base extends uvm_sequence;
       p_sequencer.prd_ltsm2link.write_rx(sb_ltsm_item);
     end
     ltsm2link_msg_cnt++;
+    `uvm_info("VSEQ_BASE", $sformatf("LTSM2LINK COUNT IS %0d", ltsm2link_msg_cnt), UVM_LOW)
+
   endfunction : send_sb_msg
 
 endclass : ucie_vseq_base

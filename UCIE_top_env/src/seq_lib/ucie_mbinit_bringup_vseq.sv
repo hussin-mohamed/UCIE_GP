@@ -309,7 +309,10 @@ class ucie_mbinit_bringup_vseq extends ucie_vseq_base;
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRMB_RX_Init_Handshake);
     send_sb_msg(sb_ltsm_item);
 
-    // here D2C TX will be started .start(p_sequencer)
+    // TX Initiated Data To Clock Test - Per Lane ID Gen - Success pattern
+    ucie_TX_D2C.configure(SUCCESS, PAT_ALL_LANES_VALID, PER_LANE_ID_PATTERN, CORRECT,
+                          ALL_LANES_VALID, VALID_CORRECT, ALL_LANES);
+    ucie_TX_D2C.start(p_sequencer);
 
     // get mbinit repairmb apply degrade req
     p_sequencer.rx_fifo.get(sb_ltsm_item);
@@ -342,7 +345,6 @@ class ucie_mbinit_bringup_vseq extends ucie_vseq_base;
     // send mbinit repairmb done resp
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRMB_RX_Done_Handshake);
     send_sb_msg(sb_ltsm_item);
-
 
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask

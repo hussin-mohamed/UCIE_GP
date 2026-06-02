@@ -32,6 +32,7 @@ module ucie_ltsm_rx_mbinit_repairmb #(
   localparam logic [3:0] MBINIT_REPAIRMB = 4'b0111;
 
   localparam logic [2:0] INIT_HANDSHAKE = 3'b000;
+  localparam logic [2:0] WAIT_DATA_TO_CLOCK_TEST_REQ = 3'b110;
   localparam logic [2:0] DATA_TO_CLOCK_TEST = 3'b001;
   localparam logic [2:0] WAIT_FOR_DEGRADE_REQ = 3'b010;
   localparam logic [2:0] DEGRADE = 3'b011;
@@ -121,7 +122,7 @@ module ucie_ltsm_rx_mbinit_repairmb #(
 
         // Update local lane map when TX requests a different configuration
         if (current_substate == WAIT_FOR_DEGRADE_REQ &&
-                    i_sb_rx_req && i_rx_decoding == 9'h3A &&
+                    i_sb_rx_req && i_rx_decoding == 9'h3C &&
                     w_extracted_lane_map != r_lane_map)
           r_lane_map <= w_extracted_lane_map;
       end
@@ -131,12 +132,13 @@ module ucie_ltsm_rx_mbinit_repairmb #(
   always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) done_ack <= 1;
     else if (i_sb_rx_done) done_ack <= 1;
-    else if (i_sb_rx_req && (i_rx_decoding == 9'h38 || i_rx_decoding == 9'h3C || i_rx_decoding == 9'h3D))
+    else if (i_sb_rx_req && (i_rx_decoding == 9'h38 || i_rx_decoding == 9'h3C || i_rx_decoding == 9'h3D || i_rx_decoding == 9'h180 || i_rx_decoding == 9'h181 || i_rx_decoding == 9'h183 || i_rx_decoding == 9'h184))
       done_ack <= 0;
   end
 
   always_comb begin
-    o_rx_sb_rsp = done_ack ? 0 : 1;
+    if (current_substate == DATA_TO_CLOCK_TEST) o_rx_sb_rsp = o_rx_sb_rsp_sweep;
+    else o_rx_sb_rsp = done_ack ? 0 : 1;
   end
 
   always_comb begin
@@ -163,8 +165,18 @@ module ucie_ltsm_rx_mbinit_repairmb #(
             // o_rx_sb_rsp = ~done_ack;
             if (i_sb_rx_req && i_rx_decoding == 9'h38) begin
               clock_to_test_enable = 1;
-              next_substate        = DATA_TO_CLOCK_TEST;
+              next_substate        = WAIT_DATA_TO_CLOCK_TEST_REQ;
             end else next_substate = INIT_HANDSHAKE;
+          end
+        end
+
+        // this state is introduced to wait for D2C req before enabling the Eye test FSM
+        WAIT_DATA_TO_CLOCK_TEST_REQ: begin
+          o_rx_encoding = 9'h38;
+          if (!substates_done) begin
+            if (i_sb_rx_req && i_rx_decoding == 9'h180) begin
+              next_substate = DATA_TO_CLOCK_TEST;
+            end else next_substate = WAIT_DATA_TO_CLOCK_TEST_REQ;
           end
         end
 

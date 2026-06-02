@@ -22,9 +22,12 @@
 //
 //-----------------------------------------------------------------------------
 
-virtual class sb_monitor_base #(type ITEM_T = uvm_sequence_item, type INTF_T = virtual sb_tx_bfm) extends uvm_monitor;
+virtual class sb_monitor_base #(
+    type ITEM_T = uvm_sequence_item,
+    type INTF_T = virtual sb_tx_bfm
+) extends uvm_monitor;
   // `uvm_component_param_utils(sb_monitor_base #(ITEM_T, INTF_T))
-  
+
   INTF_T bfm;
   ITEM_T item_out, item_in;
   uvm_analysis_port #(ITEM_T) out_ap, in_ap, reactive_ap;
@@ -124,7 +127,7 @@ endfunction
 
 task sb_monitor_base::run_phase(uvm_phase phase);
   super.run_phase(phase);
-  
+
   forever begin
     // Wait for reset deassertion
     @(negedge bfm.reset);
@@ -140,7 +143,7 @@ task sb_monitor_base::run_phase(uvm_phase phase);
     @(posedge bfm.reset);
     disable fork;
     // cleanup(); 
-  end 
+  end
 endtask : run_phase
 
 // monitor_items_out
@@ -152,7 +155,9 @@ task sb_monitor_base::monitor_items_out();
 
     // Write item_out to the analysis port and log the monitored item_out
     out_ap.write(item_out);
-    `uvm_info(get_type_name(), $sformatf("MONITORED item_out %s: \n%s", item_out.get_type_name(), item_out.sprint()), UVM_DEBUG)
+    `uvm_info(get_type_name(), $sformatf(
+              "MONITORED item_out %s: \n%s", item_out.get_type_name(), item_out.sprint()),
+              UVM_DEBUG)
     txn_out_cnt++;
 
     // Send item_out to the sequencer if the monitor is configured to be reactive
@@ -171,8 +176,13 @@ task sb_monitor_base::monitor_items_in();
 
     // Write the item_in to the analysis port and log the monitored item_in
     in_ap.write(item_in);
-    `uvm_info(get_type_name(), $sformatf("MONITORED item_in %s: \n%s", item_in.get_type_name(), item_in.sprint()), UVM_DEBUG)
     txn_in_cnt++;
+    `uvm_info(get_type_name(), $sformatf(
+              "MONITORED item_in -- TXN COUNT %0d %s: \n%s",
+              txn_in_cnt,
+              item_in.get_type_name(),
+              item_in.sprint()
+              ), UVM_LOW)
   end
 endtask : monitor_items_in
 
