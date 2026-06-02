@@ -5,6 +5,43 @@
 //              across the LTSM, Sideband, RX-Path, and TX-Path agents.
 //=============================================================================
 
+// enum for determining the whole behavioural of the D2c
+typedef enum{
+        SUCCESS,
+        LOOP_TILL_ERROR
+    }D2c_mode_e;
+
+  // enum for determining the value of the pattern driven to the rx path
+    typedef enum{
+        PAT_ALL_LANES_VALID,
+        PAT_UPPER_8_LANES_VALID,
+        PAT_LOWER_8_LANES_VALID,
+        PAT_NO_LANES_VALID
+    }pattern_mode_e;
+
+    typedef enum{
+      VALID_CORRECT,
+      VALID_ERROR
+    }valid_mode_e;
+
+    typedef enum {
+      CORRECT,  
+      ERROR
+    } info_mode_e;
+
+    typedef enum {
+      ALL_LANES_VALID,
+      UPPER_8_LANES_VALID,
+      LOWER_8_LANES_VALID,
+      NO_LANES_VALID
+    } message_mode_e;
+    
+    typedef enum {
+        LFSR_PATTERN,
+        VALID_PATTERN,
+        PER_LANE_ID_PATTERN
+    }data_mode_e;
+
 class ucie_vseq_base extends uvm_sequence;
 
   `uvm_object_utils(ucie_vseq_base)
@@ -22,6 +59,12 @@ class ucie_vseq_base extends uvm_sequence;
   rmblink_sanity_clk_sequence  rmblink_clk_seq;
   rmblink_sanity_valid_sequence rmblink_valid_seq;
   rmblink_sanity_lfsr_sequence rmblink_lfsr_seq;
+  protected D2c_mode_e                   D2c_mode;
+  protected pattern_mode_e               pattern_mode;
+  protected data_mode_e                  data_mode;
+  protected info_mode_e                  info_mode;
+  protected message_mode_e               message_mode;
+  protected valid_mode_e                 valid_mode;
 
 
 
