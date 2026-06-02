@@ -336,7 +336,7 @@ task rmblink_sanity_lfsr_sequence::body();
     req.idle_ui_cnt  = 0;
     
     if (cycle == 0) begin
-      req.is_first_data_pat = 0;
+      req.is_first_data_pat = 1;
     end else begin
       req.is_first_data_pat = 0;
     end
