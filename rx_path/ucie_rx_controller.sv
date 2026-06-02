@@ -421,7 +421,7 @@ module ucie_rx_controller #(
             o_detection_type = 1'b1;
         end
 
-        if (enc_q == ENC_RESET || enc_q == ENC_RX_EYE_LFSR_CLEAR || enc_q == ENC_TX_EYE_LFSR_CLEAR || enc_q == ENC_MBINIT_REVERSAL_CLEAR) begin
+        if (i_rx_encoding == ENC_RESET || i_rx_encoding == ENC_RX_EYE_LFSR_CLEAR || i_rx_encoding == ENC_TX_EYE_LFSR_CLEAR || i_rx_encoding == ENC_MBINIT_REVERSAL_CLEAR) begin
             o_rx_path_reset = 1'b1;
         end else begin
             o_rx_path_reset = 1'b0;
