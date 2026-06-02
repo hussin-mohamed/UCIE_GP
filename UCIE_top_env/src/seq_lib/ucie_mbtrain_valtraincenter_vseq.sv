@@ -56,7 +56,7 @@ class ucie_mbtrain_valtraincenter_vseq extends ucie_vseq_base;
     // Valtraincenter_D2C_RX_LTSM
     `uvm_info("VSEQ", $sformatf("Valtraincenter_D2C_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
-    ucie_D2C_vseq.configure(
+    ucie_RX_D2C_vseq.configure(
       D2c_mode,
       pattern_mode,
       data_mode,
@@ -65,7 +65,7 @@ class ucie_mbtrain_valtraincenter_vseq extends ucie_vseq_base;
       valid_mode
     );
     
-    ucie_D2C_vseq.start();
+    ucie_RX_D2C_vseq.start(p_sequencer);
 
     // Valtraincenter_End_TX_LTSM
     `uvm_info("VSEQ", $sformatf("Valtraincenter_End_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)

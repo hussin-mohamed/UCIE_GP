@@ -74,6 +74,8 @@ class ucie_vseq_base extends uvm_sequence;
   protected message_mode_e          message_mode;
   protected valid_mode_e            valid_mode;
   protected lane_map_code_e         lane_map_code;
+  ucie_RX_D2C_vseq                  ucie_RX_D2C_vseq;
+  ucie_TX_D2C_vseq                  ucie_TX_D2C_vseq;
 
 
 
@@ -94,6 +96,8 @@ class ucie_vseq_base extends uvm_sequence;
     rmblink_clk_seq = rmblink_sanity_clk_sequence::type_id::create("rmblink_clk_seq");
     rmblink_valid_seq = rmblink_sanity_valid_sequence::type_id::create("rmblink_valid_seq");
     rmblink_lfsr_seq = rmblink_sanity_lfsr_sequence::type_id::create("rmblink_lfsr_seq");
+    ucie_RX_D2C_vseq = ucie_RX_D2C_vseq::type_id::create("ucie_RX_D2C_vseq");
+    ucie_TX_D2C_vseq = ucie_TX_D2C_vseq::type_id::create("ucie_TX_D2C_vseq");
     rmblink_PerLaneID_seq =
         rmblink_sanity_PerLaneID_sequence::type_id::create("rmblink_PerLaneID_seq");
     sb_ltsm_item = new("sb_ltsm_item");

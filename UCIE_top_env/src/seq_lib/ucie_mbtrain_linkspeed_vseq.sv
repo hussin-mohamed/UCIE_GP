@@ -1,18 +1,18 @@
 //=============================================================================
-// File       : ucie_mbtrain_DTC2_vseq.sv
+// File       : ucie_mbtrain_linkspeed_vseq.sv
 // Project    : UCIe 3.0 System-Level Verification
 // Description: Master virtual sequence for orchestrating the happy path 
 //              across the LTSM, Sideband, RX-Path, and TX-Path agents.
 //=============================================================================
 
-class ucie_mbtrain_DTC2_vseq extends ucie_vseq_base;
+class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
 
-  `uvm_object_utils(ucie_mbtrain_DTC2_vseq)
+  `uvm_object_utils(ucie_mbtrain_linkspeed_vseq)
 
   // -------------------------------------------------------------------------
   //  Constructor
   // -------------------------------------------------------------------------
-  function new(string name = "ucie_mbtrain_DTC2_vseq");
+  function new(string name = "ucie_mbtrain_linkspeed_vseq");
     super.new(name);
   endfunction
 
@@ -83,4 +83,4 @@ class ucie_mbtrain_DTC2_vseq extends ucie_vseq_base;
 
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask
-endclass : ucie_mbtrain_DTC2_vseq
+endclass : ucie_mbtrain_linkspeed_vseq
