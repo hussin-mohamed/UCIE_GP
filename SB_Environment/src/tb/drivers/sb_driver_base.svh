@@ -36,6 +36,7 @@ virtual class sb_driver_base #(type ITEM_T = uvm_sequence_item, type INTF_T = vi
   bit                         wait_for_sbinit;
   int unsigned                active_txn_cnt = 0;
   int unsigned                sbinit_txn_cnt = 0;
+  operation_t                 m_op_mode;
 
   // Function: new
   //
@@ -126,6 +127,23 @@ endfunction : build_phase
 
 task sb_driver_base::run_phase(uvm_phase phase); 
   super.run_phase(phase);
+
+  m_op_mode = SBINIT;
+  
+  fork
+    forever begin
+      @(posedge bfm.o_sb_ready);
+      @(negedge bfm.o_sb_ready);
+      m_op_mode = ACTIVE;
+    end
+  join_none
+
+  fork
+    forever begin
+      @(posedge bfm.reset);
+      m_op_mode = SBINIT;
+    end
+  join_none
 
   forever begin
     // Wait for reset deassertion

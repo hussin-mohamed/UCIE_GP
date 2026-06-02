@@ -109,6 +109,10 @@ task phylink_driver::drive_item(inout phylink_seq_item req, output phylink_seq_i
     join_any
     disable fork;
   end else if (req.op_mode == ACTIVE) begin
+    if (m_op_mode == SBINIT) begin
+      wait (m_op_mode == ACTIVE);
+      repeat(10) @(posedge bfm.clk);
+    end
     msg = item2struct(req);
 
     msg_raw = struct2raw(msg);

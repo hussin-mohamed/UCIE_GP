@@ -226,13 +226,21 @@ function phylink_seq_item sb_pred_ltsm2link::get_predicted_item(ltsm_seq_item _t
   t_out.srcid    = msg.srcid;
   t_out.dstid    = msg.dstid;
   t_out.info     = msg.info;
-  t_out.data     = msg.data;
+  if (t_out.opcode == MSG_WO_DATA) begin // Data takes the default value (i.e., 0) in case of MSG_WO_DATA
+    t_out.data   = 0;
+  end else if (t_out.opcode == MSG_W_64B_DATA) begin
+    t_out.data   = msg.data;
+  end 
 
   msg_raw = struct2raw(msg);
 
   // Parity Bits Calculation
-  t_out.cp = ^{msg_raw[61:0]};    // cp (even parity of header bits)
-  t_out.dp = ^{msg_raw[127:64]};  // dp (even parity of data payload)
+  t_out.cp = ^{msg_raw[61:0]}; // cp (even parity of header bits)
+  if (t_out.opcode == MSG_WO_DATA) begin // Data parity takes the default value (i.e., 0) in case of MSG_WO_DATA
+    t_out.dp = 0;
+  end else if (t_out.opcode == MSG_W_64B_DATA) begin
+    t_out.dp = ^{msg_raw[127:64]};
+  end
 
   // Reserved fields
   t_out.rsvd1 = '0;

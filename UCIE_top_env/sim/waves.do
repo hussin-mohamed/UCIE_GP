@@ -545,20 +545,23 @@ add wave -noupdate -group {SB_Environment — sb_rdi_bfm} \
     /ucie_tb_top/DUT/rdi_bfm/o_pl_cfg_crd \
     /ucie_tb_top/DUT/rdi_bfm/o_pl_cfg
 
+run 0ns
+
 # ---- SB_Environment/src/bfms/sb_phylink_bfm.sv ----
 add wave -noupdate -group {SB_Environment — sb_phylink_bfm} \
-    /ucie_tb_top/phylink_bfm/clk \
-    /ucie_tb_top/phylink_bfm/clk_800MHz \
-    /ucie_tb_top/phylink_bfm/reset \
-    /ucie_tb_top/phylink_bfm/o_sb_ready \
-    /ucie_tb_top/phylink_bfm/i_rx_sb_data \
-    /ucie_tb_top/phylink_bfm/i_rx_sb_clk \
-    /ucie_tb_top/phylink_bfm/o_tx_sb_data \
-    /ucie_tb_top/phylink_bfm/o_tx_sb_clk \
-    /ucie_tb_top/phylink_bfm/tms \
-    /ucie_tb_top/phylink_bfm/timeout \
-    /ucie_tb_top/phylink_bfm/start \
-    /ucie_tb_top/phylink_bfm/pat_detected
+    sim:/ucie_tb_top/phylink_bfm/clk \
+    sim:/ucie_tb_top/phylink_bfm/clk_800MHz \
+    sim:/ucie_tb_top/phylink_bfm/reset \
+    -color Cyan sim:/uvm_test_top/env/sb_env_i/phylink_agt/drvr/m_op_mode \
+    sim:/ucie_tb_top/phylink_bfm/o_sb_ready \
+    sim:/ucie_tb_top/phylink_bfm/i_rx_sb_data \
+    sim:/ucie_tb_top/phylink_bfm/i_rx_sb_clk \
+    sim:/ucie_tb_top/phylink_bfm/o_tx_sb_data \
+    sim:/ucie_tb_top/phylink_bfm/o_tx_sb_clk \
+    sim:/ucie_tb_top/phylink_bfm/tms \
+    sim:/ucie_tb_top/phylink_bfm/timeout \
+    sim:/ucie_tb_top/phylink_bfm/start \
+    sim:/ucie_tb_top/phylink_bfm/pat_detected
 
 # =============================================================================
 #  Final waveform settings

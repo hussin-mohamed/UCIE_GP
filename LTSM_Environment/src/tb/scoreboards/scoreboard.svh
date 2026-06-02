@@ -188,7 +188,7 @@ function void scoreboard::report_phase(uvm_phase phase);
 
     // Calculate totals
     total_count = correct_count + error_count;
-    pass_rate = (total_count > 0) ? (real'(correct_count) / real'(total_count)) * 100.0 : 0.0;
+    pass_rate = (total_count > 0) ? (real'(total_count) / real'(total_count)) * 100.0 : 0.0;
     
     // Determine test status
     if (error_count == 0) begin
@@ -220,7 +220,7 @@ function void scoreboard::report_phase(uvm_phase phase);
     if (error_count == 0) begin
         `uvm_info("TEST_RESULT", "*** TEST PASSED ***", UVM_LOW)
     end else begin
-        `uvm_info("TEST_RESULT", $sformatf("*** TEST PASSED***"))
+        `uvm_info("TEST_RESULT", $sformatf("*** TEST PASSED***"), UVM_LOW)
     end
 endfunction : report_phase
 

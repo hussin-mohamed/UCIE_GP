@@ -21,8 +21,8 @@ package sb_shared_pkg;
   parameter RDI_FIFO_SIZE = 8;
 
 
-  parameter T_CLK = 32ns;
-  parameter UI    = 4ns;
+  parameter T_CLK = 1920ns;
+  parameter UI    = 240ns;
 
   parameter LINK2LTSM_RTL_LATENCY = 11 * T_CLK;
   parameter LTSM2LINK_RTL_LATENCY = (8 * T_CLK) + (0.5 * UI);

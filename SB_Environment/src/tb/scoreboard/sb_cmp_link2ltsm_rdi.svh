@@ -37,6 +37,9 @@ class sb_cmp_link2ltsm_rdi extends sb_cmp_base #(rdi_seq_item, "RDI_LINK2LTSM_CM
   // fully modeled in the environment.
 
   extern virtual function void set_timeout_val(rdi_seq_item item);
+
+  extern virtual task main_phase(uvm_phase phase);
+  extern virtual function void report_phase(uvm_phase phase); 
 endclass
 
 //---------------------------------------------------------------------------
@@ -62,3 +65,17 @@ endfunction
 function void sb_cmp_link2ltsm_rdi::set_timeout_val(rdi_seq_item item);
   
 endfunction : set_timeout_val
+
+// main_phase
+// ----------
+
+task sb_cmp_link2ltsm_rdi::main_phase(uvm_phase phase);
+
+endtask : main_phase
+
+// report_phase
+// ------------
+
+function void sb_cmp_link2ltsm_rdi::report_phase(uvm_phase phase);
+  
+endfunction : report_phase
