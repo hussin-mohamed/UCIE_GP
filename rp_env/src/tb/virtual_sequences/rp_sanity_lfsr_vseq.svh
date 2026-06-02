@@ -160,13 +160,48 @@ task rp_sanity_lfsr_vseq::body();
   // ========================================================================
   `uvm_info("VSEQ_SCENARIO", ">>> STARTING X16_MODE SCENARIOS <<<", UVM_LOW)
 
-  execute_scenario(X16_MODE, SCENARIO_EXACT_MATCH,               64, "X16: SCENARIO 1 (Ideal 64 Pattern Iterations)"                          ,MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_RANDOM, 64, "X16: SCENARIO 2 (Injecting Failures Below Threshold at random position)",MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_RANDOM, 64, "X16: SCENARIO 3 (Injecting Failures Above Threshold at random position)",MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_START,  64, "X16: SCENARIO 4 (Injecting Failures Below Threshold at start position)" ,MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_END,    64, "X16: SCENARIO 5 (Injecting Failures Below Threshold at end position)"   ,MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_START,  64, "X16: SCENARIO 6 (Injecting Failures Above Threshold at start position)" ,MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_END,    64, "X16: SCENARIO 7 (Injecting Failures Above Threshold at end position)"   ,MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_EXACT_MATCH,                                64, "X16: SCENARIO 1 (Ideal 64 Pattern Iterations)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_RANDOM,                  64, "X16: SCENARIO 2 (Injecting Failures Below Threshold at random position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_RANDOM,                  64, "X16: SCENARIO 3 (Injecting Failures Above Threshold at random position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_START,                   64, "X16: SCENARIO 4 (Injecting Failures Below Threshold at start position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_END,                     64, "X16: SCENARIO 5 (Injecting Failures Below Threshold at end position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_START,                   64, "X16: SCENARIO 6 (Injecting Failures Above Threshold at start position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_END,                     64, "X16: SCENARIO 7 (Injecting Failures Above Threshold at end position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_RANDOM,         64, "X16: SCENARIO 8 (Rand Lanes Failures Below Threshold at random position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_RANDOM,         64, "X16: SCENARIO 9 (Rand Lanes Failures Above Threshold at random position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_START,          64, "X16: SCENARIO 10 (Rand Lanes Failures Below Threshold at start position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_END,            64, "X16: SCENARIO 11 (Rand Lanes Failures Below Threshold at end position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_START,          64, "X16: SCENARIO 12 (Rand Lanes Failures Above Threshold at start position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_END,            64, "X16: SCENARIO 13 (Rand Lanes Failures Above Threshold at end position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_RANDOM,             64, "X16: SCENARIO 14 (Upper Lanes Failures Below Threshold at random position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_RANDOM,             64, "X16: SCENARIO 15 (Upper Lanes Failures Above Threshold at random position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_START,              64, "X16: SCENARIO 16 (Upper Lanes Failures Below Threshold at start position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_END,                64, "X16: SCENARIO 17 (Upper Lanes Failures Below Threshold at end position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_START,              64, "X16: SCENARIO 18 (Upper Lanes Failures Above Threshold at start position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_END,                64, "X16: SCENARIO 19 (Upper Lanes Failures Above Threshold at end position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_RANDOM,    64, "X16: SCENARIO 20 (Rand Upper Lanes Failures Below Threshold at random position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_RANDOM,    64, "X16: SCENARIO 21 (Rand Upper Lanes Failures Above Threshold at random position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_START,     64, "X16: SCENARIO 22 (Rand Upper Lanes Failures Below Threshold at start position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_END,       64, "X16: SCENARIO 23 (Rand Upper Lanes Failures Below Threshold at end position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_START,     64, "X16: SCENARIO 24 (Rand Upper Lanes Failures Above Threshold at start position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_END,       64, "X16: SCENARIO 25 (Rand Upper Lanes Failures Above Threshold at end position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_RANDOM,             64, "X16: SCENARIO 26 (Lower Lanes Failures Below Threshold at random position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_RANDOM,             64, "X16: SCENARIO 27 (Lower Lanes Failures Above Threshold at random position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_START,              64, "X16: SCENARIO 28 (Lower Lanes Failures Below Threshold at start position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_END,                64, "X16: SCENARIO 29 (Lower Lanes Failures Below Threshold at end position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_START,              64, "X16: SCENARIO 30 (Lower Lanes Failures Above Threshold at start position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_END,                64, "X16: SCENARIO 31 (Lower Lanes Failures Above Threshold at end position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_RANDOM,    64, "X16: SCENARIO 32 (Rand Lower Lanes Failures Below Threshold at random position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_RANDOM,    64, "X16: SCENARIO 33 (Rand Lower Lanes Failures Above Threshold at random position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_START,     64, "X16: SCENARIO 34 (Rand Lower Lanes Failures Below Threshold at start position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_END,       64, "X16: SCENARIO 35 (Rand Lower Lanes Failures Below Threshold at end position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_START,     64, "X16: SCENARIO 36 (Rand Lower Lanes Failures Above Threshold at start position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_END,       64, "X16: SCENARIO 37 (Rand Lower Lanes Failures Above Threshold at end position)", MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake);
      
   
   
@@ -203,13 +238,48 @@ task rp_sanity_lfsr_vseq::body();
   // ========================================================================
   `uvm_info("VSEQ_SCENARIO", ">>> STARTING X16_MODE SCENARIOS <<<", UVM_LOW)
 
-  execute_scenario(X16_MODE, SCENARIO_EXACT_MATCH,               64, "X16: SCENARIO 1 (Ideal 64 Pattern Iterations)"                          ,MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_RANDOM, 64, "X16: SCENARIO 2 (Injecting Failures Below Threshold at random position)",MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_RANDOM, 64, "X16: SCENARIO 3 (Injecting Failures Above Threshold at random position)",MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_START,  64, "X16: SCENARIO 4 (Injecting Failures Below Threshold at start position)" ,MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_END,    64, "X16: SCENARIO 5 (Injecting Failures Below Threshold at end position)"   ,MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_START,  64, "X16: SCENARIO 6 (Injecting Failures Above Threshold at start position)" ,MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_END,    64, "X16: SCENARIO 7 (Injecting Failures Above Threshold at end position)"   ,MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_EXACT_MATCH,                                64, "X16: SCENARIO 1 (Ideal 64 Pattern Iterations)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_RANDOM,                  64, "X16: SCENARIO 2 (Injecting Failures Below Threshold at random position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_RANDOM,                  64, "X16: SCENARIO 3 (Injecting Failures Above Threshold at random position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_START,                   64, "X16: SCENARIO 4 (Injecting Failures Below Threshold at start position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_END,                     64, "X16: SCENARIO 5 (Injecting Failures Below Threshold at end position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_START,                   64, "X16: SCENARIO 6 (Injecting Failures Above Threshold at start position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_END,                     64, "X16: SCENARIO 7 (Injecting Failures Above Threshold at end position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_RANDOM,         64, "X16: SCENARIO 8 (Rand Lanes Failures Below Threshold at random position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_RANDOM,         64, "X16: SCENARIO 9 (Rand Lanes Failures Above Threshold at random position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_START,          64, "X16: SCENARIO 10 (Rand Lanes Failures Below Threshold at start position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_END,            64, "X16: SCENARIO 11 (Rand Lanes Failures Below Threshold at end position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_START,          64, "X16: SCENARIO 12 (Rand Lanes Failures Above Threshold at start position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_END,            64, "X16: SCENARIO 13 (Rand Lanes Failures Above Threshold at end position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_RANDOM,             64, "X16: SCENARIO 14 (Upper Lanes Failures Below Threshold at random position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_RANDOM,             64, "X16: SCENARIO 15 (Upper Lanes Failures Above Threshold at random position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_START,              64, "X16: SCENARIO 16 (Upper Lanes Failures Below Threshold at start position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_END,                64, "X16: SCENARIO 17 (Upper Lanes Failures Below Threshold at end position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_START,              64, "X16: SCENARIO 18 (Upper Lanes Failures Above Threshold at start position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_END,                64, "X16: SCENARIO 19 (Upper Lanes Failures Above Threshold at end position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_RANDOM,    64, "X16: SCENARIO 20 (Rand Upper Lanes Failures Below Threshold at random position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_RANDOM,    64, "X16: SCENARIO 21 (Rand Upper Lanes Failures Above Threshold at random position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_START,     64, "X16: SCENARIO 22 (Rand Upper Lanes Failures Below Threshold at start position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_END,       64, "X16: SCENARIO 23 (Rand Upper Lanes Failures Below Threshold at end position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_START,     64, "X16: SCENARIO 24 (Rand Upper Lanes Failures Above Threshold at start position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_END,       64, "X16: SCENARIO 25 (Rand Upper Lanes Failures Above Threshold at end position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_RANDOM,             64, "X16: SCENARIO 26 (Lower Lanes Failures Below Threshold at random position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_RANDOM,             64, "X16: SCENARIO 27 (Lower Lanes Failures Above Threshold at random position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_START,              64, "X16: SCENARIO 28 (Lower Lanes Failures Below Threshold at start position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_END,                64, "X16: SCENARIO 29 (Lower Lanes Failures Below Threshold at end position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_START,              64, "X16: SCENARIO 30 (Lower Lanes Failures Above Threshold at start position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_END,                64, "X16: SCENARIO 31 (Lower Lanes Failures Above Threshold at end position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_RANDOM,    64, "X16: SCENARIO 32 (Rand Lower Lanes Failures Below Threshold at random position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_RANDOM,    64, "X16: SCENARIO 33 (Rand Lower Lanes Failures Above Threshold at random position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_START,     64, "X16: SCENARIO 34 (Rand Lower Lanes Failures Below Threshold at start position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_END,       64, "X16: SCENARIO 35 (Rand Lower Lanes Failures Below Threshold at end position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_START,     64, "X16: SCENARIO 36 (Rand Lower Lanes Failures Above Threshold at start position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_END,       64, "X16: SCENARIO 37 (Rand Lower Lanes Failures Above Threshold at end position)", MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake);
     
   
   
@@ -246,13 +316,48 @@ task rp_sanity_lfsr_vseq::body();
   // ========================================================================
   `uvm_info("VSEQ_SCENARIO", ">>> STARTING X16_MODE SCENARIOS <<<", UVM_LOW)
 
-  execute_scenario(X16_MODE, SCENARIO_EXACT_MATCH,               64, "X16: SCENARIO 1 (Ideal 64 Pattern Iterations)"                          ,MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_RANDOM, 64, "X16: SCENARIO 2 (Injecting Failures Below Threshold at random position)",MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_RANDOM, 64, "X16: SCENARIO 3 (Injecting Failures Above Threshold at random position)",MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_START,  64, "X16: SCENARIO 4 (Injecting Failures Below Threshold at start position)" ,MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_END,    64, "X16: SCENARIO 5 (Injecting Failures Below Threshold at end position)"   ,MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_START,  64, "X16: SCENARIO 6 (Injecting Failures Above Threshold at start position)" ,MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_END,    64, "X16: SCENARIO 7 (Injecting Failures Above Threshold at end position)"   ,MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_EXACT_MATCH,                                64, "X16: SCENARIO 1 (Ideal 64 Pattern Iterations)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_RANDOM,                  64, "X16: SCENARIO 2 (Injecting Failures Below Threshold at random position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_RANDOM,                  64, "X16: SCENARIO 3 (Injecting Failures Above Threshold at random position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_START,                   64, "X16: SCENARIO 4 (Injecting Failures Below Threshold at start position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_END,                     64, "X16: SCENARIO 5 (Injecting Failures Below Threshold at end position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_START,                   64, "X16: SCENARIO 6 (Injecting Failures Above Threshold at start position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_END,                     64, "X16: SCENARIO 7 (Injecting Failures Above Threshold at end position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_RANDOM,         64, "X16: SCENARIO 8 (Rand Lanes Failures Below Threshold at random position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_RANDOM,         64, "X16: SCENARIO 9 (Rand Lanes Failures Above Threshold at random position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_START,          64, "X16: SCENARIO 10 (Rand Lanes Failures Below Threshold at start position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_END,            64, "X16: SCENARIO 11 (Rand Lanes Failures Below Threshold at end position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_START,          64, "X16: SCENARIO 12 (Rand Lanes Failures Above Threshold at start position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_END,            64, "X16: SCENARIO 13 (Rand Lanes Failures Above Threshold at end position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_RANDOM,             64, "X16: SCENARIO 14 (Upper Lanes Failures Below Threshold at random position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_RANDOM,             64, "X16: SCENARIO 15 (Upper Lanes Failures Above Threshold at random position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_START,              64, "X16: SCENARIO 16 (Upper Lanes Failures Below Threshold at start position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_END,                64, "X16: SCENARIO 17 (Upper Lanes Failures Below Threshold at end position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_START,              64, "X16: SCENARIO 18 (Upper Lanes Failures Above Threshold at start position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_END,                64, "X16: SCENARIO 19 (Upper Lanes Failures Above Threshold at end position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_RANDOM,    64, "X16: SCENARIO 20 (Rand Upper Lanes Failures Below Threshold at random position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_RANDOM,    64, "X16: SCENARIO 21 (Rand Upper Lanes Failures Above Threshold at random position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_START,     64, "X16: SCENARIO 22 (Rand Upper Lanes Failures Below Threshold at start position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_END,       64, "X16: SCENARIO 23 (Rand Upper Lanes Failures Below Threshold at end position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_START,     64, "X16: SCENARIO 24 (Rand Upper Lanes Failures Above Threshold at start position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_END,       64, "X16: SCENARIO 25 (Rand Upper Lanes Failures Above Threshold at end position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_RANDOM,             64, "X16: SCENARIO 26 (Lower Lanes Failures Below Threshold at random position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_RANDOM,             64, "X16: SCENARIO 27 (Lower Lanes Failures Above Threshold at random position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_START,              64, "X16: SCENARIO 28 (Lower Lanes Failures Below Threshold at start position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_END,                64, "X16: SCENARIO 29 (Lower Lanes Failures Below Threshold at end position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_START,              64, "X16: SCENARIO 30 (Lower Lanes Failures Above Threshold at start position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_END,                64, "X16: SCENARIO 31 (Lower Lanes Failures Above Threshold at end position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_RANDOM,    64, "X16: SCENARIO 32 (Rand Lower Lanes Failures Below Threshold at random position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_RANDOM,    64, "X16: SCENARIO 33 (Rand Lower Lanes Failures Above Threshold at random position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_START,     64, "X16: SCENARIO 34 (Rand Lower Lanes Failures Below Threshold at start position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_END,       64, "X16: SCENARIO 35 (Rand Lower Lanes Failures Below Threshold at end position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_START,     64, "X16: SCENARIO 36 (Rand Lower Lanes Failures Above Threshold at start position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_END,       64, "X16: SCENARIO 37 (Rand Lower Lanes Failures Above Threshold at end position)", MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake);
   
   
   
@@ -290,13 +395,48 @@ task rp_sanity_lfsr_vseq::body();
   // ========================================================================
   `uvm_info("VSEQ_SCENARIO", ">>> STARTING X16_MODE SCENARIOS <<<", UVM_LOW)
 
-  execute_scenario(X16_MODE, SCENARIO_EXACT_MATCH,               64, "X16: SCENARIO 1 (Ideal 64 Pattern Iterations)"                          ,MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_RANDOM, 64, "X16: SCENARIO 2 (Injecting Failures Below Threshold at random position)",MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_RANDOM, 64, "X16: SCENARIO 3 (Injecting Failures Above Threshold at random position)",MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_START,  64, "X16: SCENARIO 4 (Injecting Failures Below Threshold at start position)" ,MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_END,    64, "X16: SCENARIO 5 (Injecting Failures Below Threshold at end position)"   ,MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_START,  64, "X16: SCENARIO 6 (Injecting Failures Above Threshold at start position)" ,MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_END,    64, "X16: SCENARIO 7 (Injecting Failures Above Threshold at end position)"   ,MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_EXACT_MATCH,                                64, "X16: SCENARIO 1 (Ideal 64 Pattern Iterations)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_RANDOM,                  64, "X16: SCENARIO 2 (Injecting Failures Below Threshold at random position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_RANDOM,                  64, "X16: SCENARIO 3 (Injecting Failures Above Threshold at random position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_START,                   64, "X16: SCENARIO 4 (Injecting Failures Below Threshold at start position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_END,                     64, "X16: SCENARIO 5 (Injecting Failures Below Threshold at end position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_START,                   64, "X16: SCENARIO 6 (Injecting Failures Above Threshold at start position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_END,                     64, "X16: SCENARIO 7 (Injecting Failures Above Threshold at end position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_RANDOM,         64, "X16: SCENARIO 8 (Rand Lanes Failures Below Threshold at random position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_RANDOM,         64, "X16: SCENARIO 9 (Rand Lanes Failures Above Threshold at random position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_START,          64, "X16: SCENARIO 10 (Rand Lanes Failures Below Threshold at start position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_END,            64, "X16: SCENARIO 11 (Rand Lanes Failures Below Threshold at end position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_START,          64, "X16: SCENARIO 12 (Rand Lanes Failures Above Threshold at start position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_END,            64, "X16: SCENARIO 13 (Rand Lanes Failures Above Threshold at end position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_RANDOM,             64, "X16: SCENARIO 14 (Upper Lanes Failures Below Threshold at random position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_RANDOM,             64, "X16: SCENARIO 15 (Upper Lanes Failures Above Threshold at random position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_START,              64, "X16: SCENARIO 16 (Upper Lanes Failures Below Threshold at start position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_END,                64, "X16: SCENARIO 17 (Upper Lanes Failures Below Threshold at end position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_START,              64, "X16: SCENARIO 18 (Upper Lanes Failures Above Threshold at start position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_END,                64, "X16: SCENARIO 19 (Upper Lanes Failures Above Threshold at end position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_RANDOM,    64, "X16: SCENARIO 20 (Rand Upper Lanes Failures Below Threshold at random position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_RANDOM,    64, "X16: SCENARIO 21 (Rand Upper Lanes Failures Above Threshold at random position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_START,     64, "X16: SCENARIO 22 (Rand Upper Lanes Failures Below Threshold at start position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_END,       64, "X16: SCENARIO 23 (Rand Upper Lanes Failures Below Threshold at end position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_START,     64, "X16: SCENARIO 24 (Rand Upper Lanes Failures Above Threshold at start position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_END,       64, "X16: SCENARIO 25 (Rand Upper Lanes Failures Above Threshold at end position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_RANDOM,             64, "X16: SCENARIO 26 (Lower Lanes Failures Below Threshold at random position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_RANDOM,             64, "X16: SCENARIO 27 (Lower Lanes Failures Above Threshold at random position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_START,              64, "X16: SCENARIO 28 (Lower Lanes Failures Below Threshold at start position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_END,                64, "X16: SCENARIO 29 (Lower Lanes Failures Below Threshold at end position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_START,              64, "X16: SCENARIO 30 (Lower Lanes Failures Above Threshold at start position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_END,                64, "X16: SCENARIO 31 (Lower Lanes Failures Above Threshold at end position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_RANDOM,    64, "X16: SCENARIO 32 (Rand Lower Lanes Failures Below Threshold at random position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_RANDOM,    64, "X16: SCENARIO 33 (Rand Lower Lanes Failures Above Threshold at random position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_START,     64, "X16: SCENARIO 34 (Rand Lower Lanes Failures Below Threshold at start position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_END,       64, "X16: SCENARIO 35 (Rand Lower Lanes Failures Below Threshold at end position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_START,     64, "X16: SCENARIO 36 (Rand Lower Lanes Failures Above Threshold at start position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_END,       64, "X16: SCENARIO 37 (Rand Lower Lanes Failures Above Threshold at end position)", MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake);
   
   
   
@@ -333,13 +473,48 @@ task rp_sanity_lfsr_vseq::body();
   // ========================================================================
   `uvm_info("VSEQ_SCENARIO", ">>> STARTING X16_MODE SCENARIOS <<<", UVM_LOW)
 
-  execute_scenario(X16_MODE, SCENARIO_EXACT_MATCH,               64, "X16: SCENARIO 1 (Ideal 64 Pattern Iterations)"                          ,MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_RANDOM, 64, "X16: SCENARIO 2 (Injecting Failures Below Threshold at random position)",MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_RANDOM, 64, "X16: SCENARIO 3 (Injecting Failures Above Threshold at random position)",MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_START,  64, "X16: SCENARIO 4 (Injecting Failures Below Threshold at start position)" ,MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_END,    64, "X16: SCENARIO 5 (Injecting Failures Below Threshold at end position)"   ,MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_START,  64, "X16: SCENARIO 6 (Injecting Failures Above Threshold at start position)" ,MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
-  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_END,    64, "X16: SCENARIO 7 (Injecting Failures Above Threshold at end position)"   ,MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_EXACT_MATCH,                                64, "X16: SCENARIO 1 (Ideal 64 Pattern Iterations)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_RANDOM,                  64, "X16: SCENARIO 2 (Injecting Failures Below Threshold at random position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_RANDOM,                  64, "X16: SCENARIO 3 (Injecting Failures Above Threshold at random position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_START,                   64, "X16: SCENARIO 4 (Injecting Failures Below Threshold at start position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_BELOW_THRESH_END,                     64, "X16: SCENARIO 5 (Injecting Failures Below Threshold at end position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_START,                   64, "X16: SCENARIO 6 (Injecting Failures Above Threshold at start position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_ABOVE_THRESH_END,                     64, "X16: SCENARIO 7 (Injecting Failures Above Threshold at end position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_RANDOM,         64, "X16: SCENARIO 8 (Rand Lanes Failures Below Threshold at random position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_RANDOM,         64, "X16: SCENARIO 9 (Rand Lanes Failures Above Threshold at random position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_START,          64, "X16: SCENARIO 10 (Rand Lanes Failures Below Threshold at start position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_END,            64, "X16: SCENARIO 11 (Rand Lanes Failures Below Threshold at end position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_START,          64, "X16: SCENARIO 12 (Rand Lanes Failures Above Threshold at start position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_END,            64, "X16: SCENARIO 13 (Rand Lanes Failures Above Threshold at end position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_RANDOM,             64, "X16: SCENARIO 14 (Upper Lanes Failures Below Threshold at random position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_RANDOM,             64, "X16: SCENARIO 15 (Upper Lanes Failures Above Threshold at random position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_START,              64, "X16: SCENARIO 16 (Upper Lanes Failures Below Threshold at start position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_BELOW_THRESH_END,                64, "X16: SCENARIO 17 (Upper Lanes Failures Below Threshold at end position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_START,              64, "X16: SCENARIO 18 (Upper Lanes Failures Above Threshold at start position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_ABOVE_THRESH_END,                64, "X16: SCENARIO 19 (Upper Lanes Failures Above Threshold at end position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_RANDOM,    64, "X16: SCENARIO 20 (Rand Upper Lanes Failures Below Threshold at random position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_RANDOM,    64, "X16: SCENARIO 21 (Rand Upper Lanes Failures Above Threshold at random position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_START,     64, "X16: SCENARIO 22 (Rand Upper Lanes Failures Below Threshold at start position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_END,       64, "X16: SCENARIO 23 (Rand Upper Lanes Failures Below Threshold at end position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_START,     64, "X16: SCENARIO 24 (Rand Upper Lanes Failures Above Threshold at start position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_END,       64, "X16: SCENARIO 25 (Rand Upper Lanes Failures Above Threshold at end position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_RANDOM,             64, "X16: SCENARIO 26 (Lower Lanes Failures Below Threshold at random position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_RANDOM,             64, "X16: SCENARIO 27 (Lower Lanes Failures Above Threshold at random position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_START,              64, "X16: SCENARIO 28 (Lower Lanes Failures Below Threshold at start position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_BELOW_THRESH_END,                64, "X16: SCENARIO 29 (Lower Lanes Failures Below Threshold at end position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_START,              64, "X16: SCENARIO 30 (Lower Lanes Failures Above Threshold at start position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_ABOVE_THRESH_END,                64, "X16: SCENARIO 31 (Lower Lanes Failures Above Threshold at end position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_RANDOM,    64, "X16: SCENARIO 32 (Rand Lower Lanes Failures Below Threshold at random position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_RANDOM,    64, "X16: SCENARIO 33 (Rand Lower Lanes Failures Above Threshold at random position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_START,     64, "X16: SCENARIO 34 (Rand Lower Lanes Failures Below Threshold at start position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_END,       64, "X16: SCENARIO 35 (Rand Lower Lanes Failures Below Threshold at end position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_START,     64, "X16: SCENARIO 36 (Rand Lower Lanes Failures Above Threshold at start position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
+  execute_scenario(X16_MODE, SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_END,       64, "X16: SCENARIO 37 (Rand Lower Lanes Failures Above Threshold at end position)", MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd);
 
   `uvm_info("VSEQ_SCENARIO", "All Per-Lane ID Detection Scenarios for X16 Mode and X8 Modes Completed Successfully.", UVM_LOW)
 

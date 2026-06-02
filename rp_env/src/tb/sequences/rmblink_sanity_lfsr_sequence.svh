@@ -19,13 +19,61 @@
 // Defines the stress test scenarios for the LFSR sequence
 //-----------------------------------------------------------------------------
 typedef enum {
-  SCENARIO_EXACT_MATCH,                 
+  SCENARIO_EXACT_MATCH,
+
+  //ON ALL LANES (FULL)
+
   SCENARIO_ERROR_BELOW_THRESH_RANDOM,           
   SCENARIO_ERROR_ABOVE_THRESH_RANDOM,
-	SCENARIO_ERROR_BELOW_THRESH_START,
-	SCENARIO_ERROR_BELOW_THRESH_END,
-	SCENARIO_ERROR_ABOVE_THRESH_START,
-	SCENARIO_ERROR_ABOVE_THRESH_END
+  SCENARIO_ERROR_BELOW_THRESH_START,
+  SCENARIO_ERROR_BELOW_THRESH_END,
+  SCENARIO_ERROR_ABOVE_THRESH_START,
+  SCENARIO_ERROR_ABOVE_THRESH_END,
+
+  //ON ALL LANES (RANDOM SUBSET)
+
+  SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_RANDOM,
+  SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_RANDOM,
+  SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_START,
+  SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_END,
+  SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_START,
+  SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_END,
+
+  //ON UPPER LANES (FULL)
+
+  SCENARIO_ERROR_UPPER_BELOW_THRESH_RANDOM,           
+  SCENARIO_ERROR_UPPER_ABOVE_THRESH_RANDOM,
+  SCENARIO_ERROR_UPPER_BELOW_THRESH_START,
+  SCENARIO_ERROR_UPPER_BELOW_THRESH_END,
+  SCENARIO_ERROR_UPPER_ABOVE_THRESH_START,
+  SCENARIO_ERROR_UPPER_ABOVE_THRESH_END,
+
+  //ON UPPER LANES (RANDOM SUBSET)
+
+  SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_RANDOM,
+  SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_RANDOM,
+  SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_START,
+  SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_END,
+  SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_START,
+  SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_END,
+
+  //ON LOWER LANES (FULL)
+
+  SCENARIO_ERROR_LOWER_BELOW_THRESH_RANDOM,           
+  SCENARIO_ERROR_LOWER_ABOVE_THRESH_RANDOM,
+  SCENARIO_ERROR_LOWER_BELOW_THRESH_START,
+  SCENARIO_ERROR_LOWER_BELOW_THRESH_END,
+  SCENARIO_ERROR_LOWER_ABOVE_THRESH_START,
+  SCENARIO_ERROR_LOWER_ABOVE_THRESH_END,
+
+  //ON LOWER LANES (RANDOM SUBSET)
+
+  SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_RANDOM,
+  SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_RANDOM,
+  SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_START,
+  SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_END,
+  SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_START,
+  SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_END
 } lfsr_scenario_e;
 
 parameter DATA_WIDTH = 64;
@@ -46,7 +94,6 @@ parameter logic [LFSR_TAPS-1:0] LANE_ID [0:7] = '{
 //-----------------------------------------------------------------------------
 //
 // CLASS: rmblink_sanity_lfsr_sequence
-//
 //
 //-----------------------------------------------------------------------------
 
@@ -75,10 +122,10 @@ class rmblink_sanity_lfsr_sequence extends rp_sequence_base #(rmblink_seq_item);
   extern task pre_body();
   extern task body();
 
-  extern task load_lfsr_state (output logic [DATA_WIDTH-1:0] out_data [LANES_NUMBER], input int _bit_index);
-  extern task train_detection(input int _bit_index, output logic [DATA_WIDTH-1:0] out_data [LANES_NUMBER]);
+  extern task load_lfsr_state (ref logic [DATA_WIDTH-1:0] out_data [LANES_NUMBER], input int _bit_index);
+  extern task train_detection(input int _bit_index, ref logic [DATA_WIDTH-1:0] out_data [LANES_NUMBER]);
   extern task update_lfsr_state(input bit load);
-  extern task rx_lfsr_pattern_generation (input bit _train , input bit _load, output logic [DATA_WIDTH-1:0] _out_data [LANES_NUMBER]);
+  extern task rx_lfsr_pattern_generation (input bit _train , input bit _load, ref logic [DATA_WIDTH-1:0] _out_data [LANES_NUMBER]);
 
 endclass : rmblink_sanity_lfsr_sequence
 
@@ -96,14 +143,14 @@ endfunction : new
 //-----------------------------------------------------------------------------
 
 
-task static rmblink_sanity_lfsr_sequence::load_lfsr_state (output logic [DATA_WIDTH-1:0] out_data [LANES_NUMBER], input int _bit_index);
+task automatic rmblink_sanity_lfsr_sequence::load_lfsr_state (ref logic [DATA_WIDTH-1:0] out_data [LANES_NUMBER], input int _bit_index);
     for (int i = 0; i < LANES_NUMBER; i++) begin
         lfsr_state[i] = LANE_ID[i % 8];
         out_data[i][_bit_index] = lfsr_state[i][LFSR_TAPS-1];
     end
 endtask
 
-task static rmblink_sanity_lfsr_sequence::train_detection(input int _bit_index, output logic [DATA_WIDTH-1:0] out_data [LANES_NUMBER]);
+task automatic rmblink_sanity_lfsr_sequence::train_detection(input int _bit_index, ref logic [DATA_WIDTH-1:0] out_data [LANES_NUMBER]);
     for (int i = 0; i < LANES_NUMBER; i++) begin
          expected_bit = lfsr_state[i][LFSR_TAPS-1];
          out_data[i][_bit_index] = lfsr_state[i][LFSR_TAPS-1];
@@ -126,7 +173,7 @@ task static rmblink_sanity_lfsr_sequence::update_lfsr_state(input bit load);
    lfsr_last_state = lfsr_state;
 endtask
 
-task static rmblink_sanity_lfsr_sequence::rx_lfsr_pattern_generation (input bit _train , input bit _load, output logic [DATA_WIDTH-1:0] _out_data [LANES_NUMBER]);
+task automatic rmblink_sanity_lfsr_sequence::rx_lfsr_pattern_generation (input bit _train , input bit _load, ref logic [DATA_WIDTH-1:0] _out_data [LANES_NUMBER]);
     for (int bit_index = 0; bit_index < DATA_WIDTH; bit_index++) begin   
         if (_load)begin
             load_lfsr_state(_out_data,bit_index);
@@ -151,15 +198,119 @@ task rmblink_sanity_lfsr_sequence::body();
   int err_bit_1   [LANES_NUMBER];
   int err_cycle_2 [LANES_NUMBER];
   int err_bit_2   [LANES_NUMBER];
-	int err_bit_fixed1 = 0; // For scenarios where error is injected at a fixed bit position
-	int err_bit_fixed2 = 0; // For scenarios where two errors are injected at fixed bit positions
+  int err_bit_fixed1 = 0; // For scenarios where error is injected at a fixed bit position
+  int err_bit_fixed2 = 0; // For scenarios where two errors are injected at fixed bit positions
+
+  bit active_lane [LANES_NUMBER];
+  int num_active_lanes = 0;
+  int chosen_count = 0;
+
+  // Initialize all lanes to inactive first
+  for (int i = 0; i < LANES_NUMBER; i++) begin
+    active_lane[i] = 0;
+  end
+
+  case (scenario)
+    // ON ALL LANES (FULL)
+    SCENARIO_ERROR_BELOW_THRESH_RANDOM,           
+    SCENARIO_ERROR_ABOVE_THRESH_RANDOM,
+    SCENARIO_ERROR_BELOW_THRESH_START,
+    SCENARIO_ERROR_BELOW_THRESH_END,
+    SCENARIO_ERROR_ABOVE_THRESH_START,
+    SCENARIO_ERROR_ABOVE_THRESH_END: begin
+      for (int i = 0; i < LANES_NUMBER; i++) active_lane[i] = 1;
+    end
+
+    // ON ALL LANES (RANDOM SUBSET)
+    SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_RANDOM,
+    SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_RANDOM,
+    SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_START,
+    SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_END,
+    SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_START,
+    SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_END: begin
+      num_active_lanes = $urandom_range(15, 0); // choose a random number of lanes from 0 to 15
+      chosen_count = 0;
+      while (chosen_count < num_active_lanes) begin
+        int idx = $urandom_range(15, 0);
+        if (!active_lane[idx]) begin
+          active_lane[idx] = 1;
+          chosen_count++;
+        end
+      end
+    end
+
+    // ON UPPER LANES (FULL)
+    SCENARIO_ERROR_UPPER_BELOW_THRESH_RANDOM,           
+    SCENARIO_ERROR_UPPER_ABOVE_THRESH_RANDOM,
+    SCENARIO_ERROR_UPPER_BELOW_THRESH_START,
+    SCENARIO_ERROR_UPPER_BELOW_THRESH_END,
+    SCENARIO_ERROR_UPPER_ABOVE_THRESH_START,
+    SCENARIO_ERROR_UPPER_ABOVE_THRESH_END: begin
+      for (int i = 8; i < 16; i++) active_lane[i] = 1;
+    end
+
+    // ON UPPER LANES (RANDOM SUBSET)
+    SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_RANDOM,
+    SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_RANDOM,
+    SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_START,
+    SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_END,
+    SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_START,
+    SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_END: begin
+      num_active_lanes = $urandom_range(7, 0); // choose a random number of lanes from 0 to 7
+      chosen_count = 0;
+      while (chosen_count < num_active_lanes) begin
+        int idx = $urandom_range(15, 8);
+        if (!active_lane[idx]) begin
+          active_lane[idx] = 1;
+          chosen_count++;
+        end
+      end
+    end
+
+    // ON LOWER LANES (FULL)
+    SCENARIO_ERROR_LOWER_BELOW_THRESH_RANDOM,           
+    SCENARIO_ERROR_LOWER_ABOVE_THRESH_RANDOM,
+    SCENARIO_ERROR_LOWER_BELOW_THRESH_START,
+    SCENARIO_ERROR_LOWER_BELOW_THRESH_END,
+    SCENARIO_ERROR_LOWER_ABOVE_THRESH_START,
+    SCENARIO_ERROR_LOWER_ABOVE_THRESH_END: begin
+      for (int i = 0; i < 8; i++) active_lane[i] = 1;
+    end
+
+    // ON LOWER LANES (RANDOM SUBSET)
+    SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_RANDOM,
+    SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_RANDOM,
+    SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_START,
+    SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_END,
+    SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_START,
+    SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_END: begin
+      num_active_lanes = $urandom_range(7, 0); // choose a random number of lanes from 0 to 7
+      chosen_count = 0;
+      while (chosen_count < num_active_lanes) begin
+        int idx = $urandom_range(7, 0);
+        if (!active_lane[idx]) begin
+          active_lane[idx] = 1;
+          chosen_count++;
+        end
+      end
+    end
+
+    default: begin
+      // For SCENARIO_EXACT_MATCH or other, active_lane remains all 0
+    end
+  endcase
 
   // 1. Pre-calculate the exact cycle and bit for the errors for each lane
   for (int i = 0; i < LANES_NUMBER; i++) begin
     err_cycle_1[i] = $urandom_range(num_iterations - 1, 0);
     err_bit_1[i]   = $urandom_range(pDATA_WIDTH - 1, 0);
 
-    if (scenario == SCENARIO_ERROR_ABOVE_THRESH_RANDOM) begin
+    if (scenario == SCENARIO_ERROR_ABOVE_THRESH_RANDOM ||
+        scenario == SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_RANDOM ||
+        scenario == SCENARIO_ERROR_UPPER_ABOVE_THRESH_RANDOM ||
+        scenario == SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_RANDOM ||
+        scenario == SCENARIO_ERROR_LOWER_ABOVE_THRESH_RANDOM ||
+        scenario == SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_RANDOM) begin
       err_cycle_2[i] = $urandom_range(num_iterations - 1, 0);
       err_bit_2[i]   = $urandom_range(pDATA_WIDTH - 1, 0);
 
@@ -176,7 +327,7 @@ task rmblink_sanity_lfsr_sequence::body();
   for (int cycle = 0; cycle < num_iterations; cycle++) begin
     start_item(req);
     
-    // Standard generic streams [cite: 33]
+    // Standard generic streams
     req.val_stream   = get_ideal_valid_stream(pDATA_WIDTH/8);
     req.clk_stream_p = get_ideal_clkp_stream(pDATA_WIDTH);
     req.clk_stream_n = get_ideal_clkn_stream(pDATA_WIDTH);
@@ -185,7 +336,7 @@ task rmblink_sanity_lfsr_sequence::body();
     req.idle_ui_cnt  = 0;
     
     if (cycle == 0) begin
-      req.is_first_data_pat = 1;
+      req.is_first_data_pat = 0;
     end else begin
       req.is_first_data_pat = 0;
     end
@@ -196,86 +347,491 @@ task rmblink_sanity_lfsr_sequence::body();
         rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
       end
 
+      // ==========================================
+      // ON ALL LANES (FULL)
+      // ==========================================
+
       SCENARIO_ERROR_BELOW_THRESH_RANDOM: begin
         rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
-        
-        // Inject exactly one error per lane across ALL iterations
-        for (int i = 0; i < LANES_NUMBER; i++) begin
+        for (int i = 0; i < 16; i++) begin
           if (cycle == err_cycle_1[i]) begin
             req.data[i][err_bit_1[i]] = ~req.data[i][err_bit_1[i]];
           end
         end
       end
-      
+
       SCENARIO_ERROR_ABOVE_THRESH_RANDOM: begin
         rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
-        
-        // Inject exactly two errors per lane across ALL iterations
-        for (int i = 0; i < LANES_NUMBER; i++) begin
-          // First random error
+        for (int i = 0; i < 16; i++) begin
           if (cycle == err_cycle_1[i]) begin
             req.data[i][err_bit_1[i]] = ~req.data[i][err_bit_1[i]];
           end
-          // Second random error
           if (cycle == err_cycle_2[i]) begin
             req.data[i][err_bit_2[i]] = ~req.data[i][err_bit_2[i]];
           end
         end
       end
 
-			SCENARIO_ERROR_BELOW_THRESH_START: begin
+      SCENARIO_ERROR_BELOW_THRESH_START: begin
         rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
-        // Inject exactly one error per lane across in first itration
-				if (cycle == 0) begin
-        for (int i = 0; i < LANES_NUMBER; i++) begin
-          err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
-						req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
-					end
+        if (cycle == 0) begin
+          for (int i = 0; i < 16; i++) begin
+            err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+            req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+          end
         end
       end
 
-			SCENARIO_ERROR_BELOW_THRESH_END: begin
-				rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
-				// Inject exactly one error per lane across in last itration
-				if (cycle == num_iterations - 1) begin
-				for (int i = 0; i < LANES_NUMBER; i++) begin
-					err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
-					req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
-					end
-				end
-			end
-
-			SCENARIO_ERROR_ABOVE_THRESH_START: begin
-				rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
-				// Inject exactly two errors per lane across in first itration
-				if (cycle == 0) begin
-				for (int i = 0; i < LANES_NUMBER; i++) begin
-					err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
-					err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
-					while (err_bit_fixed1 == err_bit_fixed2) begin
-						err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+      SCENARIO_ERROR_BELOW_THRESH_END: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == num_iterations - 1) begin
+          for (int i = 0; i < 16; i++) begin
+            err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+            req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
           end
-					req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
-					req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
-					end
-				end
-			end
+        end
+      end
 
-			SCENARIO_ERROR_ABOVE_THRESH_END: begin
-				rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
-				// Inject exactly two errors per lane across in last itration
-				if (cycle == num_iterations - 1) begin
-				for (int i = 0; i < LANES_NUMBER; i++) begin
-					err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
-					err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
-					while (err_bit_fixed1 == err_bit_fixed2) begin
-						err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+      SCENARIO_ERROR_ABOVE_THRESH_START: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == 0) begin
+          for (int i = 0; i < 16; i++) begin
+            err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+            err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+            while (err_bit_fixed1 == err_bit_fixed2) begin
+              err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+            end
+            req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+            req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
           end
-					req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
-					req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
-					end
-				end
-			end
+        end
+      end
+
+      SCENARIO_ERROR_ABOVE_THRESH_END: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == num_iterations - 1) begin
+          for (int i = 0; i < 16; i++) begin
+            err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+            err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+            while (err_bit_fixed1 == err_bit_fixed2) begin
+              err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+            end
+            req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+            req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
+          end
+        end
+      end
+
+      // ==========================================
+      // ON ALL LANES (RANDOM SUBSET)
+      // ==========================================
+
+      SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_RANDOM: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        for (int i = 0; i < 16; i++) begin
+          if (active_lane[i]) begin
+            if (cycle == err_cycle_1[i]) begin
+              req.data[i][err_bit_1[i]] = ~req.data[i][err_bit_1[i]];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_RANDOM: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        for (int i = 0; i < 16; i++) begin
+          if (active_lane[i]) begin
+            if (cycle == err_cycle_1[i]) begin
+              req.data[i][err_bit_1[i]] = ~req.data[i][err_bit_1[i]];
+            end
+            if (cycle == err_cycle_2[i]) begin
+              req.data[i][err_bit_2[i]] = ~req.data[i][err_bit_2[i]];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_START: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == 0) begin
+          for (int i = 0; i < 16; i++) begin
+            if (active_lane[i]) begin
+              err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+              req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_RAND_LANE_BELOW_THRESH_END: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == num_iterations - 1) begin
+          for (int i = 0; i < 16; i++) begin
+            if (active_lane[i]) begin
+              err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+              req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_START: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == 0) begin
+          for (int i = 0; i < 16; i++) begin
+            if (active_lane[i]) begin
+              err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+              err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+              while (err_bit_fixed1 == err_bit_fixed2) begin
+                err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+              end
+              req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+              req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_RAND_LANE_ABOVE_THRESH_END: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == num_iterations - 1) begin
+          for (int i = 0; i < 16; i++) begin
+            if (active_lane[i]) begin
+              err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+              err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+              while (err_bit_fixed1 == err_bit_fixed2) begin
+                err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+              end
+              req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+              req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
+            end
+          end
+        end
+      end
+
+      // ==========================================
+      // ON UPPER LANES (FULL)
+      // ==========================================
+
+      SCENARIO_ERROR_UPPER_BELOW_THRESH_RANDOM: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        for (int i = 8; i < 16; i++) begin
+          if (cycle == err_cycle_1[i]) begin
+            req.data[i][err_bit_1[i]] = ~req.data[i][err_bit_1[i]];
+          end
+        end
+      end
+
+      SCENARIO_ERROR_UPPER_ABOVE_THRESH_RANDOM: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        for (int i = 8; i < 16; i++) begin
+          if (cycle == err_cycle_1[i]) begin
+            req.data[i][err_bit_1[i]] = ~req.data[i][err_bit_1[i]];
+          end
+          if (cycle == err_cycle_2[i]) begin
+            req.data[i][err_bit_2[i]] = ~req.data[i][err_bit_2[i]];
+          end
+        end
+      end
+
+      SCENARIO_ERROR_UPPER_BELOW_THRESH_START: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == 0) begin
+          for (int i = 8; i < 16; i++) begin
+            err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+            req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+          end
+        end
+      end
+
+      SCENARIO_ERROR_UPPER_BELOW_THRESH_END: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == num_iterations - 1) begin
+          for (int i = 8; i < 16; i++) begin
+            err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+            req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+          end
+        end
+      end
+
+      SCENARIO_ERROR_UPPER_ABOVE_THRESH_START: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == 0) begin
+          for (int i = 8; i < 16; i++) begin
+            err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+            err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+            while (err_bit_fixed1 == err_bit_fixed2) begin
+              err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+            end
+            req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+            req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
+          end
+        end
+      end
+
+      SCENARIO_ERROR_UPPER_ABOVE_THRESH_END: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == num_iterations - 1) begin
+          for (int i = 8; i < 16; i++) begin
+            err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+            err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+            while (err_bit_fixed1 == err_bit_fixed2) begin
+              err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+            end
+            req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+            req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
+          end
+        end
+      end
+
+      // ==========================================
+      // ON UPPER LANES (RANDOM SUBSET)
+      // ==========================================
+
+      SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_RANDOM: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        for (int i = 8; i < 16; i++) begin
+          if (active_lane[i]) begin
+            if (cycle == err_cycle_1[i]) begin
+              req.data[i][err_bit_1[i]] = ~req.data[i][err_bit_1[i]];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_RANDOM: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        for (int i = 8; i < 16; i++) begin
+          if (active_lane[i]) begin
+            if (cycle == err_cycle_1[i]) begin
+              req.data[i][err_bit_1[i]] = ~req.data[i][err_bit_1[i]];
+            end
+            if (cycle == err_cycle_2[i]) begin
+              req.data[i][err_bit_2[i]] = ~req.data[i][err_bit_2[i]];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_START: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == 0) begin
+          for (int i = 8; i < 16; i++) begin
+            if (active_lane[i]) begin
+              err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+              req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_UPPER_RAND_LANE_BELOW_THRESH_END: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == num_iterations - 1) begin
+          for (int i = 8; i < 16; i++) begin
+            if (active_lane[i]) begin
+              err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+              req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_START: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == 0) begin
+          for (int i = 8; i < 16; i++) begin
+            if (active_lane[i]) begin
+              err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+              err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+              while (err_bit_fixed1 == err_bit_fixed2) begin
+                err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+              end
+              req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+              req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_END: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == num_iterations - 1) begin
+          for (int i = 8; i < 16; i++) begin
+            if (active_lane[i]) begin
+              err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+              err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+              while (err_bit_fixed1 == err_bit_fixed2) begin
+                err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+              end
+              req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+              req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
+            end
+          end
+        end
+      end
+
+      // ==========================================
+      // ON LOWER LANES (FULL)
+      // ==========================================
+
+      SCENARIO_ERROR_LOWER_BELOW_THRESH_RANDOM: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        for (int i = 0; i < 8; i++) begin
+          if (cycle == err_cycle_1[i]) begin
+            req.data[i][err_bit_1[i]] = ~req.data[i][err_bit_1[i]];
+          end
+        end
+      end
+
+      SCENARIO_ERROR_LOWER_ABOVE_THRESH_RANDOM: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        for (int i = 0; i < 8; i++) begin
+          if (cycle == err_cycle_1[i]) begin
+            req.data[i][err_bit_1[i]] = ~req.data[i][err_bit_1[i]];
+          end
+          if (cycle == err_cycle_2[i]) begin
+            req.data[i][err_bit_2[i]] = ~req.data[i][err_bit_2[i]];
+          end
+        end
+      end
+
+      SCENARIO_ERROR_LOWER_BELOW_THRESH_START: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == 0) begin
+          for (int i = 0; i < 8; i++) begin
+            err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+            req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+          end
+        end
+      end
+
+      SCENARIO_ERROR_LOWER_BELOW_THRESH_END: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == num_iterations - 1) begin
+          for (int i = 0; i < 8; i++) begin
+            err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+            req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+          end
+        end
+      end
+
+      SCENARIO_ERROR_LOWER_ABOVE_THRESH_START: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == 0) begin
+          for (int i = 0; i < 8; i++) begin
+            err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+            err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+            while (err_bit_fixed1 == err_bit_fixed2) begin
+              err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+            end
+            req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+            req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
+          end
+        end
+      end
+
+      SCENARIO_ERROR_LOWER_ABOVE_THRESH_END: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == num_iterations - 1) begin
+          for (int i = 0; i < 8; i++) begin
+            err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+            err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+            while (err_bit_fixed1 == err_bit_fixed2) begin
+              err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+            end
+            req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+            req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
+          end
+        end
+      end
+
+      // ==========================================
+      // ON LOWER LANES (RANDOM SUBSET)
+      // ==========================================
+
+      SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_RANDOM: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        for (int i = 0; i < 8; i++) begin
+          if (active_lane[i]) begin
+            if (cycle == err_cycle_1[i]) begin
+              req.data[i][err_bit_1[i]] = ~req.data[i][err_bit_1[i]];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_RANDOM: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        for (int i = 0; i < 8; i++) begin
+          if (active_lane[i]) begin
+            if (cycle == err_cycle_1[i]) begin
+              req.data[i][err_bit_1[i]] = ~req.data[i][err_bit_1[i]];
+            end
+            if (cycle == err_cycle_2[i]) begin
+              req.data[i][err_bit_2[i]] = ~req.data[i][err_bit_2[i]];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_START: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == 0) begin
+          for (int i = 0; i < 8; i++) begin
+            if (active_lane[i]) begin
+              err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+              req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_LOWER_RAND_LANE_BELOW_THRESH_END: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == num_iterations - 1) begin
+          for (int i = 0; i < 8; i++) begin
+            if (active_lane[i]) begin
+              err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+              req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_START: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == 0) begin
+          for (int i = 0; i < 8; i++) begin
+            if (active_lane[i]) begin
+              err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+              err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+              while (err_bit_fixed1 == err_bit_fixed2) begin
+                err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+              end
+              req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+              req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
+            end
+          end
+        end
+      end
+
+      SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_END: begin
+        rx_lfsr_pattern_generation(train_mode, 1'b0, req.data);
+        if (cycle == num_iterations - 1) begin
+          for (int i = 0; i < 8; i++) begin
+            if (active_lane[i]) begin
+              err_bit_fixed1 = $urandom_range(pDATA_WIDTH - 1, 0);
+              err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+              while (err_bit_fixed1 == err_bit_fixed2) begin
+                err_bit_fixed2 = $urandom_range(pDATA_WIDTH - 1, 0);
+              end
+              req.data[i][err_bit_fixed1] = ~req.data[i][err_bit_fixed1];
+              req.data[i][err_bit_fixed2] = ~req.data[i][err_bit_fixed2];
+            end
+          end
+        end
+      end
 
     endcase
 
