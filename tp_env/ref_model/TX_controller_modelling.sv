@@ -352,13 +352,13 @@ package tx_controller_modelling_pkg;
             end
             ENC_EYE_TX_PAT_GEN: begin
                 count_en = 1'b1;
-                if      (ctx_lfsr_tx) done_target = DONE_LFSR[7:0];
+                if      (ctx_lfsr_tx || ctx_lfsr_rx) done_target = DONE_LFSR[7:0];
                 else if (ctx_valid)   done_target = DONE_VALID_EYE[7:0];
                 else if (ctx_perlane) done_target = DONE_REPAIRMB_PAT[7:0];
             end
             ENC_EYE_RX_PAT_GEN: begin
                 count_en = 1'b1;
-                if      (ctx_lfsr_rx) done_target = DONE_LFSR[7:0];
+                if      (ctx_lfsr_rx || ctx_lfsr_tx) done_target = DONE_LFSR[7:0];
                 else if (ctx_valid)   done_target = DONE_VALID_EYE[7:0];
             end
             default: ;
@@ -400,7 +400,7 @@ package tx_controller_modelling_pkg;
 
             // Eye-sweep TX-initiated: LFSR clear (0x181)
             ENC_EYE_TX_LFSR_CLR: begin
-                if (ctx_lfsr_tx) begin
+                if (ctx_lfsr_tx || ctx_lfsr_rx) begin
                     o_tx_lfsr_load  = 1'b1;
                     o_tx_lfsr_train = 1'b1;
                 end else if (ctx_perlane) begin
@@ -429,7 +429,7 @@ package tx_controller_modelling_pkg;
 
             // Eye-sweep RX-initiated: LFSR clear (0x189)
             ENC_EYE_RX_LFSR_CLR: begin
-                if (ctx_lfsr_rx) begin
+                if (ctx_lfsr_tx || ctx_lfsr_rx) begin
                     o_tx_lfsr_load  = 1'b1;
                     o_tx_lfsr_train = 1'b1;
                 end

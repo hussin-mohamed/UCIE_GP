@@ -84,7 +84,7 @@ module ucie_tb_top;
       .rst(reset)
   );
 
-  ltsm_rdi_if ltsm_rdi_if_inst (.clk(clk_l));
+  ltsm_rdi_if ltsm_rdi_if_inst (.clk(DUT.clk_l));
 
   rdi_if #(
       .NBYTES(256)
