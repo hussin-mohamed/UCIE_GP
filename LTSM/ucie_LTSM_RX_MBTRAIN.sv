@@ -532,7 +532,7 @@ module ucie_LTSM_RX_MBTRAIN #(
               end
             endcase
           end
-          if (i_sb_rx_req && i_rx_decoding == 'hD1) begin
+          if (i_sb_rx_req && i_rx_decoding == 'hD0) begin
             NS = TXSELFCAL;
             o_rx_sb_req_reg = 0;
             o_rx_sb_rsp_reg = 0;

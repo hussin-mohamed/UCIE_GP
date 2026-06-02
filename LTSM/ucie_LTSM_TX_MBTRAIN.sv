@@ -629,7 +629,7 @@ always @(*) begin
                                 if (done_ack) o_tx_sb_req_reg = 0;
                                 else o_tx_sb_req_reg = 1;
 
-                                if (i_sb_tx_rsp && i_tx_decoding == 'hD0) begin
+                                if (i_sb_tx_rsp && i_tx_decoding == 'hD1) begin
                                     substates_done = 1;
                                     next_substate = 0;
                                 end else begin
@@ -642,7 +642,7 @@ always @(*) begin
                             end
                         endcase
                     end
-                    if (previous_state_done && encoding_rsp_sent == 'hD0 && encoding_rsp_received == 'hD0) begin
+                    if (previous_state_done && encoding_rsp_sent == 'hD0 && encoding_rsp_received == 'hD1) begin
                         NS = RXCLKCAL;
                         o_tx_sb_req_reg = 0;
                         o_tx_sb_rsp_reg = 0;

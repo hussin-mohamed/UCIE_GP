@@ -34,6 +34,11 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
   virtual task body();
   valverf_vseq = ucie_mbtrain_valverf_vseq::type_id::create("valverf_vseq");
   dataverf_vseq = ucie_mbtrain_dataverf_vseq::type_id::create("valverf_vseq");
+  speedidle_vseq = ucie_mbtrain_speedidle_vseq::type_id::create("speedidle_vseq");
+  txselfcal_vseq = ucie_mbtrain_txselfcal_vseq::type_id::create("txselfcal_vseq");
+  rxclkcal_vseq = ucie_mbtrain_rxclkcal_vseq::type_id::create("rxclkcal_vseq");
+  valtraincenter_vseq = ucie_mbtrain_valtraincenter_vseq::type_id::create("valtraincenter_vseq");
+  valtrainverf_vseq = ucie_mbtrain_valtrainverf_vseq::type_id::create("valtrainverf_vseq");
     valverf_vseq.configure(
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),
@@ -52,23 +57,22 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
         .valid_mode(VALID_CORRECT)
     );
 
-    // valtraincenter_vseq.configure(
-    //     .D2c_mode(SUCCESS),
-    //     .pattern_mode(PAT_ALL_LANES_VALID),
-    //     .data_mode(VALID_PATTERN),
-    //     .info_mode(CORRECT),
-    //     .message_mode(ALL_LANES_VALID),
-    //     .valid_mode(VALID_CORRECT)
-    // );
-    
-    // valtrainverf_vseq.configure(
-    //     .D2c_mode(SUCCESS),
-    //     .pattern_mode(PAT_ALL_LANES_VALID),
-    //     .data_mode(VALID_PATTERN),
-    //     .info_mode(CORRECT),
-    //     .message_mode(ALL_LANES_VALID),
-    //     .valid_mode(VALID_CORRECT)
-    // );
+    valtraincenter_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
+    valtrainverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
     
     // DTC1_vseq.configure(
     //     .D2c_mode(SUCCESS),
@@ -99,11 +103,11 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
 
     valverf_vseq.start(p_sequencer);
     dataverf_vseq.start(p_sequencer);
-    // speedidle_vseq.start(p_sequencer);
-    // txselfcal_vseq.start(p_sequencer);
-    // rxclkcal_vseq.start(p_sequencer);
-    // valtraincenter_vseq.start(p_sequencer);
-    // valtrainverf_vseq.start(p_sequencer);
+    speedidle_vseq.start(p_sequencer);
+    txselfcal_vseq.start(p_sequencer);
+    rxclkcal_vseq.start(p_sequencer);
+    valtraincenter_vseq.start(p_sequencer);
+    valtrainverf_vseq.start(p_sequencer);
     // DTC1_vseq.start(p_sequencer);
     // datatrainvref_vseq.start(p_sequencer);
     // rxdskew_vseq.start(p_sequencer);

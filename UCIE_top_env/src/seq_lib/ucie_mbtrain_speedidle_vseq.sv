@@ -26,7 +26,8 @@ class ucie_mbtrain_speedidle_vseq extends ucie_vseq_base;
     `uvm_info("VSEQ", $sformatf("Speedidle_End_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
     p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_SPEEDIDLE_TX_End_Handshake);
+    `uvm_info("VSEQ", $sformatf("NIGGGER Speedidle_End_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_SPEEDIDLE_TX_TrainError_Handshake);
     send_sb_msg(sb_ltsm_item);
 
     // Speedidle_End_RX_LTSM
@@ -39,7 +40,4 @@ class ucie_mbtrain_speedidle_vseq extends ucie_vseq_base;
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask
 
-  task D2C_RX_initiated ();
-    
-  endtask 
 endclass : ucie_mbtrain_speedidle_vseq
