@@ -118,8 +118,8 @@ always @(posedge i_clk or posedge i_reset)
         else begin 
           if ((!i_traffic_tx_fifo_full || !i_traffic_rx_fifo_full) && i_traffic_msg_ready) begin
           // write logic
-            if (((srcid == 3'b010) && (dstid == 3'b110)) && (((msg_code [3:0] == 4'hA) && ({msg_code, msg_subcode} != {8'h8A,8'h0A}) && ({msg_code, msg_subcode} != {8'h8A,8'h0D})) 
-                || ({msg_code, msg_subcode} == {8'h85,8'h0A}) || ({msg_code, msg_subcode} == {8'h85,8'h0D})) ) 
+            if ( ((srcid == 3'b010) && (dstid == 3'b110)) && ( ( (msg_code [3:0] == 4'hA) && ({msg_code, msg_subcode} != {8'h8A,8'h0A}) && ({msg_code, msg_subcode} != {8'h8A,8'h0D}) ) 
+                || ({msg_code, msg_subcode} == {8'h85,8'h0A}) || ({msg_code, msg_subcode} == {8'h85,8'h0D}) || ({msg_code, msg_subcode} == {8'h02,8'h01}) ) ) 
             begin
                o_traffic_tx_fifo_msg <= i_sb_msg_in;
                o_traffic_tx_fifo_wr_en <= 1'b1;
@@ -127,17 +127,18 @@ always @(posedge i_clk or posedge i_reset)
                o_traffic_rx_fifo_wr_en <= 1'b0;
                o_stall_traffic <= 1'b0;
             end
-            else if (((srcid == 3'b010) && (dstid == 3'b110)) && (((msg_code [3:0] == 4'h5) && ({msg_code, msg_subcode} != {8'h85,8'h0A}) && ({msg_code, msg_subcode} != {8'h85,8'h0D})) 
+            else if ( ( (srcid == 3'b010) && (dstid == 3'b110) ) && ( ( (msg_code [3:0] == 4'h5) && ({msg_code, msg_subcode} != {8'h85,8'h0A}) && ({msg_code, msg_subcode} != {8'h85,8'h0D}) ) 
                 || ({msg_code, msg_subcode} == {8'h8A,8'h0A})
                 || ({msg_code, msg_subcode} == {8'h91,8'h00})
                 || ({msg_code, msg_subcode} == {8'h81,8'h0C})
-                || ({msg_code, msg_subcode} == {8'h8A,8'h0D})))
+                || ({msg_code, msg_subcode} == {8'h8A,8'h0D})
+                || ({msg_code, msg_subcode} == {8'h01,8'h01}) ) )
             begin
                o_traffic_rx_fifo_msg <= i_sb_msg_in;
                o_traffic_rx_fifo_wr_en <= 1'b1;
                o_traffic_tx_fifo_msg <= {pMSG_WIDTH{1'b0}};
                o_traffic_tx_fifo_wr_en <= 1'b0; 
-                o_stall_traffic <= 1'b0;
+               o_stall_traffic <= 1'b0;
             end
             else begin
                o_traffic_tx_fifo_msg <= {pMSG_WIDTH{1'b0}};
@@ -169,8 +170,7 @@ always @(posedge i_clk or posedge i_reset)
    assign msg_subcode = i_sb_msg_in[71:64];
    assign srcid = i_sb_msg_in[127:125];
    assign dstid = i_sb_msg_in[90:88];
-   assign o_msg_ready = ((o_tx_traffic_fifo_rd_en || o_rx_traffic_fifo_rd_en) && !i_stall_traffic) 
-          || i_stall_traffic; // Message is ready when we are reading from either FIFO and traffic is not stalled
+   assign o_msg_ready = ((o_tx_traffic_fifo_rd_en || o_rx_traffic_fifo_rd_en) && !i_stall_traffic) || i_stall_traffic; // Message is ready when we are reading from either FIFO and traffic is not stalled
 
 
 

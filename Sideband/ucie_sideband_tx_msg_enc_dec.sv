@@ -132,6 +132,8 @@ module ucie_sideband_tx_msg_enc_dec
     MBTRAIN_LINKSPEED_EXIT_SPEED_DEGRADE_REQ = 'hBE,
     MBTRAIN_LINKSPEED_DONE_REQ               = 'hBA,
     MBTRAIN_LINKSPEED_EXIT_PHY_RETRAIN_REQ   = 'hBC,
+    // ========== ACTIVE.LINKINIT Messages ==========
+    ACTIVE_LINKINIT_STATE_REQ       = 'h102,
     // ========== MBTRAIN.REPAIR Messages ==========
     MBTRAIN_REPAIR_INIT_REQ         = 'hC0,
     MBTRAIN_REPAIR_END_REQ          = 'hC2,
@@ -236,6 +238,9 @@ module ucie_sideband_tx_msg_enc_dec
     MBTRAIN_LINKSPEED_EXIT_DEGRADE_RESP     = 'hBE,
     MBTRAIN_LINKSPEED_DONE_RESP    = 'hBA,
     MBTRAIN_LINKSPEED_EXIT_PHYRETRAIN_RESP  = 'hBC,
+
+    // ========== ACTIVE.LINKINIT Messages ==========
+    ACTIVE_LINKINIT_STATE_RESP       = 'h102,
 
     // ========== MBTRAIN.REPAIR Messages ==========
     MBTRAIN_REPAIR_INIT_RESP       = 'hC0,
@@ -589,6 +594,13 @@ always @(*) begin
       dec_req      = 1'b0;
       dec_resp     = 1'b1;
       dec_decoding = MBTRAIN_LINKSPEED_EXIT_PHYRETRAIN_RESP;
+    end
+
+  // ========== ACTIVE.LINKINIT Messages ==========
+    {8'h02, 8'h01, 5'b10010}: begin  // ACTIVE.LINKINIT state resp
+      dec_req      = 1'b0;
+      dec_resp     = 1'b1;
+      dec_decoding = ACTIVE_LINKINIT_STATE_RESP;
     end
 
   // ========== MBTRAIN.REPAIR Messages ==========
@@ -1064,6 +1076,16 @@ end
           MBTRAIN_LINKSPEED_EXIT_PHY_RETRAIN_REQ: begin
             enc_msg_code    = 'hB5; // (MBTRAIN.LINKSPEED exit to phy retrain req) message code
             enc_msg_subcode = 'h1F; // (MBTRAIN.LINKSPEED exit to phy retrain req) message subcode
+            enc_op_code     = 'b10010; // No Data Operation message code
+            enc_srcid       = 3'b010; // Physical Layer source ID
+            enc_dstid       = 3'b110; // Remote Die Physical Layer destination ID
+            enc_dp          = 1'b0; // Data Parity (even parity over all data bits)
+          end
+
+      // ========== ACTIVE.LINKINIT Messages ==========
+          ACTIVE_LINKINIT_STATE_REQ: begin
+            enc_msg_code    = 'h01; // (ACTIVE.LINKINIT state req) message code
+            enc_msg_subcode = 'h01; // (ACTIVE.LINKINIT state req) message subcode
             enc_op_code     = 'b10010; // No Data Operation message code
             enc_srcid       = 3'b010; // Physical Layer source ID
             enc_dstid       = 3'b110; // Remote Die Physical Layer destination ID
