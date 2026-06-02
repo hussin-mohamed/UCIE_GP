@@ -82,7 +82,7 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
       send_sb_msg(sb_ltsm_item);
 
       p_sequencer.tx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Send_Done_RESP);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Wait_REQ);
       send_sb_msg(sb_ltsm_item);
     end else if (message_mode != ALL_LANES_VALID && pattern_mode != PAT_ALL_LANES_VALID) begin
       // p_sequencer.rx_fifo.get(sb_ltsm_item);

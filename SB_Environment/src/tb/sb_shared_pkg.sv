@@ -706,6 +706,7 @@ rx_encoding_t tx2rx_enc_lut [tx_encoding_t] = '{
 };
 
 tx_encoding_t rx2tx_enc_lut [rx_encoding_t] = '{
+  MBTRAIN_LINKSPEED_RX_Wait_REQ:                      MBTRAIN_LINKSPEED_TX_LinksSpeed_Done_Hnd,
   Data_To_Clock_test_RX_TX_INIT_Handshake:            Data_To_Clock_test_TX_TX_INIT_Handshake,
   Data_To_Clock_test_RX_TX_INIT_LFSR_Clear_Handshake: Data_To_Clock_test_TX_TX_INIT_LFSR_Clear_Handshake,
   Data_To_Clock_test_RX_TX_INIT_Result_Handshake:     Data_To_Clock_test_TX_TX_INIT_Result_Handshake,
@@ -1586,7 +1587,7 @@ message_t rx_messages [rx_encoding_t] = '{
     info:     '0, data: '0, cp: '0, dp: '0,
     rsvd1:    '0, rsvd2: '0, rsvd3: '0, rsvd4: '0
   },
-  MBTRAIN_LINKSPEED_RX_Send_Done_RESP: '{
+  MBTRAIN_LINKSPEED_RX_Wait_REQ: '{
     fullcode: MBTRAIN_LINKSPEED_done_resp,
     opcode:   MSG_WO_DATA,
     srcid:    SRC_PHY,
