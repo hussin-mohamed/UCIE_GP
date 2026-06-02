@@ -79,6 +79,8 @@ class ucie_vseq_base extends uvm_sequence;
   protected bit                     is_configured;
   LTSM_pkg::linkinit_wake_req_handshake   wake_req_handshake;
   LTSM_pkg::linkinit_state_req_handshake  state_req_handshake;
+  rdi_base_seq active_tx_vseq;
+  rmblink_active_sequence active_rx_vseq;
 
   // -------------------------------------------------------------------------
   //  Constructor
@@ -97,6 +99,8 @@ class ucie_vseq_base extends uvm_sequence;
     rmblink_clk_seq = rmblink_sanity_clk_sequence::type_id::create("rmblink_clk_seq");
     rmblink_valid_seq = rmblink_sanity_valid_sequence::type_id::create("rmblink_valid_seq");
     rmblink_lfsr_seq = rmblink_sanity_lfsr_sequence::type_id::create("rmblink_lfsr_seq");
+    active_tx_vseq = rdi_base_seq::type_id::create("active_tx_vseq");
+    active_rx_vseq = rmblink_active_sequence::type_id::create("active_rx_vseq");
     ucie_RX_D2C = ucie_RX_D2C_vseq::type_id::create("ucie_RX_D2C");
     ucie_TX_D2C = ucie_TX_D2C_vseq::type_id::create("ucie_TX_D2C");
     wake_req_handshake = linkinit_wake_req_handshake::type_id::create("wake_req_handshake");

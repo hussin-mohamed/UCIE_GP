@@ -144,7 +144,7 @@ module ucie_byte_to_lane #(
     // =========================================================================
     generate
         for (genvar i = 0; i < 16; i++) begin : gen_shift_reg_x16
-            ucie_shift_register #(
+            ucie_shift_register_b2l #(
                 .INPUT_WIDTH(shift_register_X16_WIDTH)
             ) 
             u_shift_reg_x16 (
@@ -163,7 +163,7 @@ module ucie_byte_to_lane #(
     // =========================================================================
     generate
         for (genvar i = 0; i < 8; i++) begin : gen_shift_reg_x8
-            ucie_shift_register #(
+            ucie_shift_register_b2l #(
                 .INPUT_WIDTH(shift_register_X8_WIDTH)
             ) 
             u_shift_reg_x8 (
@@ -182,7 +182,7 @@ module ucie_byte_to_lane #(
     // =========================================================================
     generate
         for (genvar i = 0; i < 4; i++) begin : gen_shift_reg_x4
-            ucie_shift_register #(
+            ucie_shift_register_b2l #(
                 .INPUT_WIDTH(shift_register_X4_WIDTH)
             ) 
             u_shift_reg_x4 (

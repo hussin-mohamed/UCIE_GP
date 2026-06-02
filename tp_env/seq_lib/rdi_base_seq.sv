@@ -69,7 +69,7 @@ class rdi_base_seq extends uvm_sequence #(rdi_seq_item);
       end
 `else
       // In System-Level, we poll the DUT's pl_state_sts directly via the virtual interface
-      if (!uvm_config_db#(virtual rdi_if)::get(m_sequencer, "", "rdi_vif", vif)) begin
+      if (!uvm_config_db#(virtual rdi_if)::get(m_sequencer, "", "rdi_if_driver_only", vif)) begin
         `uvm_fatal("RDI_SEQ", "Failed to get rdi_vif from config_db in UCIE_SYS_LVL")
       end
 

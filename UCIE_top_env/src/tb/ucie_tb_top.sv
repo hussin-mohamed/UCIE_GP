@@ -102,6 +102,7 @@ module ucie_tb_top;
     assign  phylink_bfm.timeout = DUT.ltsm_ctrl_bfm.timeout;
     assign  phylink_bfm.start   = DUT.ltsm_ctrl_bfm.i_sb_init_start;
     assign  ltsm_rdi_if_inst.o_pl_inband_pres   = DUT.ltsm_rdi_if_inst.o_pl_inband_pres;
+    assign  rdi_intf.pl_state_sts   = DUT.ltsm_rdi_if_inst.o_pl_state_sts;
   // -------------------------------------------------------------------------
   //  DUT Instantiation
   // -------------------------------------------------------------------------

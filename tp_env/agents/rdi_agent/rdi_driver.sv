@@ -63,6 +63,8 @@ class rdi_driver extends uvm_driver #(rdi_seq_item);
         repeat (req.delay) @(posedge rdi_vif.clk);
       end
 
+      $display("noooooooooooooo");
+
       // Drive the flit
       drive_flit(req);
 

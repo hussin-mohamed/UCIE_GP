@@ -143,5 +143,20 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::ACTIVE_LINKINIT_STATE_RESP);
     send_sb_msg(sb_ltsm_item);
 
+    #10ms;
+
+    fork
+        active_tx_vseq.start(tx_rdi_seqr);
+        begin
+            active_rx_vseq.configure(
+                ._num_256b_chunks(2),
+                ._lane_map_code(X16_MODE),
+                ._scenario(ACTIVE_SCENARIO_IDEAL)
+            );
+            active_rx_vseq.start(rp_rmblink_seqr);
+        end     
+    join_any
+    
+
   endtask
 endclass : ucie_mbtrain_vseq

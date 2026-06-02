@@ -15,7 +15,7 @@
 // ****************************************************************************
 
 
-module ucie_shift_register #(
+module ucie_shift_register_b2l #(
     parameter INPUT_WIDTH = 128                         // Input width: 128, 256, or 512 bits (default 128)
 ) (
     input  logic                        clk             ,
