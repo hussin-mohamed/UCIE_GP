@@ -24,6 +24,7 @@ module ucie_ltsm_rx_mbinit_repairmb #(
     output logic                      o_rx_sb_req,
     output logic                      o_rx_sb_rsp,
     output logic                      o_rx_sb_done,
+    output logic [               2:0] r_lane_map,
     output logic                      o_train_error,
     output logic                      o_done_mbinit_repairmb_rx
 );
@@ -61,8 +62,8 @@ module ucie_ltsm_rx_mbinit_repairmb #(
 
   // r_lane_map: current accepted lane configuration, init ALL_LANES_FUNCTIONAL.
   // Updated when TX sends a degrade REQ with a different map in i_rx_info[2:0].
-  logic [               2:0] r_lane_map;
-  // w_extracted_lane_map: combinational — TX's requested lane map.
+  // logic [               2:0] r_lane_map;
+  // w_extracted_lane_map: combinational ï¿½ TX's requested lane map.
   logic [               2:0] w_extracted_lane_map;
 
   logic                      r_eye_sweep_reset;
@@ -128,9 +129,14 @@ module ucie_ltsm_rx_mbinit_repairmb #(
   end
 
   always_ff @(posedge i_clk or posedge i_reset) begin
-    if (i_reset) done_ack <= 0;
+    if (i_reset) done_ack <= 1;
     else if (i_sb_rx_done) done_ack <= 1;
-    else if (i_sb_rx_req) done_ack <= 0;
+    else if (i_sb_rx_req && (i_rx_decoding == 9'h38 || i_rx_decoding == 9'h3C || i_rx_decoding == 9'h3D))
+      done_ack <= 0;
+  end
+
+  always_comb begin
+    o_rx_sb_rsp = done_ack ? 0 : 1;
   end
 
   always_comb begin
@@ -142,7 +148,7 @@ module ucie_ltsm_rx_mbinit_repairmb #(
     o_rx_sb_done              = 0;
     o_train_error             = 0;
     o_done_mbinit_repairmb_rx = 0;
-    next_substate             = INIT_HANDSHAKE;
+    next_substate             = DONE_HANDSHAKE;
     clock_to_test_enable      = 0;
 
     if (!substates_done && (o_timer_8ms || train_error_sweep)) begin
@@ -208,7 +214,7 @@ module ucie_ltsm_rx_mbinit_repairmb #(
             o_rx_sb_rsp = ~done_ack;
             if (i_sb_rx_req && i_rx_decoding == 9'h3D) begin
               o_done_mbinit_repairmb_rx = 1;
-              next_substate             = INIT_HANDSHAKE;
+              next_substate             = DONE_HANDSHAKE;
             end else next_substate = DONE_HANDSHAKE;
           end
         end

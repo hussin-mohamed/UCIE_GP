@@ -25,6 +25,7 @@ module ucie_ltsm_tx_mbinit_repairmb #(
     output logic                      o_tx_sb_rsp,
     output logic                      o_tx_sb_done,
     output logic                      o_train_error,
+    output logic [               2:0] r_lane_map,
     output logic                      o_done_mbinit_repairmb_tx
 );
 
@@ -58,7 +59,7 @@ module ucie_ltsm_tx_mbinit_repairmb #(
   // r_per_lane_result: latched per_lane_result at the clock clock_to_test_done
   //   fires, keeping it stable through APPLY_DEGRADE evaluation.
   // w_extracted_lane_map: combinational decode of r_per_lane_result[15:0].
-  logic [               2:0] r_lane_map;
+  // logic [               2:0] r_lane_map;
   logic [    DATA_WIDTH-1:0] r_per_lane_result;
   logic [               2:0] w_extracted_lane_map;
 
@@ -82,6 +83,7 @@ module ucie_ltsm_tx_mbinit_repairmb #(
   logic                      r_eye_sweep_reset;
 
   logic                      o_train_error_internal;
+  logic [DECODING_WIDTH-1:0] o_tx_encoding_old;
 
   // -------------------------------------------------------------------------
   // Eye sweep submodule (TX-initiated, init = 1)
@@ -113,7 +115,7 @@ module ucie_ltsm_tx_mbinit_repairmb #(
   );
 
   // -------------------------------------------------------------------------
-  // w_extracted_lane_map — combinational from registered r_per_lane_result
+  // w_extracted_lane_map ï¿½ combinational from registered r_per_lane_result
   //   Bits [15:0]: 1 = lane good, 0 = lane bad
   //   ALL_LANES_FUNCTIONAL : all 16 bits set
   //   LANES_0_TO_7         : some good in [7:0], none in [15:8]
@@ -170,10 +172,24 @@ module ucie_ltsm_tx_mbinit_repairmb #(
   // -------------------------------------------------------------------------
   // REQ / Done handshake register
   // -------------------------------------------------------------------------
-  always_ff @(posedge i_clk or posedge i_reset) begin
-    if (i_reset) done_ack <= 0;
-    else if (i_sb_tx_done) done_ack <= 1;
-    else done_ack <= 0;
+  always @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) begin
+      o_tx_encoding_old <= 0;
+    end else begin
+      o_tx_encoding_old <= o_tx_encoding;
+    end
+  end
+
+
+  // REQ & Done Handshake 
+  always @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) done_ack <= 1;
+    else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;
+    else if (i_sb_tx_done) begin
+      done_ack <= 1;
+    end else if (i_sb_tx_rsp || i_sb_tx_req) begin
+      done_ack <= 0;
+    end
   end
 
   // always_ff @(posedge i_clk or posedge i_reset) begin
@@ -200,7 +216,7 @@ module ucie_ltsm_tx_mbinit_repairmb #(
     init                      = 0;
     no_retry                  = 1;
 
-    // Timeout or sweep train error — highest priority (suppress after local done)
+    // Timeout or sweep train error ï¿½ highest priority (suppress after local done)
     if (!substates_done && (o_timer_8ms)) begin
       o_train_error_internal = 1;
       next_substate = INIT_HANDSHAKE;
@@ -224,7 +240,7 @@ module ucie_ltsm_tx_mbinit_repairmb #(
         end
 
         // --------------------------------------------------------------
-        // DATA_TO_CLOCK_TEST — forward all sweep submodule outputs
+        // DATA_TO_CLOCK_TEST ï¿½ forward all sweep submodule outputs
         // --------------------------------------------------------------
         DATA_TO_CLOCK_TEST: begin
           clock_to_test_enable = 1;

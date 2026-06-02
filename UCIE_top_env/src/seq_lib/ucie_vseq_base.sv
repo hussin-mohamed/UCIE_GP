@@ -5,21 +5,75 @@
 //              across the LTSM, Sideband, RX-Path, and TX-Path agents.
 //=============================================================================
 
+// enum for determining the whole behavioural of the D2c
+typedef enum {
+  SUCCESS,
+  LOOP_TILL_ERROR
+} D2c_mode_e;
+
+// enum for determining the value of the pattern driven to the rx path
+typedef enum {
+  PAT_ALL_LANES_VALID,
+  PAT_UPPER_8_LANES_VALID,
+  PAT_LOWER_8_LANES_VALID,
+  PAT_NO_LANES_VALID
+} pattern_mode_e;
+
+typedef enum {
+  VALID_CORRECT,
+  VALID_ERROR
+} valid_mode_e;
+
+typedef enum {
+  CORRECT,
+  ERROR
+} info_mode_e;
+
+typedef enum {
+  ALL_LANES_VALID,
+  UPPER_8_LANES_VALID,
+  LOWER_8_LANES_VALID,
+  NO_LANES_VALID
+} message_mode_e;
+
+typedef enum {
+  LFSR_PATTERN,
+  VALID_PATTERN,
+  PER_LANE_ID_PATTERN
+} data_mode_e;
+
+typedef enum {
+  ALL_LANES,
+  UPPER_8_LANES,
+  LOWER_8_LANES,
+  NO_LANES
+} lane_map_code_e;
+
 class ucie_vseq_base extends uvm_sequence;
 
   `uvm_object_utils(ucie_vseq_base)
   `uvm_declare_p_sequencer(ucie_vseqr)
 
-  LTSM_pkg::ltsm_rdi_sequencer ltsm_rdi_seqr;
-  sb_pkg::phylink_sequencer    sb_phylink_seqr;
-  rp_pkg::rmblink_sequencer    rp_rmblink_seqr;
-  tx_tb_pkg::rdi_sequencer     tx_rdi_seqr;
-  phylink_seq_item             phylink_item;
-  active_phylink_sequence      active_phylink_seq;
-  sb_pkg::ltsm_seq_item        sb_ltsm_item;
-  int                          ltsm2link_msg_cnt;
-  sbinit_phylink_sanity_seq    sbinit_phylink_seq;
-  rmblink_sanity_clk_sequence  rmblink_clk_seq;
+  LTSM_pkg::ltsm_rdi_sequencer      ltsm_rdi_seqr;
+  sb_pkg::phylink_sequencer         sb_phylink_seqr;
+  rp_pkg::rmblink_sequencer         rp_rmblink_seqr;
+  tx_tb_pkg::rdi_sequencer          tx_rdi_seqr;
+  phylink_seq_item                  phylink_item;
+  active_phylink_sequence           active_phylink_seq;
+  sb_pkg::ltsm_seq_item             sb_ltsm_item;
+  int                               ltsm2link_msg_cnt;
+  sbinit_phylink_sanity_seq         sbinit_phylink_seq;
+  rmblink_sanity_clk_sequence       rmblink_clk_seq;
+  rmblink_sanity_valid_sequence     rmblink_valid_seq;
+  rmblink_sanity_lfsr_sequence      rmblink_lfsr_seq;
+  rmblink_sanity_PerLaneID_sequence rmblink_PerLaneID_seq;
+  protected D2c_mode_e              D2c_mode;
+  protected pattern_mode_e          pattern_mode;
+  protected data_mode_e             data_mode;
+  protected info_mode_e             info_mode;
+  protected message_mode_e          message_mode;
+  protected valid_mode_e            valid_mode;
+  protected lane_map_code_e         lane_map_code;
 
 
 
@@ -31,14 +85,18 @@ class ucie_vseq_base extends uvm_sequence;
   endfunction
 
   virtual task pre_body();
-    ltsm_rdi_seqr      = p_sequencer.ltsm_rdi_seqr;
-    sb_phylink_seqr    = p_sequencer.sb_phylink_seqr;
-    rp_rmblink_seqr    = p_sequencer.rp_rmblink_seqr;
-    tx_rdi_seqr        = p_sequencer.tx_rdi_seqr;
+    ltsm_rdi_seqr = p_sequencer.ltsm_rdi_seqr;
+    sb_phylink_seqr = p_sequencer.sb_phylink_seqr;
+    rp_rmblink_seqr = p_sequencer.rp_rmblink_seqr;
+    tx_rdi_seqr = p_sequencer.tx_rdi_seqr;
     active_phylink_seq = active_phylink_sequence::type_id::create("active_phylink_seq");
     sbinit_phylink_seq = sbinit_phylink_sanity_seq::type_id::create("sbinit_phylink_seq");
-    rmblink_clk_seq    = rmblink_sanity_clk_sequence::type_id::create("rmblink_clk_seq");
-    sb_ltsm_item       = new("sb_ltsm_item");
+    rmblink_clk_seq = rmblink_sanity_clk_sequence::type_id::create("rmblink_clk_seq");
+    rmblink_valid_seq = rmblink_sanity_valid_sequence::type_id::create("rmblink_valid_seq");
+    rmblink_lfsr_seq = rmblink_sanity_lfsr_sequence::type_id::create("rmblink_lfsr_seq");
+    rmblink_PerLaneID_seq =
+        rmblink_sanity_PerLaneID_sequence::type_id::create("rmblink_PerLaneID_seq");
+    sb_ltsm_item = new("sb_ltsm_item");
     fork
       begin  // Sideband ltsm2link Transmission Thread
         forever begin

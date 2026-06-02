@@ -4,194 +4,194 @@ module ucie_ltsm_tx_mbinit_reversal #(
     parameter INFO_WIDTH = 16
 ) (
 
-    input                           i_clk,
-    input                           i_reset,
-    input  [DECODING_WIDTH-1:0]     i_tx_decoding,
-    input  [DATA_WIDTH-1:0]         i_tx_data,
-    input  [INFO_WIDTH-1:0]         i_tx_info,
-    input                           i_sb_tx_req,
-    input                           i_sb_tx_rsp,
-    input                           i_sb_tx_done,
-    input                           i_tx_done,
-    input                           init_train_en,
-    input                           o_rx_sb_rsp,
-    input  [3:0]                    i_current_state,
-    input                           o_timer_8ms,
+    input                      i_clk,
+    input                      i_reset,
+    input [DECODING_WIDTH-1:0] i_tx_decoding,
+    input [    DATA_WIDTH-1:0] i_tx_data,
+    input [    INFO_WIDTH-1:0] i_tx_info,
+    input                      i_sb_tx_req,
+    input                      i_sb_tx_rsp,
+    input                      i_sb_tx_done,
+    input                      i_tx_done,
+    input                      init_train_en,
+    input                      o_rx_sb_rsp,
+    input [               3:0] i_current_state,
+    input                      o_timer_8ms,
 
-    output logic [DECODING_WIDTH-1:0]  o_tx_encoding,
-    output logic [DATA_WIDTH-1:0]      o_tx_data,
-    output logic [INFO_WIDTH-1:0]      o_tx_info,
-    output logic                       o_tx_sb_req,
-    output logic                       o_tx_sb_rsp,
-    output logic                       o_tx_sb_done,
-    output logic                       o_train_error,
-    output logic                       o_done_mbinit_reversal_tx
+    output logic [DECODING_WIDTH-1:0] o_tx_encoding,
+    output logic [    DATA_WIDTH-1:0] o_tx_data,
+    output logic [    INFO_WIDTH-1:0] o_tx_info,
+    output logic                      o_tx_sb_req,
+    output logic                      o_tx_sb_rsp,
+    output logic                      o_tx_sb_done,
+    output logic                      o_train_error,
+    output logic                      o_done_mbinit_reversal_tx
 );
 
-logic [2:0] current_substate;
-logic [2:0] next_substate;
-logic       done_ack;
-logic       substates_done;
+  logic [               2:0] current_substate;
+  logic [               2:0] next_substate;
+  logic                      done_ack;
+  logic                      substates_done;
+  logic [DECODING_WIDTH-1:0] o_tx_encoding_old;
 
-// -------------------------------------------------------------------------
-// Combinational popcount of i_tx_data[15:0]
-//   Counts the number of '1' bits in the first 16 lanes of the result word
-//   delivered by the far end in the RESULT_HANDSHAKE RSP.
-//   5 bits required: maximum value is 16 (all lanes good).
-//   Threshold: count <= 8 → majority bad → apply reversal
-//              count >  8 → majority good → proceed to DONE_HANDSHAKE
-// -------------------------------------------------------------------------
-logic [4:0] w_popcount;
+  // -------------------------------------------------------------------------
+  // Combinational popcount of i_tx_data[15:0]
+  //   Counts the number of '1' bits in the first 16 lanes of the result word
+  //   delivered by the far end in the RESULT_HANDSHAKE RSP.
+  //   5 bits required: maximum value is 16 (all lanes good).
+  //   Threshold: count <= 8 → majority bad → apply reversal
+  //              count >  8 → majority good → proceed to DONE_HANDSHAKE
+  // -------------------------------------------------------------------------
+  logic [               4:0] w_popcount;
 
-always_comb begin
+  always_comb begin
     w_popcount = '0;
-    for (int i = 0; i < 16; i++)
-        w_popcount = w_popcount + {4'b0, i_tx_data[i]};
-end
+    for (int i = 0; i < 16; i++) w_popcount = w_popcount + {4'b0, i_tx_data[i]};
+  end
 
-// -------------------------------------------------------------------------
-// Local Parameters
-// -------------------------------------------------------------------------
-localparam MBINIT_REVERSAL     = 4'b0110;
+  // -------------------------------------------------------------------------
+  // Local Parameters
+  // -------------------------------------------------------------------------
+  localparam MBINIT_REVERSAL = 4'b0110;
 
-localparam INIT_HANDSHAKE      = 3'b000;
-localparam CLEAR_LOG_HANDSHAKE = 3'b001;
-localparam LANE_ID_GENERATION  = 3'b010;
-localparam RESULT_HANDSHAKE    = 3'b011;
-localparam APPLY_REVERSAL      = 3'b100;
-localparam DONE_HANDSHAKE      = 3'b101;
+  localparam INIT_HANDSHAKE = 3'b000;
+  localparam CLEAR_LOG_HANDSHAKE = 3'b001;
+  localparam LANE_ID_GENERATION = 3'b010;
+  localparam RESULT_HANDSHAKE = 3'b011;
+  localparam APPLY_REVERSAL = 3'b100;
+  localparam DONE_HANDSHAKE = 3'b101;
 
-// -------------------------------------------------------------------------
-// State memory
-// -------------------------------------------------------------------------
-always_ff @(posedge i_clk or posedge i_reset) begin
+  // -------------------------------------------------------------------------
+  // State memory
+  // -------------------------------------------------------------------------
+  always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
-        current_substate <= INIT_HANDSHAKE;
-        substates_done   <= 0;
+      current_substate <= INIT_HANDSHAKE;
+      substates_done   <= 0;
     end else if (i_current_state != MBINIT_REVERSAL) begin
-        current_substate <= INIT_HANDSHAKE;
-        substates_done   <= 0;
+      current_substate <= INIT_HANDSHAKE;
+      substates_done   <= 0;
     end else begin
-        if (current_substate == DONE_HANDSHAKE &&
-            i_sb_tx_rsp && i_tx_decoding == 9'h35) begin
-            substates_done   <= 1;
-            current_substate <= DONE_HANDSHAKE;
-        end else begin
-            current_substate <= next_substate;
-        end
+      if (current_substate == DONE_HANDSHAKE && i_sb_tx_rsp && i_tx_decoding == 9'h35) begin
+        substates_done   <= 1;
+        current_substate <= DONE_HANDSHAKE;
+      end else begin
+        current_substate <= next_substate;
+      end
     end
-end
+  end
 
-// done_ack handshake: set on i_sb_tx_done, clear on i_sb_tx_rsp
-always_ff @(posedge i_clk or posedge i_reset) begin
-    if (i_reset)         done_ack <= 0;
-    else if (i_sb_tx_done) done_ack <= 1;
-    else if (i_sb_tx_rsp)  done_ack <= 0;
-end
+  always @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) begin
+      o_tx_encoding_old <= 0;
+    end else begin
+      o_tx_encoding_old <= o_tx_encoding;
+    end
+  end
 
-// -------------------------------------------------------------------------
-// Combinational next-state / output logic
-// -------------------------------------------------------------------------
-always_comb begin
-    o_tx_encoding           = 9'h30;
-    o_tx_data               = '0;
-    o_tx_info               = '0;
-    o_tx_sb_req             = 0;
-    o_tx_sb_rsp             = 0;
-    o_tx_sb_done            = 0;
-    o_train_error           = 0;
+
+  // REQ & Done Handshake 
+  always @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) done_ack <= 1;
+    else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;
+    else if (i_sb_tx_done) begin
+      done_ack <= 1;
+    end else if (i_sb_tx_rsp || i_sb_tx_req) begin
+      done_ack <= 0;
+    end
+  end
+  // -------------------------------------------------------------------------
+  // Combinational next-state / output logic
+  // -------------------------------------------------------------------------
+  always_comb begin
+    o_tx_encoding             = 9'h30;
+    o_tx_data                 = '0;
+    o_tx_info                 = '0;
+    o_tx_sb_req               = 0;
+    o_tx_sb_rsp               = 0;
+    o_tx_sb_done              = 0;
+    o_train_error             = 0;
     o_done_mbinit_reversal_tx = 0;
-    next_substate           = INIT_HANDSHAKE;
+    next_substate             = INIT_HANDSHAKE;
 
     if (!substates_done && o_timer_8ms) begin
-        o_train_error = 1;
-        next_substate = INIT_HANDSHAKE;
+      o_train_error = 1;
+      next_substate = INIT_HANDSHAKE;
+    end else if (i_current_state == MBINIT_REVERSAL) begin
+      case (current_substate)
+
+        INIT_HANDSHAKE: begin
+          o_tx_encoding = 9'h30;
+          if (!substates_done) begin
+            o_tx_sb_req = ~done_ack;
+            if (i_sb_tx_rsp && i_tx_decoding == 9'h30) next_substate = CLEAR_LOG_HANDSHAKE;
+            else next_substate = INIT_HANDSHAKE;
+          end
+        end
+
+        CLEAR_LOG_HANDSHAKE: begin
+          o_tx_encoding = 9'h31;
+          if (!substates_done) begin
+            o_tx_sb_req = ~done_ack;
+            if (i_sb_tx_rsp && i_tx_decoding == 9'h31) next_substate = LANE_ID_GENERATION;
+            else next_substate = CLEAR_LOG_HANDSHAKE;
+          end
+        end
+
+        LANE_ID_GENERATION: begin
+          o_tx_encoding = 9'h32;
+          if (!substates_done) begin
+            // o_tx_sb_req = ~done_ack;
+            if (i_tx_done) next_substate = RESULT_HANDSHAKE;
+            else next_substate = LANE_ID_GENERATION;
+          end
+        end
+
+        RESULT_HANDSHAKE: begin
+          o_tx_encoding = 9'h33;
+          if (!substates_done) begin
+            o_tx_sb_req = ~done_ack;
+            // w_popcount is always valid; only use it when RSP arrives
+            if (i_sb_tx_rsp && i_tx_decoding == 9'h33) begin
+              if (w_popcount <= 5'd8) next_substate = APPLY_REVERSAL;
+              else next_substate = DONE_HANDSHAKE;
+            end else begin
+              next_substate = RESULT_HANDSHAKE;
+            end
+          end
+        end
+
+        APPLY_REVERSAL: begin
+          o_tx_encoding = 9'h34;
+          if (!substates_done) begin
+            o_tx_sb_req = ~done_ack;
+            if (i_tx_done) next_substate = CLEAR_LOG_HANDSHAKE;
+            else next_substate = APPLY_REVERSAL;
+          end
+        end
+
+        DONE_HANDSHAKE: begin
+          o_tx_encoding = 9'h35;
+          if (!substates_done) begin
+            o_tx_sb_req = ~done_ack;
+            if (i_sb_tx_rsp && i_tx_decoding == 9'h35) begin
+              o_done_mbinit_reversal_tx = 1;
+              next_substate             = INIT_HANDSHAKE;
+            end else begin
+              next_substate = DONE_HANDSHAKE;
+            end
+          end
+        end
+
+        default: next_substate = INIT_HANDSHAKE;
+      endcase
     end
-    else if (i_current_state == MBINIT_REVERSAL) begin
-        case (current_substate)
+  end
 
-            INIT_HANDSHAKE: begin
-                o_tx_encoding = 9'h30;
-                if (!substates_done) begin
-                    o_tx_sb_req = ~done_ack;
-                    if (i_sb_tx_rsp && i_tx_decoding == 9'h30)
-                        next_substate = CLEAR_LOG_HANDSHAKE;
-                    else
-                        next_substate = INIT_HANDSHAKE;
-                end
-            end
-
-            CLEAR_LOG_HANDSHAKE: begin
-                o_tx_encoding = 9'h31;
-                if (!substates_done) begin
-                    o_tx_sb_req = ~done_ack;
-                    if (i_sb_tx_rsp && i_tx_decoding == 9'h31)
-                        next_substate = LANE_ID_GENERATION;
-                    else
-                        next_substate = CLEAR_LOG_HANDSHAKE;
-                end
-            end
-
-            LANE_ID_GENERATION: begin
-                o_tx_encoding = 9'h32;
-                if (!substates_done) begin
-                    o_tx_sb_req = ~done_ack;
-                    if (i_tx_done)
-                        next_substate = RESULT_HANDSHAKE;
-                    else
-                        next_substate = LANE_ID_GENERATION;
-                end
-            end
-
-            RESULT_HANDSHAKE: begin
-                o_tx_encoding = 9'h33;
-                if (!substates_done) begin
-                    o_tx_sb_req = ~done_ack;
-                    // w_popcount is always valid; only use it when RSP arrives
-                    if (i_sb_tx_rsp && i_tx_decoding == 9'h33) begin
-                        if (w_popcount <= 5'd8)
-                            next_substate = APPLY_REVERSAL;
-                        else
-                            next_substate = DONE_HANDSHAKE;
-                    end else begin
-                        next_substate = RESULT_HANDSHAKE;
-                    end
-                end
-            end
-
-            APPLY_REVERSAL: begin
-                o_tx_encoding = 9'h34;
-                if (!substates_done) begin
-                    o_tx_sb_req = ~done_ack;
-                    if (i_tx_done)
-                        next_substate = CLEAR_LOG_HANDSHAKE;
-                    else
-                        next_substate = APPLY_REVERSAL;
-                end
-            end
-
-            DONE_HANDSHAKE: begin
-                o_tx_encoding = 9'h35;
-                if (!substates_done) begin
-                    o_tx_sb_req = ~done_ack;
-                    if (i_sb_tx_rsp && i_tx_decoding == 9'h35) begin
-                        o_done_mbinit_reversal_tx = 1;
-                        next_substate             = INIT_HANDSHAKE;
-                    end else begin
-                        next_substate = DONE_HANDSHAKE;
-                    end
-                end
-            end
-
-            default: next_substate = INIT_HANDSHAKE;
-        endcase
-    end
-end
-
-    // ==========================================================================
-    // Assertions
-    // ==========================================================================
-    /*
+  // ==========================================================================
+  // Assertions
+  // ==========================================================================
+  /*
 `ifdef SIM
 
     property encoding_check(substate, logic [8:0] expected_enc);

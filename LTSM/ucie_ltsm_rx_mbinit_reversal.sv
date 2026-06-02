@@ -83,17 +83,26 @@ module ucie_ltsm_rx_mbinit_reversal #(
         current_substate <= next_substate;
 
         // Latch detection results at the end of LANE_ID_DETECTION
-        if (current_substate == WAIT_RESULT_REQ && i_sb_rx_req && i_rx_decoding == 9'h33)
+        if ((current_substate == LANE_ID_DETECTION && i_rx_done) ||
+                    (current_substate == WAIT_RESULT_REQ &&
+                     i_sb_rx_req && i_rx_decoding == 9'h34))
           i_rx_data_results_reg <= i_rx_data_results;
       end
     end
   end
 
-  // done_ack: set when sideband confirms our RSP was sent; clear on new REQ
+  // -------------------------------------------------------------------------
+  // RSP / Done handshake register
+  // -------------------------------------------------------------------------
   always_ff @(posedge i_clk or posedge i_reset) begin
-    if (i_reset) done_ack <= 0;
+    if (i_reset) done_ack <= 1;
     else if (i_sb_rx_done) done_ack <= 1;
-    else if (i_sb_rx_req) done_ack <= 0;
+    else if (i_sb_rx_req && (i_rx_decoding == 9'h30 || i_rx_decoding == 9'h31 || i_rx_decoding == 9'h33 || i_rx_decoding == 9'h34))
+      done_ack <= 0;
+  end
+
+  always_comb begin
+    o_rx_sb_rsp = done_ack ? 0 : 1;
   end
 
   // -------------------------------------------------------------------------
@@ -104,7 +113,7 @@ module ucie_ltsm_rx_mbinit_reversal #(
     o_rx_data                 = '0;
     o_rx_info                 = '0;
     o_rx_sb_req               = 0;
-    o_rx_sb_rsp               = 0;
+    // o_rx_sb_rsp               = 0;
     o_rx_sb_done              = 0;
     o_train_error             = 0;
     o_done_mbinit_reversal_rx = 0;
@@ -124,7 +133,7 @@ module ucie_ltsm_rx_mbinit_reversal #(
         INIT_HANDSHAKE: begin
           o_rx_encoding = 9'h30;
           if (!substates_done) begin
-            o_rx_sb_rsp = ~done_ack;
+            // o_rx_sb_rsp = ~done_ack;
             if (i_sb_rx_req && i_rx_decoding == 9'h30) next_substate = CLEAR_LOG_HANDSHAKE;
             else next_substate = INIT_HANDSHAKE;
           end
@@ -137,7 +146,7 @@ module ucie_ltsm_rx_mbinit_reversal #(
         CLEAR_LOG_HANDSHAKE: begin
           o_rx_encoding = 9'h31;
           if (!substates_done) begin
-            o_rx_sb_rsp = ~done_ack;
+            // o_rx_sb_rsp = ~done_ack;
             if (i_sb_rx_req && i_rx_decoding == 9'h31) next_substate = LANE_ID_DETECTION;
             else next_substate = CLEAR_LOG_HANDSHAKE;
           end
@@ -149,10 +158,12 @@ module ucie_ltsm_rx_mbinit_reversal #(
         // Results are latched into i_rx_data_results_reg in always_ff.
         // --------------------------------------------------------------
         LANE_ID_DETECTION: begin
-          o_rx_encoding = 9'h32;
+          o_rx_encoding = o_rx_sb_rsp ? 9'h31 : 9'h32;
           if (!substates_done) begin
-            if (i_rx_done) next_substate = WAIT_RESULT_REQ;
-            else next_substate = LANE_ID_DETECTION;
+            // if (i_rx_done) next_substate = WAIT_RESULT_REQ;
+            if (i_sb_rx_req && i_rx_decoding == 9'h33) begin
+              next_substate = SEND_RESP;
+            end else next_substate = LANE_ID_DETECTION;
           end
         end
 
@@ -160,13 +171,13 @@ module ucie_ltsm_rx_mbinit_reversal #(
         // WAIT_RESULT_REQ (0x33)
         // Hold results until TX enters RESULT_HANDSHAKE and sends REQ 0x33.
         // --------------------------------------------------------------
-        WAIT_RESULT_REQ: begin
-          o_rx_encoding = 9'h33;
-          if (!substates_done) begin
-            if (i_sb_rx_req && i_rx_decoding == 9'h33) next_substate = SEND_RESP;
-            else next_substate = WAIT_RESULT_REQ;
-          end
-        end
+        // WAIT_RESULT_REQ: begin
+        //   o_rx_encoding = 9'h33;
+        //   if (!substates_done) begin
+        //     if (i_sb_rx_req && i_rx_decoding == 9'h33) next_substate = SEND_RESP;
+        //     else next_substate = WAIT_RESULT_REQ;
+        //   end
+        // end
 
         // --------------------------------------------------------------
         // SEND_RESP (0x33)
@@ -177,10 +188,10 @@ module ucie_ltsm_rx_mbinit_reversal #(
         //   count >  8: TX proceeds        → advance to DONE_HANDSHAKE
         // --------------------------------------------------------------
         SEND_RESP: begin
-          o_rx_encoding = 9'h34;
+          o_rx_encoding = 9'h33;
           o_rx_data     = i_rx_data_results_reg;
           if (!substates_done) begin
-            o_rx_sb_rsp = ~done_ack;
+            // o_rx_sb_rsp = ~done_ack;
 
             if (i_sb_rx_done) begin
               if (w_popcount <= 5'd8) next_substate = CLEAR_LOG_HANDSHAKE;
@@ -196,12 +207,12 @@ module ucie_ltsm_rx_mbinit_reversal #(
         // Wait for TX REQ 0x35; send RSP and assert done.
         // --------------------------------------------------------------
         DONE_HANDSHAKE: begin
-          o_rx_encoding = 9'h35;
+          o_rx_encoding = 9'h34;
           if (!substates_done) begin
-            o_rx_sb_rsp = ~done_ack;
-            if (i_sb_rx_req && i_rx_decoding == 9'h35) begin
+            // o_rx_sb_rsp = ~done_ack;
+            if (i_sb_rx_req && i_rx_decoding == 9'h34) begin
               o_done_mbinit_reversal_rx = 1;
-              next_substate             = INIT_HANDSHAKE;
+              next_substate             = DONE_HANDSHAKE;
             end else begin
               next_substate = DONE_HANDSHAKE;
             end

@@ -85,6 +85,10 @@ class ucie_mbinit_bringup_vseq extends ucie_vseq_base;
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_CAL_RX_Done_Handshake);
     send_sb_msg(sb_ltsm_item);
 
+    //////////////////////////////////////////////////////////////////////////////
+    // MBINIT REPAIRCLK
+    //////////////////////////////////////////////////////////////////////////////
+
     // get mbinit repairclk init req
     p_sequencer.rx_fifo.get(sb_ltsm_item);
     `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT777\n %s", sb_ltsm_item.sprint()), UVM_LOW)
@@ -142,6 +146,150 @@ class ucie_mbinit_bringup_vseq extends ucie_vseq_base;
     // send mbinit repairclk done resp
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_RX_Done_Handshake);
     send_sb_msg(sb_ltsm_item);
+
+
+    //////////////////////////////////////////////////////////////////////////////
+    // MBINIT REPAIRVAL
+    //////////////////////////////////////////////////////////////////////////////
+
+    // get mbinit repairval init req
+    p_sequencer.rx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT1313\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit repairval init req
+    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRVAL_TX_Init_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+    // get mbinit repairval init resp
+    p_sequencer.tx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT1414\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit repairval init resp
+    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRVAL_RX_Init_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+    // send RMBLink Valid Pattern Sequence
+    `uvm_info("UCIE_VSEQ", "Starting rmblink_valid_seq on rp_rmblink_seqr", UVM_LOW)
+    rmblink_valid_seq.test_mode = TEST_IDEAL_ALL_0F;
+    rmblink_valid_seq.start(rp_rmblink_seqr);
+    `uvm_info("UCIE_VSEQ", "rmblink_valid_seq completed", UVM_LOW)
+
+    // get mbinit repairval result req
+    p_sequencer.rx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT1515\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit repairval result req
+    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRVAL_TX_Result_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+    // get mbinit repairval result resp
+    p_sequencer.tx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT1616\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit repairval result resp
+    sb_ltsm_item.data        = 64'hFFFFFFFFFFFFFFFF;
+    sb_ltsm_item.info        = 16'hFFFF;
+    sb_ltsm_item.msgtype     = RSP_MSG;
+    sb_ltsm_item.wait_cycles = 30;
+    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRVAL_RX_Send_Result_RESP);
+    send_sb_msg(sb_ltsm_item);
+
+    // get mbinit repairval done req
+    p_sequencer.rx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT1717\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit repairval done req
+    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRVAL_TX_Done_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+    // get mbinit repairval done resp
+    p_sequencer.tx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT1818\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit repairval done resp
+    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRVAL_RX_Done_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+    //////////////////////////////////////////////////////////////////////////////
+    // MBINIT REVERSAL
+    //////////////////////////////////////////////////////////////////////////////
+
+    // get mbinit reversal init req
+    p_sequencer.rx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT1919\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit reversal init req
+    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REVERSAL_TX_Init_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+    // get mbinit reversal init resp
+    p_sequencer.tx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT2020\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit reversal init resp
+    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REVERSAL_RX_Init_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+    // get mbinit reversal clear lfsr req
+    p_sequencer.rx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT2121\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit reversal clear lfsr req
+    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REVERSAL_TX_Clear_Log_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+    // get mbinit reversal clear lfsr resp
+    p_sequencer.tx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT22O22\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit reversal clear lfsr resp
+    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REVERSAL_RX_Clear_Log_Hnd);
+    send_sb_msg(sb_ltsm_item);
+
+    // send RMBLink Per Lane ID Pattern Sequence
+    `uvm_info("UCIE_VSEQ", "Starting rmblink_PerLaneID_seq on rp_rmblink_seqr", UVM_LOW)
+    rmblink_PerLaneID_seq.configure(._scenario(SCENARIO_IDEAL), ._num_iterations(32),
+                                    ._lane_map_code(), ._mixed_mode());
+    rmblink_PerLaneID_seq.start(rp_rmblink_seqr);
+    `uvm_info("UCIE_VSEQ", "rmblink_PerLaneID_seq completed", UVM_LOW)
+
+    // get mbinit reversal result req
+    p_sequencer.rx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT2323\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit reversal result req
+    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REVERSAL_TX_Result_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+    // get mbinit reversal result resp
+    p_sequencer.tx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT2424\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit reversal result resp
+    sb_ltsm_item.data        = 64'hFFFFFFFFFFFFFFFF;
+    sb_ltsm_item.info        = 16'hFFFF;  // the first 3 bits should reflect the lane map code 
+    sb_ltsm_item.msgtype     = RSP_MSG;
+    sb_ltsm_item.wait_cycles = 30;
+    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REVERSAL_RX_Result_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+    // get mbinit reversal done req
+    p_sequencer.rx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT2525\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit reversal done req
+    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REVERSAL_TX_Done_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+    // get mbinit reversal done resp
+    p_sequencer.tx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT2626\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+
+    // send mbinit reversal done resp
+    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REVERSAL_RX_Done_Handshake);
+    send_sb_msg(sb_ltsm_item);
+
+
 
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask

@@ -125,6 +125,11 @@ module ucie_LTSM #(
   logic w_timer_1us;
   logic w_timer_2us;
 
+  logic [2:0] w_init_tx_lane_map;
+  logic [2:0] w_init_rx_lane_map;
+  logic [2:0] w_train_tx_lane_map;
+  logic [2:0] w_train_rx_lane_map;
+
   logic w_init_train_en;
   logic w_tx_train_link_init_en;
   logic w_tx_train_phyretrain_en;
@@ -245,6 +250,8 @@ module ucie_LTSM #(
       o_rx_sb_rsp = w_init_rx_sb_rsp;
       o_tx_sb_done = w_init_tx_sb_done;
       o_rx_sb_done = w_init_rx_sb_done;
+      o_lane_map_tx = w_init_tx_lane_map;
+      o_lane_map_rx = w_init_rx_lane_map;
     end else if (w_rx_train_link_init_en || w_rx_train_phyretrain_en) begin
       o_tx_encoding = w_active_tx_encoding;
       o_tx_data = 0;
@@ -258,6 +265,8 @@ module ucie_LTSM #(
       o_rx_sb_rsp = w_active_rx_sb_rsp;
       o_tx_sb_done = w_active_tx_sb_done;
       o_rx_sb_done = w_active_rx_sb_done;
+      o_lane_map_tx = w_train_tx_lane_map;
+      o_lane_map_rx = w_train_rx_lane_map;
     end else if (w_init_train_en) begin
       o_tx_encoding = w_train_tx_encoding;
       o_tx_data = w_train_tx_data;
@@ -271,6 +280,8 @@ module ucie_LTSM #(
       o_rx_sb_rsp = w_train_rx_sb_rsp;
       o_tx_sb_done = w_train_tx_sb_done;
       o_rx_sb_done = w_train_rx_sb_done;
+      o_lane_map_tx = w_train_tx_lane_map;
+      o_lane_map_rx = w_train_rx_lane_map;
     end else begin
       o_tx_encoding = w_init_tx_encoding;
       o_tx_data = w_init_tx_data;
@@ -284,6 +295,8 @@ module ucie_LTSM #(
       o_rx_sb_rsp = w_init_rx_sb_rsp;
       o_tx_sb_done = w_init_tx_sb_done;
       o_rx_sb_done = w_init_rx_sb_done;
+      o_lane_map_tx = w_init_tx_lane_map;
+      o_lane_map_rx = w_init_rx_lane_map;
     end
   end
 
@@ -408,6 +421,9 @@ module ucie_LTSM #(
       .o_rx_sb_rsp  (w_init_rx_sb_rsp),
       .o_rx_sb_done (w_init_rx_sb_done),
 
+      .rx_lane_map(w_init_rx_lane_map),
+      .tx_lane_map(w_init_tx_lane_map),
+
       // -------------------------------------------------------------------------
       // Status outputs
       // -------------------------------------------------------------------------
@@ -448,7 +464,7 @@ module ucie_LTSM #(
       .o_pl_speedmode(o_pl_speedmode),  // Physical layer speed mode
       .i_speedreg(i_speedreg),  // Physical layer speed mode
       .o_speedreg(o_speedreg),  // Physical layer speed mode
-      .o_lane_map_tx(o_lane_map_tx),  // Lane map output for TX
+      .o_lane_map_tx(w_train_tx_lane_map),  // Lane map output for TX
       .encoding_rsp_sent(w_encoding_rsp_sent),  // Encoding value when response sent
       .encoding_rsp_received(w_encoding_rsp_received),  // Encoding value when response received
       .rsp_received(w_rsp_received),  // Response sent flag
@@ -488,7 +504,7 @@ module ucie_LTSM #(
       .i_rx_info(i_rx_info),  // Info/control from TX
       .i_rx_data_results              (i_rx_data_results),    // Results from eye sweep tests (could be multiple signals or a bus of results)
       .i_rx_valid_results             (i_rx_valid_results),    // Results from eye sweep tests (could be multiple signals or a bus of results)
-      .i_lane_map(o_lane_map_tx),
+      .i_lane_map(w_train_tx_lane_map),
 
       // Sideband control inputs
       .i_sb_rx_req (i_sb_rx_req),   // Sideband request from TX
@@ -504,7 +520,7 @@ module ucie_LTSM #(
       .tx_self_cal_state_enable(w_tx_self_cal_state_enable),  // Enable training initialization
       .timeout                 (w_timer_8ms),                 // Training timeout error
       .o_pl_speedmode          (o_pl_speedmode),              // Physical layer speed mode
-      .o_lane_map_rx           (o_lane_map_rx),
+      .o_lane_map_rx           (w_train_rx_lane_map),
 
       .encoding_rsp_sent    (w_encoding_rsp_sent),      // Encoding value when response sent
       .encoding_rsp_received(w_encoding_rsp_received),  // Encoding value when response received
