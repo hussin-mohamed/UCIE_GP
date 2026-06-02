@@ -182,30 +182,6 @@ compile: mkdirs
 	    ../../Sideband/ucie_sideband_traffic_fifo.sv \
 	    ../../Sideband/ucie_sideband_tx_msg.sv \
 	    ../../Sideband/ucie_sideband_tx_msg_enc_dec.sv
-	@echo "→ Compiling DUT TX Path RTL..."
-	@vlog.exe -sv -incr -suppress 2732,7063,2912 \
-	    ../../tx_path/synchonizer.sv \
-	    ../../tx_path/ucie_mux_4_to_1.sv \
-	    ../../tx_path/ucie_shift_register_b2l.sv \
-	    ../../tx_path/ucie_byte_to_lane_decoder.sv \
-	    ../../tx_path/lane_id_register.sv \
-	    ../../tx_path/mux_2_1.sv \
-	    ../../tx_path/reversal.sv \
-	    ../../tx_path/clock_divider.sv \
-	    ../../tx_path/LFSR_pattern_generator.sv \
-	    ../../tx_path/tx_LFSR.sv \
-	    ../../tx_path/tx_LFSR_top.sv \
-	    ../../tx_path/fifo.sv \
-	    ../../tx_path/serializer.sv \
-	    ../../tx_path/empty_decoder.sv \
-	    ../../tx_path/pattern_generation_decoder.sv \
-	    ../../tx_path/clk_valid_pattern_generation.sv \
-	    ../../tx_path/drivers.sv \
-	    ../../tx_path/ucie_byte_to_lane.sv \
-	    ../../tx_path/tx_controller.sv \
-	    ../../tx_path/tx_path.sv \
-	    ../../tp_env/top/tx_dut_rtl_wrapper.sv \
-	    ../../tx_path/per_lane_id_generator_top.svh
 	@echo "→ Compiling DUT RX Path RTL..."
 	@vlog.exe $(VLOG_ARGS) \
 	    ../../rx_path/clock_divider.sv \
@@ -232,6 +208,30 @@ compile: mkdirs
 	    ../../rx_path/ucie_shift_register.sv \
 	    ../../rx_path/rx_path.sv \
 	    ../../rx_path/per_lane_id_detector_top.svh
+	@echo "→ Compiling DUT TX Path RTL..."
+	@vlog.exe -sv -incr -suppress 2732,7063,2912 \
+	    ../../tx_path/synchonizer.sv \
+	    ../../tx_path/ucie_mux_4_to_1.sv \
+	    ../../tx_path/ucie_shift_register_b2l.sv \
+	    ../../tx_path/ucie_byte_to_lane_decoder.sv \
+	    ../../tx_path/lane_id_register.sv \
+	    ../../tx_path/mux_2_1.sv \
+	    ../../tx_path/reversal.sv \
+	    ../../tx_path/clock_divider.sv \
+	    ../../tx_path/LFSR_pattern_generator.sv \
+	    ../../tx_path/tx_LFSR.sv \
+	    ../../tx_path/tx_LFSR_top.sv \
+	    ../../tx_path/fifo.sv \
+	    ../../tx_path/serializer.sv \
+	    ../../tx_path/empty_decoder.sv \
+	    ../../tx_path/pattern_generation_decoder.sv \
+	    ../../tx_path/clk_valid_pattern_generation.sv \
+	    ../../tx_path/drivers.sv \
+	    ../../tx_path/ucie_byte_to_lane.sv \
+	    ../../tx_path/tx_controller.sv \
+	    ../../tx_path/tx_path.sv \
+	    ../../tp_env/top/tx_dut_rtl_wrapper.sv \
+	    ../../tx_path/per_lane_id_generator_top.svh
 	@echo "→ Compiling Environment Wrappers & Testbench Top..."
 	@vlog.exe $(VLOG_ARGS) \
 	    +incdir+../../LTSM_Environment/src/tb \

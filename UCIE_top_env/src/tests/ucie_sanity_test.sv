@@ -30,16 +30,10 @@ class ucie_sanity_test extends ucie_base_test;
     vseq = ucie_mbinit_bringup_vseq::type_id::create("vseq");
     vseq.start(env.vseqr);
 
-    `uvm_info("VSEQ", "AMMMRRRRRRRRRRRRRRR BEFORE WAAAIT", UVM_LOW)
     wait (env.sb_env_i.phylink_agt.mntr.txn_in_cnt == vseq.ltsm2link_msg_cnt);
-    `uvm_info("VSEQ", "AMMMRRRRRRRRRRRRRRR AFTER WAAAIT", UVM_LOW)
-
 
     // Wait a bit to let things settle after sequence finishes
-    `uvm_info("VSEQ", "MAROOOOOOOOOOOOOOOOOOOOOO BEFORE 10ns", UVM_LOW)
     #10ns;
-    `uvm_info("VSEQ", "MAROOOOOOOOOOOOOOOOOOOOOO AFTER 10ns", UVM_LOW)
-
 
     phase.drop_objection(this);
   endtask

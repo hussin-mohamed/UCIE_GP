@@ -61,7 +61,7 @@ class ucie_vseq_base extends uvm_sequence;
   phylink_seq_item                  phylink_item;
   active_phylink_sequence           active_phylink_seq;
   sb_pkg::ltsm_seq_item             sb_ltsm_item;
-  int                               ltsm2link_msg_cnt;
+  static int                        ltsm2link_msg_cnt;
   sbinit_phylink_sanity_seq         sbinit_phylink_seq;
   rmblink_sanity_clk_sequence       rmblink_clk_seq;
   rmblink_sanity_valid_sequence     rmblink_valid_seq;
@@ -112,15 +112,14 @@ class ucie_vseq_base extends uvm_sequence;
     join_none
   endtask : pre_body
 
-  virtual function void send_sb_msg(sb_pkg::ltsm_seq_item sb_ltsm_item);
+  function void send_sb_msg(sb_pkg::ltsm_seq_item sb_ltsm_item);
     if (sb_ltsm_item.get_tx_encoding() != NOP_TX) begin
       p_sequencer.prd_ltsm2link.write_tx(sb_ltsm_item);
     end else begin
       p_sequencer.prd_ltsm2link.write_rx(sb_ltsm_item);
     end
     ltsm2link_msg_cnt++;
-    `uvm_info("VSEQ_BASE", $sformatf("LTSM2LINK COUNT IS %0d", ltsm2link_msg_cnt), UVM_LOW)
-
+    `uvm_info("VSEQ_BASE", $sformatf("LTSM2LINK COUNT IS %0d", ltsm2link_msg_cnt), UVM_DEBUG)
   endfunction : send_sb_msg
 
 endclass : ucie_vseq_base

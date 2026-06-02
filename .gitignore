@@ -39,3 +39,6 @@ UCIE_top_env/sim/work/opt_ucie_tb_top/_lib8_0.qtl
 UCIE_top_env/sim/work/opt_ucie_tb_top/_lib9_0.qdb
 UCIE_top_env/sim/work/opt_ucie_tb_top/_lib9_0.qpg
 UCIE_top_env/sim/work/opt_ucie_tb_top/_lib9_0.qtl
+tr_db.log
+work/
+tmp/
