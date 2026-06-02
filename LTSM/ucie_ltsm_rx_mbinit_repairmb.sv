@@ -184,7 +184,7 @@ module ucie_ltsm_rx_mbinit_repairmb #(
         WAIT_FOR_DEGRADE_REQ: begin
           o_rx_encoding = 9'h3A;
           if (!substates_done) begin
-            if (i_sb_rx_req && i_rx_decoding == 9'h3A) begin
+            if (i_sb_rx_req && i_rx_decoding == 9'h3C) begin
               if (w_extracted_lane_map == r_lane_map) next_substate = SEND_RESP;
               else next_substate = DEGRADE;
             end else next_substate = WAIT_FOR_DEGRADE_REQ;
