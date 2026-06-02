@@ -266,8 +266,6 @@ always @(*) begin
     else if (o_tx_encoding != o_tx_encoding_old) done_ack = 0;  // New encoding → reset ack
     else if (i_sb_tx_done) begin
         done_ack = 1;  // Set when done received
-    end else if (i_sb_tx_rsp) begin
-        done_ack = 0;  // Clear on response to allow next transaction
     end
 end
 
