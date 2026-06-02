@@ -147,10 +147,10 @@ class ucie_RX_D2C_vseq extends ucie_vseq_base;
         rmblink_lfsr_seq.scenario       = SCENARIO_EXACT_MATCH;
       end
       else if (pattern_mode == PAT_UPPER_8_LANES_VALID) begin
-        rmblink_lfsr_seq.scenario       = scen;
+        // rmblink_lfsr_seq.scenario       = scen;
       end
       else if (pattern_mode == PAT_LOWER_8_LANES_VALID) begin
-        rmblink_lfsr_seq.scenario       = scen;
+        // rmblink_lfsr_seq.scenario       = scen;
       end
       else  begin
         rmblink_lfsr_seq.scenario       = SCENARIO_ERROR_ABOVE_THRESH_RANDOM;
@@ -192,20 +192,20 @@ class ucie_RX_D2C_vseq extends ucie_vseq_base;
         sb_ltsm_item.info[5] = 1'b0;
         sb_ltsm_item.info[4] = 1'b0; // Error
       end
-      sb_ltsm_item.data[63:16] = `1;
+      sb_ltsm_item.data[63:16] = '1;
       if (message_mode == ALL_LANES_VALID) begin
-        sb_ltsm_item.data[15:0] = `1;
+        sb_ltsm_item.data[15:0] = '1;
       end
       else if (message_mode == UPPER_8_LANES_VALID) begin
-        sb_ltsm_item.data[15:8] = `1;
-        sb_ltsm_item.data[7:0] = `0;
+        sb_ltsm_item.data[15:8] = '1;
+        sb_ltsm_item.data[7:0] = '0;
       end
       else if (message_mode == LOWER_8_LANES_VALID) begin
-        sb_ltsm_item.data[15:8] = `0;
-        sb_ltsm_item.data[7:0] = `1;
+        sb_ltsm_item.data[15:8] = '0;
+        sb_ltsm_item.data[7:0] = '1;
       end
       else begin
-        sb_ltsm_item.data[15:0] = `0;
+        sb_ltsm_item.data[15:0] = '0;
       end
 
       sb_ltsm_item.set_rx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_Result_Handshake);
