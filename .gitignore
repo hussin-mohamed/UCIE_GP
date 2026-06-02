@@ -43,3 +43,4 @@ tr_db.log
 work/
 tmp/
 UCIE_top_env/sim/vsim_stacktrace.vstf
+UCIE_top_env/sim/modelsim.ini_new
