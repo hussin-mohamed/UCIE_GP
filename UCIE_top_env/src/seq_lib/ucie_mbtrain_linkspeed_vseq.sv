@@ -43,20 +43,20 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
     `uvm_info("VSEQ", $sformatf("DTC2_Start_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
     p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_DTC2_TX_Start_Handshake);
+    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_Start_Handshake);
     send_sb_msg(sb_ltsm_item);
 
     // DTC2_Start_RX_LTSM
     `uvm_info("VSEQ", $sformatf("DTC2_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
     
     p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_DTC2_RX_Start_Handshake);
+    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Start_Handshake);
     send_sb_msg(sb_ltsm_item);
 
     // DTC2_D2C_RX_LTSM
     `uvm_info("VSEQ", $sformatf("DTC2_D2C_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
-    ucie_RX_D2C.configure(
+    ucie_TX_D2C.configure(
       D2c_mode,
       pattern_mode,
       data_mode,
@@ -65,14 +65,34 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
       valid_mode
     );
 
-    ucie_RX_D2C.start(p_sequencer);
+    ucie_TX_D2C.start(p_sequencer);
 
     // DTC2_End_TX_LTSM
     `uvm_info("VSEQ", $sformatf("DTC2_End_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_DTC2_TX_End_Handshake);
-    send_sb_msg(sb_ltsm_item);
+    if ((message_mode == ALL_LANES_VALID && pattern_mode != PAT_ALL_LANES_VALID) || (message_mode != ALL_LANES_VALID && pattern_mode == PAT_ALL_LANES_VALID)) begin
+      `uvm_fatal("TEST_ERROR", "invalid configuration")
+    end
+
+    if (message_mode == ALL_LANES_VALID && pattern_mode == PAT_ALL_LANES_VALID) begin
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_DTC2_TX_End_Handshake);
+      send_sb_msg(sb_ltsm_item);
+
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_DTC2_TX_End_Handshake);
+      send_sb_msg(sb_ltsm_item);
+    end else if (message_mode != ALL_LANES_VALID && pattern_mode != PAT_ALL_LANES_VALID) begin
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_DTC2_TX_End_Handshake);
+      send_sb_msg(sb_ltsm_item);
+      
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_DTC2_TX_End_Handshake);
+      send_sb_msg(sb_ltsm_item);
+    end
+
+    
 
     // DTC2_End_RX_LTSM
     `uvm_info("VSEQ", $sformatf("DTC2_End_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
