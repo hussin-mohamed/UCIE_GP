@@ -7,8 +7,6 @@
 
 class ucie_mbtrain_vseq extends ucie_vseq_base;
 
-  rmblink_sanity_valid_sequence rmblink_valid_seq;
-
   `uvm_object_utils(ucie_mbtrain_vseq)
 
   // -------------------------------------------------------------------------
@@ -18,147 +16,96 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     super.new(name);
   endfunction
 
+  ucie_mbtrain_valverf_vseq valverf_vseq;
+  ucie_mbtrain_dataverf_vseq dataverf_vseq;
+  ucie_mbtrain_speedidle_vseq speedidle_vseq;
+  ucie_mbtrain_txselfcal_vseq txselfcal_vseq;
+  ucie_mbtrain_rxclkcal_vseq rxclkcal_vseq;
+  ucie_mbtrain_valtraincenter_vseq valtraincenter_vseq;
+  ucie_mbtrain_valtrainverf_vseq valtrainverf_vseq;
+  ucie_mbtrain_DTC1_vseq DTC1_vseq;
+  ucie_mbtrain_datatrainvref_vseq datatrainvref_vseq;
+  ucie_mbtrain_rxdskew_vseq rxdskew_vseq;
+  ucie_mbtrain_DTC2_vseq DTC2_vseq;
+
   // -------------------------------------------------------------------------
   //  Body Task
   // -------------------------------------------------------------------------
   virtual task body();
-    `uvm_info("UCIE_VSEQ", "Starting system-level sanity virtual sequence", UVM_LOW)
+    valverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
 
-    sbinit_phylink_seq.start(sb_phylink_seqr);
+    dataverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
 
-    // Valverif__TX_LTSM
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    `uvm_info("VSEQ", $sformatf("Valverif__TX_LTSM_req\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_VALVREF_TX_Start_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // Valverif__RX_LTSM
-    `uvm_info("VSEQ", $sformatf("Valverif__RX_LTSM_req\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+    valtraincenter_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
     
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::RX_MBTRAIN_VALVREF_Start_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // get sbinit done resp
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT333\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+    valtrainverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
     
-    // send sbinit done resp
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::SBINIT_RX_Done_Handshake);
-    send_sb_msg(sb_ltsm_item);
+    DTC1_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
 
-    // get mbinit param req
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT444\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    // send mbinit param req
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_PARAM_TX_Config_Handshake);
-    send_sb_msg(sb_ltsm_item);
+    datatrainvref_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
 
-    // get mbinit param resp
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT555\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+    DTC2_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
 
-    // send mbinit param resp
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_PARAM_RX_Send_RESP);
-    send_sb_msg(sb_ltsm_item);
+    valverf_vseq.start();
+    dataverf_vseq.start();
+    speedidle_vseq.start();
+    txselfcal_vseq.start();
+    rxclkcal_vseq.start();
+    valtraincenter_vseq.start();
+    valtrainverf_vseq.start();
+    DTC1_vseq.start();
+    datatrainvref_vseq.start();
+    rxdskew_vseq.start();
+    DTC2_vseq.start();
 
-    // get mbinit cal req
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT666\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    // send mbinit cal req
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_CAL_TX_Done_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // get mbinit cal resp
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    `uvm_info("VSEQ", $sformatf("GOOOOOOOOOOOOOOT666\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    // send mbinit param resp
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_CAL_RX_Done_Handshake);
-    send_sb_msg(sb_ltsm_item);
-    
-    `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask
-
-  task D2C_RX_initiated (logic [63:0] data, logic [15:0] info);
-    // D2C_RX_initiated_INIT_TX_LTSM
-    `uvm_info("VSEQ", $sformatf("D2C_RX_initiated__TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // D2C_RX_initiated_INIT_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("D2C_RX_initiated__RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // D2C_RX_initiated_LFSR_CLEAR_TX_LTSM
-    `uvm_info("VSEQ", $sformatf("D2C_RX_initiated_LFSR_CLEAR_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_LFSR_Clear_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // D2C_RX_initiated_LFSR_CLEAR_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("D2C_RX_initiated_LFSR_CLEAR_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_LFSR_Clear_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // D2C_RX_initiated_Pattern_detection_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("D2C_RX_initiated_Pattern_detection_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    rmblink_valid_seq.start(rp_rmblink_seqr);
-    rmblink_valid_seq.test_mode = TEST_IDEAL_ALL_0F;
-    `uvm_info("VSEQ", $sformatf("End Pattern Detection\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    // D2C_RX_initiated_Result_handshake_TX_LTSM
-    `uvm_info("VSEQ", $sformatf("D2C_RX_initiated_Result_handshake_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_Result_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // D2C_RX_initiated_Result_handshake_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("D2C_RX_initiated_Result_handshake_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.info = info;
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_Result_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // Data_To_Clock_test_RX_Sweep_Result_Handshake_TX_LTSM
-    `uvm_info("VSEQ", $sformatf("Data_To_Clock_test_RX_Sweep_Result_Handshake_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_Sweep_Result_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // Data_To_Clock_test_RX_Sweep_Result_Handshake_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("Data_To_Clock_test_RX_Sweep_Result_Handshake_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_Sweep_Result_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake_TX_LTSM
-    `uvm_info("VSEQ", $sformatf("Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake);
-    send_sb_msg(sb_ltsm_item);
-
-    // Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake);
-    send_sb_msg(sb_ltsm_item);
-  endtask 
 endclass : ucie_mbtrain_vseq
