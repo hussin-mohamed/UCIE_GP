@@ -95,17 +95,17 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
         .valid_mode(VALID_CORRECT)
     );
 
-    valverf_vseq.start();
-    dataverf_vseq.start();
-    speedidle_vseq.start();
-    txselfcal_vseq.start();
-    rxclkcal_vseq.start();
-    valtraincenter_vseq.start();
-    valtrainverf_vseq.start();
-    DTC1_vseq.start();
-    datatrainvref_vseq.start();
-    rxdskew_vseq.start();
-    DTC2_vseq.start();
+    valverf_vseq.start(p_sequencer);
+    dataverf_vseq.start(p_sequencer);
+    speedidle_vseq.start(p_sequencer);
+    txselfcal_vseq.start(p_sequencer);
+    rxclkcal_vseq.start(p_sequencer);
+    valtraincenter_vseq.start(p_sequencer);
+    valtrainverf_vseq.start(p_sequencer);
+    DTC1_vseq.start(p_sequencer);
+    datatrainvref_vseq.start(p_sequencer);
+    rxdskew_vseq.start(p_sequencer);
+    DTC2_vseq.start(p_sequencer);
 
   endtask
 endclass : ucie_mbtrain_vseq
