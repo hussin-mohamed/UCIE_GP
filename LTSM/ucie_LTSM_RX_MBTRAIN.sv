@@ -1121,11 +1121,11 @@ module ucie_LTSM_RX_MBTRAIN #(
                 substates_done       = 0;
 
                 // Branch 1: TX reports DONE ('hBA) and no local TX error → link-up path
-                if (i_sb_rx_req && i_rx_decoding == 'hBE && !i_tx_error) begin
+                if (i_sb_rx_req && i_rx_decoding == 'hBA && !i_tx_error) begin
                   next_substate = 2;  // DONE path
                   o_rx_sb_req_reg = 0;
                   o_rx_sb_rsp_reg = 0;
-                  o_rx_encoding_reg = 'hBE;
+                  o_rx_encoding_reg = 'hBA;
 
                   // Branch 2: TX reports ERROR ('hBB) with no local TX error,
                   // or TX reports DONE but local TX path has an error → phyretrain
@@ -1148,7 +1148,7 @@ module ucie_LTSM_RX_MBTRAIN #(
 
               2: begin  // DONE path: confirm link-up and hand off to ACTIVE state
                 clock_to_test_enable = 0;
-                o_rx_encoding_reg = 'hBE;
+                o_rx_encoding_reg = 'hBA;
                 NS = LINKSPEED;
 
                 if (done_ack) o_rx_sb_rsp_reg = 0;

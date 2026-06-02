@@ -1369,7 +1369,7 @@ always @(*) begin
                         o_tx_sb_req_reg = 0;
                         o_tx_sb_rsp_reg = 0;
                         substates_done = 0;
-                    end else if (previous_state_done && encoding_rsp_sent == 'hBE && encoding_rsp_received == 'hBA) begin
+                    end else if (previous_state_done && encoding_rsp_sent == 'hBA && encoding_rsp_received == 'hBA) begin
                         train_link_init_en_reg = 1;
                         train_phyretrain_en_reg = 0;
                         o_tx_sb_req_reg = 0;
