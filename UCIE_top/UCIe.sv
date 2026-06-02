@@ -214,7 +214,7 @@ module UCIe_phy #(
     tx_bfm.i_tx_sb_req = tx_fsm_sb_if.o_tx_sb_req;
     tx_bfm.i_tx_sb_rsp = tx_fsm_sb_if.o_tx_sb_rsp;
 
-    tx_fsm_sb_if.i_sb_tx_done = tx_bfm.o_sb_tx_done;
+    // tx_fsm_sb_if.i_sb_tx_done = tx_bfm.o_sb_tx_done;
 
     rx_bfm.i_rx_encoding = rx_fsm_sb_if.o_rx_encoding;
     rx_bfm.i_rx_data = rx_fsm_sb_if.o_rx_data;
@@ -222,7 +222,7 @@ module UCIe_phy #(
     rx_bfm.i_rx_sb_req = rx_fsm_sb_if.o_rx_sb_req;
     rx_bfm.i_rx_sb_rsp = rx_fsm_sb_if.o_rx_sb_rsp;
 
-    rx_fsm_sb_if.i_sb_rx_done = rx_bfm.o_sb_rx_done;
+    // rx_fsm_sb_if.i_sb_rx_done = rx_bfm.o_sb_rx_done;
 
     ltsm_ctrl_bfm.i_sb_init_start = LTSM_controllers_vif.o_sbinit_start;
     LTSM_controllers_vif.i_sb_ready = sb_ready | sb_ready_reg;
@@ -319,6 +319,20 @@ module UCIe_phy #(
   assign LTSM_controllers_vif.i_Runtime_Link_Test_status_register  = 0;
   assign LTSM_controllers_vif.i_Runtime_Link_Test_Control_register = 0;
   // top instantiation of all blocks
+  toggle_sync sync_rx(
+    .i_clk(clk_l),
+    .i_reset(i_reset),
+    .i_cnt(rx_bfm.o_sb_rx_done),
+    .o_cnt(rx_fsm_sb_if.i_sb_rx_done)
+  );
+
+  toggle_sync sync_tx(
+    .i_clk(clk_l),
+    .i_reset(i_reset),
+    .i_cnt(tx_bfm.o_sb_tx_done),
+    .o_cnt(tx_fsm_sb_if.i_sb_tx_done)
+  );
+
   ucie_LTSM LTSM (
       .i_clk(clk_l),
       .i_tx_decoding(tx_fsm_sb_if.i_tx_decoding),
