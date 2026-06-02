@@ -191,8 +191,10 @@ always_comb begin
         o_lane_map_tx = 3'b001;
     else if (!(&per_lane_result[7:0]) && &per_lane_result[15:8])
         o_lane_map_tx = 3'b010;
-    else
+    else    if (!(&per_lane_result[7:0]) && !(&per_lane_result[15:8])) 
         o_lane_map_tx = 3'b000;
+    else 
+        o_lane_map_tx = 3'b011;  // DEGRADE_NOT_POSSIBLE
 end
 
 // Previous state completion logic - checks if handshake is complete
@@ -264,7 +266,7 @@ always @(*) begin
     else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;  // New encoding → reset ack
     else if (i_sb_tx_done) begin
         done_ack = 1;  // Set when done received
-    end else if (i_sb_tx_rsp) begin
+    end else if (i_sb_tx_rsp &&  i_tx_decoding != 'h80 && i_tx_decoding != 'h181 && i_tx_decoding== 'h89) begin
         done_ack = 0;  // Clear on response to allow next transaction
     end
 end

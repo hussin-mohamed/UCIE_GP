@@ -112,7 +112,7 @@ always @(posedge i_clk or posedge i_reset) begin
     end
 end
 
-always @(posedge i_clk) begin
+always @(posedge i_clk or posedge i_reset) begin
     per_lane_result_old <= per_lane_result;  // Capture previous per-lane result for reporting
     failed_test_old <= failed_test;          // Capture previous test result for reporting
 end
@@ -129,7 +129,7 @@ always @(*) begin
         o_xx_sb_rsp = 0;
         o_xx_info = 0;
         o_xx_data = 0;
-        per_lane_result = per_lane_result_old;
+        per_lane_result = '1;
         count_reg = count;
         failed_test = failed_test_old;
         NS = CS;
@@ -284,7 +284,7 @@ always @(*) begin
                     if (done_ack) o_xx_sb_req = 0;
                     else o_xx_sb_req = 1;
 
-                    if (i_sb_xx_rsp && i_xx_decoding == 'h189) begin
+                    if (i_sb_xx_rsp && i_xx_decoding == 'h181) begin
                         o_xx_encoding = 'h18A;  // Data generation encoding
                         count_reg = count + 1;  // Increment count for retries
                         NS = DATA_GENERATE;

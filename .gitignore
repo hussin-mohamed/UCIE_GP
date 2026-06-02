@@ -42,3 +42,4 @@ UCIE_top_env/sim/work/opt_ucie_tb_top/_lib9_0.qtl
 tr_db.log
 work/
 tmp/
+UCIE_top_env/sim/vsim_stacktrace.vstf

@@ -157,7 +157,7 @@ module ucie_RX_Data_to_Clock_eye_sweep #(
           end
 
           // Wait for matching response
-          if (i_sb_xx_req && i_xx_decoding == 'h189) begin
+          if (i_sb_xx_req && i_xx_decoding == 'h181) begin
             NS = LFSR_HANDSHAKE;
             o_xx_encoding = 'h189;  // LFSR setup encoding
             o_xx_sb_req = 0;
