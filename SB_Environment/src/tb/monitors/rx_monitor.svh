@@ -115,8 +115,6 @@ endtask : collect_item_out
 
 // collect_item_in
 // ----------------
-//
-// Waits for an incoming RX request/response and captures the associated item.
 
 task rx_monitor::collect_item_in(output ltsm_seq_item _item);
   bit is_req;
@@ -143,7 +141,5 @@ task rx_monitor::collect_item_in(output ltsm_seq_item _item);
   _item.data    = bfm.i_rx_data;
   _item.info    = bfm.i_rx_info;
 
-  while (!bfm.o_sb_rx_done) begin
-    @(posedge bfm.clk);
-  end
+  @(posedge bfm.o_sb_rx_done);
 endtask : collect_item_in

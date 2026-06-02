@@ -141,7 +141,5 @@ task tx_monitor::collect_item_in(output ltsm_seq_item _item);
   _item.data    = bfm.i_tx_data;
   _item.info    = bfm.i_tx_info;
 
-  while (!bfm.o_sb_tx_done) begin
-    @(posedge bfm.clk);
-  end
+  @(posedge bfm.o_sb_tx_done);
 endtask : collect_item_in
