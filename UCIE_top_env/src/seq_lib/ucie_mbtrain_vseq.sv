@@ -16,120 +16,96 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     super.new(name);
   endfunction
 
+  ucie_mbtrain_valverf_vseq valverf_vseq;
+  ucie_mbtrain_dataverf_vseq dataverf_vseq;
+  ucie_mbtrain_speedidle_vseq speedidle_vseq;
+  ucie_mbtrain_txselfcal_vseq txselfcal_vseq;
+  ucie_mbtrain_rxclkcal_vseq rxclkcal_vseq;
+  ucie_mbtrain_valtraincenter_vseq valtraincenter_vseq;
+  ucie_mbtrain_valtrainverf_vseq valtrainverf_vseq;
+  ucie_mbtrain_DTC1_vseq DTC1_vseq;
+  ucie_mbtrain_datatrainvref_vseq datatrainvref_vseq;
+  ucie_mbtrain_rxdskew_vseq rxdskew_vseq;
+  ucie_mbtrain_DTC2_vseq DTC2_vseq;
+
   // -------------------------------------------------------------------------
   //  Body Task
   // -------------------------------------------------------------------------
   virtual task body();
-    ucie_mbtrain_valverf_vseq.configure(
-        .D2c_mode(D2c_mode),
-        .pattern_mode(pattern_mode),
-        .data_mode(data_mode),
-        .info_mode(info_mode),
-        .message_mode(message_mode),
-        .valid_mode(valid_mode)
+    valverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
     );
 
-    ucie_mbtrain_dataverf_vseq.configure(
-        .D2c_mode(D2c_mode),
-        .pattern_mode(pattern_mode),
-        .data_mode(data_mode),
-        .info_mode(info_mode),
-        .message_mode(message_mode),
-        .valid_mode(valid_mode)
+    dataverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
     );
 
-    ucie_mbtrain_speedidle_vseq.configure(
-        .D2c_mode(D2c_mode),
-        .pattern_mode(pattern_mode),
-        .data_mode(data_mode),
-        .info_mode(info_mode),
-        .message_mode(message_mode),
-        .valid_mode(valid_mode)
-    );
-
-    ucie_mbtrain_txselfcal_vseq.configure(
-        .D2c_mode(D2c_mode),
-        .pattern_mode(pattern_mode),
-        .data_mode(data_mode),
-        .info_mode(info_mode),
-        .message_mode(message_mode),
-        .valid_mode(valid_mode)
-    );
-
-    ucie_mbtrain_rxclkcal_vseq.configure(
-        .D2c_mode(D2c_mode),
-        .pattern_mode(pattern_mode),
-        .data_mode(data_mode),
-        .info_mode(info_mode),
-        .message_mode(message_mode),
-        .valid_mode(valid_mode)
-    );
-
-    ucie_mbtrain_valtraincenter_vseq.configure(
-        .D2c_mode(D2c_mode),
-        .pattern_mode(pattern_mode),
-        .data_mode(data_mode),
-        .info_mode(info_mode),
-        .message_mode(message_mode),
-        .valid_mode(valid_mode)
+    valtraincenter_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
     );
     
-    ucie_mbtrain_valtrainverf_vseq.configure(
-        .D2c_mode(D2c_mode),
-        .pattern_mode(pattern_mode),
-        .data_mode(data_mode),
-        .info_mode(info_mode),
-        .message_mode(message_mode),
-        .valid_mode(valid_mode)
+    valtrainverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
     );
     
-    ucie_mbtrain_DTC1_vseq.configure(
-        .D2c_mode(D2c_mode),
-        .pattern_mode(pattern_mode),
-        .data_mode(data_mode),
-        .info_mode(info_mode),
-        .message_mode(message_mode),
-        .valid_mode(valid_mode)
+    DTC1_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
     );
 
-    ucie_mbtrain_datatrainvref_vseq.configure(
-        .D2c_mode(D2c_mode),
-        .pattern_mode(pattern_mode),
-        .data_mode(data_mode),
-        .info_mode(info_mode),
-        .message_mode(message_mode),
-        .valid_mode(valid_mode)
+    datatrainvref_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
     );
 
-    ucie_mbtrain_rxdskew_vseq.configure(
-        .D2c_mode(D2c_mode),
-        .pattern_mode(pattern_mode),
-        .data_mode(data_mode),
-        .info_mode(info_mode),
-        .message_mode(message_mode),
-        .valid_mode(valid_mode)
+    DTC2_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
     );
 
-    ucie_mbtrain_DTC2_vseq.configure(
-        .D2c_mode(D2c_mode),
-        .pattern_mode(pattern_mode),
-        .data_mode(data_mode),
-        .info_mode(info_mode),
-        .message_mode(message_mode),
-        .valid_mode(valid_mode)
-    );
+    valverf_vseq.start();
+    dataverf_vseq.start();
+    speedidle_vseq.start();
+    txselfcal_vseq.start();
+    rxclkcal_vseq.start();
+    valtraincenter_vseq.start();
+    valtrainverf_vseq.start();
+    DTC1_vseq.start();
+    datatrainvref_vseq.start();
+    rxdskew_vseq.start();
+    DTC2_vseq.start();
 
-    ucie_mbtrain_valverf_vseq.start();
-    ucie_mbtrain_dataverf_vseq.start();
-    ucie_mbtrain_speedidle_vseq.start();
-    ucie_mbtrain_txselfcal_vseq.start();
-    ucie_mbtrain_rxclkcal_vseq.start();
-    ucie_mbtrain_valtraincenter_vseq.start();
-    ucie_mbtrain_valtrainverf_vseq.start();
-    ucie_mbtrain_DTC1_vseq.start();
-    ucie_mbtrain_datatrainvref_vseq.start();
-    ucie_mbtrain_rxdskew_vseq.start();
-    ucie_mbtrain_DTC2_vseq.start();
-    
   endtask
 endclass : ucie_mbtrain_vseq
