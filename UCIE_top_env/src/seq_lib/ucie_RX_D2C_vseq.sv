@@ -88,15 +88,10 @@ class ucie_RX_D2C_vseq extends ucie_vseq_base;
     `uvm_info("VSEQ", $sformatf("Data_To_Clock_test_RX_Sweep_Result_Handshake_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
     p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::Data_To_Clock_test_TX_RX_INIT_LFSR_Clear_Handshake);
+    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::Data_To_Clock_test_TX_RX_INIT_Sweep_Result_Handshake);
     send_sb_msg(sb_ltsm_item);
 
-    // Data_To_Clock_test_RX_Sweep_Result_Handshake_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("Data_To_Clock_test_RX_Sweep_Result_Handshake_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
     
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::Data_To_Clock_test_RX_RX_INIT_LFSR_Clear_Handshake);
-    send_sb_msg(sb_ltsm_item);
 
     // Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake_TX_LTSM
     `uvm_info("VSEQ", $sformatf("Data_To_Clock_test_RX_RX_INIT_End_Init_Handshake_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)

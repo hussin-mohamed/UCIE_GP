@@ -50,6 +50,7 @@ class ucie_mbtrain_dataverf_vseq extends ucie_vseq_base;
     `uvm_info("VSEQ", $sformatf("Dataverf_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
     
     p_sequencer.tx_fifo.get(sb_ltsm_item);
+    `uvm_info("VSEQ", $sformatf("tiz araby + tiz amr + tiz hussien Dataverf_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_DATAVREF_RX_Start_Handshake);
     send_sb_msg(sb_ltsm_item);
 

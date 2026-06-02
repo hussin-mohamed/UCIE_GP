@@ -238,7 +238,7 @@ module ucie_LTSM_RX_MBTRAIN #(
     else if (o_rx_encoding != o_rx_encoding_old) done_ack = 0;  // New encoding → reset ack
     else if (i_sb_rx_done) begin
       done_ack = 1;  // Set when done received
-    end else if (i_sb_rx_rsp) begin
+    end else if (i_sb_rx_rsp && i_rx_decoding != 'h188) begin
       done_ack = 0;  // Clear on response to allow next transaction
     end
   end
@@ -305,7 +305,7 @@ module ucie_LTSM_RX_MBTRAIN #(
     init = 0;
     no_retry = 0;
     trainerror = 0;
-    o_lane_map_rx = 0;
+    o_lane_map_rx = 3'b011;
     clock_to_test_enable = 0;
     train_link_init_en_reg = train_link_init_en;
     train_phyretrain_en_reg = train_phyretrain_en;
