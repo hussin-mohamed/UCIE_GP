@@ -59,7 +59,7 @@ typedef enum {
 typedef enum {
   IDEAL,
   REQ_MISS,
-  RESP_MISS,
+  RESP_MISS
 } missing_msg_e;
 
 
