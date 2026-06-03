@@ -60,6 +60,7 @@ module UCIe_phy #(
   logic sb_ready;
   logic sb_ready_reg;
   bit   t1_ms;
+  logic   reset_sb;
   PLL_model PLL (
       .i_sel(LTSM_controllers_vif.o_speedreg),
       .i_reset(LTSM_controllers_vif.i_reset),
@@ -93,28 +94,28 @@ module UCIe_phy #(
   sb_ltsm_ctrl_bfm ltsm_ctrl_bfm (
       .clk(i_clk_sb_100_m),
       .clk_800(clk_l)
-      , .reset(i_reset)
+      , .reset(reset_sb)
       , .o_sb_ready(sb_ready)
   );
 
   // TX path interface
   sb_tx_bfm tx_bfm (
       .clk(i_clk_sb_100_m)
-      , .reset(i_reset)
+      , .reset(reset_sb)
       , .o_sb_ready(sb_ready)
   );
 
   // RX path interface
   sb_rx_bfm rx_bfm (
       .clk(i_clk_sb_100_m)
-      , .reset(i_reset)
+      , .reset(reset_sb)
       , .o_sb_ready(sb_ready)
   );
 
   // D2D Adapter interface (RDI)
   sb_rdi_bfm rdi_bfm (
       .clk(i_clk_sb_100_m)
-      , .reset(i_reset)
+      , .reset(reset_sb)
       , .o_sb_ready(sb_ready)
   );
 
@@ -122,7 +123,7 @@ module UCIe_phy #(
   sb_phylink_bfm phylink_bfm (
       .clk(i_clk_sb_100_m)
       , .clk_800MHz(i_clk_sb_800_m)
-      , .reset(i_reset)
+      , .reset(reset_sb)
       , .o_sb_ready(sb_ready)
   );
 
@@ -318,6 +319,8 @@ module UCIe_phy #(
   end
   assign LTSM_controllers_vif.i_Runtime_Link_Test_status_register  = 0;
   assign LTSM_controllers_vif.i_Runtime_Link_Test_Control_register = 0;
+
+  assign reset_sb = (tx_fsm_sb_if.o_tx_encoding == 0) ? 1'b1 : 1'b0; // add reset condition for sb if needed);
   // top instantiation of all blocks
   toggle_sync sync_rx(
     .i_clk(clk_l),
@@ -405,7 +408,7 @@ module UCIe_phy #(
   ucie_sb_top sideband (
       // Clock and reset
         .i_clk       (i_clk_sb_100_m)
-      , .i_reset     (i_reset)
+      , .i_reset     (reset_sb)
       , .i_800MHz_clk(i_clk_sb_800_m)
 
       // TX path signals
