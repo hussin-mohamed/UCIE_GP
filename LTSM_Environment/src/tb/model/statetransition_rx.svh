@@ -396,7 +396,7 @@ class StateTransitionUtil_rx extends State;
                 if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if ((rx_handshake_done == 1'b1) && (tx_handshake_done == 1'b1))begin
+               else if (item_tx_fsm_sb_in.i_tx_decoding == 'h102 && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1)begin
                   return active_state_rx::Instance();
                end
                else begin
