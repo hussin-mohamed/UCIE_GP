@@ -106,7 +106,7 @@ module ucie_sideband_ser
 
   //---- OUTPUTS ---------------------------------------------------------------
   assign o_tx_sb_data      = (state == ST_TX) ? shift_reg[0] : 1'b0;
-  assign o_sb_cur_msg_done = (state == ST_TX && flag_63);
+  assign o_sb_cur_msg_done = (state == ST_IDLE);
 
   //---- Lookahead Clock Gating -----------------------------------------
   always @(negedge i_clk or posedge i_reset) begin
