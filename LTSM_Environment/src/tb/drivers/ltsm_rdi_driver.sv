@@ -83,7 +83,11 @@ task ltsm_rdi_driver::drive(ltsm_rdi_sequence_item item);
         @(posedge vif.clk);
         seq_item_port.item_done();
     end else begin
+        item=ltsm_rdi_sequence_item::type_id::create("item");
+        seq_item_port.get_next_item(item);
+        vif.i_lp_linkerror <= item.i_lp_linkerror;
         @(posedge vif.clk);
+        seq_item_port.item_done();
     end
     // item=ltsm_rdi_sequence_item::type_id::create("item");
     // seq_item_port.try_next_item(item);

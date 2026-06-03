@@ -47,7 +47,7 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
         .valid_mode(VALID_CORRECT),
         .trainerror(TRAINERROR_STATE)
     );
-    
+
     valtrainverf_vseq.configure(
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),
@@ -93,6 +93,8 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
         .valid_mode(VALID_CORRECT),
         .lane_map_code(ALL_LANES)
     );
+
+    trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
 
     valverf_vseq.start(p_sequencer);
     dataverf_vseq.start(p_sequencer);

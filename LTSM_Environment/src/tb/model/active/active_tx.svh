@@ -42,8 +42,7 @@
      
     virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_seq_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
                                               LTSM_controllers_seq_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
-    if(rx_handshake_done == 1'b1 && tx_handshake_done == 1'b1 && cntxt.currentstate_tx == linkinit_state_tx::Instance()) 
-      begin
+    
         o_tx_encoding_exp     = ACTIVE_TX_Active ;
         tx_handshake_done     = 1'b0; // to make sure we only set the expected values once when entering the active state
           if(o_tx_encoding_exp == item_tx_fsm_sb_out.o_tx_encoding)
@@ -53,9 +52,6 @@
             `uvm_info("active_state_tx", $sformatf("Expected o_tx_encoding: %b, Actual o_tx_encoding: %b", o_tx_encoding_exp, item_tx_fsm_sb_out.o_tx_encoding), UVM_LOW);
             match = 1'b0;
           end
-      end
-      else 
-        match = 1'b1;
           
       return match;
     endfunction
