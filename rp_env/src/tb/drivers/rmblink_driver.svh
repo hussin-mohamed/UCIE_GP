@@ -84,6 +84,11 @@ task rmblink_driver::drive_item(inout rmblink_seq_item req, output rmblink_seq_i
     if (req.is_first_data_pat) begin
       @(posedge bfm.clk);
     end
+    if (req.rp_opmode == ACTIVE) begin
+      if (bfm.i_rx_encoding !== ACTIVE) begin
+        wait(bfm.i_rx_encoding === ACTIVE);
+      end
+    end
     bfm.serialize_data(
        ._data(req.data)
       ,._val_stream(req.val_stream)

@@ -16,35 +16,10 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     super.new(name);
   endfunction
 
-  ucie_mbtrain_valverf_vseq valverf_vseq;
-  ucie_mbtrain_dataverf_vseq dataverf_vseq;
-  ucie_mbtrain_speedidle_vseq speedidle_vseq;
-  ucie_mbtrain_txselfcal_vseq txselfcal_vseq;
-  ucie_mbtrain_rxclkcal_vseq rxclkcal_vseq;
-  ucie_mbtrain_valtraincenter_vseq valtraincenter_vseq;
-  ucie_mbtrain_valtrainverf_vseq valtrainverf_vseq;
-  ucie_mbtrain_DTC1_vseq DTC1_vseq;
-  ucie_mbtrain_datatrainvref_vseq datatrainvref_vseq;
-  ucie_mbtrain_rxdskew_vseq rxdskew_vseq;
-  ucie_mbtrain_DTC2_vseq DTC2_vseq;
-  ucie_mbtrain_linkspeed_vseq LINKSPEED_vseq;
-
   // -------------------------------------------------------------------------
   //  Body Task
   // -------------------------------------------------------------------------
   virtual task body();
-  valverf_vseq = ucie_mbtrain_valverf_vseq::type_id::create("valverf_vseq");
-  dataverf_vseq = ucie_mbtrain_dataverf_vseq::type_id::create("valverf_vseq");
-  speedidle_vseq = ucie_mbtrain_speedidle_vseq::type_id::create("speedidle_vseq");
-  txselfcal_vseq = ucie_mbtrain_txselfcal_vseq::type_id::create("txselfcal_vseq");
-  rxclkcal_vseq = ucie_mbtrain_rxclkcal_vseq::type_id::create("rxclkcal_vseq");
-  valtraincenter_vseq = ucie_mbtrain_valtraincenter_vseq::type_id::create("valtraincenter_vseq");
-  valtrainverf_vseq = ucie_mbtrain_valtrainverf_vseq::type_id::create("valtrainverf_vseq");
-  DTC1_vseq = ucie_mbtrain_DTC1_vseq::type_id::create("DTC1_vseq");
-  datatrainvref_vseq = ucie_mbtrain_datatrainvref_vseq::type_id::create("datatrainvref_vseq");
-  rxdskew_vseq = ucie_mbtrain_rxdskew_vseq::type_id::create("rxdskew_vseq");
-  DTC2_vseq = ucie_mbtrain_DTC2_vseq::type_id::create("DTC2_vseq");
-  LINKSPEED_vseq = ucie_mbtrain_linkspeed_vseq::type_id::create("LINKSPEED_vseq");
     valverf_vseq.configure(
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),
@@ -117,8 +92,6 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
         .lane_map_code(ALL_LANES)
     );
 
-    $display("jixn %0t",$time);
-
     valverf_vseq.start(p_sequencer);
     dataverf_vseq.start(p_sequencer);
     speedidle_vseq.start(p_sequencer);
@@ -143,17 +116,19 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::ACTIVE_LINKINIT_STATE_RESP);
     send_sb_msg(sb_ltsm_item);
 
-    #10ms;
+    wait_for_msg_ser_end();
 
     fork
-        active_tx_vseq.start(tx_rdi_seqr);
         begin
-            active_rx_vseq.configure(
+            active_tx_seq.start(tx_rdi_seqr);
+        end
+        begin
+            active_rx_seq.configure(
                 ._num_256b_chunks(2),
                 ._lane_map_code(X16_MODE),
                 ._scenario(ACTIVE_SCENARIO_IDEAL)
             );
-            active_rx_vseq.start(rp_rmblink_seqr);
+            active_rx_seq.start(rp_rmblink_seqr);
         end     
     join_any
     

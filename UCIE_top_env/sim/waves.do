@@ -553,6 +553,7 @@ add wave -noupdate -group {SB_Environment — sb_phylink_bfm} \
     sim:/ucie_tb_top/phylink_bfm/clk_800MHz \
     sim:/ucie_tb_top/phylink_bfm/reset \
     -color Cyan sim:/uvm_test_top/env/sb_env_i/phylink_agt/drvr/m_op_mode \
+    -color Cyan sim:/uvm_test_top/env/vseqr/msg_ser_status \
     sim:/ucie_tb_top/phylink_bfm/o_sb_ready \
     sim:/ucie_tb_top/phylink_bfm/i_rx_sb_data \
     sim:/ucie_tb_top/phylink_bfm/i_rx_sb_clk \

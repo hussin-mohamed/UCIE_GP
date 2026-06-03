@@ -3,7 +3,10 @@
 // Project    : UCIe 3.0 System-Level Verification
 // Description: Master virtual sequencer for the system-level environment.
 //=============================================================================
-
+typedef enum {
+  NO_MSG_SER_IN_PROGRESS,
+  MSG_SER_IN_PROGRESS
+} msg_ser_status_e;
 class ucie_vseqr extends uvm_sequencer;
 
   `uvm_component_utils(ucie_vseqr)
@@ -23,6 +26,8 @@ class ucie_vseqr extends uvm_sequencer;
   uvm_tlm_analysis_fifo #(sb_pkg::ltsm_seq_item)    tx_fifo;
   uvm_tlm_analysis_fifo #(sb_pkg::ltsm_seq_item)    rx_fifo;
   uvm_tlm_analysis_fifo #(sb_pkg::phylink_seq_item) link_fifo;
+
+  msg_ser_status_e msg_ser_status;
 
   // -------------------------------------------------------------------------
   //  Constructor

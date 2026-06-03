@@ -7,6 +7,9 @@
 class ucie_sanity_test extends ucie_base_test;
 
   `uvm_component_utils(ucie_sanity_test)
+  
+  ucie_mbinit_bringup_vseq vseq;
+  ucie_mbtrain_vseq train_vseq;
 
   // -------------------------------------------------------------------------
   //  Constructor
@@ -20,8 +23,6 @@ class ucie_sanity_test extends ucie_base_test;
   //  Run Phase
   // -------------------------------------------------------------------------
   virtual task main_phase(uvm_phase phase);
-    ucie_mbinit_bringup_vseq vseq;
-    ucie_mbtrain_vseq train_vseq;
     phase.raise_objection(this);
 
     // Wait for reset to deassert before starting (handled in vseq or here)
