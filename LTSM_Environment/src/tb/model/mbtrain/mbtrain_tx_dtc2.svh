@@ -199,7 +199,7 @@ class mbtrain_tx_dtc2 extends State;
         // LFSR CLEAR response received → begin PATTERN GENERATION.
         // Re-arm training and clear firstt to allow the next result check.
         // ----------------------------------------------------------------
-        else if (item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && item_tx_fsm_sb_in.i_tx_decoding == DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE ) begin
+        else if (item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && item_tx_fsm_sb_in.i_tx_decoding == DATA_TO_CLOCK_TX_RX_LFSR_CLEAR_HANDSHAKE ) begin
             o_tx_encoding_expected = DATA_TO_CLOCK_RX_RX_PATTERN_GENERATION;
             train =1;
             firstt=0;

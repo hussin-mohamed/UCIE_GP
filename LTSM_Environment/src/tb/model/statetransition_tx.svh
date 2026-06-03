@@ -362,7 +362,7 @@ class StateTransitionUtil_tx extends State;
                if (item_controllers_in.i_reset)begin
                   return ResetState_tx::Instance();
                end
-               else if (item_tx_fsm_sb_in.i_tx_decoding == 'hd0 && state_done && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
+               else if (item_tx_fsm_sb_in.i_tx_decoding == 'hd1 && state_done && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1) begin
                   return mbtrain_tx_rxclkcal::Instance();
                end
                else begin

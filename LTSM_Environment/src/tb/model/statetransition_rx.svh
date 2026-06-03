@@ -350,7 +350,7 @@ class StateTransitionUtil_rx extends State;
                if (item_rx_fsm_sb_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_TXSELFCAL_End_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_TXSELFCAL_End_Handshake-1 && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
                   return mbtrain_rx_txselfcal::Instance();
                end
                else begin

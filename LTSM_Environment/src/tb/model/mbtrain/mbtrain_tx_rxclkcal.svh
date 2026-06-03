@@ -30,7 +30,7 @@ class mbtrain_tx_rxclkcal extends State;
 
     virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_seq_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
                                               LTSM_controllers_seq_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
-        if(item_tx_fsm_sb_in.i_tx_decoding == 'hd0 && state_done && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && cntxt.currentstate_tx == mbtrain_tx_txselfcal::Instance() )begin
+        if(item_tx_fsm_sb_in.i_tx_decoding == 'hd1 && state_done && item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && cntxt.currentstate_tx == mbtrain_tx_txselfcal::Instance() )begin
             o_tx_encoding_expected = MBTRAIN_RXCLKCAL_TX_Start_Handshake;
             o_tx_info_expected = 16'h0000;
             state_done=1'b0;

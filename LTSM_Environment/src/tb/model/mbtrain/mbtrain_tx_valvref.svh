@@ -170,7 +170,7 @@ class mbtrain_tx_valvref extends State;
         // loop back to LFSR CLEAR. If error_count reaches 4, escalate to
         // RX_TRAINERROR. firstt guards this branch to fire only once per result.
         // ----------------------------------------------------------------
-        else if (item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && item_tx_fsm_sb_in.i_tx_decoding == DATA_TO_CLOCK_RX_RX_RESULT_HANDSHAKE && retry && (!item_tx_fsm_sb_in.i_tx_info[4] || !item_tx_fsm_sb_in.i_tx_info[5] )&& !firstt) begin
+        else if (item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && item_tx_fsm_sb_in.i_tx_decoding == DATA_TO_CLOCK_RX_RX_RESULT_HANDSHAKE &&( retry && (!item_tx_fsm_sb_in.i_tx_info[4] || !item_tx_fsm_sb_in.i_tx_info[5] ))&& !firstt) begin
             o_tx_encoding_expected = DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE;
             o_tx_info_expected = 16'h0000;
             firstt=1;
@@ -197,7 +197,7 @@ class mbtrain_tx_valvref extends State;
         // LFSR CLEAR response received → begin PATTERN GENERATION.
         // Re-arm training and clear firstt to allow the next result check.
         // ----------------------------------------------------------------
-        else if (item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && item_tx_fsm_sb_in.i_tx_decoding == DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE ) begin
+        else if (item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && item_tx_fsm_sb_in.i_tx_decoding == DATA_TO_CLOCK_TX_RX_LFSR_CLEAR_HANDSHAKE ) begin
             o_tx_encoding_expected = DATA_TO_CLOCK_RX_RX_PATTERN_GENERATION;
             train =1;
             firstt=0;

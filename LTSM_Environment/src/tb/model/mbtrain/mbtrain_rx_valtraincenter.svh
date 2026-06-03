@@ -112,7 +112,7 @@ class mbtrain_rx_valtraincenter extends State;
         // Phase 1 trigger: LFSR CLEAR handshake request received from RX.
         // Verify only o_rx_encoding this cycle.
         // ----------------------------------------------------------------
-        else if (item_rx_fsm_sb_in.i_rx_decoding == DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE && item_rx_fsm_sb_in.i_sb_rx_req==1'b1 ) begin
+        else if (item_rx_fsm_sb_in.i_rx_decoding == DATA_TO_CLOCK_TX_RX_LFSR_CLEAR_HANDSHAKE && item_rx_fsm_sb_in.i_sb_rx_req==1'b1 ) begin
             o_rx_encoding_expected = DATA_TO_CLOCK_RX_RX_LFSR_CLEAR_HANDSHAKE;
             if (o_rx_encoding_expected == item_rx_fsm_sb_out.o_rx_encoding) begin
                 match=1;
