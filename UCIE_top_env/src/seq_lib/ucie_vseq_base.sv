@@ -49,6 +49,11 @@ typedef enum {
   NO_LANES
 } lane_map_code_e;
 
+typedef enum {
+  TIMEOUT,
+  TRAINERROR_STATE
+  } trainerror_e;
+
 typedef class ucie_mbtrain_valverf_vseq;
 typedef class ucie_mbtrain_dataverf_vseq;
 typedef class ucie_mbtrain_speedidle_vseq;
@@ -108,6 +113,7 @@ class ucie_vseq_base extends uvm_sequence;
   protected message_mode_e   message_mode;
   protected valid_mode_e     valid_mode;
   protected lane_map_code_e  lane_map_code;
+  protected trainerror_e     train_error_state;
   protected bit              is_configured;
 
   ucie_RX_D2C_vseq  ucie_RX_D2C;
