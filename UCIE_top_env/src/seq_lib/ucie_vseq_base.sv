@@ -127,6 +127,7 @@ class ucie_vseq_base extends uvm_sequence;
 
   ucie_RX_D2C_vseq  ucie_RX_D2C;
   ucie_TX_D2C_vseq  ucie_TX_D2C;
+  trainerror_rdiexit trainerror_rdi_exit_vseq;
 
   LTSM_pkg::linkinit_wake_req_handshake   wake_req_handshake;
   LTSM_pkg::linkinit_state_req_handshake  state_req_handshake;
@@ -153,6 +154,7 @@ class ucie_vseq_base extends uvm_sequence;
     rmblink_lfsr_seq      = rmblink_sanity_lfsr_sequence::type_id::create("rmblink_lfsr_seq");
     ucie_RX_D2C           = ucie_RX_D2C_vseq::type_id::create("ucie_RX_D2C");
     ucie_TX_D2C           = ucie_TX_D2C_vseq::type_id::create("ucie_TX_D2C");
+    trainerror_rdi_exit_vseq  = trainerror_rdiexit::type_id::create("trainerror_rdi_exit_vseq");
     wake_req_handshake    = linkinit_wake_req_handshake::type_id::create("wake_req_handshake");
     state_req_handshake   = linkinit_state_req_handshake::type_id::create("state_req_handshake");
     rmblink_PerLaneID_seq = rmblink_sanity_PerLaneID_sequence::type_id::create("rmblink_PerLaneID_seq");

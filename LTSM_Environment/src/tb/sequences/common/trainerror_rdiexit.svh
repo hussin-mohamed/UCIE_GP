@@ -26,5 +26,11 @@ class trainerror_rdiexit extends uvm_sequence#(ltsm_rdi_sequence_item);
         start_item(item);
         item.i_lp_linkerror = 0; 
         finish_item(item);
+        start_item(item);
+        item.i_lp_linkerror = 1; 
+        finish_item(item);
+        start_item(item);
+        item.i_lp_linkerror = 0; 
+        finish_item(item);
     endtask 
 endclass //className extends superClass
