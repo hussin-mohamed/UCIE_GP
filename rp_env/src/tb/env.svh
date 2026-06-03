@@ -30,7 +30,7 @@ class rp_env extends uvm_env;
 
   rp_scoreboard sb;
 
-  // rp_coverage_collector cvg;
+  rp_coverage_collector cvg;
 
   reset_driver    rst_drvr;
 
@@ -104,12 +104,6 @@ class rp_env extends uvm_env;
 
   extern function void configure_rmblink_agent();
 
-  // Function: report_phase
-  //
-  // Performs end-of-simulation checks to verify transaction counts across agents.
-
-  extern virtual function void report_phase(uvm_phase phase);
-
 endclass : rp_env
 
 
@@ -139,7 +133,7 @@ function void rp_env::build_phase(uvm_phase phase);
   
   sb = rp_scoreboard::type_id::create("sb", this);
   
-  // cvg = rp_coverage_collector::type_id::create("cvg", this);
+  cvg = rp_coverage_collector::type_id::create("cvg", this);
 
   `ifndef UCIE_SYS_LVL
     rst_drvr = reset_driver::type_id::create("rst_drvr", this);
@@ -171,7 +165,8 @@ endfunction : build_phase
 
 function void rp_env::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
-  // rmblink_agt.in_ap.connect(cvg.rmblink_exp);
+  rmblink_agt.in_ap.connect(cvg.rmblink_exp);
+  ltsmc_agt.in_ap.connect(cvg.ltsm_exp);
 
   rmblink_agt.in_ap.connect(sb.axp_in_rmblink);
   ltsmc_agt.in_ap.connect(sb.axp_in_ltsmc);
@@ -230,20 +225,3 @@ function void rp_env::configure_rmblink_agent();
   rmblink_cfg.is_active   =   env_cfg.is_active_rmblink;
   rmblink_cfg.is_reactive =   env_cfg.is_reactive_rmblink;
 endfunction : configure_rmblink_agent
-
-// report_phase
-// ------------
-
-function void rp_env::report_phase(uvm_phase phase);
-  super.report_phase(phase);
-
-  // assert ((tx_agt.mntr.txn_in_cnt + rx_agt.mntr.txn_in_cnt) == rmblink_agt.mntr.txn_out_cnt) else
-  //   `uvm_warning(get_type_name(), $sformatf(
-  //     "Sum of TX driven (%0d) and RX driven (%0d) transactions does not equal the total transactions captured by the Phylink monitor (%0d)",
-  //     tx_agt.mntr.txn_in_cnt, rx_agt.mntr.txn_in_cnt, rmblink_agt.mntr.txn_out_cnt));
-
-  // assert ((rmblink_agt.mntr.txn_in_cnt - sb.prd_link2ltsm.invalid_msg_cnt) == (tx_agt.mntr.txn_out_cnt + rx_agt.mntr.txn_out_cnt)) else
-  //   `uvm_warning(get_type_name(), $sformatf(
-  //     "Total valid transactions driven by the Phylink driver (%0d) does not equal the sum of transactions captured by the TX monitor (%0d) and RX monitor (%0d)",
-  //     (rmblink_agt.mntr.txn_in_cnt - sb.prd_link2ltsm.invalid_msg_cnt), tx_agt.mntr.txn_out_cnt, rx_agt.mntr.txn_out_cnt));
-endfunction : report_phase

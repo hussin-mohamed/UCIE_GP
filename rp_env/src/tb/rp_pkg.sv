@@ -82,7 +82,7 @@ package rp_pkg;
   // Group: Coverage Collector
   //
   // Contains the coverage collector component.
-  // `include "rp_coverage_collector.svh"
+  `include "rp_coverage_collector.svh"
 
 
   // Group: Environment
