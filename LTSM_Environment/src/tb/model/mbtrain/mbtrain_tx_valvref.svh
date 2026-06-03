@@ -41,7 +41,8 @@ class mbtrain_tx_valvref extends State;
         // Set expected encoding, arm retry, clear train/state_done flags,
         // and verify only o_tx_encoding on this cycle.
         // ----------------------------------------------------------------
-        if( item_rx_fsm_sb_in.i_rx_decoding == MBTRAIN_VALVREF_TX_Start_Handshake && item_rx_fsm_sb_in.i_sb_rx_req == 1'b1 )begin
+        if(train_start)begin
+            `uvm_info("mbtrain_tx_valvref", "Training started, expecting Start Handshake response", UVM_LOW)
             o_tx_encoding_expected = MBTRAIN_VALVREF_TX_Start_Handshake;
             trainerror=0;
             state_done=1'b0;

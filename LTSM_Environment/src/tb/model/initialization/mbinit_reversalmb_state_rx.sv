@@ -42,7 +42,7 @@ class MbInitReversalMbState_rx extends State;
       // Lane reversal negotiation
 
       if(cntxt.currentstate_rx == MbInitRepairValState_rx::Instance() && item_rx_fsm_sb_in.i_rx_decoding == 'h2C && item_rx_fsm_sb_in.i_sb_rx_req == 1'b1) begin
-         o_rx_encoding_exp = 'h30;
+         o_rx_encoding_exp = 'h2c;
          o_rx_sb_rsp_exp = 1;
          o_rx_info_exp = 0;
          if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_sb_rsp == o_rx_sb_rsp_exp && item_rx_fsm_sb_out.o_rx_info == o_rx_info_exp)
@@ -112,7 +112,7 @@ class MbInitReversalMbState_rx extends State;
 
       // per-lane detection
       else if(item_rx_fsm_sb_in.i_sb_rx_req == 1'b1 && item_rx_fsm_sb_in.i_rx_decoding == 'h31) begin
-         o_rx_encoding_exp = 'h32;
+         o_rx_encoding_exp = 'h31;
          if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
             match = 1;
          else begin
@@ -123,7 +123,7 @@ class MbInitReversalMbState_rx extends State;
       end
 
       else if(item_rx_fsm_sb_in.i_sb_rx_req == 1'b1 && item_rx_fsm_sb_in.i_rx_decoding == 'h33) begin
-         o_rx_encoding_exp = 'h34;
+         o_rx_encoding_exp = 'h33;
          o_rx_data_exp[15:0] = item_controllers_in.i_rx_data_results[15:0];
 
          if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp && item_rx_fsm_sb_out.o_rx_data[15:0] == o_rx_data_exp[15:0])

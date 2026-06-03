@@ -36,6 +36,9 @@ import shared_ltsm_pkg::*;
     static bit tx_done;
     static bit rx_done;
     static bit error_enter;
+    static bit train_start;
+
+    static int train_latency;
 
     static logic[2:0]lane_map_code_tx;
     
@@ -108,9 +111,7 @@ import shared_ltsm_pkg::*;
             error_enter =1;
             return 1;
         end
-        if (cntxt.currentstate_tx != nextState_tx || cntxt.currentstate_rx != nextState_rx) begin
-            `uvm_info("state", $sformatf("Current State: TX: %s, RX: %s, Next State: TX: %s, RX: %s", cntxt.currentstate_tx.getStateId(), cntxt.currentstate_rx.getStateId(), nextState_tx.getStateId(), nextState_rx.getStateId()), UVM_MEDIUM)
-        end
+        
 
         // trainerror transitions for initialization states
 
@@ -136,18 +137,42 @@ import shared_ltsm_pkg::*;
                 
                 
         end
+
+        if (nextState_tx == mbtrain_tx_valvref::Instance()) begin
+            train_latency++;
+            // `uvm_info("mbtrain_tx_valvref", $sformatf("Train latency: %0d", train_latency), UVM_LOW)
+            cntxt.setState(nextState_tx, nextState_rx);
+            if (train_latency == 3) begin
+                train_start =1;
+             end
+             else begin
+                train_start =0;
+                if((!train_latency > 3)) begin
+                    return 1;
+                end
+                
+             end
+        end
+        else begin
+            train_start =0;
+            train_latency=0;
+        end
+
+        if (cntxt.currentstate_tx != nextState_tx || cntxt.currentstate_rx != nextState_rx) begin
+            `uvm_info("state", $sformatf("Current State: TX: %s, RX: %s, Next State: TX: %s, RX: %s", cntxt.currentstate_tx.getStateId(), cntxt.currentstate_rx.getStateId(), nextState_tx.getStateId(), nextState_rx.getStateId()), UVM_MEDIUM)
+        end
         
         match_tx = nextState_tx.doSpecificCombAction(cntxt, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in,item_controllers_out,item_rdi_out,item_rx_fsm_sb_out,item_tx_fsm_sb_out);
         match_rx = nextState_rx.doSpecificCombAction(cntxt, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in,item_controllers_out,item_rdi_out,item_rx_fsm_sb_out,item_tx_fsm_sb_out);
-        if(nextState_tx == mbtrain_tx_valvref::Instance() || nextState_rx == mbtrain_rx_valvref::Instance()) begin
-            match = 1;
-        end
-        else begin
-            match = match_tx & match_rx;
-        end
+        // if(nextState_tx == mbtrain_tx_valvref::Instance() || nextState_rx == mbtrain_rx_valvref::Instance()) begin
+        //     match = 1;
+        // end
+        // else begin
+        //     match = match_tx & match_rx;
+        // end
         
       
-        
+        match = match_tx & match_rx;
 
         cntxt.setState(nextState_tx, nextState_rx);
         return match;

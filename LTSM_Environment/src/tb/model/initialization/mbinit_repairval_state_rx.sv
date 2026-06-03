@@ -104,7 +104,7 @@ class MbInitRepairValState_rx extends State;
          end
       end
       else if(item_rx_fsm_sb_in.i_sb_rx_req == 1'b1 && item_rx_fsm_sb_in.i_rx_decoding == 'h28) begin
-         o_rx_encoding_exp = 'h29;
+         o_rx_encoding_exp = 'h28;
          if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp)
             match = 1;
          else begin
