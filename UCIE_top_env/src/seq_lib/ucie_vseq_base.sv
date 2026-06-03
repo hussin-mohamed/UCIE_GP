@@ -55,6 +55,14 @@ typedef enum {
   TRAINERROR_STATE
   } trainerror_e;
 
+
+typedef enum {
+  IDEAL,
+  REQ_MISS,
+  RESP_MISS,
+} missing_msg_e;
+
+
 typedef class ucie_mbtrain_valverf_vseq;
 typedef class ucie_mbtrain_dataverf_vseq;
 typedef class ucie_mbtrain_speedidle_vseq;
