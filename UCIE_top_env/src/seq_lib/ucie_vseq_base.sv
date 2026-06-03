@@ -50,6 +50,7 @@ typedef enum {
 } lane_map_code_e;
 
 typedef enum {
+  NOT_TRAINERROR,
   TIMEOUT,
   TRAINERROR_STATE
   } trainerror_e;

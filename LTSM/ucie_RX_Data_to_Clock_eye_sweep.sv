@@ -227,7 +227,7 @@ module ucie_RX_Data_to_Clock_eye_sweep #(
 
         // State 4: Receive sweep parameter results from TX
         SWEEP_RESULT_HANDSHAKE: begin
-          o_xx_encoding = 'h18C;  // Sweep data_result encoding
+          o_xx_encoding = 'h18D;  // Sweep data_result encoding
           done = 0;
           o_xx_sweep_result = i_xx_data[7:0];  // Extract sweep measurement data
           NS = END_HANDSHAKE;
