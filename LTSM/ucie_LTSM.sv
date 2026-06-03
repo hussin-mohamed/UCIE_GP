@@ -454,6 +454,7 @@ module ucie_LTSM #(
       .i_sb_tx_rsp (i_sb_tx_rsp),   // Sideband response from RX
       .i_sb_tx_done(i_sb_tx_done),  // Sideband done from RX
       .i_tx_done   (i_tx_done),     // TX operation complete
+      .i_lane_map_tx (w_init_tx_lane_map),     //lane map code
 
       // Training control inputs
       .init_train_en(w_init_train_en),  // Enable training initialization
@@ -513,6 +514,7 @@ module ucie_LTSM #(
       .i_rx_done   (i_rx_done),     // RX operation complete
       .i_tx_done   (i_tx_done),     // TX operation complete
       .i_tx_error  (w_tx_error),    // TX operation complete
+      .i_lane_map_rx(w_init_rx_lane_map), // lane map code
 
       // Training control inputs
       .init_train_en           (w_init_train_en),             // Enable training initialization

@@ -20,7 +20,7 @@ module ucie_LTSM_RX_MBTRAIN #(
     input [    DATA_WIDTH-1:0] i_rx_data,          // Data from TX
     input [    INFO_WIDTH-1:0] i_rx_info,          // Info/control from TX
     input [    DATA_WIDTH-1:0] i_rx_data_results,  // Per-lane results from eye sweep tests
-    input [               2:0] i_lane_map,         // Per-lane results from eye sweep tests
+    input [               2:0] i_lane_map,      // Per-lane results from eye sweep tests
     input                      i_rx_valid_results, // Valid strobe for i_rx_data_results
 
     // Sideband control inputs
@@ -30,6 +30,7 @@ module ucie_LTSM_RX_MBTRAIN #(
     input i_rx_done,     // RX operation complete
     input i_tx_done,     // TX operation complete
     input i_tx_error,    // TX error flag
+    input [2:0] i_lane_map_rx, // lane map code
 
     // Training control inputs
     input       init_train_en,             // Enable training initialization
@@ -133,6 +134,7 @@ module ucie_LTSM_RX_MBTRAIN #(
 
   logic r_eye_sweep_reset;
   logic train_error_pip;
+  logic [2:0] lane_map_old;
 
   //================================================================================
   // Eye Sweep Test Module Instantiation
@@ -241,6 +243,16 @@ module ucie_LTSM_RX_MBTRAIN #(
     end
   end
 
+  always @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) begin
+        lane_map_old <= i_lane_map_rx;
+    end else if (!init_train_en) begin
+        lane_map_old <= i_lane_map_rx;
+    end else begin
+        lane_map_old <= o_lane_map_rx;
+    end
+  end
+
   always @(posedge i_clk) begin
     o_rx_encoding_old <= o_rx_encoding;  // Register to track previous encoding for done_ack logic
     substates_done_old <= substates_done;  // Register to track previous substates_done for state transition logic
@@ -303,7 +315,7 @@ module ucie_LTSM_RX_MBTRAIN #(
     init = 0;
     no_retry = 0;
     trainerror = 0;
-    o_lane_map_rx = 3'b011;
+    o_lane_map_rx = lane_map_old;
     clock_to_test_enable = 0;
     train_link_init_en_reg = train_link_init_en;
     train_phyretrain_en_reg = train_phyretrain_en;

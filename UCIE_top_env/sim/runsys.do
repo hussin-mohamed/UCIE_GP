@@ -76,6 +76,7 @@ vlog {*}$vlog_args_no_mfcu \
     ../../SB_Environment/src/bfms/sb_reset_intf.sv \
     ../../SB_Environment/src/bfms/sb_rx_bfm.sv \
     ../../SB_Environment/src/bfms/sb_tx_bfm.sv \
+    ../../SB_Environment/src/tb/sb_sva.sv \
     ../../tp_env/interfaces/tx2link_if.sv \
     ../../LTSM_Environment/src/interfaces/TX_FSM_SB_if.sv \
     ../../LTSM_Environment/src/interfaces/TX_RX_controllers_if.sv \

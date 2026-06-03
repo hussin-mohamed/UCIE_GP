@@ -113,8 +113,12 @@ always @(posedge i_clk or posedge i_reset) begin
 end
 
 always @(posedge i_clk or posedge i_reset) begin
-    per_lane_result_old <= per_lane_result;  // Capture previous per-lane result for reporting
-    failed_test_old <= failed_test;          // Capture previous test result for reporting
+    if (i_reset) begin
+        failed_test_old     <= 1'b0;
+    end else begin
+        per_lane_result_old <= per_lane_result;  // Capture previous per-lane result for reporting
+        failed_test_old     <= failed_test;      // Capture previous test result for reporting
+    end
 end
 
 
@@ -129,7 +133,7 @@ always @(*) begin
         o_xx_sb_rsp = 0;
         o_xx_info = 0;
         o_xx_data = 0;
-        per_lane_result = '1;
+        per_lane_result = per_lane_result_old;
         count_reg = count;
         failed_test = failed_test_old;
         NS = CS;
@@ -320,6 +324,7 @@ always @(*) begin
                     // Check result and decide on retry
                     if (i_sb_xx_rsp && i_xx_decoding == 'h18B) begin
                         failed_test = !(&i_xx_data);  // Test fails if any bit is 0
+                        per_lane_result = i_xx_data;  // Capture per-lane results for reporting
                         // Retry if failed and retries allowed, otherwise get sweep result
                         if (failed_test && !no_retry) begin
                             if (count == MAXIMUM_ITERATIONS) begin
