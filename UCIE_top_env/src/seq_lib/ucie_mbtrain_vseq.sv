@@ -45,8 +45,9 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
         .info_mode(CORRECT),
         .message_mode(ALL_LANES_VALID),
         .valid_mode(VALID_CORRECT),
-        .trainerror(NOT_TRAINERROR)
+        .trainerror(TRAINERROR_STATE)
     );
+    
     valtrainverf_vseq.configure(
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),

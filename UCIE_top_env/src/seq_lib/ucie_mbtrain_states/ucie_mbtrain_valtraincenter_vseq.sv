@@ -24,7 +24,7 @@ class ucie_mbtrain_valtraincenter_vseq extends ucie_vseq_base;
     this.info_mode = info_mode;
     this.message_mode = message_mode;
     this.valid_mode = valid_mode;
-    this.trainerror = train_error_state;
+    this.train_error_state = train_error_state;
     is_configured = 1;
   endfunction
 
@@ -59,8 +59,8 @@ class ucie_mbtrain_valtraincenter_vseq extends ucie_vseq_base;
     
     if (train_error_state == TIMEOUT) begin
     end else if (train_error_state == TRAINERROR_STATE) begin
-      p_sequencer.rx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
       send_sb_msg(sb_ltsm_item);
     end begin
       p_sequencer.tx_fifo.get(sb_ltsm_item);
