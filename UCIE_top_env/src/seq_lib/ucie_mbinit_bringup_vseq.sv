@@ -121,10 +121,8 @@ class ucie_mbinit_bringup_vseq extends ucie_vseq_base;
     `uvm_info("MBINIT_BRINGUP_VSEQ", $sformatf("RECEIVED SB MESSAGE:\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
     // send mbinit repairclk result resp
-    sb_ltsm_item.data        = 64'hFFFFFFFFFFFFFFFF;
-    sb_ltsm_item.info        = 16'hFFFF;
+    sb_ltsm_item.info        = 16'h7; // [15:3]: Reserved, [2]: Compare Results from RTRK_L, [1]: Compare Results from RCKN_L, [0]: Compare Results from RCKP_L
     sb_ltsm_item.msgtype     = RSP_MSG;
-    sb_ltsm_item.wait_cycles = 30;
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_RX_Send_RESP);
     send_sb_msg(sb_ltsm_item);
 
@@ -184,10 +182,8 @@ class ucie_mbinit_bringup_vseq extends ucie_vseq_base;
     `uvm_info("MBINIT_BRINGUP_VSEQ", $sformatf("RECEIVED SB MESSAGE:\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
     // send mbinit repairval result resp
-    sb_ltsm_item.data        = 64'hFFFFFFFFFFFFFFFF;
-    sb_ltsm_item.info        = 16'hFFFF;
+    sb_ltsm_item.info        = 16'h1; // [15:1]: Reserved, [0]: Compare Results from RVLD_L
     sb_ltsm_item.msgtype     = RSP_MSG;
-    sb_ltsm_item.wait_cycles = 30;
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRVAL_RX_Send_Result_RESP);
     send_sb_msg(sb_ltsm_item);
 
@@ -263,10 +259,9 @@ class ucie_mbinit_bringup_vseq extends ucie_vseq_base;
     `uvm_info("MBINIT_BRINGUP_VSEQ", $sformatf("RECEIVED SB MESSAGE:\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
     // send mbinit reversal result resp
-    sb_ltsm_item.data        = 64'hFFFFFFFFFFFFFFFF;
-    sb_ltsm_item.info        = 16'hFFFF;  // the first 3 bits should reflect the lane map code 
+    sb_ltsm_item.data        = 64'h000000000000FFFF; // 16 bits for the 16 lanes
+    sb_ltsm_item.info        = 16'h0000;             // Reserved: Used for standard package
     sb_ltsm_item.msgtype     = RSP_MSG;
-    sb_ltsm_item.wait_cycles = 30;
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REVERSAL_RX_Result_Handshake);
     send_sb_msg(sb_ltsm_item);
 
@@ -350,7 +345,7 @@ endclass : ucie_mbinit_bringup_vseq
 
 
 
-//// TWO THREAD APPROACH
+//////////////////////////////////////////////////////////////// TWO THREAD APPROACH
 // sbinit_phylink_seq.start(sb_phylink_seqr);
 
 // // send out of reset

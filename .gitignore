@@ -58,3 +58,6 @@ UCIE_top_env/sim/wlftr2ck5z
 UCIE_top_env/sim/wlftzb21a1
 UCIE_top_env/sim/wlftvazck5
 git_changes_report.txt
+run_*
+out/
+certe_dump.xml

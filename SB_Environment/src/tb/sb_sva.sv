@@ -5,6 +5,11 @@
 // -------------------------------------------------------------------------
 // File: sb_sva.sv
 
+`timescale 1ns / 1ps
+
+import uvm_pkg::*;
+`include "uvm_macros.svh"
+
 package sb_seq_pkg;
   sequence q_clk_tgl(untyped clk);
     ((clk == 1'b1) ##1 (clk == 1'b0))[*64];
