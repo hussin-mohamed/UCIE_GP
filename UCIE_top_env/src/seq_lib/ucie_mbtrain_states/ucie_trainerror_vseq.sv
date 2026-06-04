@@ -9,11 +9,14 @@ class ucie_trainerror_vseq extends ucie_vseq_base;
 
   `uvm_object_utils(ucie_trainerror_vseq)
 
+  static int trainerr_cnt;
+
   // -------------------------------------------------------------------------
   //  Constructor
   // -------------------------------------------------------------------------
   function new(string name = "ucie_trainerror_vseq");
     super.new(name);
+    trainerr_cnt = 0;
   endfunction
 
 
@@ -37,6 +40,8 @@ class ucie_trainerror_vseq extends ucie_vseq_base;
     p_sequencer.tx_fifo.get(sb_ltsm_item);
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
     send_sb_msg(sb_ltsm_item);
+
+    trainerr_cnt++;
 
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask

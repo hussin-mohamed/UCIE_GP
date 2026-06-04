@@ -21,6 +21,7 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
   // -------------------------------------------------------------------------
   virtual task body();
     valverf_vseq.configure(
+        .missing_msg(IDEAL),
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),
         .data_mode(VALID_PATTERN),
@@ -63,6 +64,7 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
     mbinit_vseq.start(p_sequencer);
 
     valverf_vseq.configure(
+        .missing_msg(IDEAL),
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),
         .data_mode(VALID_PATTERN),

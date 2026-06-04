@@ -63,5 +63,11 @@ class ucie_vseqr extends uvm_sequencer;
     prd_ltsm2link.results_ap_phy.connect(link_fifo.analysis_export);
   endfunction : connect_phase
 
+  task pre_reset_phase(uvm_phase phase);
+    super.pre_reset_phase(phase);
+    stop_sequences();
+  endtask : pre_reset_phase
+
+
 
 endclass : ucie_vseqr

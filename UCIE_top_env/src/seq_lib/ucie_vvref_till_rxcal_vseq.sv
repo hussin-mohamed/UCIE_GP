@@ -24,19 +24,20 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
   // -------------------------------------------------------------------------
   //  TEST 1 : No Start HS Req Sent to RX 
   // -------------------------------------------------------------------------
-    valverf_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(VALID_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT),
-        .missing_msg(MISS)
-    );
+    if (TRAINERROR_vseq.trainerr_cnt == 0) begin
+      valverf_vseq.configure(
+          .D2c_mode(SUCCESS),
+          .pattern_mode(PAT_ALL_LANES_VALID),
+          .data_mode(VALID_PATTERN),
+          .info_mode(CORRECT),
+          .message_mode(ALL_LANES_VALID),
+          .valid_mode(VALID_CORRECT),
+          .missing_msg(MISS)
+      );
 
-    trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
-    valverf_vseq.start(p_sequencer);
-    mbinit_vseq.start(p_sequencer);
+      trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
+      valverf_vseq.start(p_sequencer);
+    end
 
     valverf_vseq.configure(
         .D2c_mode(SUCCESS),
