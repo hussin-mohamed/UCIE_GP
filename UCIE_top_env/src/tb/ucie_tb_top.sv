@@ -63,7 +63,7 @@ module ucie_tb_top;
   sb_phylink_bfm phylink_bfm (
      .clk(clk_sb_100_m)
     ,.clk_800MHz(clk_sb_800_m)
-    ,.reset(reset)
+    ,.reset(DUT.reset_sb)
     ,.o_sb_ready(DUT.sb_ready)
   );
 
