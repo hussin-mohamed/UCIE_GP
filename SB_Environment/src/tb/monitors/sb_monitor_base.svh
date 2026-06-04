@@ -133,15 +133,19 @@ task sb_monitor_base::run_phase(uvm_phase phase);
     @(negedge bfm.reset);
 
     // Wait for the SBINIT to finish
-    @(negedge bfm.o_sb_ready);
+    @(posedge bfm.o_sb_ready);
 
     fork
-      monitor_items_out();
-      monitor_items_in();
-    join_none
+      begin
+        fork
+          monitor_items_out();
+          monitor_items_in();
+        join_none
 
-    @(posedge bfm.reset);
-    disable fork;
+        @(posedge bfm.reset);
+        disable fork;
+      end
+    join
     // cleanup(); 
   end
 endtask : run_phase
@@ -157,7 +161,7 @@ task sb_monitor_base::monitor_items_out();
     out_ap.write(item_out);
     `uvm_info(get_type_name(), $sformatf(
               "MONITORED item_out %s: \n%s", item_out.get_type_name(), item_out.sprint()),
-              UVM_DEBUG)
+              UVM_LOW)
     txn_out_cnt++;
 
     // Send item_out to the sequencer if the monitor is configured to be reactive
@@ -178,7 +182,7 @@ task sb_monitor_base::monitor_items_in();
     in_ap.write(item_in);
     txn_in_cnt++;
     `uvm_info(get_type_name(), $sformatf(
-              "MONITORED item_in -- TXN COUNT %0d %s: \n%s",
+              "MONITORED item_in [Index %0d] %s: \n%s",
               txn_in_cnt,
               item_in.get_type_name(),
               item_in.sprint()
