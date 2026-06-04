@@ -132,11 +132,8 @@ task sb_driver_base::run_phase(uvm_phase phase);
   
   fork
     forever begin
-      $display("%0t: 11111111111111111111111111111111 %0d", $time, bfm.o_sb_ready);
       @(posedge bfm.o_sb_ready);
-      $display("%0t: 22222222222222222222222222222222 %0d", $time, bfm.o_sb_ready);
       @(negedge bfm.o_sb_ready);
-      $display("%0t: 33333333333333333333333333333333 %0d", $time, bfm.o_sb_ready);
       m_op_mode = ACTIVE;
     end
   join_none
