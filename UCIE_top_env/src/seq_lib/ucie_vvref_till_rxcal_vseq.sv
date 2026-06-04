@@ -21,6 +21,10 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
   // -------------------------------------------------------------------------
   virtual task body();
 
+
+    mbinit_vseq.start(p_sequencer);
+    trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
+
   // -------------------------------------------------------------------------
   //  TEST 1 : No Start HS Req Sent to RX 
   // -------------------------------------------------------------------------
@@ -34,11 +38,10 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
           .valid_mode(VALID_CORRECT),
           .missing_msg(MISS)
       );
-      trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
       valverf_vseq.start(p_sequencer);
     end
 
-    if (TRAINERROR_vseq.trainerr_cnt == 1) begin
+    else if (TRAINERROR_vseq.trainerr_cnt == 1) begin
       valverf_vseq.configure(
           .D2c_mode(SUCCESS),
           .pattern_mode(PAT_ALL_LANES_VALID),
@@ -48,11 +51,11 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
           .valid_mode(VALID_CORRECT),
           .missing_msg(MISS)
       );
-      trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
+
       valverf_vseq.start(p_sequencer);
     end
 
-    if (TRAINERROR_vseq.trainerr_cnt == 2) begin
+    else if (TRAINERROR_vseq.trainerr_cnt == 2) begin
       valverf_vseq.configure(
           .D2c_mode(SUCCESS),
           .pattern_mode(PAT_ALL_LANES_VALID),
@@ -62,11 +65,10 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
           .valid_mode(VALID_CORRECT),
           .missing_msg(MISS)
       );
-      trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
       valverf_vseq.start(p_sequencer);
     end
 
-    if (TRAINERROR_vseq.trainerr_cnt == 3) begin
+    else if (TRAINERROR_vseq.trainerr_cnt == 3) begin
       valverf_vseq.configure(
           .D2c_mode(SUCCESS),
           .pattern_mode(PAT_ALL_LANES_VALID),
@@ -76,11 +78,10 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
           .valid_mode(VALID_CORRECT),
           .missing_msg(MISS)
       );
-      trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
       valverf_vseq.start(p_sequencer);
     end
 
-    if (TRAINERROR_vseq.trainerr_cnt == 4) begin
+    else if (TRAINERROR_vseq.trainerr_cnt == 4) begin
       valverf_vseq.configure(
           .D2c_mode(SUCCESS),
           .pattern_mode(PAT_ALL_LANES_VALID),
@@ -90,7 +91,6 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
           .valid_mode(VALID_CORRECT),
           .missing_msg(IDEAL)
       );
-      trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
       valverf_vseq.start(p_sequencer);
     end
 

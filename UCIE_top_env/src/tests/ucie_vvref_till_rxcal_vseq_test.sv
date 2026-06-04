@@ -28,7 +28,7 @@ class ucie_vvref_till_rxcal_vseq_test extends ucie_base_test;
 
   virtual function void start_of_simulation_phase(uvm_phase phase);
     // Set the drain time to be waited before exiting the main phase
-    set_main_phase_drain_time(1000ns);
+    set_main_phase_drain_time(100000ns);
   endfunction : start_of_simulation_phase
 
 endclass : ucie_vvref_till_rxcal_vseq_test

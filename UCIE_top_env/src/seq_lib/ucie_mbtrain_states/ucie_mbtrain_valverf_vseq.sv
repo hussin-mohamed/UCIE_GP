@@ -47,6 +47,7 @@ class ucie_mbtrain_valverf_vseq extends ucie_vseq_base;
     p_sequencer.rx_fifo.get(sb_ltsm_item);
 
     if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 0)) begin
+    TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
     return;
     end
@@ -63,6 +64,7 @@ class ucie_mbtrain_valverf_vseq extends ucie_vseq_base;
     p_sequencer.tx_fifo.get(sb_ltsm_item);
 
     if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 1)) begin
+    TRAINERROR_vseq.configure(.missing_msg_2get(MISS2RX));
     TRAINERROR_vseq.start(p_sequencer);
     return;
     end
@@ -95,6 +97,7 @@ class ucie_mbtrain_valverf_vseq extends ucie_vseq_base;
     p_sequencer.rx_fifo.get(sb_ltsm_item);
 
     if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 2)) begin
+    TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
     return;
     end
@@ -110,8 +113,8 @@ class ucie_mbtrain_valverf_vseq extends ucie_vseq_base;
     `uvm_info("VSEQ", $sformatf("Valverf_End_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
     
     p_sequencer.tx_fifo.get(sb_ltsm_item);
-
     if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 3)) begin
+    TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
     return;
     end
