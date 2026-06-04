@@ -145,6 +145,7 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
         .linkspeed_dest(LINKINIT)
         ,.pattern_mode(PAT_ALL_LANES_VALID)
         ,.message_mode(ALL_LANES_VALID)
+        ,.speed_idle_entry(CURRENT_DIE)
     );
 
     

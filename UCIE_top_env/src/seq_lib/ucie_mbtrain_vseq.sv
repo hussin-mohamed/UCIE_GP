@@ -89,6 +89,7 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
         .linkspeed_dest(LINKINIT)
         ,.pattern_mode(PAT_ALL_LANES_VALID)
         ,.message_mode(ALL_LANES_VALID)
+        ,.speed_idle_entry(CURRENT_DIE)
     );
 
     trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
@@ -108,7 +109,7 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
 
     wait_for_msg_ser_end();
     #1000ns;
-/*
+
     wake_req_handshake.start(ltsm_rdi_seqr);
     state_req_handshake.start(ltsm_rdi_seqr);
     
@@ -135,7 +136,7 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
             active_rx_seq.start(rp_rmblink_seqr);
         end     
     join_any
-    */
+
 
   endtask
 endclass : ucie_mbtrain_vseq

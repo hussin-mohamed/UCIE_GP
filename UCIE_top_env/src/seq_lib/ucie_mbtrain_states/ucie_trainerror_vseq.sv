@@ -9,7 +9,7 @@ class ucie_trainerror_vseq extends ucie_vseq_base;
 
   `uvm_object_utils(ucie_trainerror_vseq)
 
-  protected static int trainerr_cnt;
+  static int trainerr_cnt;
 
   // -------------------------------------------------------------------------
   //  Constructor
