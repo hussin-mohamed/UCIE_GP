@@ -489,6 +489,13 @@ module ucie_LTSM #(
       .train_phyretrain_en(w_tx_train_phyretrain_en)  // Training is active
   );
 
+  ucie_Register_File ucie_Register_File_inst (
+    .i_clk(i_clk),
+    .i_rst(i_rst),
+    .i_speedreg_in(o_speedreg),
+    .o_speedreg(i_speedreg)
+  );
+
   ucie_LTSM_RX_MBTRAIN #(
       .DECODING_WIDTH (DECODING_WIDTH),  // Width of encoding/decoding signals
       .DATA_WIDTH     (DATA_WIDTH),      // Width of data bus

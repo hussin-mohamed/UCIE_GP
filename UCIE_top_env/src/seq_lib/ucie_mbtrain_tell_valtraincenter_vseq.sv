@@ -57,6 +57,9 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
     rxclkcal_vseq.start(p_sequencer);
     valtraincenter_vseq.start(p_sequencer);
 
+    p_sequencer.tx_fifo.flush();
+    p_sequencer.rx_fifo.flush();
+
     mbinit_vseq.start(p_sequencer);
 
     valverf_vseq.configure(
@@ -124,13 +127,9 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
     );
 
     LINKSPEED_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(LFSR_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT),
-        .lane_map_code(ALL_LANES)
+        .linkspeed_dest(LINKINIT)
+        ,.pattern_mode(PAT_ALL_LANES_VALID)
+        ,.message_mode(ALL_LANES_VALID)
     );
 
     
