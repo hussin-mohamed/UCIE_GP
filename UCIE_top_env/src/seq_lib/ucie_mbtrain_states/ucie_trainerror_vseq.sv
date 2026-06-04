@@ -16,7 +16,6 @@ class ucie_trainerror_vseq extends ucie_vseq_base;
   // -------------------------------------------------------------------------
   function new(string name = "ucie_trainerror_vseq");
     super.new(name);
-    trainerr_cnt = 0;
   endfunction
 
 
@@ -26,6 +25,7 @@ class ucie_trainerror_vseq extends ucie_vseq_base;
   virtual task body();
     `uvm_info("UCIE_VSEQ", "Starting system-level sanity virtual sequence", UVM_LOW)
 
+    trainerr_cnt++;
 
     // Trainerror_Start_TX_LTSM
     `uvm_info("VSEQ", $sformatf("Trainerror_Start_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
@@ -41,7 +41,7 @@ class ucie_trainerror_vseq extends ucie_vseq_base;
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
     send_sb_msg(sb_ltsm_item);
 
-    trainerr_cnt++;
+
 
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask

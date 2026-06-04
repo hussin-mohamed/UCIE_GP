@@ -34,7 +34,6 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
           .valid_mode(VALID_CORRECT),
           .missing_msg(MISS)
       );
-
       trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
       valverf_vseq.start(p_sequencer);
     end
@@ -51,7 +50,7 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
     valverf_vseq.start(p_sequencer);
 
 
-    
+
     //dataverf_vseq.configure(
     //    .D2c_mode(SUCCESS),
     //    .pattern_mode(PAT_ALL_LANES_VALID),

@@ -38,7 +38,7 @@ class ucie_vvref_till_rxcal_vseq_test extends ucie_base_test;
         vseq.start(env.vseqr);
         vvref_rxcal_vseq.start(env.vseqr);
 
-        wait (env.sb_env_i.phylink_agt.mntr.txn_in_cnt == vseq.ltsm2link_msg_cnt);
+        vvref_rxcal_vseq.wait_for_msg_ser_end();
 
         // Wait a bit to let things settle after sequence finishes
         #1000000ns;
@@ -48,8 +48,7 @@ class ucie_vvref_till_rxcal_vseq_test extends ucie_base_test;
     join_none
 
 
-    @(posedge m_cfg.sb_cfg.phylink_bfm_drive.reset);
-    @(negedge m_cfg.sb_cfg.phylink_bfm_drive.reset);
+
     @(posedge m_cfg.sb_cfg.phylink_bfm_drive.reset);
     `uvm_info(get_type_name(), "Starting ACTIVE RESETBase test class for the Sideband testbench, handling environment setup and common test configuration.", UVM_MEDIUM)
     phase.get_objection().set_report_severity_id_override(UVM_WARNING, "OBJTN_CLEAR", UVM_INFO);

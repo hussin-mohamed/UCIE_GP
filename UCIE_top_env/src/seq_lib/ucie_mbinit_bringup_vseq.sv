@@ -89,33 +89,26 @@ class ucie_mbinit_bringup_vseq extends ucie_vseq_base;
     // get mbinit repairclk init req
     p_sequencer.rx_fifo.get(sb_ltsm_item);
     `uvm_info("MBINIT_BRINGUP_VSEQ", $sformatf("RECEIVED SB MESSAGE:\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
     // send mbinit repairclk init req
     sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_TX_Init_Handshake);
     send_sb_msg(sb_ltsm_item);
-
     // get mbinit repairclk init resp
     p_sequencer.tx_fifo.get(sb_ltsm_item);
     `uvm_info("MBINIT_BRINGUP_VSEQ", $sformatf("RECEIVED SB MESSAGE:\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
     // send mbinit repairclk init resp
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_RX_Init_Handshake);
     send_sb_msg(sb_ltsm_item);
-
     // send RMBLink Clock Pattern Sequence
     `uvm_info("UCIE_VSEQ", "Starting rmblink_clk_seq on rp_rmblink_seqr", UVM_LOW)
     rmblink_clk_seq.test_mode = TEST_CLK_IDEAL_ALL;
     rmblink_clk_seq.start(rp_rmblink_seqr);
     `uvm_info("UCIE_VSEQ", "rmblink_clk_seq completed", UVM_LOW)
-
     // get mbinit repairclk result req
     p_sequencer.rx_fifo.get(sb_ltsm_item);
     `uvm_info("MBINIT_BRINGUP_VSEQ", $sformatf("RECEIVED SB MESSAGE:\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
     // send mbinit repairclk result req
     sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_TX_Result_Handshake);
     send_sb_msg(sb_ltsm_item);
-
     // get mbinit repairclk result resp
     p_sequencer.tx_fifo.get(sb_ltsm_item);
     `uvm_info("MBINIT_BRINGUP_VSEQ", $sformatf("RECEIVED SB MESSAGE:\n %s", sb_ltsm_item.sprint()), UVM_LOW)

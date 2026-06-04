@@ -127,15 +127,20 @@ task rp_driver_base::run_phase(uvm_phase phase);
 
   forever begin
     // Wait for reset deassertion
-    @(negedge bfm.reset);
+    if (bfm.reset === 1'b1) begin
+      @(negedge bfm.reset);
+    end
     `uvm_info(get_type_name(), "Got out of reset", UVM_DEBUG)
     
     fork
-      drive_items();
-    join_none
-    
-    @(reset_driver);
-    disable fork;
+      begin
+        fork
+          drive_items();
+        join_none
+        @(reset_driver);
+        disable fork;
+      end
+    join
     // cleanup();
   end
 endtask : run_phase
