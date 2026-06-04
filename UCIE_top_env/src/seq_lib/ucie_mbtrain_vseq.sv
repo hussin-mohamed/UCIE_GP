@@ -85,13 +85,9 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     );
 
     LINKSPEED_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(LFSR_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT),
-        .lane_map_code(ALL_LANES)
+        .linkspeed_dest(LINKINIT)
+        ,.pattern_mode(PAT_ALL_LANES_VALID)
+        ,.message_mode(ALL_LANES_VALID)
     );
 
     trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
