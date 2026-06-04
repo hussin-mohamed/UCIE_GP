@@ -5,6 +5,12 @@
 //              across the LTSM, Sideband, RX-Path, and TX-Path agents.
 //=============================================================================
 
+typedef enum {
+  NORMAL,
+  MISS2TX,
+  MISS2RX
+} missing_msg_2get_e;
+
 // enum for determining the whole behavioural of the D2c
 typedef enum {
   SUCCESS,
@@ -138,6 +144,7 @@ class ucie_vseq_base extends uvm_sequence;
   protected trainerror_e     train_error_state;
   protected bit              is_configured;
   protected linkspeed_destination_e linkspeed_dest;
+  protected missing_msg_2get_e missing_msg_2get;
 
   ucie_RX_D2C_vseq  ucie_RX_D2C;
   ucie_TX_D2C_vseq  ucie_TX_D2C;
@@ -190,9 +197,9 @@ class ucie_vseq_base extends uvm_sequence;
 
     active_tx_seq = rdi_base_seq::type_id::create("active_tx_seq");
     active_rx_seq = rmblink_active_sequence::type_id::create("active_rx_seq");
-    
+
     sb_ltsm_item = new("sb_ltsm_item");
-    
+
     fork
       begin  // Sideband ltsm2link Transmission Thread
         forever begin
@@ -205,6 +212,11 @@ class ucie_vseq_base extends uvm_sequence;
       end
     join_none
   endtask : pre_body
+
+  virtual task post_body();
+    // Wait if there is a message serialization in progress
+    wait_for_msg_ser_end();
+  endtask : post_body
 
   function void send_sb_msg(sb_pkg::ltsm_seq_item _sb_ltsm_item);
     string enc_type;

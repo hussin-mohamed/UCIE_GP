@@ -9,8 +9,11 @@ class ucie_base_test extends uvm_test;
 
   `uvm_component_utils(ucie_base_test)
 
-  ucie_env      env;
-  ucie_env_cfg  m_cfg;
+  ucie_env        env;
+  ucie_env_cfg    m_cfg;
+  ucie_vseq_base  vseq;
+
+  protected time main_phase_drain_time;
 
   // -------------------------------------------------------------------------
   //  Constructor
@@ -26,10 +29,13 @@ class ucie_base_test extends uvm_test;
     super.build_phase(phase);
 
     m_cfg = ucie_env_cfg::type_id::create("m_cfg");
+
     m_cfg.ltsm_cfg = LTSM_pkg::env_config::type_id::create("ltsm_cfg");
     m_cfg.sb_cfg   = sb_pkg::env_config::type_id::create("sb_cfg");
     m_cfg.rp_cfg   = rp_pkg::env_config::type_id::create("rp_cfg");
     m_cfg.tx_cfg   = tx_tb_pkg::tx_env_cfg::type_id::create("tx_cfg");
+
+    vseq = ucie_vseq_base::type_id::create("vseq");
 
     // -----------------------------------------------------------------------
     // Retrieve Virtual Interfaces
@@ -96,4 +102,35 @@ class ucie_base_test extends uvm_test;
     uvm_top.print_topology();
   endfunction
 
+  // -------------------------------------------------------------------------
+  //  Main Phase
+  // -------------------------------------------------------------------------
+  virtual task main_phase(uvm_phase phase);
+    fork
+      begin
+        // Get the objection object for the current phase
+        uvm_objection objection = phase.get_objection();
+        
+        super.main_phase(phase);
+        
+        // Set the drain time
+        if (objection != null) begin
+          objection.set_drain_time(this, main_phase_drain_time);
+        end
+
+        phase.raise_objection(this);
+        vseq.start(env.vseqr);
+        phase.drop_objection(this);
+      end
+    join_none
+
+    @(posedge m_cfg.sb_cfg.phylink_bfm_drive.reset);
+    `uvm_info(get_type_name(), "Starting ACTIVE RESETBase test class for the Sideband testbench, handling environment setup and common test configuration.", UVM_MEDIUM)
+    phase.get_objection().set_report_severity_id_override(UVM_WARNING, "OBJTN_CLEAR", UVM_INFO);
+    phase.jump(uvm_pre_reset_phase::get());
+  endtask
+
+  function void set_main_phase_drain_time(time _drain_time);
+    main_phase_drain_time = _drain_time;
+  endfunction : set_main_phase_drain_time
 endclass : ucie_base_test
