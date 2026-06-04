@@ -63,6 +63,14 @@ typedef enum {
 } missing_msg_e;
 
 
+typedef enum {
+  LINKINIT,
+  SPEEDIDLE,
+  REPAIR,
+  TRAINERROR
+} linkspeed_destination_e;
+
+
 typedef class ucie_mbtrain_valverf_vseq;
 typedef class ucie_mbtrain_dataverf_vseq;
 typedef class ucie_mbtrain_speedidle_vseq;
@@ -124,6 +132,7 @@ class ucie_vseq_base extends uvm_sequence;
   protected lane_map_code_e  lane_map_code;
   protected trainerror_e     train_error_state;
   protected bit              is_configured;
+  protected linkspeed_destination_e linkspeed_dest;
 
   ucie_RX_D2C_vseq  ucie_RX_D2C;
   ucie_TX_D2C_vseq  ucie_TX_D2C;

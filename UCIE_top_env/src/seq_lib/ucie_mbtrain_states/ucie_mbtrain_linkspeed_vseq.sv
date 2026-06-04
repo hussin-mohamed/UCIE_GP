@@ -16,15 +16,37 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
     super.new(name);
   endfunction
 
-  function configure (D2c_mode_e D2c_mode, pattern_mode_e pattern_mode,
-                      data_mode_e data_mode, info_mode_e info_mode, message_mode_e message_mode, valid_mode_e valid_mode, lane_map_code_e lane_map_code);
-    this.D2c_mode = D2c_mode;
-    this.pattern_mode = pattern_mode;
-    this.data_mode = data_mode;
-    this.info_mode = info_mode;
-    this.message_mode = message_mode;
-    this.valid_mode = valid_mode;
-    this.lane_map_code = lane_map_code;
+  function configure (linkspeed_destination_e linkspeed_dest, pattern_mode_e pattern_mode, message_mode_e message_mode );
+    if (linkspeed_dest == LINKINIT) begin
+      this.D2c_mode = SUCCESS;
+      this.pattern_mode = PAT_ALL_LANES_VALID;
+      this.data_mode = LFSR_PATTERN;
+      this.info_mode = CORRECT;
+      this.message_mode = ALL_LANES_VALID;
+      this.valid_mode = VALID_CORRECT;
+      this.lane_map_code = ALL_LANES;
+    end
+    else if (linkspeed_dest == SPEEDIDLE || linkspeed_dest == TRAINERROR) begin
+      this.D2c_mode = SUCCESS;
+      this.pattern_mode = PAT_NO_LANES_VALID;
+      this.data_mode = LFSR_PATTERN;
+      this.info_mode = ERROR;
+      this.message_mode = NO_LANES_VALID;
+      this.valid_mode = VALID_CORRECT;
+      this.lane_map_code = ALL_LANES;
+    end
+    else if (linkspeed_dest == REPAIR) begin
+      this.D2c_mode = SUCCESS;
+      this.pattern_mode = pattern_mode;
+      this.data_mode = LFSR_PATTERN;
+      this.info_mode = ERROR;
+      this.message_mode = message_mode;
+      this.valid_mode = VALID_CORRECT;
+      this.lane_map_code = ALL_LANES;
+    end
+    else begin
+      `uvm_fatal("SEQ_CFG_ERR", "Invalid linkspeed destination specified in configure()")
+    end
     is_configured = 1;
   endfunction
 
