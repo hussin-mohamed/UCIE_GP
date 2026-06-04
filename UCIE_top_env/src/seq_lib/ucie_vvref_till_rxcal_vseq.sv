@@ -38,16 +38,61 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
       valverf_vseq.start(p_sequencer);
     end
 
-    valverf_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(VALID_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT),
-        .missing_msg(IDEAL)
-    );
-    valverf_vseq.start(p_sequencer);
+    if (TRAINERROR_vseq.trainerr_cnt == 1) begin
+      valverf_vseq.configure(
+          .D2c_mode(SUCCESS),
+          .pattern_mode(PAT_ALL_LANES_VALID),
+          .data_mode(VALID_PATTERN),
+          .info_mode(CORRECT),
+          .message_mode(ALL_LANES_VALID),
+          .valid_mode(VALID_CORRECT),
+          .missing_msg(MISS)
+      );
+      trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
+      valverf_vseq.start(p_sequencer);
+    end
+
+    if (TRAINERROR_vseq.trainerr_cnt == 2) begin
+      valverf_vseq.configure(
+          .D2c_mode(SUCCESS),
+          .pattern_mode(PAT_ALL_LANES_VALID),
+          .data_mode(VALID_PATTERN),
+          .info_mode(CORRECT),
+          .message_mode(ALL_LANES_VALID),
+          .valid_mode(VALID_CORRECT),
+          .missing_msg(MISS)
+      );
+      trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
+      valverf_vseq.start(p_sequencer);
+    end
+
+    if (TRAINERROR_vseq.trainerr_cnt == 3) begin
+      valverf_vseq.configure(
+          .D2c_mode(SUCCESS),
+          .pattern_mode(PAT_ALL_LANES_VALID),
+          .data_mode(VALID_PATTERN),
+          .info_mode(CORRECT),
+          .message_mode(ALL_LANES_VALID),
+          .valid_mode(VALID_CORRECT),
+          .missing_msg(MISS)
+      );
+      trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
+      valverf_vseq.start(p_sequencer);
+    end
+
+    if (TRAINERROR_vseq.trainerr_cnt == 4) begin
+      valverf_vseq.configure(
+          .D2c_mode(SUCCESS),
+          .pattern_mode(PAT_ALL_LANES_VALID),
+          .data_mode(VALID_PATTERN),
+          .info_mode(CORRECT),
+          .message_mode(ALL_LANES_VALID),
+          .valid_mode(VALID_CORRECT),
+          .missing_msg(IDEAL)
+      );
+      trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
+      valverf_vseq.start(p_sequencer);
+    end
 
 
 

@@ -33,10 +33,10 @@ class ucie_sanity_test extends ucie_base_test;
     vseq.start(env.vseqr);
     train_vseq.start(env.vseqr);
 
-    wait (env.sb_env_i.phylink_agt.mntr.txn_in_cnt == vseq.ltsm2link_msg_cnt);
+    train_vseq.wait_for_msg_ser_end();
 
     // Wait a bit to let things settle after sequence finishes
-    #1000000ns;
+    #1000ns;
 
     phase.drop_objection(this);
   endtask

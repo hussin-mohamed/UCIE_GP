@@ -106,6 +106,9 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     DTC2_vseq.start(p_sequencer);
     LINKSPEED_vseq.start(p_sequencer);
 
+    wait_for_msg_ser_end();
+    #1000ns;
+/*
     wake_req_handshake.start(ltsm_rdi_seqr);
     state_req_handshake.start(ltsm_rdi_seqr);
     
@@ -132,7 +135,7 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
             active_rx_seq.start(rp_rmblink_seqr);
         end     
     join_any
-    
+    */
 
   endtask
 endclass : ucie_mbtrain_vseq

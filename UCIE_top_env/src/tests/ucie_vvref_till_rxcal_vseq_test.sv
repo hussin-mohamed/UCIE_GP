@@ -41,7 +41,7 @@ class ucie_vvref_till_rxcal_vseq_test extends ucie_base_test;
         vvref_rxcal_vseq.wait_for_msg_ser_end();
 
         // Wait a bit to let things settle after sequence finishes
-        #1000000ns;
+        #1000ns;
 
         phase.drop_objection(this);
       end
