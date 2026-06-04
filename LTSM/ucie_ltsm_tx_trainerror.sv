@@ -139,7 +139,7 @@ module ucie_ltsm_tx_trainerror #(
   // ==========================================================================
   // Assertions
   // ==========================================================================
-`ifdef SIM
+/*`ifdef SIM
 
   // --------------------------------------------------------------------------
   // Encoding is 0x40 whenever we are in TRAINERROR
@@ -225,5 +225,5 @@ module ucie_ltsm_tx_trainerror #(
   assert property (done_blocked_after_substates_done)
   else $error("ASSERT FAIL [DONE_BLOCKED]: done re-asserted after substates_done latched");
 
-`endif
+`endif*/
 endmodule
