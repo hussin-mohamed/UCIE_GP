@@ -65,7 +65,7 @@ module ucie_LTSM #(
     input logic i_sb_ready,  // Stop-respond in SBINIT pattern detection
 
     input [15:0] r_local_cap,
-    input [ 2:0] i_speedreg,
+    input [2:0]  i_speedreg,
     input [36:0] i_Runtime_Link_Test_Control_register,
     input        i_Runtime_Link_Test_status_register,
 
@@ -197,6 +197,8 @@ module ucie_LTSM #(
   logic w_train_rx_error;
   logic w_tx_self_cal_state_enable;
   logic w_speed_idle_state_enable;
+
+  logic [2:0] i_speedreg_in;
 
   logic w_wait_1us_en;
 
@@ -463,7 +465,7 @@ module ucie_LTSM #(
       .tx_self_cal_state_enable(w_tx_self_cal_state_enable),  // Enable training initialization
       .timeout(w_timer_8ms),  // Training timeout error
       .o_pl_speedmode(o_pl_speedmode),  // Physical layer speed mode
-      .i_speedreg(i_speedreg),  // Physical layer speed mode
+      .i_speedreg(i_speedreg_in),  // Physical layer speed mode
       .o_speedreg(o_speedreg),  // Physical layer speed mode
       .o_lane_map_tx(w_train_tx_lane_map),  // Lane map output for TX
       .encoding_rsp_sent(w_encoding_rsp_sent),  // Encoding value when response sent
@@ -491,9 +493,9 @@ module ucie_LTSM #(
 
   ucie_Register_File ucie_Register_File_inst (
     .i_clk(i_clk),
-    .i_rst(i_rst),
+    .i_rst(i_reset),
     .i_speedreg_in(o_speedreg),
-    .o_speedreg(i_speedreg)
+    .o_speedreg(i_speedreg_in)
   );
 
   ucie_LTSM_RX_MBTRAIN #(

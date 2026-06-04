@@ -529,7 +529,7 @@ always @(*) begin
                                 substates_done = 0;
 
                                 if (i_tx_done) begin
-                                    if (/*i_speedreg*/1) begin
+                                    if (i_speedreg) begin
                                         // Decrement speed register by 1 (step down to next lower rate)
                                         // and broadcast the agreed speed mode to the PL interface.
                                         o_tx_encoding_reg = 'hCA;
