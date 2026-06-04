@@ -219,7 +219,7 @@ task sb_cmp_base::main_phase(uvm_phase phase);
         out_tr.sprint(), "\n"
       };
       
-      `uvm_info(cmp_name, pass_msg, UVM_HIGH)
+      // `uvm_info(cmp_name, pass_msg, UVM_HIGH)
       PASS();
     end
   end
