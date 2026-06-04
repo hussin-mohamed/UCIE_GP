@@ -336,9 +336,9 @@ module UCIe_phy #(
     .i_cnt(tx_bfm.o_sb_tx_done),
     .o_cnt(tx_fsm_sb_if.i_sb_tx_done)
   );
-  
+
   toggle_sync sync_rst(
-    .i_clk(clk_l),
+    .i_clk(i_clk_sb_100_m),
     .i_reset(i_reset),
     .i_cnt(reset_sb_reg),
     .o_cnt(reset_sb)
