@@ -18,6 +18,13 @@ class ucie_trainerror_vseq extends ucie_vseq_base;
     super.new(name);
   endfunction
 
+   function configure (missing_msg_2get_e missing_msg_2get);
+
+    this.missing_msg_2get = missing_msg_2get;
+
+    is_configured = 1;
+  endfunction
+
 
   // -------------------------------------------------------------------------
   //  Body Task
@@ -25,12 +32,25 @@ class ucie_trainerror_vseq extends ucie_vseq_base;
   virtual task body();
     `uvm_info("UCIE_VSEQ", "Starting system-level sanity virtual sequence", UVM_LOW)
 
+    if (!is_configured) begin
+      `uvm_fatal("SEQ_CFG_ERR", "Sequence must be configured via configure() before starting!")
+    end
+
+    is_configured = 0;
+
     trainerr_cnt++;
 
     // Trainerror_Start_TX_LTSM
     `uvm_info("VSEQ", $sformatf("Trainerror_Start_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
+    if (missing_msg_2get == MISS2RX) begin
+        p_sequencer.tx_fifo.get(sb_ltsm_item);
+        p_sequencer.rx_fifo.get(sb_ltsm_item);
+    end
+    else if (missing_msg_2get == NORMAL) begin
     p_sequencer.rx_fifo.get(sb_ltsm_item);
+    end
+
     sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
     send_sb_msg(sb_ltsm_item);
 
