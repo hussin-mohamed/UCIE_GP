@@ -9,6 +9,8 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
 
   `uvm_object_utils(ucie_mbtrain_tell_valtraincenter_vseq)
 
+  static int trainerror_cnt;
+
   // -------------------------------------------------------------------------
   //  Constructor
   // -------------------------------------------------------------------------
@@ -20,6 +22,10 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
   //  Body Task
   // -------------------------------------------------------------------------
   virtual task body();
+  $display("trainerror_cnt %0d, %0t",trainerror_cnt, $time);
+  if (trainerror_cnt == 0) begin
+    mbinit_vseq.start(p_sequencer);
+
     valverf_vseq.configure(
         .missing_msg(IDEAL),
         .D2c_mode(SUCCESS),
@@ -51,15 +57,22 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
 
     trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
 
+    trainerror_cnt++;
+
     valverf_vseq.start(p_sequencer);
     dataverf_vseq.start(p_sequencer);
     speedidle_vseq.start(p_sequencer);
     txselfcal_vseq.start(p_sequencer);
     rxclkcal_vseq.start(p_sequencer);
     valtraincenter_vseq.start(p_sequencer);
+  end else begin
 
+    $display("no trainerror");
     p_sequencer.tx_fifo.flush();
     p_sequencer.rx_fifo.flush();
+
+    $display("%0d",p_sequencer.tx_fifo.size());
+    $display("%0d",p_sequencer.rx_fifo.size());
 
     mbinit_vseq.start(p_sequencer);
 
@@ -175,7 +188,6 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
             active_rx_seq.start(rp_rmblink_seqr);
         end     
     join_any
-    
-
+  end
   endtask
 endclass : ucie_mbtrain_tell_valtraincenter_vseq
