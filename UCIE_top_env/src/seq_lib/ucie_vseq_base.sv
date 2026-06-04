@@ -75,6 +75,7 @@ typedef class ucie_mbtrain_datatrainvref_vseq;
 typedef class ucie_mbtrain_rxdskew_vseq;
 typedef class ucie_mbtrain_DTC2_vseq;
 typedef class ucie_mbtrain_linkspeed_vseq;
+typedef class ucie_mbinit_bringup_vseq;
 
 class ucie_vseq_base extends uvm_sequence;
 
@@ -98,6 +99,8 @@ class ucie_vseq_base extends uvm_sequence;
   rmblink_sanity_valid_sequence     rmblink_valid_seq;
   rmblink_sanity_lfsr_sequence      rmblink_lfsr_seq;
   rmblink_sanity_PerLaneID_sequence rmblink_PerLaneID_seq;
+
+  ucie_mbinit_bringup_vseq          mbinit_vseq;
 
   ucie_mbtrain_valverf_vseq         valverf_vseq;
   ucie_mbtrain_dataverf_vseq        dataverf_vseq;
@@ -159,6 +162,7 @@ class ucie_vseq_base extends uvm_sequence;
     state_req_handshake   = linkinit_state_req_handshake::type_id::create("state_req_handshake");
     rmblink_PerLaneID_seq = rmblink_sanity_PerLaneID_sequence::type_id::create("rmblink_PerLaneID_seq");
 
+    mbinit_vseq        = ucie_mbinit_bringup_vseq::type_id::create("mbinit_vseq");
     valverf_vseq        = ucie_mbtrain_valverf_vseq::type_id::create("valverf_vseq");
     dataverf_vseq       = ucie_mbtrain_dataverf_vseq::type_id::create("valverf_vseq");
     speedidle_vseq      = ucie_mbtrain_speedidle_vseq::type_id::create("speedidle_vseq");
