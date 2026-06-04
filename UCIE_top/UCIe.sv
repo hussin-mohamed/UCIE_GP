@@ -61,6 +61,7 @@ module UCIe_phy #(
   logic sb_ready_reg;
   bit   t1_ms;
   logic   reset_sb;
+  logic   reset_sb_reg;
   PLL_model PLL (
       .i_sel(LTSM_controllers_vif.o_speedreg),
       .i_reset(LTSM_controllers_vif.i_reset),
@@ -320,7 +321,7 @@ module UCIe_phy #(
   assign LTSM_controllers_vif.i_Runtime_Link_Test_status_register  = 0;
   assign LTSM_controllers_vif.i_Runtime_Link_Test_Control_register = 0;
 
-  assign reset_sb = (tx_fsm_sb_if.o_tx_encoding == 0) ? 1'b1 : 1'b0; // add reset condition for sb if needed);
+  assign reset_sb_reg = (tx_fsm_sb_if.o_tx_encoding == 0) ? 1'b1 : 1'b0; // add reset condition for sb if needed);
   // top instantiation of all blocks
   toggle_sync sync_rx(
     .i_clk(clk_l),
@@ -334,6 +335,13 @@ module UCIe_phy #(
     .i_reset(i_reset),
     .i_cnt(tx_bfm.o_sb_tx_done),
     .o_cnt(tx_fsm_sb_if.i_sb_tx_done)
+  );
+  
+  toggle_sync sync_rst(
+    .i_clk(clk_l),
+    .i_reset(i_reset),
+    .i_cnt(reset_sb_reg),
+    .o_cnt(reset_sb)
   );
 
   ucie_LTSM LTSM (
