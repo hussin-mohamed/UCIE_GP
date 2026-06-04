@@ -26,7 +26,8 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
         .data_mode(VALID_PATTERN),
         .info_mode(CORRECT),
         .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT)
+        .valid_mode(VALID_CORRECT),
+        .missing_msg(IDEAL)
     );
 
     dataverf_vseq.configure(

@@ -17,13 +17,15 @@ class ucie_mbtrain_valverf_vseq extends ucie_vseq_base;
   endfunction
 
   function configure (D2c_mode_e D2c_mode, pattern_mode_e pattern_mode,
-                      data_mode_e data_mode, info_mode_e info_mode, message_mode_e message_mode, valid_mode_e valid_mode);
+                      data_mode_e data_mode, info_mode_e info_mode, message_mode_e message_mode, valid_mode_e valid_mode, missing_msg_e missing_msg);
     this.D2c_mode = D2c_mode;
     this.pattern_mode = pattern_mode;
     this.data_mode = data_mode;
     this.info_mode = info_mode;
     this.message_mode = message_mode;
     this.valid_mode = valid_mode;
+    this.missing_msg = missing_msg;
+
     is_configured = 1;
   endfunction
 
@@ -43,8 +45,16 @@ class ucie_mbtrain_valverf_vseq extends ucie_vseq_base;
     `uvm_info("VSEQ", $sformatf("Valverf_Start_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
     p_sequencer.rx_fifo.get(sb_ltsm_item);
+
+    if (missing_msg == IDEAL) begin
     sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_VALVREF_TX_Start_Handshake);
     send_sb_msg(sb_ltsm_item);
+    end
+
+    else if (missing_msg == MISS) begin
+    TRAINERROR_vseq.start(p_sequencer);
+    return;
+    end
 
     // Valverf_Start_RX_LTSM
     `uvm_info("VSEQ", $sformatf("Valverf_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)

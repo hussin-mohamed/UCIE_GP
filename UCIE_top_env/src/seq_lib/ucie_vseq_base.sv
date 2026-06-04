@@ -58,8 +58,7 @@ typedef enum {
 
 typedef enum {
   IDEAL,
-  REQ_MISS,
-  RESP_MISS
+  MISS
 } missing_msg_e;
 
 
@@ -84,6 +83,7 @@ typedef class ucie_mbtrain_rxdskew_vseq;
 typedef class ucie_mbtrain_DTC2_vseq;
 typedef class ucie_mbtrain_linkspeed_vseq;
 typedef class ucie_mbinit_bringup_vseq;
+typedef class ucie_trainerror_vseq;
 
 class ucie_vseq_base extends uvm_sequence;
 
@@ -122,6 +122,7 @@ class ucie_vseq_base extends uvm_sequence;
   ucie_mbtrain_rxdskew_vseq         rxdskew_vseq;
   ucie_mbtrain_DTC2_vseq            DTC2_vseq;
   ucie_mbtrain_linkspeed_vseq       LINKSPEED_vseq;
+  ucie_trainerror_vseq              TRAINERROR_vseq;
 
   rdi_base_seq            active_tx_seq;
   rmblink_active_sequence active_rx_seq;
@@ -132,6 +133,7 @@ class ucie_vseq_base extends uvm_sequence;
   protected info_mode_e      info_mode;
   protected message_mode_e   message_mode;
   protected valid_mode_e     valid_mode;
+  protected missing_msg_e    missing_msg;
   protected lane_map_code_e  lane_map_code;
   protected trainerror_e     train_error_state;
   protected bit              is_configured;
@@ -184,6 +186,7 @@ class ucie_vseq_base extends uvm_sequence;
     rxdskew_vseq        = ucie_mbtrain_rxdskew_vseq::type_id::create("rxdskew_vseq");
     DTC2_vseq           = ucie_mbtrain_DTC2_vseq::type_id::create("DTC2_vseq");
     LINKSPEED_vseq      = ucie_mbtrain_linkspeed_vseq::type_id::create("LINKSPEED_vseq");
+    TRAINERROR_vseq     = ucie_trainerror_vseq::type_id::create("TRAINERROR_vseq");
 
     active_tx_seq = rdi_base_seq::type_id::create("active_tx_seq");
     active_rx_seq = rmblink_active_sequence::type_id::create("active_rx_seq");
@@ -211,8 +214,8 @@ class ucie_vseq_base extends uvm_sequence;
 
     // Fatal message incase the user passed _sb_ltsm_item gotten from tx/rx encoding directly
     if (_sb_ltsm_item.get_dir() == MSG_TO_RX || _sb_ltsm_item.get_dir() == MSG_TO_TX) begin
-      `uvm_fatal("VSEQ_BASE", "TX/RX Encoding is not set. You must call _sb_ltsm_item's set_tx/rx_encoding() before passing it to send_sb_msg(). \
-        \nMost Probably, you have passed the _sb_ltsm_item you got from tx/rx_fifo directly to send_sb_msg()")
+      `uvm_fatal("VSEQ_BASE", "TX/RX Encoding is not set. You must call _sb_ltsm_item's set_tx/rx_encoding() before passing it to send_sb_msg(). \\n 
+      Most Probably, you have passed the _sb_ltsm_item you got from tx/rx_fifo directly to send_sb_msg()")
     end
 
     tx_enc = _sb_ltsm_item.get_tx_encoding();
