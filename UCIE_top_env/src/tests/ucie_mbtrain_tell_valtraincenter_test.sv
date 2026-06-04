@@ -7,9 +7,6 @@
 class ucie_mbtrain_tell_valtraincenter_test extends ucie_base_test;
 
   `uvm_component_utils(ucie_mbtrain_tell_valtraincenter_test)
-  
-  ucie_mbinit_bringup_vseq vseq;
-  ucie_mbtrain_tell_valtraincenter_vseq tell_valtraincenter_vseq;
 
   // -------------------------------------------------------------------------
   //  Constructor
@@ -19,38 +16,16 @@ class ucie_mbtrain_tell_valtraincenter_test extends ucie_base_test;
     uvm_top.set_timeout(100ms, 0);
   endfunction
 
+  function void build_phase(uvm_phase phase);
+    // Override the base vseq by your vseq
+    ucie_vseq_base::type_id::set_type_override(ucie_mbtrain_tell_valtraincenter_vseq::get_type());
+    
+    super.build_phase(phase);
+  endfunction : build_phase
+
   virtual function void start_of_simulation_phase(uvm_phase phase);
-    vseq = ucie_mbinit_bringup_vseq::type_id::create("vseq");
-    tell_valtraincenter_vseq = ucie_mbtrain_tell_valtraincenter_vseq::type_id::create("tell_valtraincenter_vseq");
+    // Set the drain time to be waited before exiting the main phase
+    set_main_phase_drain_time(100000ns);
   endfunction : start_of_simulation_phase
-
-  // -------------------------------------------------------------------------
-  //  Run Phase
-  // -------------------------------------------------------------------------
-  virtual task main_phase(uvm_phase phase);
-    fork
-      begin
-        phase.raise_objection(this);
-
-        vseq.start(env.vseqr);
-        tell_valtraincenter_vseq.start(env.vseqr);
-
-        wait (env.sb_env_i.phylink_agt.mntr.txn_in_cnt == vseq.ltsm2link_msg_cnt);
-
-        // Wait a bit to let things settle after sequence finishes
-        #1000000ns;
-
-        phase.drop_objection(this);
-      end
-    join_none
-
-
-    @(posedge m_cfg.sb_cfg.phylink_bfm_drive.reset);
-    @(negedge m_cfg.sb_cfg.phylink_bfm_drive.reset);
-    @(posedge m_cfg.sb_cfg.phylink_bfm_drive.reset);
-    `uvm_info(get_type_name(), "Starting ACTIVE RESETBase test class for the Sideband testbench, handling environment setup and common test configuration.", UVM_MEDIUM)
-    phase.get_objection().set_report_severity_id_override(UVM_WARNING, "OBJTN_CLEAR", UVM_INFO);
-    phase.jump(uvm_pre_reset_phase::get());
-  endtask
 
 endclass : ucie_mbtrain_tell_valtraincenter_test
