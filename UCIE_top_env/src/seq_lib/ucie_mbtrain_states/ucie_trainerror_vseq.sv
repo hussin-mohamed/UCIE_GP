@@ -9,7 +9,7 @@ class ucie_trainerror_vseq extends ucie_vseq_base;
 
   `uvm_object_utils(ucie_trainerror_vseq)
 
-  static int trainerr_cnt;
+  protected static int trainerr_cnt;
 
   // -------------------------------------------------------------------------
   //  Constructor
@@ -65,4 +65,8 @@ class ucie_trainerror_vseq extends ucie_vseq_base;
 
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask
+
+  function void reset_trainerr_cnt();
+    trainerr_cnt = 0;
+  endfunction : reset_trainerr_cnt
 endclass : ucie_trainerror_vseq
