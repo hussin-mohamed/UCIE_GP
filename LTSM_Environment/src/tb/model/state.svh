@@ -30,8 +30,10 @@ import shared_ltsm_pkg::*;
     static int error_count;
     static logic [2:0] o_pl_speedmode_expected;
     static logic [2:0] lane_map_tx,lane_map_rx;
+    static logic [8:0] encoding_rx = 0;
     static bit first;
     static bit trainerror;
+    bit first_error;
 
     static bit tx_done;
     static bit rx_done;
@@ -161,6 +163,8 @@ import shared_ltsm_pkg::*;
         if (cntxt.currentstate_tx != nextState_tx || cntxt.currentstate_rx != nextState_rx) begin
             `uvm_info("state", $sformatf("Current State: TX: %s, RX: %s, Next State: TX: %s, RX: %s", cntxt.currentstate_tx.getStateId(), cntxt.currentstate_rx.getStateId(), nextState_tx.getStateId(), nextState_rx.getStateId()), UVM_MEDIUM)
         end
+
+        encoding_rx = item_rx_fsm_sb_out.o_rx_encoding;
         
         match_tx = nextState_tx.doSpecificCombAction(cntxt, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in,item_controllers_out,item_rdi_out,item_rx_fsm_sb_out,item_tx_fsm_sb_out);
         match_rx = nextState_rx.doSpecificCombAction(cntxt, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in,item_controllers_out,item_rdi_out,item_rx_fsm_sb_out,item_tx_fsm_sb_out);

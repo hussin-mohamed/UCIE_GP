@@ -233,7 +233,7 @@ module ucie_sideband_tx_msg_enc_dec
 
     // ========== MBTRAIN.LINKSPEED Messages ==========
     MBTRAIN_LINKSPEED_START_RESP   = 'hB8,
-    MBTRAIN_LINKSPEED_ERROR_RESP   = 'hBB,
+    MBTRAIN_LINKSPEED_ERROR_RESP   = 'hBF,
     MBTRAIN_LINKSPEED_EXIT_REPAIR_RESP      = 'hBD,
     MBTRAIN_LINKSPEED_EXIT_DEGRADE_RESP     = 'hBE,
     MBTRAIN_LINKSPEED_DONE_RESP    = 'hBA,

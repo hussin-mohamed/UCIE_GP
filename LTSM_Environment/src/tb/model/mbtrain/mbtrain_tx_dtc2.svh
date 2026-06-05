@@ -179,7 +179,10 @@ class mbtrain_tx_dtc2 extends State;
             // o_tx_sb_req_expected = item_tx_fsm_sb_out.o_tx_sb_req;
             //o_tx_sb_req_expected = 1'b1;
             train=0;
-            error_count++;
+            if (!first_error) begin
+                error_count++;
+                first_error=1;
+            end 
             ////$display("error_count = %0d at time = %0t",error_count,$time);
             if (error_count == 4) begin
                 o_tx_encoding_expected = DATA_TO_CLOCK_RX_RX_RESULT_HANDSHAKE;

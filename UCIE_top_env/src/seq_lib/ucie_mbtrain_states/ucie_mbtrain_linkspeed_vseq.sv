@@ -17,6 +17,10 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
   endfunction
 
   function configure (linkspeed_destination_e linkspeed_dest, pattern_mode_e pattern_mode, message_mode_e message_mode, speed_idle_entry_e speed_idle_entry );
+    this.linkspeed_dest = linkspeed_dest;
+    this.pattern_mode = pattern_mode;
+    this.message_mode = message_mode;
+    this.speed_idle_entry = speed_idle_entry;
     if (linkspeed_dest == LINKINIT) begin
       this.D2c_mode = SUCCESS;
       this.pattern_mode = PAT_ALL_LANES_VALID;
@@ -152,25 +156,26 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
       // waiting for error request and sending it again
 
       p_sequencer.rx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_LinksSpeed_Done_Hnd);
+      $display("zobryyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_Error_REQ);
       send_sb_msg(sb_ltsm_item);
 
       // waiting for error response and sending it again
 
       p_sequencer.tx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Wait_REQ);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Send_Error_RESP);
       send_sb_msg(sb_ltsm_item);
 
       // waiting for speeddegrade request and sending it again
 
       p_sequencer.rx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_LinksSpeed_Done_Hnd);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_Exit_SpeedDegrade_Hnd);
       send_sb_msg(sb_ltsm_item);
 
       // waiting for speeddegrade response and sending it again
 
       p_sequencer.tx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Wait_REQ);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Send_SpeedDegrade_RESP);
       send_sb_msg(sb_ltsm_item);
     end
 
