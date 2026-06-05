@@ -23,6 +23,7 @@ class ucie_vseqr extends uvm_sequencer;
   sb_pkg::sb_pred_ltsm2link                         prd_ltsm2link;
 
   uvm_analysis_export #(phylink_seq_item)           axp_in;
+  
   uvm_tlm_analysis_fifo #(sb_pkg::ltsm_seq_item)    tx_fifo;
   uvm_tlm_analysis_fifo #(sb_pkg::ltsm_seq_item)    rx_fifo;
   uvm_tlm_analysis_fifo #(sb_pkg::phylink_seq_item) link_fifo;
@@ -65,9 +66,14 @@ class ucie_vseqr extends uvm_sequencer;
 
   task pre_reset_phase(uvm_phase phase);
     super.pre_reset_phase(phase);
+
+    // Stop all the virtual sequences before restarting the main phase
     stop_sequences();
+
+    // Flush the FIFOs to avoid getting old messages from the prvious main phase run
+    tx_fifo.flush();
+    rx_fifo.flush();
+    link_fifo.flush();
   endtask : pre_reset_phase
-
-
 
 endclass : ucie_vseqr

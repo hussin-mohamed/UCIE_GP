@@ -169,7 +169,7 @@ task rp_driver_base::drive_items();
     `uvm_info(get_type_name(), "Got a request item", UVM_DEBUG)
 
     // Call the drive_item() task to convert the transaction-level item to pin-level signals
-    `uvm_info(get_type_name(), "DrivingBase driver class for all RX-Path drivers, handling BFM interaction and reset.", UVM_DEBUG)
+    `uvm_info(get_type_name(), "Base driver class for all RX-Path drivers, handling BFM interaction and reset.", UVM_DEBUG)
     drive_item(req, rsp);
     `uvm_info(get_type_name(), $sformatf("DRIVED %s: \n%s", req.get_type_name(), req.sprint()), UVM_DEBUG)
 

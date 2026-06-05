@@ -13,6 +13,8 @@ class ucie_base_test extends uvm_test;
   ucie_env_cfg    m_cfg;
   ucie_vseq_base  vseq;
 
+  uvm_factory factory = uvm_factory::get();
+
   protected time main_phase_drain_time;
 
   // -------------------------------------------------------------------------
@@ -20,7 +22,7 @@ class ucie_base_test extends uvm_test;
   // -------------------------------------------------------------------------
   function new(string name="ucie_base_test", uvm_component parent=null);
     super.new(name, parent);
-  endfunction
+  endfunction : new
 
   // -------------------------------------------------------------------------
   //  Build Phase
@@ -34,8 +36,6 @@ class ucie_base_test extends uvm_test;
     m_cfg.sb_cfg   = sb_pkg::env_config::type_id::create("sb_cfg");
     m_cfg.rp_cfg   = rp_pkg::env_config::type_id::create("rp_cfg");
     m_cfg.tx_cfg   = tx_tb_pkg::tx_env_cfg::type_id::create("tx_cfg");
-
-    vseq = ucie_vseq_base::type_id::create("vseq");
 
     // -----------------------------------------------------------------------
     // Retrieve Virtual Interfaces
@@ -91,16 +91,28 @@ class ucie_base_test extends uvm_test;
 
     uvm_config_db#(ucie_env_cfg)::set(this, "env", "ucie_env_cfg", m_cfg);
     env = ucie_env::type_id::create("env", this);
-  endfunction
+  endfunction : build_phase
 
   // -------------------------------------------------------------------------
   //  End of Elaboration Phase
   // -------------------------------------------------------------------------
   virtual function void end_of_elaboration_phase(uvm_phase phase);
     super.end_of_elaboration_phase(phase);
+    
+    vseq = ucie_vseq_base::type_id::create("vseq");
+
     `uvm_info(get_type_name(), "Printing UVM System Topology:", UVM_NONE)
     uvm_top.print_topology();
-  endfunction
+  endfunction : end_of_elaboration_phase
+
+  // -------------------------------------------------------------------------
+  //  Start of Simulation Phase
+  // -------------------------------------------------------------------------
+  function void start_of_simulation_phase(uvm_phase phase);
+    super.start_of_simulation_phase(phase);
+    
+    `uvm_info("start_of_simulation_phase", $sformatf("=============== Start of %s ===============", this.get_type_name()), UVM_MEDIUM)
+  endfunction : start_of_simulation_phase
 
   // -------------------------------------------------------------------------
   //  Main Phase
@@ -125,11 +137,24 @@ class ucie_base_test extends uvm_test;
     join_none
 
     @(posedge m_cfg.sb_cfg.phylink_bfm_drive.reset);
-    `uvm_info(get_type_name(), "Starting ACTIVE RESETBase test class for the Sideband testbench, handling environment setup and common test configuration.", UVM_MEDIUM)
+    `uvm_info(get_type_name(), "RESET state is hit, jumping to the uvm_pre_reset_phase...", UVM_MEDIUM)
     phase.get_objection().set_report_severity_id_override(UVM_WARNING, "OBJTN_CLEAR", UVM_INFO);
     phase.jump(uvm_pre_reset_phase::get());
-  endtask
+  endtask : main_phase
 
+  // -------------------------------------------------------------------------
+  //  Final Phase
+  // -------------------------------------------------------------------------
+  function void final_phase(uvm_phase phase);
+    super.final_phase(phase);
+
+    factory.print(0);
+    `uvm_info("start_of_simulation_phase", $sformatf("=============== End of %s ===============", this.get_type_name()), UVM_MEDIUM)
+  endfunction : final_phase
+
+  // -------------------------------------------------------------------------
+  //  Set Main Phase Drain Time
+  // -------------------------------------------------------------------------
   function void set_main_phase_drain_time(time _drain_time);
     main_phase_drain_time = _drain_time;
   endfunction : set_main_phase_drain_time

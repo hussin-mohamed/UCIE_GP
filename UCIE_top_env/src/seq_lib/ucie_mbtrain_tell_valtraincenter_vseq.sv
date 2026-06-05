@@ -22,7 +22,6 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
   //  Body Task
   // -------------------------------------------------------------------------
   virtual task body();
-  $display("trainerror_cnt %0d, %0t",trainerror_cnt, $time);
   if (trainerror_cnt == 0) begin
     mbinit_vseq.start(p_sequencer);
 
@@ -66,14 +65,6 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
     rxclkcal_vseq.start(p_sequencer);
     valtraincenter_vseq.start(p_sequencer);
   end else begin
-
-    $display("no trainerror");
-    p_sequencer.tx_fifo.flush();
-    p_sequencer.rx_fifo.flush();
-
-    $display("%0d",p_sequencer.tx_fifo.size());
-    $display("%0d",p_sequencer.rx_fifo.size());
-
     mbinit_vseq.start(p_sequencer);
 
     valverf_vseq.configure(

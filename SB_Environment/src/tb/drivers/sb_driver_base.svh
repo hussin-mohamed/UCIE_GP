@@ -154,7 +154,7 @@ task sb_driver_base::run_phase(uvm_phase phase);
     
     // Wait for the SBINIT to finish
     if (wait_for_sbinit) begin
-     `uvm_info(get_type_name(), "Waiting for the ready signalBase driver class for all Sideband drivers, handling BFM interaction and reset.", UVM_DEBUG)
+     `uvm_info(get_type_name(), "Waiting for the ready signal assertion to start the Sideband ACTIVE phase.", UVM_DEBUG)
       @(negedge bfm.o_sb_ready);
       repeat(2) @(negedge bfm.clk);
     end
@@ -201,7 +201,7 @@ task sb_driver_base::drive_items();
     end
 
     // Call the drive_item() task to convert the transaction-level item to pin-level signals
-    `uvm_info(get_type_name(), "DrivingBase driver class for all Sideband drivers, handling BFM interaction and reset.", UVM_DEBUG)
+    `uvm_info(get_type_name(), "Base driver class for all Sideband drivers, handling BFM interaction and reset.", UVM_DEBUG)
     drive_item(req, rsp);
     `uvm_info(get_type_name(), $sformatf("DRIVED %s: \n%s", req.get_type_name(), req.sprint()), UVM_DEBUG)
 

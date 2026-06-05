@@ -160,8 +160,11 @@ task sb_monitor_base::monitor_items_out();
     // Write item_out to the analysis port and log the monitored item_out
     out_ap.write(item_out);
     `uvm_info(get_type_name(), $sformatf(
-              "MONITORED item_out %s: \n%s", item_out.get_type_name(), item_out.sprint()),
-              UVM_LOW)
+              "MONITORED item_out [Index %0d] %s: \n%s",
+              txn_out_cnt,
+              item_out.get_type_name(),
+              item_out.sprint()
+              ), UVM_LOW)
     txn_out_cnt++;
 
     // Send item_out to the sequencer if the monitor is configured to be reactive

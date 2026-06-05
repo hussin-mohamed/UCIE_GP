@@ -107,6 +107,9 @@ class ucie_vseq_base extends uvm_sequence;
   rp_pkg::rmblink_sequencer     rp_rmblink_seqr;
   tx_tb_pkg::rdi_sequencer      tx_rdi_seqr;
 
+  uvm_tlm_analysis_fifo #(sb_pkg::ltsm_seq_item)    tx_fifo;
+  uvm_tlm_analysis_fifo #(sb_pkg::ltsm_seq_item)    rx_fifo;
+
   phylink_seq_item      phylink_item;
   sb_pkg::ltsm_seq_item sb_ltsm_item;
   
@@ -170,41 +173,48 @@ class ucie_vseq_base extends uvm_sequence;
   virtual task pre_body();
     p_sequencer.msg_ser_status = NO_MSG_SER_IN_PROGRESS;
     
+    // Subsequencer Handles
     ltsm_rdi_seqr   = p_sequencer.ltsm_rdi_seqr;
     sb_phylink_seqr = p_sequencer.sb_phylink_seqr;
     rp_rmblink_seqr = p_sequencer.rp_rmblink_seqr;
     tx_rdi_seqr     = p_sequencer.tx_rdi_seqr;
 
-    active_phylink_seq    = active_phylink_sequence::type_id::create("active_phylink_seq");
-    sbinit_phylink_seq    = sbinit_phylink_sanity_seq::type_id::create("sbinit_phylink_seq");
-    rmblink_clk_seq       = rmblink_sanity_clk_sequence::type_id::create("rmblink_clk_seq");
-    rmblink_valid_seq     = rmblink_sanity_valid_sequence::type_id::create("rmblink_valid_seq");
-    rmblink_lfsr_seq      = rmblink_sanity_lfsr_sequence::type_id::create("rmblink_lfsr_seq");
-    ucie_RX_D2C           = ucie_RX_D2C_vseq::type_id::create("ucie_RX_D2C");
-    ucie_TX_D2C           = ucie_TX_D2C_vseq::type_id::create("ucie_TX_D2C");
+    // TX FIFO and RX FIFO Handles
+    tx_fifo = p_sequencer.tx_fifo;
+    rx_fifo = p_sequencer.rx_fifo;
+
+    // Subsequences Creation
+    active_phylink_seq        = active_phylink_sequence::type_id::create("active_phylink_seq");
+    sbinit_phylink_seq        = sbinit_phylink_sanity_seq::type_id::create("sbinit_phylink_seq");
+    rmblink_clk_seq           = rmblink_sanity_clk_sequence::type_id::create("rmblink_clk_seq");
+    rmblink_valid_seq         = rmblink_sanity_valid_sequence::type_id::create("rmblink_valid_seq");
+    rmblink_lfsr_seq          = rmblink_sanity_lfsr_sequence::type_id::create("rmblink_lfsr_seq");
+    active_rx_seq             = rmblink_active_sequence::type_id::create("active_rx_seq");
+    active_tx_seq             = rdi_base_seq::type_id::create("active_tx_seq");
+    rmblink_PerLaneID_seq     = rmblink_sanity_PerLaneID_sequence::type_id::create("rmblink_PerLaneID_seq");
+    wake_req_handshake        = linkinit_wake_req_handshake::type_id::create("wake_req_handshake");
+    state_req_handshake       = linkinit_state_req_handshake::type_id::create("state_req_handshake");
+
+    // Child Virtual Sequences Creation
+    mbinit_vseq               = ucie_mbinit_bringup_vseq::type_id::create("mbinit_vseq");
+    valverf_vseq              = ucie_mbtrain_valverf_vseq::type_id::create("valverf_vseq");
+    dataverf_vseq             = ucie_mbtrain_dataverf_vseq::type_id::create("valverf_vseq");
+    speedidle_vseq            = ucie_mbtrain_speedidle_vseq::type_id::create("speedidle_vseq");
+    txselfcal_vseq            = ucie_mbtrain_txselfcal_vseq::type_id::create("txselfcal_vseq");
+    rxclkcal_vseq             = ucie_mbtrain_rxclkcal_vseq::type_id::create("rxclkcal_vseq");
+    valtraincenter_vseq       = ucie_mbtrain_valtraincenter_vseq::type_id::create("valtraincenter_vseq");
+    valtrainverf_vseq         = ucie_mbtrain_valtrainverf_vseq::type_id::create("valtrainverf_vseq");
+    DTC1_vseq                 = ucie_mbtrain_DTC1_vseq::type_id::create("DTC1_vseq");
+    datatrainvref_vseq        = ucie_mbtrain_datatrainvref_vseq::type_id::create("datatrainvref_vseq");
+    rxdskew_vseq              = ucie_mbtrain_rxdskew_vseq::type_id::create("rxdskew_vseq");
+    DTC2_vseq                 = ucie_mbtrain_DTC2_vseq::type_id::create("DTC2_vseq");
+    LINKSPEED_vseq            = ucie_mbtrain_linkspeed_vseq::type_id::create("LINKSPEED_vseq");
+    TRAINERROR_vseq           = ucie_trainerror_vseq::type_id::create("TRAINERROR_vseq");
+    ucie_RX_D2C               = ucie_RX_D2C_vseq::type_id::create("ucie_RX_D2C");
+    ucie_TX_D2C               = ucie_TX_D2C_vseq::type_id::create("ucie_TX_D2C");
     trainerror_rdi_exit_vseq  = trainerror_rdiexit::type_id::create("trainerror_rdi_exit_vseq");
-    wake_req_handshake    = linkinit_wake_req_handshake::type_id::create("wake_req_handshake");
-    state_req_handshake   = linkinit_state_req_handshake::type_id::create("state_req_handshake");
-    rmblink_PerLaneID_seq = rmblink_sanity_PerLaneID_sequence::type_id::create("rmblink_PerLaneID_seq");
 
-    mbinit_vseq         = ucie_mbinit_bringup_vseq::type_id::create("mbinit_vseq");
-    valverf_vseq        = ucie_mbtrain_valverf_vseq::type_id::create("valverf_vseq");
-    dataverf_vseq       = ucie_mbtrain_dataverf_vseq::type_id::create("valverf_vseq");
-    speedidle_vseq      = ucie_mbtrain_speedidle_vseq::type_id::create("speedidle_vseq");
-    txselfcal_vseq      = ucie_mbtrain_txselfcal_vseq::type_id::create("txselfcal_vseq");
-    rxclkcal_vseq       = ucie_mbtrain_rxclkcal_vseq::type_id::create("rxclkcal_vseq");
-    valtraincenter_vseq = ucie_mbtrain_valtraincenter_vseq::type_id::create("valtraincenter_vseq");
-    valtrainverf_vseq   = ucie_mbtrain_valtrainverf_vseq::type_id::create("valtrainverf_vseq");
-    DTC1_vseq           = ucie_mbtrain_DTC1_vseq::type_id::create("DTC1_vseq");
-    datatrainvref_vseq  = ucie_mbtrain_datatrainvref_vseq::type_id::create("datatrainvref_vseq");
-    rxdskew_vseq        = ucie_mbtrain_rxdskew_vseq::type_id::create("rxdskew_vseq");
-    DTC2_vseq           = ucie_mbtrain_DTC2_vseq::type_id::create("DTC2_vseq");
-    LINKSPEED_vseq      = ucie_mbtrain_linkspeed_vseq::type_id::create("LINKSPEED_vseq");
-    TRAINERROR_vseq     = ucie_trainerror_vseq::type_id::create("TRAINERROR_vseq");
-
-    active_tx_seq = rdi_base_seq::type_id::create("active_tx_seq");
-    active_rx_seq = rmblink_active_sequence::type_id::create("active_rx_seq");
-
+    // Sideband LTSM Sequence Item Creation
     sb_ltsm_item = new("sb_ltsm_item");
 
     fork
@@ -218,11 +228,15 @@ class ucie_vseq_base extends uvm_sequence;
         end
       end
     join_none
+
+    `uvm_info("UCIE_VSEQ", $sformatf("Starting system-level %s virtual sequence", get_type_name()), UVM_LOW)
   endtask : pre_body
 
   virtual task post_body();
     // Wait if there is a message serialization in progress
     wait_for_msg_ser_end();
+
+    `uvm_info("UCIE_VSEQ", $sformatf("System-level %s virtual sequence finished", get_type_name()), UVM_LOW)
   endtask : post_body
 
   function void send_sb_msg(sb_pkg::ltsm_seq_item _sb_ltsm_item);
@@ -233,8 +247,8 @@ class ucie_vseq_base extends uvm_sequence;
 
     // Fatal message incase the user passed _sb_ltsm_item gotten from tx/rx encoding directly
     if (_sb_ltsm_item.get_dir() == MSG_TO_RX || _sb_ltsm_item.get_dir() == MSG_TO_TX) begin
-      `uvm_fatal("VSEQ_BASE", "TX/RX Encoding is not set. You must call _sb_ltsm_item's set_tx/rx_encoding() before passing it to send_sb_msg(). \\n 
-      Most Probably, you have passed the _sb_ltsm_item you got from tx/rx_fifo directly to send_sb_msg()")
+      `uvm_fatal("VSEQ_BASE", "TX/RX Encoding is not set. You must call sb_ltsm_item's set_tx/rx_encoding() before passing it to send_sb_msg(). \
+                  \n Most Probably, you have passed the sb_ltsm_item you got from tx/rx_fifo directly to send_sb_msg()")
     end
 
     tx_enc = _sb_ltsm_item.get_tx_encoding();
@@ -252,7 +266,7 @@ class ucie_vseq_base extends uvm_sequence;
 
     ltsm2link_msg_cnt++;
 
-    `uvm_info("VSEQ_BASE", $sformatf("Sending LTSM2LINK Sideband message [Index %0d]. %s: %s", ltsm2link_msg_cnt, enc_type, enc_name), UVM_DEBUG)
+    `uvm_info("VSEQ_BASE", $sformatf("Sending LTSM2LINK Sideband message [Index %0d]. %s: %s, info: %0h, data: %0h", ltsm2link_msg_cnt, enc_type, enc_name, _sb_ltsm_item.info, _sb_ltsm_item.data), UVM_DEBUG)
   endfunction : send_sb_msg
 
   task wait_for_msg_ser_end();

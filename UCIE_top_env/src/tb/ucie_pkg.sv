@@ -47,7 +47,6 @@ package ucie_pkg;
   //  System-Level Sequences
   // -------------------------------------------------------------------------
   `include "sb_sequences/active_phylink_sequence.sv"
-  `include "ucie_sanity_vseq.sv"
   `include "ucie_vseq_base.sv"
   `include "ucie_mbinit_bringup_vseq.sv"
   `include "ucie_mbtrain_states/ucie_TX_D2C_vseq.sv"

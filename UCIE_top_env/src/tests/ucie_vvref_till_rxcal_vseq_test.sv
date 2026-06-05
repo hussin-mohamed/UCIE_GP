@@ -8,9 +8,6 @@ class ucie_vvref_till_rxcal_vseq_test extends ucie_base_test;
 
   `uvm_component_utils(ucie_vvref_till_rxcal_vseq_test)
   
-  ucie_mbinit_bringup_vseq vseq;
-  ucie_vvref_till_rxcal_vseq vvref_rxcal_vseq;
-
   // -------------------------------------------------------------------------
   //  Constructor
   // -------------------------------------------------------------------------

@@ -136,12 +136,16 @@ task rp_monitor_base::run_phase(uvm_phase phase);
     @(negedge bfm.reset);
 
     fork
-      monitor_items_out();
-      monitor_items_in();
-    join_none
+      begin
+        fork
+          monitor_items_out();
+          monitor_items_in();
+        join_none
 
-    @(posedge bfm.reset);
-    disable fork;
+        @(posedge bfm.reset);
+        disable fork;
+      end
+    join
     cleanup();
   end
 endtask : run_phase
