@@ -99,9 +99,8 @@ interface sb_sva #(
   // Helper signals (NOT from RTL — internal to SVA checker)
   // ============================================================================
   bit clk_2x, pat_detected, timeout;
-  bit [2:0] tms;
 
-  initial forever #1 clk_2x = ~clk_2x;
+  initial forever #60ns clk_2x = ~clk_2x;
 
   always @(negedge i_rx_sb_clk) begin
     wait(q_pat_det(i_rx_sb_data, i_rx_sb_clk).triggered);
@@ -112,11 +111,13 @@ interface sb_sva #(
     pat_detected = 0;
   end
 
-  always @(posedge i_clk) begin
+  // Millisecond Counter ranging from 0ms to 7ms
+  bit [2:0] tms;
+  always @(posedge clk_800MHz) begin
     if (i_reset) begin
       tms <= 0;
     end else begin
-      if (i_timer_1ms) begin
+      if (i_timer_1ms && i_sb_init_start) begin
         tms <= tms + 1;
       end
     end

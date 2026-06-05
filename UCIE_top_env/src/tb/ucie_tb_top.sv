@@ -161,8 +161,8 @@ module ucie_tb_top;
   // Binding Sideband Assertions Interface
   // -------------------------------------------------------------------------
   bind ucie_sb_top sb_sva sva_inst(
-     .i_clk           (clk_sb_100_m)
-    ,.clk_800MHz      (clk_sb_800_m)
+     .i_clk           (i_clk)
+    ,.clk_800MHz      (i_800MHz_clk)
     ,.i_reset         (i_reset)
 
     ,.i_tx_sb_req     (i_tx_sb_req)
