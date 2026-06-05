@@ -189,7 +189,7 @@ class mbtrain_tx_linkspeed extends State;
         else if (item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && item_tx_fsm_sb_in.i_tx_decoding == DATA_TO_CLOCK_TX_RX_RESULT_HANDSHAKE) begin
             o_tx_encoding_expected = DATA_TO_CLOCK_TX_RX_END_INIT_HANDSHAKE;
             if (!item_tx_fsm_sb_in.i_tx_info[4]) begin
-                error_count++;
+                error_count=1;
             end
             data = item_tx_fsm_sb_in.i_tx_data;
             if (data[15:8] < 8'b1111_1111 && data[7:0] == 8'b1111_1111) begin
