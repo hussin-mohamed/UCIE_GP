@@ -74,6 +74,11 @@ module UCIe_phy #(
       .o_clk_s(clk_mb_f),
       .o_clk_h(clk_mb_h),
       .o_clk_l(clk_l)
+    , .o_sim_cycles_8(LTSM_controllers_vif.i_sim_cycles_8)
+    , .o_sim_cycles_4(LTSM_controllers_vif.i_sim_cycles_4)
+    , .o_sim_cycles_1(LTSM_controllers_vif.i_sim_cycles_1)
+    , .o_sim_cycles_1_us(LTSM_controllers_vif.i_sim_cycles_1_us)
+    , .o_sim_cycles_2_us(LTSM_controllers_vif.i_sim_cycles_2_us)
   );
 
   // interfaces

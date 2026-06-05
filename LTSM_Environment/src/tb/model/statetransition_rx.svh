@@ -109,7 +109,7 @@ class StateTransitionUtil_rx extends State;
         case (cntxt.currentstate_rx.getStateId())
             fsm_rx_reset: begin
                //`uvm_info("l1_state_rx", $sformatf("i_reset: %0b, counter = %0d ", item_controllers_in.i_reset,counter), UVM_LOW);
-               if (item_controllers_in.i_supply_stable===1'b1 && item_controllers_in.i_pll_stable===1'b1 && item_controllers_in.i_reset===1'b0 && counter > ((((timeout/2)-6)))) begin
+               if (item_controllers_in.i_supply_stable===1'b1 && item_controllers_in.i_pll_stable===1'b1 && item_controllers_in.i_reset===1'b0 && counter > ((((item_controllers_in.i_sim_cycles_4)-6)))) begin
                   return SbInitState_rx::Instance();
                end
                else begin

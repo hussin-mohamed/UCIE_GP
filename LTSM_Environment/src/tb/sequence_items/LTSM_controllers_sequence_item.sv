@@ -50,6 +50,7 @@ class LTSM_controllers_seq_item extends uvm_sequence_item;
   logic [2:0] i_clk_results; //i_clk_result
   logic i_Runtime_Link_Test_status_register,o_Runtime_Link_Test_status_register;
   logic [36:0] i_Runtime_Link_Test_Control_register,o_Runtime_Link_Test_Control_register;
+  logic [12:0] i_sim_cycles_8,i_sim_cycles_4,i_sim_cycles_1,i_sim_cycles_1_us,i_sim_cycles_2_us;
 
     `uvm_object_utils_begin(LTSM_controllers_seq_item)
         `uvm_field_int(i_supply_stable,  UVM_NORECORD)
@@ -68,6 +69,11 @@ class LTSM_controllers_seq_item extends uvm_sequence_item;
         `uvm_field_int(o_Runtime_Link_Test_status_register, UVM_NORECORD)
         `uvm_field_int(i_Runtime_Link_Test_Control_register, UVM_NORECORD)
         `uvm_field_int(o_Runtime_Link_Test_Control_register, UVM_NORECORD)
+        `uvm_field_int(i_sim_cycles_8, UVM_NORECORD)
+        `uvm_field_int(i_sim_cycles_4, UVM_NORECORD)
+        `uvm_field_int(i_sim_cycles_1, UVM_NORECORD)
+        `uvm_field_int(i_sim_cycles_1_us, UVM_NORECORD)
+        `uvm_field_int(i_sim_cycles_2_us, UVM_NORECORD)
     `uvm_object_utils_end
 
 

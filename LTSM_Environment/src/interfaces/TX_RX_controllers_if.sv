@@ -40,5 +40,7 @@ interface LTSM_controllers_if (
   logic [15:0] i_local_cap;
   logic i_Runtime_Link_Test_status_register, o_Runtime_Link_Test_status_register;
   logic [36:0] i_Runtime_Link_Test_Control_register, o_Runtime_Link_Test_Control_register;
+  logic [12:0] i_sim_cycles_8,i_sim_cycles_4,i_sim_cycles_1,i_sim_cycles_1_us,i_sim_cycles_2_us;
+  
 
 endinterface : LTSM_controllers_if

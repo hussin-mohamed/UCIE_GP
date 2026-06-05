@@ -72,7 +72,7 @@ import shared_ltsm_pkg::*;
         else begin
             counter = 0;
         end
-        if (counter == (timeout+1) && cntxt.currentstate_tx != ResetState_tx::Instance()) begin
+        if (counter == (item_controllers_in.i_sim_cycles_8+1) && cntxt.currentstate_tx != ResetState_tx::Instance()) begin
             if (cntxt.currentstate_tx == SbInitState_tx::Instance()) begin
                 nextState_tx=ResetState_tx::Instance();
                 nextState_rx=ResetState_rx::Instance();

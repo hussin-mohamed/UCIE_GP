@@ -115,6 +115,11 @@ task LTSM_controllers_monitor::collect_transaction();
                 item_in.i_clk_results                        = vif.i_clk_results;
                 item_in.i_Runtime_Link_Test_status_register  = vif.i_Runtime_Link_Test_status_register;
                 item_in.i_Runtime_Link_Test_Control_register = vif.i_Runtime_Link_Test_Control_register;
+                item_in.i_sim_cycles_8                      = vif.i_sim_cycles_8;
+                item_in.i_sim_cycles_4                      = vif.i_sim_cycles_4;
+                item_in.i_sim_cycles_1                      = vif.i_sim_cycles_1;
+                item_in.i_sim_cycles_1_us                   = vif.i_sim_cycles_1_us;
+                item_in.i_sim_cycles_2_us                   = vif.i_sim_cycles_2_us;
                 ap_in.write(item_in);
                 transaction_count_in++;
             end
