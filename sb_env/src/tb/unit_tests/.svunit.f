@@ -1,0 +1,12 @@
++incdir+/mnt/hgfs/VLSI/GP/UCIE_GP/sb_env/src/tb/unit_tests
++incdir+/mnt/hgfs/VLSI/svunit-master/svunit_base/junit-xml
+/mnt/hgfs/VLSI/svunit-master/svunit_base/junit-xml/junit_xml.sv
++incdir+/mnt/hgfs/VLSI/svunit-master/svunit_base
+/mnt/hgfs/VLSI/svunit-master/svunit_base/svunit_pkg.sv
+/mnt/hgfs/VLSI/svunit-master/svunit_base/uvm-mock/svunit_uvm_mock_pkg.sv
++incdir+/mnt/hgfs/VLSI/svunit-master/svunit_base/uvm-mock
+/mnt/hgfs/VLSI/svunit-master/svunit_base/uvm-mock/svunit_uvm_mock_pkg.sv
+/mnt/hgfs/VLSI/GP/UCIE_GP/sb_env/src/tb/unit_tests/./sb_scoreboard_unit_test.sv
++incdir+/mnt/hgfs/VLSI/GP/UCIE_GP/sb_env/src/tb/unit_tests/.
+.__testsuite.sv
+.testrunner.sv

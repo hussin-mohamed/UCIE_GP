@@ -40,10 +40,10 @@ vlog -sv -mfcu -incr +define+UCIE_SYS_LVL=1 -suppress 2583 \
 # ---- SB Environment ---------------------------------------------------
 puts "→ Compiling SB Environment..."
 vlog -sv -mfcu -incr +define+UCIE_SYS_LVL=1 -suppress 2583 \
-    +incdir+../../SB_Environment/src/tb \
-    ../../SB_Environment/src/tb/sb_sva.sv \
-    ../../SB_Environment/src/tb/sb_shared_pkg.sv \
-    ../../SB_Environment/src/tb/sb_pkg.sv
+    +incdir+../../sb_env/src/tb \
+    ../../sb_env/src/tb/sb_sva.sv \
+    ../../sb_env/src/tb/sb_shared_pkg.sv \
+    ../../sb_env/src/tb/sb_pkg.sv
 
 # ---- RP Environment ---------------------------------------------------
 puts "→ Compiling RP Environment..."
@@ -86,12 +86,12 @@ vlog -sv -incr +define+UCIE_SYS_LVL=1 \
     ../../rp_env/src/bfms/rp_reset_intf.sv \
     ../../rp_env/src/bfms/rp_rmblink_bfm.sv \
     ../../LTSM_Environment/src/interfaces/RX_FSM_SB_if.sv \
-    ../../SB_Environment/src/bfms/sb_ltsm_ctrl_bfm.sv \
-    ../../SB_Environment/src/bfms/sb_phylink_bfm.sv \
-    ../../SB_Environment/src/bfms/sb_rdi_bfm.sv \
-    ../../SB_Environment/src/bfms/sb_reset_intf.sv \
-    ../../SB_Environment/src/bfms/sb_rx_bfm.sv \
-    ../../SB_Environment/src/bfms/sb_tx_bfm.sv \
+    ../../sb_env/src/bfms/sb_ltsm_ctrl_bfm.sv \
+    ../../sb_env/src/bfms/sb_phylink_bfm.sv \
+    ../../sb_env/src/bfms/sb_rdi_bfm.sv \
+    ../../sb_env/src/bfms/sb_reset_intf.sv \
+    ../../sb_env/src/bfms/sb_rx_bfm.sv \
+    ../../sb_env/src/bfms/sb_tx_bfm.sv \
     ../../tp_env/interfaces/tx2link_if.sv \
     ../../LTSM_Environment/src/interfaces/TX_FSM_SB_if.sv \
     ../../LTSM_Environment/src/interfaces/TX_RX_controllers_if.sv \
@@ -218,7 +218,7 @@ vlog -sv -incr -suppress 2732,7063,2912 \
 puts "→ Compiling Environment Wrappers & Testbench Top..."
 vlog -sv -mfcu -incr +define+UCIE_SYS_LVL=1 -suppress 2583 \
     +incdir+../../LTSM_Environment/src/tb \
-    +incdir+../../SB_Environment/src/tb \
+    +incdir+../../sb_env/src/tb \
     +incdir+../../rp_env/src/tb \
     +incdir+../../tp_env/packages \
     +incdir+../../tp_env/ref_model \
@@ -239,7 +239,7 @@ vlog -sv -mfcu -incr +define+UCIE_SYS_LVL=1 -suppress 2583 \
 
 vlog -sv -mfcu -incr +define+UCIE_SYS_LVL=1 -suppress 2583 +cover \
     +incdir+../../LTSM_Environment/src/tb \
-    +incdir+../../SB_Environment/src/tb \
+    +incdir+../../sb_env/src/tb \
     +incdir+../../rp_env/src/tb \
     +incdir+../../tp_env/packages \
     +incdir+../../tp_env/ref_model \
@@ -263,7 +263,7 @@ vlog -sv -mfcu -incr +define+UCIE_SYS_LVL=1 -suppress 2583 +cover \
 
 vlog -sv -mfcu -incr +define+UCIE_SYS_LVL=1 -suppress 2583 \
     +incdir+../../LTSM_Environment/src/tb \
-    +incdir+../../SB_Environment/src/tb \
+    +incdir+../../sb_env/src/tb \
     +incdir+../../rp_env/src/tb \
     +incdir+../../tp_env/packages \
     +incdir+../../tp_env/ref_model \

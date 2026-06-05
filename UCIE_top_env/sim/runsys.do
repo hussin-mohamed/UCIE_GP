@@ -38,9 +38,9 @@ vlog {*}$vlog_args +incdir+../../LTSM_Environment/src/tb +incdir+../../LTSM_Envi
     ../../LTSM_Environment/src/tb/LTSM_pkg.sv
 
 # 2. Compile SB Environment
-vlog {*}$vlog_args +incdir+../../SB_Environment/src/tb \
-    ../../SB_Environment/src/tb/sb_shared_pkg.sv \
-    ../../SB_Environment/src/tb/sb_pkg.sv
+vlog {*}$vlog_args +incdir+../../sb_env/src/tb \
+    ../../sb_env/src/tb/sb_shared_pkg.sv \
+    ../../sb_env/src/tb/sb_pkg.sv
 
 # 3. Compile RP Environment
 vlog {*}$vlog_args +incdir+../../rp_env/src/tb \
@@ -70,13 +70,13 @@ vlog {*}$vlog_args_no_mfcu \
     ../../rp_env/src/bfms/rp_reset_intf.sv \
     ../../rp_env/src/bfms/rp_rmblink_bfm.sv \
     ../../LTSM_Environment/src/interfaces/RX_FSM_SB_if.sv \
-    ../../SB_Environment/src/bfms/sb_ltsm_ctrl_bfm.sv \
-    ../../SB_Environment/src/bfms/sb_phylink_bfm.sv \
-    ../../SB_Environment/src/bfms/sb_rdi_bfm.sv \
-    ../../SB_Environment/src/bfms/sb_reset_intf.sv \
-    ../../SB_Environment/src/bfms/sb_rx_bfm.sv \
-    ../../SB_Environment/src/bfms/sb_tx_bfm.sv \
-    ../../SB_Environment/src/tb/sb_sva.sv \
+    ../../sb_env/src/bfms/sb_ltsm_ctrl_bfm.sv \
+    ../../sb_env/src/bfms/sb_phylink_bfm.sv \
+    ../../sb_env/src/bfms/sb_rdi_bfm.sv \
+    ../../sb_env/src/bfms/sb_reset_intf.sv \
+    ../../sb_env/src/bfms/sb_rx_bfm.sv \
+    ../../sb_env/src/bfms/sb_tx_bfm.sv \
+    ../../sb_env/src/tb/sb_sva.sv \
     ../../tp_env/interfaces/tx2link_if.sv \
     ../../LTSM_Environment/src/interfaces/TX_FSM_SB_if.sv \
     ../../LTSM_Environment/src/interfaces/TX_RX_controllers_if.sv \
@@ -205,7 +205,7 @@ set top_files [list \
 ]
 vlog {*}$vlog_args \
     +incdir+../../LTSM_Environment/src/tb \
-    +incdir+../../SB_Environment/src/tb \
+    +incdir+../../sb_env/src/tb \
     +incdir+../../rp_env/src/tb \
     +incdir+../../tp_env/packages \
     +incdir+../../tp_env/ref_model \
@@ -477,16 +477,16 @@ add wave -noupdate -group {rp_env — rp_rmblink_bfm} \
     /ucie_tb_top/DUT/rp_rmblink_bfm_inst/i_rx_encoding
 
 # =============================================================================
-#  SB_Environment/src/bfms — Sideband Environment BFMs
+#  sb_env/src/bfms — Sideband Environment BFMs
 # =============================================================================
 
-# ---- SB_Environment/src/bfms/sb_reset_intf.sv ----
-add wave -noupdate -group {SB_Environment — sb_reset_intf} \
+# ---- sb_env/src/bfms/sb_reset_intf.sv ----
+add wave -noupdate -group {sb_env — sb_reset_intf} \
     /ucie_tb_top/DUT/reset_intf/clk \
     /ucie_tb_top/DUT/reset_intf/reset
 
-# ---- SB_Environment/src/bfms/sb_ltsm_ctrl_bfm.sv ----
-add wave -noupdate -group {SB_Environment — sb_ltsm_ctrl_bfm} \
+# ---- sb_env/src/bfms/sb_ltsm_ctrl_bfm.sv ----
+add wave -noupdate -group {sb_env — sb_ltsm_ctrl_bfm} \
     /ucie_tb_top/DUT/ltsm_ctrl_bfm/clk \
     /ucie_tb_top/DUT/ltsm_ctrl_bfm/reset \
     /ucie_tb_top/DUT/ltsm_ctrl_bfm/o_sb_ready \
@@ -496,8 +496,8 @@ add wave -noupdate -group {SB_Environment — sb_ltsm_ctrl_bfm} \
     /ucie_tb_top/DUT/ltsm_ctrl_bfm/timeout \
     /ucie_tb_top/DUT/ltsm_ctrl_bfm/timer_en
 
-# ---- SB_Environment/src/bfms/sb_tx_bfm.sv ----
-add wave -noupdate -group {SB_Environment — sb_tx_bfm} \
+# ---- sb_env/src/bfms/sb_tx_bfm.sv ----
+add wave -noupdate -group {sb_env — sb_tx_bfm} \
     /ucie_tb_top/DUT/tx_bfm/clk \
     /ucie_tb_top/DUT/tx_bfm/reset \
     /ucie_tb_top/DUT/tx_bfm/o_sb_ready \
@@ -515,8 +515,8 @@ add wave -noupdate -group {SB_Environment — sb_tx_bfm} \
     /ucie_tb_top/DUT/tx_bfm/o_tx_info \
     /ucie_tb_top/DUT/tx_bfm/o_tx_valid
 
-# ---- SB_Environment/src/bfms/sb_rx_bfm.sv ----
-add wave -noupdate -group {SB_Environment — sb_rx_bfm} \
+# ---- sb_env/src/bfms/sb_rx_bfm.sv ----
+add wave -noupdate -group {sb_env — sb_rx_bfm} \
     /ucie_tb_top/DUT/rx_bfm/clk \
     /ucie_tb_top/DUT/rx_bfm/reset \
     /ucie_tb_top/DUT/rx_bfm/o_sb_ready \
@@ -534,8 +534,8 @@ add wave -noupdate -group {SB_Environment — sb_rx_bfm} \
     /ucie_tb_top/DUT/rx_bfm/o_rx_info \
     /ucie_tb_top/DUT/rx_bfm/o_rx_valid
 
-# ---- SB_Environment/src/bfms/sb_rdi_bfm.sv ----
-add wave -noupdate -group {SB_Environment — sb_rdi_bfm} \
+# ---- sb_env/src/bfms/sb_rdi_bfm.sv ----
+add wave -noupdate -group {sb_env — sb_rdi_bfm} \
     /ucie_tb_top/DUT/rdi_bfm/clk \
     /ucie_tb_top/DUT/rdi_bfm/reset \
     /ucie_tb_top/DUT/rdi_bfm/o_sb_ready \
@@ -548,8 +548,8 @@ add wave -noupdate -group {SB_Environment — sb_rdi_bfm} \
 
 run 0ns
 
-# ---- SB_Environment/src/bfms/sb_phylink_bfm.sv ----
-add wave -noupdate -group {SB_Environment — sb_phylink_bfm} \
+# ---- sb_env/src/bfms/sb_phylink_bfm.sv ----
+add wave -noupdate -group {sb_env — sb_phylink_bfm} \
     sim:/ucie_tb_top/phylink_bfm/clk \
     sim:/ucie_tb_top/phylink_bfm/clk_800MHz \
     sim:/ucie_tb_top/phylink_bfm/reset \
