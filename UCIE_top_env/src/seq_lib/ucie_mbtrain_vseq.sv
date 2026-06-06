@@ -108,7 +108,7 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
     LINKSPEED_vseq.start(p_sequencer);
 
     wait_for_msg_ser_end();
-    #1000ns;
+    // #1000ns;
 
     wake_req_handshake.start(ltsm_rdi_seqr);
     state_req_handshake.start(ltsm_rdi_seqr);
