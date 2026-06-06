@@ -22,8 +22,8 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
   virtual task body();
 
 
-    mbinit_vseq.start(p_sequencer);
     trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
+    mbinit_vseq.start(p_sequencer);
 
   // -------------------------------------------------------------------------
   //  TEST 1 : No Start HS Req Sent to RX 
