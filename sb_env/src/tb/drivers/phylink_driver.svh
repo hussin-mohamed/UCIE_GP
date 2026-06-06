@@ -118,6 +118,10 @@ task phylink_driver::drive_item(inout phylink_seq_item req, output phylink_seq_i
 
     msg_raw = struct2raw(msg);
 
+    if (req.wait_cycles != 0) begin
+      repeat(req.wait_cycles) @(posedge bfm.clk);
+    end
+
     bfm.serialize_data(msg_raw, req.idle_ui_cnt);
 
     record_driven_item();

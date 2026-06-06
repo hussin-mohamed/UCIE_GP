@@ -69,6 +69,10 @@ package ucie_pkg;
   `include "ucie_mbtrain_vseq.sv"
   `include "ucie_mbtrain_tell_valtraincenter_vseq.sv"
   `include "ucie_vvref_till_rxcal_vseq.sv"
+  `include "ucie_sbinit_vseq.sv"
+  `include "ucie_sbinit_virtual_sequences/ucie_sbinit_bringup_tx_vseq.sv"
+  `include "ucie_sbinit_virtual_sequences/ucie_sbinit_bringup_rx_vseq.sv"
+  `include "ucie_sbinit_virtual_sequences/ucie_sbinit_bringup_vseq.sv"
 
   // -------------------------------------------------------------------------
   //  System-Level Tests
@@ -79,5 +83,6 @@ package ucie_pkg;
   `include "ucie_vvref_till_rxcal_vseq_test.sv"
   `include "ucie_mbinit_fail_test.sv"
   `include "ucie_mbtrain_linkspeed_test.sv"
+  `include "ucie_sbinit_test.sv"
 
 endpackage : ucie_pkg

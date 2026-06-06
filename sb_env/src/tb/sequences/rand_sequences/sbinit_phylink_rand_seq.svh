@@ -14,6 +14,11 @@
 // *                                                                          *
 // ****************************************************************************
 
+typedef enum {
+   RAND_TILL_DETECTION
+  ,RAND_TILL_TIMEOUT
+} sbinit_seq_mode_e;
+
 //-----------------------------------------------------------------------------
 //
 // CLASS: sbinit_phylink_rand_seq
@@ -26,12 +31,18 @@
 class sbinit_phylink_rand_seq extends sb_sequence_base #(phylink_seq_item);
   `uvm_object_utils(sbinit_phylink_rand_seq)
 
+  sbinit_seq_mode_e m_sbinit_seq_mode = RAND_TILL_DETECTION;
 
   // Function: new
   //
   // Creates a new sbinit_phylink_rand_seq instance with the given name.
 
   extern function new(string name = "sbinit_phylink_rand_seq");
+
+  // Function: configure
+  //
+
+  extern function void configure(sbinit_seq_mode_e _sbinit_seq_mode);
 
 
   // Task: body
@@ -62,17 +73,26 @@ function sbinit_phylink_rand_seq::new(string name = "sbinit_phylink_rand_seq");
   super.new(name);
 endfunction : new
 
+// configure
+// ---------
+
+function void sbinit_phylink_rand_seq::configure(sbinit_seq_mode_e _sbinit_seq_mode);
+  m_sbinit_seq_mode = _sbinit_seq_mode;
+endfunction : configure
+
 // body
 // ----
 
 task sbinit_phylink_rand_seq::body();
+  bit force_pattern_error = (m_sbinit_seq_mode == RAND_TILL_DETECTION)? 0 : 1;
+
   start_item(req);
-  req.configure_randomization(._mode(SBINIT), ._is_first_iteration(1));
+  req.configure_randomization(._mode(SBINIT), ._is_first_iteration(1), ._force_pattern_error(force_pattern_error));
   assert(req.randomize());
   finish_item(req);
   forever begin
     start_item(req);
-    req.configure_randomization(._mode(SBINIT));
+    req.configure_randomization(._mode(SBINIT), ._force_pattern_error(force_pattern_error));
     assert(req.randomize());
     finish_item(req);
 
@@ -80,30 +100,13 @@ task sbinit_phylink_rand_seq::body();
     get_response(rsp);
 
     if (rsp.in_pat_detected) begin
-      int extra_iter_cnt;
-      
-      if (!std::randomize(extra_iter_cnt) with {
-        extra_iter_cnt inside {[4:10]};
-      }) begin
-        `uvm_error(get_type_name(), $sformatf("Failed to randomize extra_iter_cnt"))
-      end
-      
-      `uvm_info(get_type_name(), $sformatf("Pattern is DETECTED, Sending %0d more pattern iterations...", extra_iter_cnt), UVM_LOW)
-      
-      for (int i = 0; i < extra_iter_cnt; i++) begin
-        start_item(req);
-        `uvm_info(get_type_name(), $sformatf("ITERATION %0d...", i), UVM_LOW)
-        req.op_mode           = SBINIT;
-        req.pattern           = `SBINIT_PATTERN;
-        req.idle_ui_cnt       = 32;
-        req.out_of_rst_ui_cnt = 0;
-        finish_item(req);
-      end
       break;
     end else if (rsp.timeout_detected) begin
       `uvm_info(get_type_name(), "Timeout is DETECTED", UVM_DEBUG)
       break;
     end
   end
+
+  `uvm_info("SBINIT_RAND_SEQ", "End of sequence", UVM_LOW)
 
 endtask : body

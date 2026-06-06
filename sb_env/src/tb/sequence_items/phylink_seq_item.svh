@@ -52,6 +52,7 @@ class phylink_seq_item extends uvm_sequence_item;
   logic [63:0]       pattern;           // SBINIT Pattern
   rand int           idle_ui_cnt;       // Low Gap Unit Intervals Count (Used for driving)
   rand int           out_of_rst_ui_cnt; // The delay between the SBINIT starting points of the local and remote dies
+  rand int           wait_cycles;
   rand fullcode_t    fullcode;          // Concatenated {MsgCode, MsgSubcode} for Link Training State Machine commands
   opcode_t           opcode;            // Opcode
   srcid_t            srcid;             // Source ID
@@ -69,6 +70,7 @@ class phylink_seq_item extends uvm_sequence_item;
   bit out_pat_detected;
   bit in_pat_detected;
   bit timeout_detected;
+  bit force_pattern_error;
 
   rand bit hit_extremes_info;
 
@@ -77,6 +79,7 @@ class phylink_seq_item extends uvm_sequence_item;
     `uvm_field_int  (pattern,               UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_int  (idle_ui_cnt,           UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_int  (out_of_rst_ui_cnt,     UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
+    `uvm_field_int  (wait_cycles,           UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_enum (fullcode_t,  fullcode, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
     `uvm_field_enum (opcode_t,    opcode,   UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
     `uvm_field_enum (srcid_t,     srcid,    UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
@@ -110,7 +113,8 @@ class phylink_seq_item extends uvm_sequence_item;
 
   extern function void configure_randomization(
     operation_t _mode,
-    bit         _is_first_iteration=0
+    bit         _is_first_iteration=0,
+    bit         _force_pattern_error=0
   );
 
   // Function: post_randomize
@@ -181,7 +185,8 @@ endfunction : do_print
 
 function void phylink_seq_item::configure_randomization(
   operation_t _mode,
-  bit         _is_first_iteration=0
+  bit         _is_first_iteration=0,
+  bit         _force_pattern_error=0
 );
   op_mode = _mode;
   
@@ -199,6 +204,8 @@ function void phylink_seq_item::configure_randomization(
       out_of_rst_ui_cnt.rand_mode(0); out_of_rst_ui_cnt = 0;
       c_out_of_rst.constraint_mode(0);
     end
+
+    force_pattern_error = _force_pattern_error;
   end else begin // ACTIVE mode
     fullcode.rand_mode(1);
     idle_ui_cnt.rand_mode(1);
@@ -296,11 +303,11 @@ function void phylink_seq_item::post_randomize();
 
     // SBINIT intentionally varies the pattern bits to test detector robustness.
     `RANDOMIZE_FLAG(inject_pattern_error, 8, 2)
-    if (inject_pattern_error) begin
+    if (inject_pattern_error || force_pattern_error) begin
       `RANDOMIZE_FLAG(total_pattern_corruption, 8, 2)
       if (total_pattern_corruption) begin
         if (!std::randomize(pattern) with {
-          $countones(pattern) dist {5:=2, 10:=2, 10:=6};
+          $countones(pattern) dist {5:=3, 10:=3, 10:=4};
         }) begin
           `uvm_error(get_type_name(), $sformatf("Failed to randomize pattern"))
         end

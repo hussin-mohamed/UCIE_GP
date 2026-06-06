@@ -67,11 +67,11 @@ interface sb_phylink_bfm(
 
   always @(negedge i_rx_sb_clk) begin
     wait(q_pat_det(i_rx_sb_data, i_rx_sb_clk).triggered);
-    out_pat_detected = 1;
+    in_pat_detected = 1;
   end
 
   always @(negedge o_sb_ready) begin
-    out_pat_detected = 0;
+    in_pat_detected = 0;
   end
 
   always_comb begin
@@ -107,7 +107,7 @@ interface sb_phylink_bfm(
     end
 
     if (_delay_ui_cnt != 0) begin
-      // repeat(10) @(posedge clk_800MHz);
+      repeat(_delay_ui_cnt) @(posedge clk_800MHz);
     end
     // 64 UI Pattern Phase
     for (int i = 0; i < 64; i++) begin

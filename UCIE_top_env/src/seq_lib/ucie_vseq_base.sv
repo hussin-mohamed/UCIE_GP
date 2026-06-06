@@ -96,6 +96,9 @@ typedef class ucie_mbtrain_DTC2_vseq;
 typedef class ucie_mbtrain_linkspeed_vseq;
 typedef class ucie_mbinit_bringup_vseq;
 typedef class ucie_trainerror_vseq;
+typedef class ucie_sbinit_bringup_tx_vseq;
+typedef class ucie_sbinit_bringup_rx_vseq;
+typedef class ucie_sbinit_bringup_vseq;
 
 typedef class ucie_mbtrain_vseq;  
 
@@ -127,6 +130,9 @@ class ucie_vseq_base extends uvm_sequence;
   rmblink_sanity_PerLaneID_sequence rmblink_PerLaneID_seq;
 
   ucie_mbinit_bringup_vseq                       mbinit_vseq;
+  ucie_sbinit_bringup_rx_vseq                    sbinit_bringup_rx_vseq;
+  ucie_sbinit_bringup_tx_vseq                    sbinit_bringup_tx_vseq;
+  ucie_sbinit_bringup_vseq                       sbinit_bringup_vseq;
 
   ucie_mbtrain_valverf_vseq                      valverf_vseq;
   ucie_mbtrain_dataverf_vseq                     dataverf_vseq;
@@ -167,6 +173,8 @@ class ucie_vseq_base extends uvm_sequence;
   LTSM_pkg::linkinit_wake_req_handshake          wake_req_handshake;
   LTSM_pkg::linkinit_state_req_handshake         state_req_handshake;
 
+  static event out_of_rst_msg_received;
+
   // -------------------------------------------------------------------------
   //  Constructor
   // -------------------------------------------------------------------------
@@ -202,6 +210,9 @@ class ucie_vseq_base extends uvm_sequence;
 
     // Child Virtual Sequences Creation
     mbinit_vseq = ucie_mbinit_bringup_vseq::type_id::create("mbinit_vseq");
+    sbinit_bringup_tx_vseq = ucie_sbinit_bringup_tx_vseq::type_id::create("sbinit_bringup_tx_vseq");
+    sbinit_bringup_rx_vseq = ucie_sbinit_bringup_rx_vseq::type_id::create("sbinit_bringup_rx_vseq");
+    sbinit_bringup_vseq = ucie_sbinit_bringup_vseq::type_id::create("sbinit_bringup_vseq");
     valverf_vseq = ucie_mbtrain_valverf_vseq::type_id::create("valverf_vseq");
     dataverf_vseq = ucie_mbtrain_dataverf_vseq::type_id::create("valverf_vseq");
     speedidle_vseq = ucie_mbtrain_speedidle_vseq::type_id::create("speedidle_vseq");
@@ -223,6 +234,10 @@ class ucie_vseq_base extends uvm_sequence;
     // Sideband LTSM Sequence Item Creation
     sb_ltsm_item = new("sb_ltsm_item");
 
+    // Initialize the data and info to zero
+    sb_ltsm_item.data = 64'h0;
+    sb_ltsm_item.info = 16'h0;
+
     fork
       begin  // Sideband ltsm2link Transmission Thread
         forever begin
@@ -235,7 +250,7 @@ class ucie_vseq_base extends uvm_sequence;
       end
     join_none
 
-    `uvm_info("UCIE_VSEQ", $sformatf("Starting system-level %s virtual sequence", get_type_name()),
+    `uvm_info("UCIE_VSEQ", $sformatf(" %s virtual sequence", get_type_name()),
               UVM_LOW)
   endtask : pre_body
 

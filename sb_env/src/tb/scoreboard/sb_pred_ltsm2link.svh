@@ -248,6 +248,8 @@ function phylink_seq_item sb_pred_ltsm2link::get_predicted_item(ltsm_seq_item _t
   t_out.rsvd3 = '0;
   t_out.rsvd4 = '0;
 
+  t_out.wait_cycles = _t_in.wait_cycles;
+
   return t_out;
 endfunction : get_predicted_item
 
