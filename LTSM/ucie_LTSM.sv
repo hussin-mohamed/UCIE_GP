@@ -315,7 +315,7 @@ module ucie_LTSM #(
   end
 
   ucie_timeout_timer #(
-      .SIM_8MS_CYCLES(SIM_8MS_CYCLES),
+      .CYCLES(SIM_8MS_CYCLES),
       .DECODING_WIDTH(DECODING_WIDTH),
       .CLK_PERIOD_NS (CLK_PERIOD_NS)
   ) ucie_timeout_timer_inst (
@@ -323,6 +323,7 @@ module ucie_LTSM #(
       .i_reset(i_reset),
       .i_sim(1),
       .wait_1us(w_wait_1us_en),
+      .i_speedreg(o_speedreg),
       .o_rx_encoding(o_rx_encoding),
       .o_timer_1ms(w_timer_1ms),
       .o_timer_4ms(w_timer_4ms),
