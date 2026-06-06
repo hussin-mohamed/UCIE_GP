@@ -87,7 +87,8 @@ module ucie_timeout_timer #(
     end
   end
 
-  assign w_state_changed = (r_rx_encoding_msb_prev != o_rx_encoding[8:3]) && (r_rx_encoding_msb_prev[8:7] != 2'b11) && (o_rx_encoding[8:6] != 2'b11) ;
+  // assign w_state_changed = (r_rx_encoding_msb_prev != o_rx_encoding[8:3]);
+  assign w_state_changed = (r_rx_encoding_msb_prev != o_rx_encoding[8:3]) && (r_rx_encoding_msb_prev[5:4] != 2'b11) && (o_rx_encoding[8:7] != 2'b11) ;
 
 
   // ==========================================================================
