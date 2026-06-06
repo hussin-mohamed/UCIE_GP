@@ -475,7 +475,7 @@ module ucie_ltsm_init_fsm #(
           if ((done_tx_trainerror && raw_done_rx_trainerror) ||
               (done_rx_trainerror && raw_done_tx_trainerror) ||
               (done_tx_trainerror && done_rx_trainerror) ||
-              (raw_done_tx_trainerror && raw_done_rx_trainerror))
+              (raw_done_tx_trainerror && raw_done_rx_trainerror) || (done_tx_trainerror))
             next_state = RESET;
         end
 
