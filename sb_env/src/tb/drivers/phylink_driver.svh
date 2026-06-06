@@ -99,7 +99,8 @@ task phylink_driver::drive_item(inout phylink_seq_item req, output phylink_seq_i
     fork
       begin
         bfm.serialize_pattern(req.pattern, req.idle_ui_cnt, req.out_of_rst_ui_cnt);
-        rsp.pat_detected = bfm.pat_detected;
+        rsp.out_pat_detected = bfm.out_pat_detected;
+        rsp.in_pat_detected  = bfm.in_pat_detected;
       end
 
       begin

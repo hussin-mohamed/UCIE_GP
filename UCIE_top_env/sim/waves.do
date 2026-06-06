@@ -337,6 +337,8 @@ add wave -group {sb_env — Assertions} -position insertpoint  \
     sim:/ucie_tb_top/DUT/sideband/sva_inst/chk_no_clk_glitch \
     sim:/ucie_tb_top/DUT/sideband/sva_inst/pat_detected \
     sim:/ucie_tb_top/DUT/sideband/sva_inst/timeout \
+    sim:/ucie_tb_top/DUT/sideband/sva_inst/clk_800MHz \
+    sim:/ucie_tb_top/DUT/sideband/sva_inst/i_timer_1ms \
     sim:/ucie_tb_top/DUT/sideband/sva_inst/tms
 
 .vcop Action toggleleafnames

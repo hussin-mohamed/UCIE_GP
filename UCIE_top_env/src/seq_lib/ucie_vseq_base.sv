@@ -118,6 +118,7 @@ class ucie_vseq_base extends uvm_sequence;
 
   active_phylink_sequence           active_phylink_seq;
   sbinit_phylink_sanity_seq         sbinit_phylink_seq;
+  sbinit_phylink_rand_seq           sbinit_phylink_random_seq;
   rmblink_sanity_clk_sequence       rmblink_clk_seq;
   rmblink_sanity_valid_sequence     rmblink_valid_seq;
   rmblink_sanity_lfsr_sequence      rmblink_lfsr_seq;
@@ -186,6 +187,7 @@ class ucie_vseq_base extends uvm_sequence;
     // Subsequences Creation
     active_phylink_seq        = active_phylink_sequence::type_id::create("active_phylink_seq");
     sbinit_phylink_seq        = sbinit_phylink_sanity_seq::type_id::create("sbinit_phylink_seq");
+    sbinit_phylink_random_seq = sbinit_phylink_rand_seq::type_id::create("sbinit_phylink_random_seq");
     rmblink_clk_seq           = rmblink_sanity_clk_sequence::type_id::create("rmblink_clk_seq");
     rmblink_valid_seq         = rmblink_sanity_valid_sequence::type_id::create("rmblink_valid_seq");
     rmblink_lfsr_seq          = rmblink_sanity_lfsr_sequence::type_id::create("rmblink_lfsr_seq");
@@ -275,5 +277,10 @@ class ucie_vseq_base extends uvm_sequence;
       wait(p_sequencer.msg_ser_status == NO_MSG_SER_IN_PROGRESS);
     end
   endtask : wait_for_msg_ser_end
+
+  task send_sb_msg_blocking(sb_pkg::ltsm_seq_item _sb_ltsm_item);
+    send_sb_msg(_sb_ltsm_item);
+    wait_for_msg_ser_end();
+  endtask : send_sb_msg_blocking
 
 endclass : ucie_vseq_base

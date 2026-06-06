@@ -52,8 +52,6 @@ endclass : sbinit_phylink_rand_seq
 //
 // CLASS: sbinit_phylink_rand_seq
 //
-// Implements randomized SBINIT phylink handshake stimulus.
-//
 //-----------------------------------------------------------------------------
 
 
@@ -81,11 +79,20 @@ task sbinit_phylink_rand_seq::body();
     // Get the driver response that reports pattern detection or timeout.
     get_response(rsp);
 
-    if (rsp.pat_detected) begin
-      `uvm_info(get_type_name(), "Pattern is DETECTED, Sending 4 more pattern iterations...", UVM_DEBUG)
-      for (int i = 0; i < 4; i++) begin
+    if (rsp.in_pat_detected) begin
+      int extra_iter_cnt;
+      
+      if (!std::randomize(extra_iter_cnt) with {
+        extra_iter_cnt inside {[4:10]};
+      }) begin
+        `uvm_error(get_type_name(), $sformatf("Failed to randomize extra_iter_cnt"))
+      end
+      
+      `uvm_info(get_type_name(), $sformatf("Pattern is DETECTED, Sending %0d more pattern iterations...", extra_iter_cnt), UVM_LOW)
+      
+      for (int i = 0; i < extra_iter_cnt; i++) begin
         start_item(req);
-        `uvm_info(get_type_name(), $sformatf("ITERATION%0d...", i), UVM_DEBUG)
+        `uvm_info(get_type_name(), $sformatf("ITERATION %0d...", i), UVM_LOW)
         req.op_mode           = SBINIT;
         req.pattern           = `SBINIT_PATTERN;
         req.idle_ui_cnt       = 32;

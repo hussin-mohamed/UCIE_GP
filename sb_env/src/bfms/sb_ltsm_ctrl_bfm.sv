@@ -21,7 +21,7 @@
 
 interface sb_ltsm_ctrl_bfm(
    input  logic clk,
-   input  logic clk_800
+   input  logic clk_l
   ,input  logic reset
   ,input  logic o_sb_ready // SBINIT initialization complete
 );
@@ -40,11 +40,17 @@ interface sb_ltsm_ctrl_bfm(
 
   // Millisecond Counter ranging from 0ms to 7ms
   bit [2:0] tms;
-  always @(posedge clk_800) begin
+  always @(posedge clk) begin
     if (reset) begin
       tms <= 0;
-    end else begin
-      if (i_timer_1ms && i_sb_init_start) begin
+    end
+  end
+
+  initial begin
+    forever begin
+      @(posedge i_timer_1ms);
+      repeat(3) @(posedge clk);
+      if (i_sb_init_start) begin
         tms <= tms + 1;
       end
     end

@@ -99,6 +99,8 @@ module ucie_sb_top
   wire       [pMSG_WIDTH-1:0]  rx_traffic_fifo_msg;
   wire                         traffic_rx_fifo_full;
 
+  wire                         timer_1ms;
+
   //---- MODULE INSTANTIATIONS -------------------------------------------------
 
 
@@ -107,11 +109,18 @@ module ucie_sb_top
     .i_s_clk(i_800MHz_clk),
     .i_reset(i_reset),
     .i_sb_init_start(i_sb_init_start),
-    .i_timer_1ms(i_timer_1ms),
+    .i_timer_1ms(timer_1ms),
     .i_rx_done(rx_init_done),
     .o_tx_sb_data(sb_init_tx_data),
     .o_tx_sb_clk(sb_init_tx_clk),
     .o_stop(o_sb_ready)
+    );
+
+    toggle_sync u_toggle_sync_req (
+      .i_clk                (i_clk),
+      .i_reset              (i_reset),
+      .i_cnt                (i_timer_1ms),
+      .o_cnt                (timer_1ms)
     );
 
     ucie_sideband_mux u_sb_tx_clk_mux (

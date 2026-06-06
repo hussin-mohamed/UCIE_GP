@@ -40,6 +40,7 @@ interface sb_sva #(
   // Clocks
    input logic i_clk
   ,input logic clk_800MHz
+  ,input logic clk_l
 
   // Reset
   ,input logic i_reset
@@ -100,6 +101,9 @@ interface sb_sva #(
   // ============================================================================
   bit clk_2x, pat_detected, timeout;
 
+  // Millisecond Counter ranging from 0ms to 7ms
+  bit [2:0] tms;
+  
   initial forever #60ns clk_2x = ~clk_2x;
 
   always @(negedge i_rx_sb_clk) begin
@@ -109,18 +113,6 @@ interface sb_sva #(
 
   always @(negedge o_sb_ready) begin
     pat_detected = 0;
-  end
-
-  // Millisecond Counter ranging from 0ms to 7ms
-  bit [2:0] tms;
-  always @(posedge clk_800MHz) begin
-    if (i_reset) begin
-      tms <= 0;
-    end else begin
-      if (i_timer_1ms && i_sb_init_start) begin
-        tms <= tms + 1;
-      end
-    end
   end
 
   always @(posedge i_clk) begin

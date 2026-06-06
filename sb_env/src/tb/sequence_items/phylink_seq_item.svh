@@ -66,7 +66,8 @@ class phylink_seq_item extends uvm_sequence_item;
   logic [2:0]        rsvd4;             // Reserved4: phase1 [29:27]
 
   // Flag used for response items to inform the sequence that the pattern is detected
-  bit pat_detected;
+  bit out_pat_detected;
+  bit in_pat_detected;
   bit timeout_detected;
 
   rand bit hit_extremes_info;
@@ -217,6 +218,7 @@ endfunction : configure_randomization
 function void phylink_seq_item::post_randomize();
   message_t  msg;
   bit        inject_pattern_error;
+  bit        total_pattern_corruption;
   bit        inject_header_error;
   bit        inject_data_error;
   bit [18:0] rsvd;
@@ -295,8 +297,17 @@ function void phylink_seq_item::post_randomize();
     // SBINIT intentionally varies the pattern bits to test detector robustness.
     `RANDOMIZE_FLAG(inject_pattern_error, 8, 2)
     if (inject_pattern_error) begin
-      `RANDOMIZE_PARITY_ERRORS(pat_error_inj_map, 0, 1, 4, 100)
-      pattern = pattern ^ pat_error_inj_map;
+      `RANDOMIZE_FLAG(total_pattern_corruption, 8, 2)
+      if (total_pattern_corruption) begin
+        if (!std::randomize(pattern) with {
+          $countones(pattern) dist {5:=2, 10:=2, 10:=6};
+        }) begin
+          `uvm_error(get_type_name(), $sformatf("Failed to randomize pattern"))
+        end
+      end else begin
+        `RANDOMIZE_PARITY_ERRORS(pat_error_inj_map, 0, 1, 4, 100)
+        pattern = pattern ^ pat_error_inj_map;
+      end
     end
   end
 endfunction : post_randomize
