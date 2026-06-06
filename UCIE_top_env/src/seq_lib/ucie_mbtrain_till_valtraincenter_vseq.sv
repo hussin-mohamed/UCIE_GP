@@ -1,20 +1,20 @@
 //=============================================================================
-// File       : ucie_mbtrain_tell_valtraincenter_vseq.sv
+// File       : ucie_mbtrain_till_valtraincenter_vseq.sv
 // Project    : UCIe 3.0 System-Level Verification
 // Description: Master virtual sequence for orchestrating the happy path 
 //              across the LTSM, Sideband, RX-Path, and TX-Path agents.
 //=============================================================================
 
-class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
+class ucie_mbtrain_till_valtraincenter_vseq extends ucie_vseq_base;
 
-  `uvm_object_utils(ucie_mbtrain_tell_valtraincenter_vseq)
+  `uvm_object_utils(ucie_mbtrain_till_valtraincenter_vseq)
 
-  static int trainerror_cnt;
+  ucie_mbtrain_from_valtraincenter_to_DTC2_cfg vseq_cfg;
 
   // -------------------------------------------------------------------------
   //  Constructor
   // -------------------------------------------------------------------------
-  function new(string name = "ucie_mbtrain_tell_valtraincenter_vseq");
+  function new(string name = "ucie_mbtrain_till_valtraincenter_vseq");
     super.new(name);
   endfunction
 
@@ -22,7 +22,10 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
   //  Body Task
   // -------------------------------------------------------------------------
   virtual task body();
-  if (trainerror_cnt == 0) begin
+  if (vseq_cfg.trainerror_cnt == 0) begin
+
+    vseq_cfg.trainerror_cnt++;
+    
     mbinit_vseq.start(p_sequencer);
 
     valverf_vseq.configure(
@@ -56,8 +59,6 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
 
     trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
 
-    trainerror_cnt++;
-
     valverf_vseq.start(p_sequencer);
     dataverf_vseq.start(p_sequencer);
     speedidle_vseq.start(p_sequencer);
@@ -65,6 +66,8 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
     rxclkcal_vseq.start(p_sequencer);
     valtraincenter_vseq.start(p_sequencer);
   end else begin
+    vseq_cfg.trainerror_cnt = 0;
+
     mbinit_vseq.start(p_sequencer);
 
     valverf_vseq.configure(
@@ -182,4 +185,4 @@ class ucie_mbtrain_tell_valtraincenter_vseq extends ucie_vseq_base;
     join_any
   end
   endtask
-endclass : ucie_mbtrain_tell_valtraincenter_vseq
+endclass : ucie_mbtrain_till_valtraincenter_vseq

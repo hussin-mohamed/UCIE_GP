@@ -1,24 +1,24 @@
 //=============================================================================
-// File       : ucie_mbtrain_tell_valtraincenter_test.sv
+// File       : ucie_mbtrain_till_valtraincenter_test.sv
 // Project    : UCIe 3.0 System-Level Verification
 // Description: Sanity test that runs the master virtual sequence.
 //=============================================================================
 
-class ucie_mbtrain_tell_valtraincenter_test extends ucie_base_test;
+class ucie_mbtrain_till_valtraincenter_test extends ucie_base_test;
 
-  `uvm_component_utils(ucie_mbtrain_tell_valtraincenter_test)
+  `uvm_component_utils(ucie_mbtrain_till_valtraincenter_test)
 
   // -------------------------------------------------------------------------
   //  Constructor
   // -------------------------------------------------------------------------
-  function new(string name = "ucie_mbtrain_tell_valtraincenter_test", uvm_component parent = null);
+  function new(string name = "ucie_mbtrain_till_valtraincenter_test", uvm_component parent = null);
     super.new(name, parent);
     uvm_top.set_timeout(100ms, 0);
   endfunction
 
   function void build_phase(uvm_phase phase);
     // Override the base vseq by your vseq
-    ucie_vseq_base::type_id::set_type_override(ucie_mbtrain_tell_valtraincenter_vseq::get_type());
+    ucie_vseq_base::type_id::set_type_override(ucie_mbtrain_from_valtraincenter_to_DTC2_vseq::get_type());
     
     super.build_phase(phase);
   endfunction : build_phase
@@ -28,4 +28,4 @@ class ucie_mbtrain_tell_valtraincenter_test extends ucie_base_test;
     set_main_phase_drain_time(100000ns);
   endfunction : start_of_simulation_phase
 
-endclass : ucie_mbtrain_tell_valtraincenter_test
+endclass : ucie_mbtrain_till_valtraincenter_test
