@@ -69,6 +69,7 @@ package ucie_pkg;
   `include "ucie_trainerror_vseq.sv"
   `include "ucie_mbtrain_vseq.sv"
   `include "ucie_mbtrain_till_valtraincenter_vseq.sv"
+  `include "ucie_mbtrain_till_valtrainvref_vseq.sv"
   `include "ucie_mbtrain_from_valtraincenter_to_DTC2_vseq.sv"
   `include "ucie_vvref_till_rxcal_vseq.sv"
   `include "ucie_sbinit_vseq.sv"

@@ -63,7 +63,6 @@ class ucie_mbtrain_valtraincenter_vseq extends ucie_vseq_base;
     
     if (train_error_state == TIMEOUT) begin
       p_sequencer.tx_fifo.get(sb_ltsm_item);
-      p_sequencer.tx_fifo.get(sb_ltsm_item);
       sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
       send_sb_msg(sb_ltsm_item);
       return;

@@ -24,51 +24,11 @@ class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
   virtual task body();
   if (vseq_cfg.trainerror_cnt == 0) begin
 
-    vseq_cfg.trainerror_cnt++;
+    $display("first time valtrainvref %0d", vseq_cfg.trainerror_cnt);
     
     mbinit_vseq.start(p_sequencer);
 
-    valverf_vseq.configure(
-        .missing_msg(IDEAL),
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(VALID_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT)
-    );
-
-    dataverf_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(LFSR_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT)
-    );
-
-    valtraincenter_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(VALID_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT),
-        .trainerror(TRAINERROR_STATE)
-    );
-
-    trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
-
-    valverf_vseq.start(p_sequencer);
-    dataverf_vseq.start(p_sequencer);
-    speedidle_vseq.start(p_sequencer);
-    txselfcal_vseq.start(p_sequencer);
-    rxclkcal_vseq.start(p_sequencer);
-    valtraincenter_vseq.start(p_sequencer);
-  end else begin
-    vseq_cfg.trainerror_cnt = 0;
-
-    mbinit_vseq.start(p_sequencer);
+    vseq_cfg.trainerror_cnt++;
 
     valverf_vseq.configure(
         .missing_msg(IDEAL),
@@ -105,7 +65,118 @@ class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
         .data_mode(VALID_PATTERN),
         .info_mode(CORRECT),
         .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .trainerror(TRAINERROR_STATE)
+    );
+
+    trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
+
+    valverf_vseq.start(p_sequencer);
+    dataverf_vseq.start(p_sequencer);
+    speedidle_vseq.start(p_sequencer);
+    txselfcal_vseq.start(p_sequencer);
+    rxclkcal_vseq.start(p_sequencer);
+    valtraincenter_vseq.start(p_sequencer);
+    valtrainverf_vseq.start(p_sequencer);
+  end else if (vseq_cfg.trainerror_cnt == 1) begin
+    $display("second time valtrainvref %0d", vseq_cfg.trainerror_cnt);
+    
+    mbinit_vseq.start(p_sequencer);
+
+    vseq_cfg.trainerror_cnt++;
+
+    valverf_vseq.configure(
+        .missing_msg(IDEAL),
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
         .valid_mode(VALID_CORRECT)
+    );
+
+    dataverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
+
+    valtraincenter_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .trainerror(NOT_TRAINERROR)
+    );
+
+    valtrainverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .trainerror(TIMEOUT)
+    );
+
+    trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
+
+    valverf_vseq.start(p_sequencer);
+    dataverf_vseq.start(p_sequencer);
+    speedidle_vseq.start(p_sequencer);
+    txselfcal_vseq.start(p_sequencer);
+    rxclkcal_vseq.start(p_sequencer);
+    valtraincenter_vseq.start(p_sequencer);
+    valtrainverf_vseq.start(p_sequencer);
+  end else begin
+    $display("third time valtrainvref %0d", vseq_cfg.trainerror_cnt);
+
+    mbinit_vseq.start(p_sequencer);
+
+    vseq_cfg.trainerror_cnt = 0;
+
+    valverf_vseq.configure(
+        .missing_msg(IDEAL),
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
+
+    dataverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
+
+    valtraincenter_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .trainerror(NOT_TRAINERROR)
+    );
+
+    valtrainverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .trainerror(NOT_TRAINERROR)
     );
     
     DTC1_vseq.configure(
@@ -182,7 +253,7 @@ class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
             );
             active_rx_seq.start(rp_rmblink_seqr);
         end     
-    join_any
+    join_any 
   end
   endtask
 endclass : ucie_mbtrain_till_valtrainvref_vseq
