@@ -87,7 +87,7 @@ task sbinit_phylink_sanity_seq::body();
     // Get the driver response that reports pattern detection or timeout.
     get_response(rsp);
 
-    if (rsp.pat_detected) begin
+    if (rsp.out_pat_detected) begin
       `uvm_info(get_type_name(), "Pattern is DETECTED, Sending 4 more pattern iterations...", UVM_DEBUG)
       for (int i = 0; i < 1; i++) begin
         start_item(req);

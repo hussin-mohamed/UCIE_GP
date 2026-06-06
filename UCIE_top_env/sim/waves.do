@@ -325,7 +325,8 @@ add wave -noupdate -group {sb_env — sb_phylink_bfm} \
     sim:/ucie_tb_top/phylink_bfm/tms \
     sim:/ucie_tb_top/phylink_bfm/timeout \
     sim:/ucie_tb_top/phylink_bfm/start \
-    sim:/ucie_tb_top/phylink_bfm/pat_detected
+    sim:/ucie_tb_top/phylink_bfm/in_pat_detected \
+    sim:/ucie_tb_top/phylink_bfm/out_pat_detected
 
 # ---- sb_env/src/tb/sb_sva.sv ----
 add wave -group {sb_env — Assertions} -position insertpoint  \
