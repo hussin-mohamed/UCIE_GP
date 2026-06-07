@@ -65,6 +65,7 @@ package ucie_pkg;
   `include "ucie_mbtrain_states/ucie_mbtrain_linkspeed_vseq.sv"
   `include "ucie_mbtrain_linkspeed_cases_vseq.sv"
   `include "ucie_mbinit_fail_vseq.sv"
+  `include "ucie_mbinit_fail_all_vseq.sv"
   `include "ucie_trainerror_vseq.sv"
   `include "ucie_mbtrain_vseq.sv"
   `include "ucie_mbtrain_tell_valtraincenter_vseq.sv"
@@ -78,6 +79,7 @@ package ucie_pkg;
   `include "ucie_mbtrain_tell_valtraincenter_test.sv"
   `include "ucie_vvref_till_rxcal_vseq_test.sv"
   `include "ucie_mbinit_fail_test.sv"
+  `include "ucie_mbinit_fail_all_test.sv"
   `include "ucie_mbtrain_linkspeed_test.sv"
 
 endpackage : ucie_pkg

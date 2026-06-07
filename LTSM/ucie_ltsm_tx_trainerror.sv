@@ -17,6 +17,7 @@ module ucie_ltsm_tx_trainerror #(
     input                      o_timer_8ms,
     input                      i_sb_cur_msg_done,
     input                      i_lp_linkerror,
+    input                      i_sbinit_error,
 
     output logic [DECODING_WIDTH-1:0] o_tx_encoding,
     output logic [    DATA_WIDTH-1:0] o_tx_data,
@@ -54,7 +55,7 @@ module ucie_ltsm_tx_trainerror #(
       current_substate <= ENTRY_HANDSHAKE;
       substates_done   <= 0;
     end else if (i_current_state != TRAINERROR) begin
-      current_substate <= ENTRY_HANDSHAKE;
+      current_substate <= i_sbinit_error ? TX_TRAINERROR : ENTRY_HANDSHAKE;
       substates_done   <= 0;
     end else begin
       current_substate <= next_substate;

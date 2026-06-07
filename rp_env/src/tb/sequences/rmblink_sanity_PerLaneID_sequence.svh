@@ -218,7 +218,9 @@ task rmblink_sanity_PerLaneID_sequence::body();
             end
 
             SCENARIO_MIXED_SUCCESS: begin
-              chunk = lane_should_pass ? valid_chunk : $urandom();
+              // chunk = lane_should_pass ? valid_chunk : $urandom();              // All lanes in the eligible error region get bad pattern;
+              // lanes outside the region get valid data.
+              chunk = lane_eligible_for_error ? $urandom() : valid_chunk;
             end
 
             SCENARIO_LATE_SUCCESS: begin

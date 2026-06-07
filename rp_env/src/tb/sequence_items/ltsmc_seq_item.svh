@@ -29,6 +29,8 @@ class ltsmc_seq_item extends uvm_sequence_item;
   rand logic [15:0]       error_threshold;  // Error threshold for the valid and data pattern detection.
   logic                   half_rate;        // Rate mode selector. Always set to 1 and used by the driver only.
   logic [pDATA_WIDTH-1:0] rx_data_results;  // One bit for each lane which indicates the successful detection of the LFSR pattern on that lane.
+  logic [2:0] rx_clk_results;  // One bit for each lane which indicates the successful detection of the LFSR pattern on that lane.
+  logic rx_valid_results;  // One bit for each lane which indicates the successful detection of the LFSR pattern on that lane.
 
   `uvm_object_utils_begin(ltsmc_seq_item)
     `uvm_field_enum       (lane_map_code_t, lane_map_code, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
@@ -36,6 +38,8 @@ class ltsmc_seq_item extends uvm_sequence_item;
     `uvm_field_int        (error_threshold,                UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_int        (half_rate,                      UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_int        (rx_data_results,                UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
+    `uvm_field_int        (rx_clk_results,                 UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
+    `uvm_field_int        (rx_valid_results,               UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
   `uvm_object_utils_end
 
   // Function: new

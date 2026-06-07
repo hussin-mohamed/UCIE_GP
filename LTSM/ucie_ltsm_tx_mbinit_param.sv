@@ -35,7 +35,7 @@ module ucie_ltsm_tx_mbinit_param #(
 
   logic       done_ack;
   logic       substates_done;
-
+  logic       [DECODING_WIDTH-1:0] o_tx_encoding_old;
   // -------------------------------------------------------------------------
   // Local capability register [15:0]
   //   Bit layout (from UCIe spec MBINIT.PARAM configuration req Data[15:0]):
@@ -82,12 +82,22 @@ module ucie_ltsm_tx_mbinit_param #(
     end
   end
 
-
   always @(posedge i_clk or posedge i_reset) begin
-    if (i_reset) done_ack <= 0;
+    if (i_reset) begin
+      o_tx_encoding_old <= 0;
+    end else begin
+      o_tx_encoding_old <= o_tx_encoding;
+    end
+  end
+
+
+  // REQ & Done Handshake 
+  always @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) done_ack <= 1;
+    else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;
     else if (i_sb_tx_done) begin
       done_ack <= 1;
-    end else if (i_sb_tx_rsp) begin
+    end else if (i_sb_tx_rsp || i_sb_tx_req) begin
       done_ack <= 0;
     end
   end

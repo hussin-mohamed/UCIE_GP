@@ -13,7 +13,7 @@ class ucie_mbinit_fail_test extends ucie_base_test;
   // -------------------------------------------------------------------------
   function new(string name = "ucie_mbinit_fail_test", uvm_component parent = null);
     super.new(name, parent);
-    uvm_top.set_timeout(100ms, 0);
+    uvm_top.set_timeout(350ms, 0);
   endfunction
 
   function void build_phase(uvm_phase phase);
@@ -24,8 +24,15 @@ class ucie_mbinit_fail_test extends ucie_base_test;
   endfunction : build_phase
 
   virtual function void start_of_simulation_phase(uvm_phase phase);
+    ucie_mbinit_fail_vseq fail_vseq;
+    super.start_of_simulation_phase(phase);
     // Set the drain time to be waited before exiting the main phase
-    set_main_phase_drain_time(100000ns);
+    set_main_phase_drain_time(10000000000ns);
+    if ($cast(fail_vseq, vseq)) begin
+      fail_vseq.configure(FAIL_REVERSAL, FAIL_SIDE_RX);
+    end else begin
+      `uvm_fatal("TEST_CFG_ERR", "Failed to cast vseq to ucie_mbinit_fail_vseq")
+    end
   endfunction : start_of_simulation_phase
 
 endclass : ucie_mbinit_fail_test

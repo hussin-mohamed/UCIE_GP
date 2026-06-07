@@ -44,24 +44,56 @@ class ucie_trainerror_vseq extends ucie_vseq_base;
     `uvm_info("VSEQ", $sformatf("Trainerror_Start_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
     if (missing_msg_2get == MISS2RX) begin
-        p_sequencer.tx_fifo.get(sb_ltsm_item);
-        p_sequencer.rx_fifo.get(sb_ltsm_item);
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
+      send_sb_msg(sb_ltsm_item);
+
+      // Trainerror_Start_RX_LTSM
+      `uvm_info("VSEQ", $sformatf("Trainerror_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+      
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
+      send_sb_msg(sb_ltsm_item);
     end
     else if (missing_msg_2get == NORMAL) begin
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
+      send_sb_msg(sb_ltsm_item);
+
+      // Trainerror_Start_RX_LTSM
+      `uvm_info("VSEQ", $sformatf("Trainerror_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+      
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
+      send_sb_msg(sb_ltsm_item);
     end
+    else if (missing_msg_2get == NORMAL_TX) begin 
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
+      send_sb_msg(sb_ltsm_item);
 
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
-    send_sb_msg(sb_ltsm_item);
+      // Trainerror_Start_RX_LTSM
+      `uvm_info("VSEQ", $sformatf("Trainerror_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+      
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
+      send_sb_msg(sb_ltsm_item);
+    end 
+    else if (missing_msg_2get == NORMAL_RX) begin 
+      sb_ltsm_item.info = '0;
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
+      send_sb_msg(sb_ltsm_item);
 
-    // Trainerror_Start_RX_LTSM
-    `uvm_info("VSEQ", $sformatf("Trainerror_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
-    send_sb_msg(sb_ltsm_item);
+      // Trainerror_Start_RX_LTSM
+      `uvm_info("VSEQ", $sformatf("Trainerror_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
+      
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
+      send_sb_msg(sb_ltsm_item);
 
-
+    end 
 
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask

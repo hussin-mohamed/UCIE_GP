@@ -105,6 +105,8 @@ task ltsmc_monitor::collect_item_out(output ltsmc_seq_item _item);
   _item.error_threshold = bfm.i_error_threshold;
   _item.half_rate       = bfm.i_half_rate;
   _item.rx_data_results = bfm.o_rx_data_results;
+  _item.rx_clk_results  = bfm.o_clk_result;
+  _item.rx_valid_results= bfm.o_valid_result;
 endtask : collect_item_out
 
 // collect_item_in
@@ -118,4 +120,7 @@ task ltsmc_monitor::collect_item_in(output ltsmc_seq_item _item);
   _item.rx_encoding     = bfm.i_rx_encoding;
   _item.error_threshold = bfm.i_error_threshold;
   _item.half_rate       = bfm.i_half_rate;
+  _item.rx_data_results = bfm.o_rx_data_results;
+  _item.rx_clk_results  = bfm.o_clk_result;
+  _item.rx_valid_results= bfm.o_valid_result;
 endtask : collect_item_in

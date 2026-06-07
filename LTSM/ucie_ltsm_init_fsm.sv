@@ -237,6 +237,36 @@ module ucie_ltsm_init_fsm #(
     endcase
   end
 
+
+  // ---- Skip-entry flag: RX sub-module already consumed the 0x40 handshake ----
+  logic saw_trainerror_req_repairclk;
+  logic saw_trainerror_req_repairval;
+  logic saw_trainerror_req_reversal;
+  logic saw_trainerror_req_repairmb;
+  logic saw_trainerror_req_sbinit;
+  logic saw_trainerror_req_param;
+  logic saw_trainerror_req_cal;
+  logic rx_saw_trainerror_req;
+  logic rx_entry_already_done;
+
+  // Combinational signal indicating trainerror entry came from SBINIT
+  logic sbinit_error_active;
+  assign sbinit_error_active = (current_state == SBINIT) && (any_sbinit_error || saw_trainerror_req_sbinit);
+
+  assign rx_saw_trainerror_req = saw_trainerror_req_repairclk |
+                                 saw_trainerror_req_repairval |
+                                 saw_trainerror_req_reversal  |
+                                 saw_trainerror_req_repairmb  |
+                                 saw_trainerror_req_sbinit    |
+                                 saw_trainerror_req_param     |
+                                 saw_trainerror_req_cal;
+
+  always_ff @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) rx_entry_already_done <= 0;
+    else if (rx_saw_trainerror_req) rx_entry_already_done <= 1;
+    else if (current_state != TRAINERROR) rx_entry_already_done <= 0;
+  end
+
   // =========================================================================
   // Done latch always_ff  � latch each raw done pulse; clear on state exit
   // =========================================================================
@@ -397,9 +427,10 @@ module ucie_ltsm_init_fsm #(
     next_state = current_state;
 
     // ---- Global error overrides ----
-    if (any_sbinit_error && current_state == SBINIT) begin
-      next_state = RESET;
-    end else if (any_other_error) begin
+    // if (any_sbinit_error && current_state == SBINIT) begin
+    //   next_state = RESET;
+    // end else 
+    if (any_other_error || rx_saw_trainerror_req || any_sbinit_error) begin
       next_state = TRAINERROR;
     end else if (init_train_en_reg && i_train_active_error) begin
       next_state = TRAINERROR;
@@ -576,6 +607,7 @@ module ucie_ltsm_init_fsm #(
   logic [    INFO_WIDTH-1:0] rx_info_trainerror;
   logic rx_sb_req_trainerror, rx_sb_rsp_trainerror, rx_sb_done_trainerror;
 
+
   //================================================================================
   // Sideband Done Signal Logic
   //================================================================================
@@ -690,7 +722,8 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp     (rx_sb_rsp_sbinit),
       .o_rx_sb_done    (rx_sb_done_sbinit),
       .o_train_error   (te_rx_sbinit),
-      .o_sb_init_start (  /* open � TX drives this */),
+      .o_saw_trainerror_req (saw_trainerror_req_sbinit),
+      .o_sb_init_start (  /* open  TX drives this */),
       .o_done_sbinit_rx(raw_done_rx_sbinit)
   );
 
@@ -747,6 +780,7 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp           (rx_sb_rsp_param),
       .o_rx_sb_done          (rx_sb_done_param),
       .o_train_error         (te_rx_param),
+      .o_saw_trainerror_req  (saw_trainerror_req_param),
       .o_done_mbinit_param_rx(raw_done_rx_param)
   );
 
@@ -802,6 +836,7 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp         (rx_sb_rsp_cal),
       .o_rx_sb_done        (rx_sb_done_cal),
       .o_train_error       (te_rx_cal),
+      .o_saw_trainerror_req(saw_trainerror_req_cal),
       .o_done_mbinit_cal_rx(raw_done_rx_cal)
   );
 
@@ -858,6 +893,7 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp               (rx_sb_rsp_repairclk),
       .o_rx_sb_done              (rx_sb_done_repairclk),
       .o_train_error             (te_rx_repairclk),
+      .o_saw_trainerror_req      (saw_trainerror_req_repairclk),
       .o_done_mbinit_repairclk_rx(raw_done_rx_repairclk)
   );
 
@@ -916,6 +952,7 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp               (rx_sb_rsp_repairval),
       .o_rx_sb_done              (rx_sb_done_repairval),
       .o_train_error             (te_rx_repairval),
+      .o_saw_trainerror_req      (saw_trainerror_req_repairval),
       .o_done_mbinit_repairval_rx(raw_done_rx_repairval)
   );
 
@@ -974,6 +1011,7 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp              (rx_sb_rsp_reversal),
       .o_rx_sb_done             (rx_sb_done_reversal),
       .o_train_error            (te_rx_reversal),
+      .o_saw_trainerror_req     (saw_trainerror_req_reversal),
       .o_done_mbinit_reversal_rx(raw_done_rx_reversal)
   );
 
@@ -1035,6 +1073,7 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp              (rx_sb_rsp_repairmb),
       .o_rx_sb_done             (rx_sb_done_repairmb),
       .o_train_error            (te_rx_repairmb),
+      .o_saw_trainerror_req     (saw_trainerror_req_repairmb),
       .o_done_mbinit_repairmb_rx(raw_done_rx_repairmb)
   );
 
@@ -1057,6 +1096,7 @@ module ucie_ltsm_init_fsm #(
       .i_current_state     (current_state),
       .o_timer_8ms         (o_timer_8ms),
       .i_lp_linkerror      (i_lp_linkerror),
+      .i_sbinit_error      (sbinit_error_active),
       .o_tx_encoding       (tx_enc_trainerror),
       .o_tx_data           (tx_data_trainerror),
       .o_tx_info           (tx_info_trainerror),
@@ -1093,7 +1133,9 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp         (rx_sb_rsp_trainerror),
       .o_rx_sb_done        (rx_sb_done_trainerror),
       .o_train_error       (te_rx_trainerror),
-      .o_done_trainerror_rx(raw_done_rx_trainerror)
+      .o_done_trainerror_rx(raw_done_rx_trainerror),
+      .i_skip_entry        (rx_entry_already_done),
+      .i_sbinit_error      (sbinit_error_active)
   );
 
   // =========================================================================

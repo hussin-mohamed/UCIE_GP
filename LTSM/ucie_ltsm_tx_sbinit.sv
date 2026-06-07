@@ -74,7 +74,6 @@ module ucie_ltsm_tx_sbinit #(
     if (i_reset) done_ack <= 1;
     else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;
     else if (i_sb_tx_done) done_ack <= 1;
-    else if (o_tx_encoding == OUT_OF_RESET_MSG) done_ack <= 0;
     else if (i_sb_tx_rsp || i_sb_tx_req) begin
       done_ack <= 0;
     end
