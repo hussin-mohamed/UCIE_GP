@@ -321,7 +321,7 @@ module UCIe_phy #(
       end
     end
   end
-  assign LTSM_controllers_vif.i_timer1ms = t1_ms_reg | t1_ms; // ORing with t1_ms to ensure we capture the pulse even if it is shorter than a clock cycle
+  assign LTSM_controllers_vif.i_timer_1ms = t1_ms_reg | t1_ms; // ORing with t1_ms to ensure we capture the pulse even if it is shorter than a clock cycle
   always @(posedge i_clk_sb_100_m) begin
     sb_ready_reg <= sb_ready;
   end
