@@ -19,16 +19,12 @@
 //              State Machine (LTSM).
 //******************************************************************************
 
-import sb_shared_pkg::*;
-
 interface sb_ltsm_ctrl_bfm(
    input  logic clk,
    input  logic clk_l
   ,input  logic reset
   ,input  logic o_sb_ready // SBINIT initialization complete
 );
-
-  rx_encoding_t rx_encoding;
 
   //============================================================================
   // LTSM → SB Control Signals
@@ -62,10 +58,10 @@ interface sb_ltsm_ctrl_bfm(
 
   // Timout flag generator
   bit timeout;
-  always @(negedge i_sb_init_start) begin
-    // if (tms == 7 && i_timer_1ms) begin
+  always @(posedge clk) begin
+    if (tms == 7 && i_timer_1ms) begin
       timeout = 1;
-    // end
+    end
   end
   always @(posedge i_sb_init_start) begin
     timeout = 0;

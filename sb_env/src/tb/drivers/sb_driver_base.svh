@@ -145,15 +145,6 @@ task sb_driver_base::run_phase(uvm_phase phase);
     end
   join_none
 
-  fork
-    forever begin
-      @(bfm.rx_encoding);
-      if (bfm.rx_encoding == TRAINERROR_RX_Handshake) begin
-        m_op_mode = ACTIVE;
-      end
-    end
-  join_none
-
   forever begin
     // Wait for reset deassertion
     if (bfm.reset === 1'b1) begin

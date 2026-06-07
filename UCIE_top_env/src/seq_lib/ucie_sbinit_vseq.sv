@@ -24,31 +24,12 @@ class ucie_sbinit_vseq extends ucie_vseq_base;
   // -------------------------------------------------------------------------
   virtual task body();
     trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
+    
     if (sbinit_fail_cnt == 0 || sbinit_fail_cnt == 1) begin
       `uvm_info(get_type_name(), $sformatf("Executing Attempt 1: sbinit_fail_cnt = %0d. Configuring RAND_TILL_TIMEOUT.", sbinit_fail_cnt), UVM_MEDIUM)
       sbinit_fail_cnt++;
       sbinit_phylink_random_seq.configure(._sbinit_seq_mode(RAND_TILL_TIMEOUT));
       sbinit_phylink_random_seq.start(sb_phylink_seqr);
-      fork
-        begin // TX Thread
-          // send trainerror req
-          sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
-          send_sb_msg_blocking(sb_ltsm_item);
-    
-          // get trainerror resp
-          p_sequencer.tx_fifo.get(sb_ltsm_item);
-          `uvm_info("MBINIT_BRINGUP_VSEQ", $sformatf("RECEIVED SB MESSAGE:\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-        end
-        begin // RX Thread
-          // get trainerror req
-          p_sequencer.rx_fifo.get(sb_ltsm_item);
-          `uvm_info("MBINIT_BRINGUP_VSEQ", $sformatf("RECEIVED SB MESSAGE:\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-    
-          // send trainerror resp
-          sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
-          send_sb_msg_blocking(sb_ltsm_item);
-        end
-      join
     end else if (sbinit_fail_cnt == 2) begin
       `uvm_info(get_type_name(), $sformatf("Executing Attempt 2: sbinit_fail_cnt = %0d. Configuring RAND_TILL_DETECTION and DROP_OUT_OF_RESET.", sbinit_fail_cnt), UVM_MEDIUM)
       sbinit_fail_cnt++;

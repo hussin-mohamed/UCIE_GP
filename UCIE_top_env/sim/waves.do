@@ -270,7 +270,6 @@ add wave -noupdate -group {sb_env — sb_tx_bfm} \
     /ucie_tb_top/DUT/tx_bfm/clk \
     /ucie_tb_top/DUT/tx_bfm/reset \
     /ucie_tb_top/DUT/tx_bfm/o_sb_ready \
-    /ucie_tb_top/DUT/tx_bfm/rx_encoding \
     /ucie_tb_top/DUT/tx_bfm/i_tx_sb_req \
     /ucie_tb_top/DUT/tx_bfm/i_tx_sb_rsp \
     /ucie_tb_top/DUT/tx_bfm/i_tx_sb_done \
@@ -290,7 +289,6 @@ add wave -noupdate -group {sb_env — sb_rx_bfm} \
     /ucie_tb_top/DUT/rx_bfm/clk \
     /ucie_tb_top/DUT/rx_bfm/reset \
     /ucie_tb_top/DUT/rx_bfm/o_sb_ready \
-    /ucie_tb_top/DUT/rx_bfm/rx_encoding \
     /ucie_tb_top/DUT/rx_bfm/i_rx_sb_req \
     /ucie_tb_top/DUT/rx_bfm/i_rx_sb_rsp \
     /ucie_tb_top/DUT/rx_bfm/i_rx_sb_done \
@@ -313,7 +311,7 @@ add wave -noupdate -group {sb_env — sb_phylink_bfm} \
     sim:/ucie_tb_top/phylink_bfm/clk_800MHz \
     sim:/ucie_tb_top/phylink_bfm/reset
 add wave -noupdate -group {sb_env — sb_phylink_bfm} -color Gold \
-    sim:/ucie_tb_top/phylink_bfm/rx_encoding
+    sim:/ucie_tb_top/DUT/rp_rmblink_bfm_inst/i_rx_encoding
 add wave -noupdate -group {sb_env — sb_phylink_bfm} -color Cyan \
     sim:/uvm_test_top/env/sb_env_i/phylink_agt/drvr/m_op_mode
 add wave -noupdate -group {sb_env — sb_phylink_bfm} -color Cyan \

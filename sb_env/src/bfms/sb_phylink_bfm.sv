@@ -30,13 +30,13 @@ interface sb_phylink_bfm(
  ,input logic reset
  ,input logic o_sb_ready
 );
-  rx_encoding_t rx_encoding;
     
   bit in_pat_detected;
   bit out_pat_detected;
 
   bit [2:0] tms;
   bit timeout;
+  rx_encoding_t i_rx_encoding;
 
   //============================================================================
   // From Partner Die Signals (Inputs to DUT)

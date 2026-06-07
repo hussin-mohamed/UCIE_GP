@@ -53,7 +53,7 @@ class ucie_sbinit_bringup_vseq extends ucie_vseq_base;
               end
             end
           join_none
-
+          
           // Wait for the SBINIT_Out_Of_Reset message to be received at the RX side to be able to send the SBINIT_done_req
           @(out_of_rst_msg_received);
   
@@ -63,18 +63,16 @@ class ucie_sbinit_bringup_vseq extends ucie_vseq_base;
           // Wait for the SBINIT_Out_Of_Reset message to be received at the RX side to be able to send the SBINIT_done_req
           @(out_of_rst_msg_received);
         end
-
+        
         if (m_sbinit_msg_drop_mode != DROP_DONE_REQ) begin
           // send sbinit done req
           sb_ltsm_item.set_tx_encoding(sb_shared_pkg::SBINIT_TX_Done_Handshake);
           send_sb_msg_blocking(sb_ltsm_item);
-
-          if (m_sbinit_msg_drop_mode != DROP_OUT_OF_RESET) begin
-            // get sbinit done resp
-            p_sequencer.tx_fifo.get(sb_ltsm_item);
-            `uvm_info("MBINIT_BRINGUP_VSEQ", $sformatf("RECEIVED SB MESSAGE:\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-          end
         end
+
+        // get sbinit done resp
+        p_sequencer.tx_fifo.get(sb_ltsm_item);
+        `uvm_info("MBINIT_BRINGUP_VSEQ", $sformatf("RECEIVED SB MESSAGE:\n %s", sb_ltsm_item.sprint()), UVM_LOW)
       end
 
       begin // RX Thread

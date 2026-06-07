@@ -106,10 +106,6 @@ module ucie_tb_top;
   assign  phylink_bfm.start                 = DUT.ltsm_ctrl_bfm.i_sb_init_start;
   assign  ltsm_rdi_if_inst.o_pl_inband_pres = DUT.ltsm_rdi_if_inst.o_pl_inband_pres;
   assign  rdi_intf.pl_state_sts             = DUT.ltsm_rdi_if_inst.o_pl_state_sts;
-  assign  phylink_bfm.rx_encoding           = sb_shared_pkg::rx_encoding_t'(DUT.rx_bfm.i_rx_encoding);
-  assign  DUT.phylink_bfm.rx_encoding       = sb_shared_pkg::rx_encoding_t'(DUT.rx_bfm.i_rx_encoding);
-  assign  DUT.tx_bfm.rx_encoding            = sb_shared_pkg::rx_encoding_t'(DUT.rx_bfm.i_rx_encoding);
-  assign  DUT.rx_bfm.rx_encoding            = sb_shared_pkg::rx_encoding_t'(DUT.rx_bfm.i_rx_encoding);
 
 
   // -------------------------------------------------------------------------

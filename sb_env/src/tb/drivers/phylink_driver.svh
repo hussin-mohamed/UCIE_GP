@@ -105,7 +105,6 @@ task phylink_driver::drive_item(inout phylink_seq_item req, output phylink_seq_i
 
       begin
         wait(timeout_triggered.triggered);
-        $display(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
         rsp.timeout_detected = 1;
       end
     join_any
