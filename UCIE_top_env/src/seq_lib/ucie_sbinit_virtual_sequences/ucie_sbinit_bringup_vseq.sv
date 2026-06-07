@@ -92,9 +92,14 @@ class ucie_sbinit_bringup_vseq extends ucie_vseq_base;
             end
           end
 
-          // send sbinit done resp
-          sb_ltsm_item.set_rx_encoding(sb_shared_pkg::SBINIT_RX_Done_Handshake);
-          send_sb_msg_blocking(sb_ltsm_item);
+          if (m_sbinit_msg_drop_mode != DROP_DONE_RSP) begin
+            // send sbinit done resp
+            sb_ltsm_item.set_rx_encoding(sb_shared_pkg::SBINIT_RX_Done_Handshake);
+            send_sb_msg_blocking(sb_ltsm_item);
+          end else begin
+            // Intentional Stuck
+            repeat (2) p_sequencer.rx_fifo.get(sb_ltsm_item);
+          end
         end
       end
     join
