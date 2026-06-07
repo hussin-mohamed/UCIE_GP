@@ -300,6 +300,8 @@ end
 always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
         first_attempt <= 1;
+    end else if (!init_train_en) begin
+        first_attempt <= 1;
     end else if (CS == TXSELFCAL) begin
         first_attempt <= 0;
     end
