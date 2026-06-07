@@ -97,32 +97,43 @@ task LTSM_controllers_monitor::collect_transaction();
         // input thread
         begin
             item_in = ITEM_T::type_id::create("item_in");
-            forever begin
-                @(posedge vif.clk);
-                item_in.i_supply_stable                              = vif.i_supply_stable;
-                item_in.i_pll_stable                         = vif.i_pll_stable;
-                item_in.i_rx_error                           = vif.i_rx_error;
-                item_in.i_rx_done                            = vif.i_rx_done;
-                item_in.i_tx_done                            = vif.i_tx_done;
-                item_in.i_rx_valid_results                          = vif.i_rx_valid_results;
-                item_in.i_sb_ready                           = vif.i_sb_ready;
-                item_in.i_reset                              = vif.i_reset;
-                item_in.i_sb_cur_msg_done                    = vif.i_sb_cur_msg_done;
-                item_in.i_speedreg                           = vif.i_speedreg;
-                item_in.i_local_cap                          = vif.i_local_cap;
-                item_in.i_par_check_done                     = vif.i_par_check_done;
-                item_in.i_rx_data_results                    = vif.i_rx_data_results;
-                item_in.i_clk_results                        = vif.i_clk_results;
-                item_in.i_Runtime_Link_Test_status_register  = vif.i_Runtime_Link_Test_status_register;
-                item_in.i_Runtime_Link_Test_Control_register = vif.i_Runtime_Link_Test_Control_register;
-                item_in.i_sim_cycles_8                      = vif.i_sim_cycles_8;
-                item_in.i_sim_cycles_4                      = vif.i_sim_cycles_4;
-                item_in.i_sim_cycles_1                      = vif.i_sim_cycles_1;
-                item_in.i_sim_cycles_1_us                   = vif.i_sim_cycles_1_us;
-                item_in.i_sim_cycles_2_us                   = vif.i_sim_cycles_2_us;
-                ap_in.write(item_in);
-                transaction_count_in++;
+            fork
+                begin
+                    forever begin
+                        @(posedge vif.clk);
+                        item_in.i_supply_stable                              = vif.i_supply_stable;
+                        item_in.i_pll_stable                         = vif.i_pll_stable;
+                        item_in.i_rx_error                           = vif.i_rx_error;
+                        item_in.i_rx_done                            = vif.i_rx_done;
+                        item_in.i_tx_done                            = vif.i_tx_done;
+                        item_in.i_rx_valid_results                          = vif.i_rx_valid_results;
+                        item_in.i_sb_ready                           = vif.i_sb_ready;
+                        item_in.i_reset                              = vif.i_reset;
+                        item_in.i_sb_cur_msg_done                    = vif.i_sb_cur_msg_done;
+                        item_in.i_speedreg                           = vif.i_speedreg;
+                        item_in.i_local_cap                          = vif.i_local_cap;
+                        item_in.i_par_check_done                     = vif.i_par_check_done;
+                        item_in.i_rx_data_results                    = vif.i_rx_data_results;
+                        item_in.i_clk_results                        = vif.i_clk_results;
+                        item_in.i_Runtime_Link_Test_status_register  = vif.i_Runtime_Link_Test_status_register;
+                        item_in.i_Runtime_Link_Test_Control_register = vif.i_Runtime_Link_Test_Control_register;
+                        item_in.i_sim_cycles_8                      = vif.i_sim_cycles_8;
+                        item_in.i_sim_cycles_4                      = vif.i_sim_cycles_4;
+                        item_in.i_sim_cycles_1                      = vif.i_sim_cycles_1;
+                        item_in.i_sim_cycles_1_us                   = vif.i_sim_cycles_1_us;
+                        item_in.i_sim_cycles_2_us                   = vif.i_sim_cycles_2_us;
+                        ap_in.write(item_in);
+                        transaction_count_in++;
             end
+                end
+                begin
+                    @(posedge vif.i_reset);
+                    item_in.i_reset = 1'b1;
+                    ap_in.write(item_in);
+                    transaction_count_in++;
+                end
+            join_any
+            
         end
     join_any
     
