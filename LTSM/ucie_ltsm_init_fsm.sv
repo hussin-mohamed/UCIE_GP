@@ -267,6 +267,7 @@ module ucie_ltsm_init_fsm #(
     else if (current_state != TRAINERROR) rx_entry_already_done <= 0;
   end
 
+
   // =========================================================================
   // Done latch always_ff    latch each raw done pulse; clear on state exit
   // =========================================================================
@@ -427,9 +428,6 @@ module ucie_ltsm_init_fsm #(
     next_state = current_state;
 
     // ---- Global error overrides ----
-    // if (any_sbinit_error && current_state == SBINIT) begin
-    //   next_state = RESET;
-    // end else 
     if (any_other_error || rx_saw_trainerror_req || any_sbinit_error) begin
       next_state = TRAINERROR;
     end else if (init_train_en_reg && i_train_active_error) begin
@@ -606,6 +604,7 @@ module ucie_ltsm_init_fsm #(
   logic [    DATA_WIDTH-1:0] rx_data_trainerror;
   logic [    INFO_WIDTH-1:0] rx_info_trainerror;
   logic rx_sb_req_trainerror, rx_sb_rsp_trainerror, rx_sb_done_trainerror;
+
 
 
   //================================================================================

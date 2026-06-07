@@ -164,7 +164,7 @@ module ucie_ltsm_tx_mbinit_reversal #(
         APPLY_REVERSAL: begin
           o_tx_encoding = 9'h34;
           if (!substates_done) begin
-            o_tx_sb_req = ~done_ack;
+            // o_tx_sb_req = ~done_ack;
             if (i_tx_done) next_substate = CLEAR_LOG_HANDSHAKE;
             else next_substate = APPLY_REVERSAL;
           end

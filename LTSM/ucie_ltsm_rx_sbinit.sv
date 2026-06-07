@@ -25,6 +25,7 @@ module ucie_ltsm_rx_sbinit #(
     output logic                      o_rx_sb_rsp,
     output logic                      o_rx_sb_done,
     output logic                      o_train_error,
+    output logic                      o_saw_trainerror_req,
     output logic                      o_sb_init_start,
     output logic                      o_done_sbinit_rx
 );
@@ -92,12 +93,16 @@ module ucie_ltsm_rx_sbinit #(
     o_rx_sb_req      = 0;
     // o_rx_sb_rsp     = 0;
     o_rx_sb_done     = 0;
-    o_train_error    = 0;
-    o_sb_init_start  = 0;
-    o_done_sbinit_rx = 0;
-    next_substate    = DONE_HANDSHAKE;
+    o_train_error        = 0;
+    o_sb_init_start      = 0;
+    o_saw_trainerror_req = 0;
+    o_done_sbinit_rx     = 0;
+    next_substate        = DONE_HANDSHAKE;
 
-    if (!substates_done && o_timer_8ms) begin
+    if (i_current_state == SBINIT && i_sb_rx_req && i_rx_decoding == 9'h40) begin
+      o_train_error        = 1;
+      o_saw_trainerror_req = 1;
+    end else if (!substates_done && o_timer_8ms) begin
       o_train_error = 1;
       next_substate = WAIT_OUT_OF_RESET_MSG;
     end else if (i_current_state == SBINIT) begin

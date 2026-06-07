@@ -24,6 +24,7 @@ module ucie_ltsm_rx_mbinit_param #(
     output logic                      o_rx_sb_rsp,
     output logic                      o_rx_sb_done,
     output logic                      o_train_error,
+    output logic                      o_saw_trainerror_req,
     output logic                      o_done_mbinit_param_rx
 );
 
@@ -129,10 +130,14 @@ module ucie_ltsm_rx_mbinit_param #(
     // o_rx_sb_rsp            = 0;
     o_rx_sb_done           = 0;
     o_train_error          = 0;
+    o_saw_trainerror_req   = 0;
     o_done_mbinit_param_rx = 0;
     next_substate          = CHECK_PARAMETERS;
 
-    if (!substates_done && o_timer_8ms) begin
+    if (i_current_state == MBINIT_PARAM && i_sb_rx_req && i_rx_decoding == 9'h40) begin
+      o_train_error        = 1;
+      o_saw_trainerror_req = 1;
+    end else if (!substates_done && o_timer_8ms) begin
       o_train_error = 1;
       next_substate = WAIT_CONFIG_REQ;
     end else if (i_current_state == MBINIT_PARAM) begin

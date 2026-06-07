@@ -106,6 +106,7 @@ module ucie_ltsm_rx_trainerror #(
           o_rx_sb_rsp = done_ack ? 0 : 1;
           // Pulse done for one cycle on REQ detection.
           // o_rx_sb_done = i_sb_rx_req && !sb_rx_req_d;
+          // o_rx_sb_done = i_sb_rx_req && !sb_rx_req_d;
           o_rx_info = 16'h0000;
 
           // RSP TIMEOUT

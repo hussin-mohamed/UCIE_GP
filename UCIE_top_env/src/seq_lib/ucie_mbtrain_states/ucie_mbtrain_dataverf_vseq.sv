@@ -106,7 +106,7 @@ class ucie_mbtrain_dataverf_vseq extends ucie_vseq_base;
     end
 
     else if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 10)) begin
-    TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL), .train_error_dir(SEND_REQ));
+    TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL_RX));
     TRAINERROR_vseq.start(p_sequencer);
     return;
     end

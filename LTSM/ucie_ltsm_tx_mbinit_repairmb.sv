@@ -85,6 +85,8 @@ module ucie_ltsm_tx_mbinit_repairmb #(
   logic                      o_train_error_internal;
   logic [DECODING_WIDTH-1:0] o_tx_encoding_old;
 
+  logic                      goto_d2c;
+
   // -------------------------------------------------------------------------
   // Eye sweep submodule (TX-initiated, init = 1)
   // -------------------------------------------------------------------------
@@ -140,11 +142,13 @@ module ucie_ltsm_tx_mbinit_repairmb #(
       substates_done    <= 0;
       r_lane_map        <= ALL_LANES_FUNCTIONAL;
       r_per_lane_result <= '0;
+      goto_d2c          <= 0;
     end else if (i_current_state != MBINIT_REPAIRMB) begin
       current_substate  <= INIT_HANDSHAKE;
       substates_done    <= 0;
       r_lane_map        <= ALL_LANES_FUNCTIONAL;
       r_per_lane_result <= '0;
+      goto_d2c          <= 0;
     end else begin
       if (current_substate == DONE_HANDSHAKE && i_sb_tx_rsp && i_tx_decoding == 9'h3B) begin
         substates_done   <= 1;
@@ -153,13 +157,17 @@ module ucie_ltsm_tx_mbinit_repairmb #(
         current_substate <= next_substate;
 
         // Latch sweep result the cycle clock_to_test_done fires
-        if (current_substate == DATA_TO_CLOCK_TEST && clock_to_test_done)
+        if (current_substate == DATA_TO_CLOCK_TEST && clock_to_test_done) begin
+          goto_d2c <= 0;
           r_per_lane_result <= per_lane_result;
+        end
 
         // Update lane map on mismatch so the re-run sweep has the new target
-        if (current_substate == APPLY_DEGRADE && i_sb_tx_rsp && i_tx_decoding == 9'h3A &&
-            w_extracted_lane_map != r_lane_map)
+        if (current_substate == APPLY_DEGRADE /*&& i_sb_tx_rsp && i_tx_decoding == 9'h3A*/ && w_extracted_lane_map != r_lane_map)
+          begin
           r_lane_map <= w_extracted_lane_map;
+          goto_d2c   <= 1;
+        end
       end
     end
   end
@@ -268,16 +276,16 @@ module ucie_ltsm_tx_mbinit_repairmb #(
           if (!done_ack) o_tx_info = {{(INFO_WIDTH - 3) {1'b0}}, w_extracted_lane_map};
           else o_tx_info = '0;
 
+          o_tx_sb_req = ~done_ack;
           if (!substates_done) begin
-            if (w_extracted_lane_map == DEGRADE_NOT_POSSIBLE) begin
+            if (w_extracted_lane_map == DEGRADE_NOT_POSSIBLE && o_tx_sb_req == 0) begin
               o_train_error_internal = 1;
-              o_tx_sb_req = ~done_ack;
               next_substate = APPLY_DEGRADE;
             end else begin
-              o_tx_sb_req = ~done_ack;
+              // o_tx_sb_req = ~done_ack;
 
               if (i_sb_tx_rsp && i_tx_decoding == 9'h3A) begin
-                if (w_extracted_lane_map == r_lane_map) next_substate = DONE_HANDSHAKE;
+                if (goto_d2c == 0) next_substate = DONE_HANDSHAKE;
                 else next_substate = DATA_TO_CLOCK_TEST;
               end else begin
                 next_substate = APPLY_DEGRADE;

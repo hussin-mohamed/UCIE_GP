@@ -34,8 +34,8 @@ typedef enum {
 // Defines how lanes are chosen to pass/fail in mixed scenarios
 //-----------------------------------------------------------------------------
 typedef enum {
-  MIXED_ALTERNATING, // Even lanes pass, Odd lanes fail
-  MIXED_RANDOM       // Lanes are randomly chosen to pass or fail
+  MIXED_ALTERNATING,  // Even lanes pass, Odd lanes fail
+  MIXED_RANDOM        // Lanes are randomly chosen to pass or fail
 } mixed_lane_mode_e;
 
 //-----------------------------------------------------------------------------
@@ -57,27 +57,24 @@ typedef enum {
 class rmblink_sanity_PerLaneID_sequence extends rp_sequence_base #(rmblink_seq_item);
   `uvm_object_utils(rmblink_sanity_PerLaneID_sequence)
 
-  rmblink_sequencer seqr;
+  rmblink_sequencer                      seqr;
 
   // --- Internal Protected Configuration Variables ---
-  protected bit                   m_is_configured = 0;
-  protected per_lane_scenario_e   m_scenario;
-  protected int                   m_num_iterations;
-  protected lane_map_code_t       m_lane_map_code;
-  protected mixed_lane_mode_e     m_mixed_mode;
-  protected error_inject_region_e m_err_region;
-  protected bit [31:0]            m_random_success_mask; // Supports up to 32 lanes
+  protected bit                          m_is_configured                                    = 0;
+  protected per_lane_scenario_e          m_scenario;
+  protected int                          m_num_iterations;
+  protected lane_map_code_t              m_lane_map_code;
+  protected mixed_lane_mode_e            m_mixed_mode;
+  protected error_inject_region_e        m_err_region;
+  protected bit                   [31:0] m_random_success_mask;  // Supports up to 32 lanes
 
   extern function new(string name = "rmblink_sanity_PerLaneID_sequence");
-  
+
   // Configuration API
-  extern function void configure(
-    per_lane_scenario_e   _scenario, 
-    int                   _num_iterations,
-    lane_map_code_t       _lane_map_code = X16_MODE,
-    mixed_lane_mode_e     _mixed_mode    = MIXED_ALTERNATING,
-    error_inject_region_e _err_region    = ERR_INJECT_ALL_LANES
-  );
+  extern function void configure(per_lane_scenario_e _scenario, int _num_iterations,
+                                 lane_map_code_t _lane_map_code = X16_MODE,
+                                 mixed_lane_mode_e _mixed_mode = MIXED_ALTERNATING,
+                                 error_inject_region_e _err_region = ERR_INJECT_ALL_LANES);
 
   extern task pre_body();
   extern task body();
@@ -95,23 +92,20 @@ endfunction : new
 
 
 function void rmblink_sanity_PerLaneID_sequence::configure(
-  per_lane_scenario_e   _scenario, 
-  int                   _num_iterations, 
-  lane_map_code_t       _lane_map_code = X16_MODE,
-  mixed_lane_mode_e     _mixed_mode    = MIXED_ALTERNATING,
-  error_inject_region_e _err_region    = ERR_INJECT_ALL_LANES
-);
-  m_scenario       = _scenario;
-  m_num_iterations = _num_iterations;
-  m_lane_map_code  = _lane_map_code;
-  m_mixed_mode     = _mixed_mode;
-  m_err_region     = _err_region;
-  
+    per_lane_scenario_e _scenario, int _num_iterations, lane_map_code_t _lane_map_code = X16_MODE,
+    mixed_lane_mode_e _mixed_mode = MIXED_ALTERNATING,
+    error_inject_region_e _err_region = ERR_INJECT_ALL_LANES);
+  m_scenario            = _scenario;
+  m_num_iterations      = _num_iterations;
+  m_lane_map_code       = _lane_map_code;
+  m_mixed_mode          = _mixed_mode;
+  m_err_region          = _err_region;
+
   // Pre-compute the random mask so that a "randomly" chosen passing lane 
   // stays consistent throughout the entire iteration loop.
   m_random_success_mask = $urandom();
-  
-  m_is_configured  = 1;
+
+  m_is_configured       = 1;
 endfunction : configure
 
 
@@ -132,18 +126,36 @@ task rmblink_sanity_PerLaneID_sequence::body();
 
   // 2. Decode the lane map configuration
   case (m_lane_map_code)
-    X8_LOWER_MODE: begin start_lane = 0; num_active_lanes = 8;  end 
-    X8_UPPER_MODE: begin start_lane = 8; num_active_lanes = 8;  end 
-    X16_MODE:      begin start_lane = 0; num_active_lanes = 16; end 
-    X4_LOWER_MODE: begin start_lane = 0; num_active_lanes = 4;  end 
-    X4_UPPER_MODE: begin start_lane = 4; num_active_lanes = 4;  end 
-    default:       begin start_lane = 0; num_active_lanes = 16; end
+    X8_LOWER_MODE: begin
+      start_lane = 0;
+      num_active_lanes = 8;
+    end
+    X8_UPPER_MODE: begin
+      start_lane = 8;
+      num_active_lanes = 8;
+    end
+    X16_MODE: begin
+      start_lane = 0;
+      num_active_lanes = 16;
+    end
+    X4_LOWER_MODE: begin
+      start_lane = 0;
+      num_active_lanes = 4;
+    end
+    X4_UPPER_MODE: begin
+      start_lane = 4;
+      num_active_lanes = 4;
+    end
+    default: begin
+      start_lane = 0;
+      num_active_lanes = 16;
+    end
   endcase
 
   // 3. Main Stimulus Loop
   for (int cycle = 0; cycle < m_num_iterations; cycle++) begin
     start_item(req);
-    assert(req.randomize());
+    assert (req.randomize());
 
     // Standard generic streams
     req.val_stream   = get_ideal_valid_stream(pDATA_WIDTH/8);
@@ -152,7 +164,7 @@ task rmblink_sanity_PerLaneID_sequence::body();
     req.track_stream = get_ideal_clkp_stream(pDATA_WIDTH);
     req.rp_opmode    = DATA_PATTERN;
     req.idle_ui_cnt  = 0;
-    
+
     if (cycle == 0) begin
       req.is_first_data_pat = 1;
     end else begin
@@ -161,7 +173,7 @@ task rmblink_sanity_PerLaneID_sequence::body();
 
     // Generate specific payload based on the requested scenario
     for (int lane = 0; lane < pNUM_LANES; lane++) begin
-      
+
       bit is_lane_active;
       bit lane_should_pass;
       bit lane_eligible_for_error;
@@ -177,7 +189,7 @@ task rmblink_sanity_PerLaneID_sequence::body();
           ERR_INJECT_ALL_LANES:        lane_eligible_for_error = 1'b1;
         endcase
       end else begin
-        lane_eligible_for_error = 1'b1; // Default behavior for non-X16 modes
+        lane_eligible_for_error = 1'b1;  // Default behavior for non-X16 modes
       end
 
       // Determine if this specific lane is designated to pass or fail (used in mixed scenarios)
@@ -187,38 +199,40 @@ task rmblink_sanity_PerLaneID_sequence::body();
         lane_should_pass = m_random_success_mask[lane];
       end
 
-      for (int word = 0; word < pDATA_WIDTH/16; word++) begin
+      for (int word = 0; word < pDATA_WIDTH / 16; word++) begin
         logic [15:0] chunk;
         logic [15:0] valid_chunk = {4'b1010, 8'(lane), 4'b1010};
-        
+
         if (!is_lane_active) begin
-          chunk = 'z; 
+          chunk = 'z;
         end else begin
-          
+
           // Generate the chunk based on the selected scenario
           case (m_scenario)
             SCENARIO_IDEAL: begin
               chunk = valid_chunk;
             end
-            
+
             SCENARIO_FAIL_MIDWAY: begin
               chunk = (cycle == 10) ? $urandom() : valid_chunk;
             end
-            
+
             SCENARIO_NOISE_THEN_IDEAL: begin
               chunk = (cycle < 15) ? $urandom() : valid_chunk;
             end
-            
+
             SCENARIO_WRONG_LANE_ID: begin
-              chunk = {4'b1010, 8'((lane + 1) % pNUM_LANES), 4'b1010}; 
+              chunk = {4'b1010, 8'((lane + 1) % pNUM_LANES), 4'b1010};
             end
-            
+
             SCENARIO_RANDOM_INTERLEAVED: begin
               chunk = ($urandom_range(0, 1)) ? valid_chunk : $urandom();
             end
 
             SCENARIO_MIXED_SUCCESS: begin
-              chunk = lane_should_pass ? valid_chunk : $urandom();
+              // chunk = lane_should_pass ? valid_chunk : $urandom();              // All lanes in the eligible error region get bad pattern;
+              // lanes outside the region get valid data.
+              chunk = lane_eligible_for_error ? $urandom() : valid_chunk;
             end
 
             SCENARIO_LATE_SUCCESS: begin
@@ -229,11 +243,11 @@ task rmblink_sanity_PerLaneID_sequence::body();
                 chunk = $urandom();
               end
             end
-            
+
             SCENARIO_THRESHOLD_TEASER: begin
               // Calculates the absolute word index across all cycles
-              int absolute_word_idx = (cycle * (pDATA_WIDTH/16)) + word;
-              
+              int absolute_word_idx = (cycle * (pDATA_WIDTH / 16)) + word;
+
               // Sends exactly 15 valid words, then 1 garbage word, then repeats.
               if ((absolute_word_idx % 16) == 15) begin
                 chunk = $urandom();
@@ -249,9 +263,9 @@ task rmblink_sanity_PerLaneID_sequence::body();
             chunk = valid_chunk;
           end
 
-        end // End Active Lane Block
-        
-        req.data[lane][word*16 +: 16] = chunk;
+        end  // End Active Lane Block
+
+        req.data[lane][word*16+:16] = chunk;
       end
     end
     finish_item(req);

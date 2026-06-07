@@ -27,6 +27,7 @@ module ucie_ltsm_rx_mbinit_repairclk #(
     output logic                      o_rx_sb_rsp,
     output logic                      o_rx_sb_done,
     output logic                      o_train_error,
+    output logic                      o_saw_trainerror_req,
     output logic                      o_done_mbinit_repairclk_rx
 );
 
@@ -78,8 +79,8 @@ module ucie_ltsm_rx_mbinit_repairclk #(
         current_substate <= next_substate;
 
         // Latch detection results when RX path finishes or when TX asks early
-        if ((current_substate == PATTERN_DETECTION && i_rx_done) ||
-                    (current_substate == WAIT_RESULT_REQ &&
+        if ((current_substate == WAIT_RESULT_REQ && i_rx_done) ||
+                    (current_substate == PATTERN_DETECTION &&
                      i_sb_rx_req && i_rx_decoding == 9'h23)) // edited
           i_rx_clk_results_reg <= i_rx_clk_results;
       end
@@ -124,10 +125,14 @@ module ucie_ltsm_rx_mbinit_repairclk #(
     // o_rx_sb_rsp                = 0;
     o_rx_sb_done               = 0;
     o_train_error              = 0;
+    o_saw_trainerror_req       = 0;
     o_done_mbinit_repairclk_rx = 0;
     next_substate              = DONE_HANDSHAKE;
 
-    if (!substates_done && o_timer_8ms) begin
+    if (i_current_state == MBINIT_REPAIRCLK && i_sb_rx_req && i_rx_decoding == 9'h40) begin
+      o_train_error        = 1;
+      o_saw_trainerror_req = 1;
+    end else if (!substates_done && o_timer_8ms) begin
       o_train_error = 1;
       next_substate = INIT_HANDSHAKE;
     end else if (i_current_state == MBINIT_REPAIRCLK) begin
@@ -204,7 +209,7 @@ module ucie_ltsm_rx_mbinit_repairclk #(
           if (!substates_done) begin
             // o_rx_sb_rsp = 1;
 
-            if (i_sb_rx_done) next_substate = DONE_HANDSHAKE;
+            if (i_sb_rx_done && i_rx_clk_results_reg == 3'b111) next_substate = DONE_HANDSHAKE;
             else next_substate = SEND_RESP;
           end else next_substate = SEND_RESP;
         end
