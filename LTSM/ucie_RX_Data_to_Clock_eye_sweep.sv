@@ -211,7 +211,7 @@ module ucie_RX_Data_to_Clock_eye_sweep #(
           else o_xx_sb_rsp = 1;
 
           // Check if we need to retry or send sweep results
-          if (i_sb_xx_req && i_xx_decoding == 'h189) begin
+          if (i_sb_xx_req && i_xx_decoding == 'h181) begin
             o_xx_encoding = 'h189;  // LFSR setup encoding
             NS = LFSR_HANDSHAKE;
             o_xx_sb_req = 0;

@@ -32,14 +32,12 @@ class ucie_mbtrain_from_valtraincenter_to_DTC2_vseq extends ucie_vseq_base;
   ucie_mbtrain_till_valtraincenter.vseq_cfg = this.vseq_cfg;
   ucie_mbtrain_till_valtrainvref.vseq_cfg = this.vseq_cfg;
 
-  if (reset.reset_counter == 0) begin
+  if (reset.reset_counter == 2) begin
     ucie_mbtrain_till_valtraincenter.start(p_sequencer);
     reset.reset_counter++;
     reset.start(tx_rdi_seqr);
-  end else if(reset.reset_counter == 1) begin
-    $display("ucie_mbtrain_till_valtrainvref seq begin %0d", vseq_cfg.trainerror_cnt);
+  end else if(reset.reset_counter ==  0) begin
     ucie_mbtrain_till_valtrainvref.start(p_sequencer);
-    $display("ucie_mbtrain_till_valtrainvref seq end %0d", vseq_cfg.trainerror_cnt);
     reset.reset_counter++;
     reset.start(tx_rdi_seqr);
   end
