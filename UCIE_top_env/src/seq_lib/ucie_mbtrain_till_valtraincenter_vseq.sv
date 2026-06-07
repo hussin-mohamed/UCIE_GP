@@ -23,8 +23,6 @@ class ucie_mbtrain_till_valtraincenter_vseq extends ucie_vseq_base;
   // -------------------------------------------------------------------------
   virtual task body();
   if (vseq_cfg.trainerror_cnt == 0) begin
-
-    $display("first time valtraincenter %0d", vseq_cfg.trainerror_cnt);
     
     mbinit_vseq.start(p_sequencer);
 
@@ -69,7 +67,6 @@ class ucie_mbtrain_till_valtraincenter_vseq extends ucie_vseq_base;
     rxclkcal_vseq.start(p_sequencer);
     valtraincenter_vseq.start(p_sequencer);
   end else if (vseq_cfg.trainerror_cnt == 1) begin
-    $display("second time valtraincenter %0d", vseq_cfg.trainerror_cnt);
     
     mbinit_vseq.start(p_sequencer);
 
@@ -114,7 +111,6 @@ class ucie_mbtrain_till_valtraincenter_vseq extends ucie_vseq_base;
     rxclkcal_vseq.start(p_sequencer);
     valtraincenter_vseq.start(p_sequencer);
   end else begin
-    $display("third time valtraincenter %0d", vseq_cfg.trainerror_cnt);
 
     mbinit_vseq.start(p_sequencer);
 

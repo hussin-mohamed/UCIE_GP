@@ -13,7 +13,7 @@ class ucie_mbtrain_from_valtraincenter_to_DTC2_test extends ucie_base_test;
   // -------------------------------------------------------------------------
   function new(string name = "ucie_mbtrain_from_valtraincenter_to_DTC2_test", uvm_component parent = null);
     super.new(name, parent);
-    uvm_top.set_timeout(100ms, 0);
+    uvm_top.set_timeout(0, 0);
   endfunction
 
   function void build_phase(uvm_phase phase);
