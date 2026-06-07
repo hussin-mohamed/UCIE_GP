@@ -60,6 +60,7 @@ module UCIe_phy #(
   logic sb_ready;
   logic sb_ready_reg;
   bit   t1_ms;
+  bit   t1_ms_reg;
   logic   reset_sb;
   logic   reset_sb_reg;
   PLL_model PLL (
@@ -311,15 +312,16 @@ module UCIe_phy #(
 
   always_ff @(posedge clk_l or posedge i_reset) begin
     if (i_reset) begin
-      ltsm_ctrl_bfm.i_timer_1ms <= 0;
+      t1_ms_reg <= 0;
     end else begin
-      if (!ltsm_ctrl_bfm.i_timer_1ms) begin
-        ltsm_ctrl_bfm.i_timer_1ms <= t1_ms;
+      if (!t1_ms_reg) begin
+        t1_ms_reg <= t1_ms;
       end else begin
-        ltsm_ctrl_bfm.i_timer_1ms <= 0;
+        t1_ms_reg <= 0;
       end
     end
   end
+  assign LTSM_controllers_vif.i_timer_1ms = t1_ms_reg | t1_ms; // ORing with t1_ms to ensure we capture the pulse even if it is shorter than a clock cycle
   always @(posedge i_clk_sb_100_m) begin
     sb_ready_reg <= sb_ready;
   end

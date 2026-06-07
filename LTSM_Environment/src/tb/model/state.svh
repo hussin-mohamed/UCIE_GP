@@ -39,6 +39,7 @@ import shared_ltsm_pkg::*;
     static bit rx_done;
     static bit error_enter;
     static bit train_start;
+    static bit train_end;
 
     static int train_latency;
 
