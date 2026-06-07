@@ -23,6 +23,7 @@ class ucie_sbinit_vseq extends ucie_vseq_base;
   //  Body Task
   // -------------------------------------------------------------------------
   virtual task body();
+    trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
     if (sbinit_fail_cnt == 0 || sbinit_fail_cnt == 1) begin
       `uvm_info(get_type_name(), $sformatf("Executing Attempt 1: sbinit_fail_cnt = %0d. Configuring RAND_TILL_TIMEOUT.", sbinit_fail_cnt), UVM_MEDIUM)
       sbinit_fail_cnt++;
