@@ -13,6 +13,9 @@ class ucie_mbtrain_from_valtraincenter_to_DTC2_vseq extends ucie_vseq_base;
   ucie_mbtrain_from_valtraincenter_to_DTC2_cfg vseq_cfg;
   ucie_mbtrain_till_valtraincenter_vseq ucie_mbtrain_till_valtraincenter;
   ucie_mbtrain_till_valtrainvref_vseq ucie_mbtrain_till_valtrainvref;
+  ucie_mbtrain_till_DTC1_vseq ucie_mbtrain_till_DTC1;
+  ucie_mbtrain_till_datatrainvref_vseq ucie_mbtrain_till_datatrainvref;
+  ucie_mbtrain_till_DTC2_vseq ucie_mbtrain_till_DTC2;
 
   // -------------------------------------------------------------------------
   //  Constructor
@@ -27,17 +30,35 @@ class ucie_mbtrain_from_valtraincenter_to_DTC2_vseq extends ucie_vseq_base;
   virtual task body();
   ucie_mbtrain_till_valtraincenter = ucie_mbtrain_till_valtraincenter_vseq::type_id::create("ucie_mbtrain_till_valtraincenter");
   ucie_mbtrain_till_valtrainvref = ucie_mbtrain_till_valtrainvref_vseq::type_id::create("ucie_mbtrain_till_valtrainvref");
+  ucie_mbtrain_till_DTC1 = ucie_mbtrain_till_DTC1_vseq::type_id::create("ucie_mbtrain_till_DTC1");
+  ucie_mbtrain_till_datatrainvref = ucie_mbtrain_till_datatrainvref_vseq::type_id::create("ucie_mbtrain_till_datatrainvref");
+  ucie_mbtrain_till_DTC2 = ucie_mbtrain_till_DTC2_vseq::type_id::create("ucie_mbtrain_till_DTC2");
   reset = reset_seq::type_id::create("reset");
   
   ucie_mbtrain_till_valtraincenter.vseq_cfg = this.vseq_cfg;
   ucie_mbtrain_till_valtrainvref.vseq_cfg = this.vseq_cfg;
+  ucie_mbtrain_till_DTC1.vseq_cfg = this.vseq_cfg;
+  ucie_mbtrain_till_datatrainvref.vseq_cfg = this.vseq_cfg;
+  ucie_mbtrain_till_DTC2.vseq_cfg = this.vseq_cfg;
 
-  if (reset.reset_counter == 2) begin
+  if (reset.reset_counter == 0) begin
     ucie_mbtrain_till_valtraincenter.start(p_sequencer);
     reset.reset_counter++;
     reset.start(tx_rdi_seqr);
-  end else if(reset.reset_counter ==  0) begin
+  end else if(reset.reset_counter ==  1) begin
     ucie_mbtrain_till_valtrainvref.start(p_sequencer);
+    reset.reset_counter++;
+    reset.start(tx_rdi_seqr);
+  end else if(reset.reset_counter ==  2) begin
+    ucie_mbtrain_till_DTC1.start(p_sequencer);
+    reset.reset_counter++;
+    reset.start(tx_rdi_seqr);
+  end else if(reset.reset_counter ==  3) begin
+    ucie_mbtrain_till_datatrainvref.start(p_sequencer);
+    reset.reset_counter++;
+    reset.start(tx_rdi_seqr);
+  end else if(reset.reset_counter ==  4) begin
+    ucie_mbtrain_till_DTC2.start(p_sequencer);
     reset.reset_counter++;
     reset.start(tx_rdi_seqr);
   end

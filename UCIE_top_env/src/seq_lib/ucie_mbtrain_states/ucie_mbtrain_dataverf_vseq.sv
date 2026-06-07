@@ -46,7 +46,7 @@ class ucie_mbtrain_dataverf_vseq extends ucie_vseq_base;
 
     p_sequencer.rx_fifo.get(sb_ltsm_item);
 
-    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 4)) begin
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 6)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
     return;
@@ -62,7 +62,7 @@ class ucie_mbtrain_dataverf_vseq extends ucie_vseq_base;
     
     p_sequencer.tx_fifo.get(sb_ltsm_item);
 
-    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 5)) begin
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 7)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(MISS2RX));
     TRAINERROR_vseq.start(p_sequencer);
     return;
@@ -88,13 +88,25 @@ class ucie_mbtrain_dataverf_vseq extends ucie_vseq_base;
     
     ucie_RX_D2C.start(p_sequencer);
 
+    if ((missing_msg == IDEAL) && (TRAINERROR_vseq.trainerr_cnt == 11)) begin
+    TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
+    TRAINERROR_vseq.start(p_sequencer);
+    return;
+    end
+
     // Dataverf_End_TX_LTSM
     `uvm_info("VSEQ", $sformatf("Dataverf_End_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
     p_sequencer.rx_fifo.get(sb_ltsm_item);
 
-    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 6)) begin
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 8)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
+    TRAINERROR_vseq.start(p_sequencer);
+    return;
+    end
+
+    else if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 10)) begin
+    TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL), .train_error_dir(SEND_REQ));
     TRAINERROR_vseq.start(p_sequencer);
     return;
     end
@@ -110,7 +122,7 @@ class ucie_mbtrain_dataverf_vseq extends ucie_vseq_base;
     
     p_sequencer.tx_fifo.get(sb_ltsm_item);
 
-    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 7)) begin
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 9)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
     return;

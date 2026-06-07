@@ -40,6 +40,8 @@ import shared_ltsm_pkg::*;
     static bit error_enter;
     static bit train_start;
     static bit train_end;
+    static bit w_state_changed;
+    static logic [5:0] r_rx_encoding_msb_prev;
 
     static int train_latency;
 
@@ -61,7 +63,7 @@ import shared_ltsm_pkg::*;
         //`uvm_info("State", $sformatf("Evaluating state: TX: %s, RX: %s", cntxt.currentstate_tx.getStateId(), cntxt.currentstate_rx.getStateId()), UVM_LOW)
         nextState_tx = StateTransitionUtil_tx::calculate(cntxt, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in);
         nextState_rx = StateTransitionUtil_rx::calculate(cntxt, item_controllers_in,item_rdi_in,item_rx_fsm_sb_in,item_tx_fsm_sb_in);
-        if ((nextState_rx == cntxt.currentstate_rx ) 
+        if ((w_state_changed) 
         && cntxt.currentstate_tx != trainerror_tx::Instance() && cntxt.currentstate_rx != trainerror_rx::Instance() 
         && cntxt.currentstate_tx != active_state_tx::Instance() && cntxt.currentstate_rx != active_state_rx::Instance() 
         && cntxt.currentstate_tx != l1_state_tx::Instance() && cntxt.currentstate_rx != l1_state_rx::Instance()  && !item_controllers_in.i_reset) begin
@@ -74,15 +76,15 @@ import shared_ltsm_pkg::*;
             counter = 0;
         end
         if (counter == (item_controllers_in.i_sim_cycles_8+1) && cntxt.currentstate_tx != ResetState_tx::Instance()) begin
-            if (cntxt.currentstate_tx == SbInitState_tx::Instance()) begin
-                nextState_tx=ResetState_tx::Instance();
-                nextState_rx=ResetState_rx::Instance();
-            end
-            else begin
+            // if (cntxt.currentstate_tx == SbInitState_tx::Instance()) begin
+            //     nextState_tx=ResetState_tx::Instance();
+            //     nextState_rx=ResetState_rx::Instance();
+            // end
+            // else begin
                 nextState_tx = trainerror_tx::Instance();
                 nextState_rx = trainerror_rx::Instance();
                 error_enter =1;
-            end
+            // end
         end
 
         if (trainerror && item_controllers_in.i_tx_done && cntxt.currentstate_tx == mbtrain_tx_speedidle::Instance()) begin
@@ -91,7 +93,7 @@ import shared_ltsm_pkg::*;
             error_enter =1;
             return 1;
         end
-        if (error_count == 4 && !item_tx_fsm_sb_in.i_tx_info[4]) begin
+        if (error_count == 3 && !item_tx_fsm_sb_in.i_tx_info[4]) begin
             nextState_tx = trainerror_tx::Instance();
             nextState_rx = trainerror_rx::Instance();
             error_count  = 0;
@@ -115,7 +117,7 @@ import shared_ltsm_pkg::*;
             return 1;
         end
         
-
+        w_state_changed = (r_rx_encoding_msb_prev != item_rx_fsm_sb_out.o_rx_encoding[8:3]) && (r_rx_encoding_msb_prev[5:4] != 2'b11) && (item_rx_fsm_sb_out.o_rx_encoding[8:7] != 2'b11);   
         // trainerror transitions for initialization states
 
         if(cntxt.currentstate_tx == MbInitRepairClkState_tx::Instance() &&item_tx_fsm_sb_in.i_tx_decoding =='h22 && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1 && 
@@ -175,7 +177,7 @@ import shared_ltsm_pkg::*;
         // else begin
         //     match = match_tx & match_rx;
         // end
-        
+        r_rx_encoding_msb_prev = item_rx_fsm_sb_out.o_rx_encoding[8:3];
       
         match = match_tx & match_rx;
 

@@ -32,7 +32,7 @@ endfunction
 
     p_sequencer.rx_fifo.get(sb_ltsm_item);
 
-    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 8)) begin
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 12)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
     return;
@@ -50,7 +50,7 @@ endfunction
     
     p_sequencer.tx_fifo.get(sb_ltsm_item);
 
-    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 9)) begin
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 13)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
     return;

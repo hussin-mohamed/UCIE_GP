@@ -31,7 +31,7 @@ class ucie_mbtrain_txselfcal_vseq extends ucie_vseq_base;
 
     p_sequencer.rx_fifo.get(sb_ltsm_item);
 
-    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 10)) begin
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 14)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
     return;
@@ -47,7 +47,7 @@ class ucie_mbtrain_txselfcal_vseq extends ucie_vseq_base;
     
     p_sequencer.tx_fifo.get(sb_ltsm_item);
 
-    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 11)) begin
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 15)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
     return;
