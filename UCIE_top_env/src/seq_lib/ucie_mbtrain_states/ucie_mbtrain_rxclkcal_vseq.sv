@@ -31,7 +31,7 @@ class ucie_mbtrain_rxclkcal_vseq extends ucie_vseq_base;
 
     p_sequencer.rx_fifo.get(sb_ltsm_item);
 
-    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 12)) begin
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 16)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
     return;
@@ -48,7 +48,7 @@ class ucie_mbtrain_rxclkcal_vseq extends ucie_vseq_base;
     
     p_sequencer.tx_fifo.get(sb_ltsm_item);
 
-    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 13)) begin
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 17)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
     return;
@@ -65,7 +65,7 @@ class ucie_mbtrain_rxclkcal_vseq extends ucie_vseq_base;
 
     p_sequencer.rx_fifo.get(sb_ltsm_item);
 
-    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 14)) begin
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 18)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
     return;
@@ -81,7 +81,7 @@ class ucie_mbtrain_rxclkcal_vseq extends ucie_vseq_base;
     
     p_sequencer.tx_fifo.get(sb_ltsm_item);
     
-    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 15)) begin
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 19)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
     return;

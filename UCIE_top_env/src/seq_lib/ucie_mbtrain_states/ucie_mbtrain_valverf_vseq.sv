@@ -89,6 +89,12 @@ class ucie_mbtrain_valverf_vseq extends ucie_vseq_base;
 
     ucie_RX_D2C.start(p_sequencer);
 
+    if ((missing_msg == IDEAL) && (TRAINERROR_vseq.trainerr_cnt == 5)) begin
+    TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
+    TRAINERROR_vseq.start(p_sequencer);
+    return;
+    end
+
     // Valverf_End_TX_LTSM
     `uvm_info("VSEQ", $sformatf("Valverf_End_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
@@ -96,6 +102,12 @@ class ucie_mbtrain_valverf_vseq extends ucie_vseq_base;
 
     if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 2)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
+    TRAINERROR_vseq.start(p_sequencer);
+    return;
+    end
+
+    else if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 4)) begin
+    TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL), .train_error_dir(SEND_REQ));
     TRAINERROR_vseq.start(p_sequencer);
     return;
     end

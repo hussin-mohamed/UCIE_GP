@@ -81,6 +81,32 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
       valverf_vseq.start(p_sequencer);
     end
 
+    else if (TRAINERROR_vseq.trainerr_cnt == 4) begin
+      valverf_vseq.configure(
+          .D2c_mode(SUCCESS),
+          .pattern_mode(PAT_ALL_LANES_VALID),
+          .data_mode(VALID_PATTERN),
+          .info_mode(CORRECT),
+          .message_mode(ALL_LANES_VALID),
+          .valid_mode(VALID_CORRECT),
+          .missing_msg(MISS)
+      );
+      valverf_vseq.start(p_sequencer);
+    end
+
+    else if (TRAINERROR_vseq.trainerr_cnt == 5) begin
+      valverf_vseq.configure(
+          .D2c_mode(LOOP_TILL_ERROR),
+          .pattern_mode(PAT_UPPER_8_LANES_VALID),
+          .data_mode(VALID_PATTERN),
+          .info_mode(ERROR),
+          .message_mode(ALL_LANES_VALID),
+          .valid_mode(VALID_CORRECT),
+          .missing_msg(IDEAL)
+      );
+      valverf_vseq.start(p_sequencer);
+    end
+
 
 
 
@@ -95,33 +121,7 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
       );
       valverf_vseq.start(p_sequencer);
 
-    if (TRAINERROR_vseq.trainerr_cnt == 4) begin
-      dataverf_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(LFSR_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT),
-        .missing_msg(MISS)
-    );
-    dataverf_vseq.start(p_sequencer);
-    end
-
-    else if (TRAINERROR_vseq.trainerr_cnt == 5) begin
-      dataverf_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(LFSR_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT),
-        .missing_msg(MISS)
-    );
-    dataverf_vseq.start(p_sequencer);
-    end
-
-    else if (TRAINERROR_vseq.trainerr_cnt == 6) begin
+    if (TRAINERROR_vseq.trainerr_cnt == 6) begin
       dataverf_vseq.configure(
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),
@@ -147,6 +147,58 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
     dataverf_vseq.start(p_sequencer);
     end
 
+    else if (TRAINERROR_vseq.trainerr_cnt == 8) begin
+      dataverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .missing_msg(MISS)
+    );
+    dataverf_vseq.start(p_sequencer);
+    end
+
+    else if (TRAINERROR_vseq.trainerr_cnt == 9) begin
+      dataverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .missing_msg(MISS)
+    );
+    dataverf_vseq.start(p_sequencer);
+    end
+
+    else if (TRAINERROR_vseq.trainerr_cnt == 10) begin
+      dataverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .missing_msg(MISS)
+    );
+    dataverf_vseq.start(p_sequencer);
+    end
+
+    else if (TRAINERROR_vseq.trainerr_cnt == 11) begin
+      dataverf_vseq.configure(
+        .D2c_mode(LOOP_TILL_ERROR),
+        .pattern_mode(PAT_UPPER_8_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(ERROR),
+        .message_mode(UPPER_8_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .missing_msg(IDEAL)
+    );
+    dataverf_vseq.start(p_sequencer);
+    end
+
 
 
 
@@ -162,14 +214,14 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
     );
     dataverf_vseq.start(p_sequencer);
 
-    if (TRAINERROR_vseq.trainerr_cnt == 8) begin
+    if (TRAINERROR_vseq.trainerr_cnt == 12) begin
       speedidle_vseq.configure(
         .missing_msg(MISS)
     );
     speedidle_vseq.start(p_sequencer);
     end
 
-    else if (TRAINERROR_vseq.trainerr_cnt == 9) begin
+    else if (TRAINERROR_vseq.trainerr_cnt == 13) begin
       speedidle_vseq.configure(
         .missing_msg(MISS)
     );
@@ -184,14 +236,14 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
     );
     speedidle_vseq.start(p_sequencer);
 
-    if (TRAINERROR_vseq.trainerr_cnt == 10) begin
+    if (TRAINERROR_vseq.trainerr_cnt == 14) begin
       txselfcal_vseq.configure(
         .missing_msg(MISS)
     );
     txselfcal_vseq.start(p_sequencer);
     end
 
-    else if (TRAINERROR_vseq.trainerr_cnt == 11) begin
+    else if (TRAINERROR_vseq.trainerr_cnt == 15) begin
       txselfcal_vseq.configure(
         .missing_msg(MISS)
     );
@@ -206,28 +258,28 @@ class ucie_vvref_till_rxcal_vseq extends ucie_vseq_base;
     );
     txselfcal_vseq.start(p_sequencer);
 
-    if (TRAINERROR_vseq.trainerr_cnt == 12) begin
+    if (TRAINERROR_vseq.trainerr_cnt == 16) begin
       rxclkcal_vseq.configure(
         .missing_msg(MISS)
     );
     rxclkcal_vseq.start(p_sequencer);
     end
 
-    else if (TRAINERROR_vseq.trainerr_cnt == 13) begin
+    else if (TRAINERROR_vseq.trainerr_cnt == 17) begin
       rxclkcal_vseq.configure(
         .missing_msg(MISS)
     );
     rxclkcal_vseq.start(p_sequencer);
     end
 
-    else if (TRAINERROR_vseq.trainerr_cnt == 14) begin
+    else if (TRAINERROR_vseq.trainerr_cnt == 18) begin
       rxclkcal_vseq.configure(
         .missing_msg(MISS)
     );
     rxclkcal_vseq.start(p_sequencer);
     end
 
-    else if (TRAINERROR_vseq.trainerr_cnt == 15) begin
+    else if (TRAINERROR_vseq.trainerr_cnt == 19) begin
       rxclkcal_vseq.configure(
         .missing_msg(MISS)
     );

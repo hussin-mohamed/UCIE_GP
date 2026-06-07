@@ -81,6 +81,11 @@ typedef enum {
   OTHER_DIE
 } speed_idle_entry_e;
 
+typedef enum {
+  WAIT_FOR_REQ,
+  SEND_REQ
+} train_error_dir_e;
+
 
 typedef class ucie_mbtrain_valverf_vseq;
 typedef class ucie_mbtrain_dataverf_vseq;
@@ -164,6 +169,7 @@ class ucie_vseq_base extends uvm_sequence;
   protected linkspeed_destination_e              linkspeed_dest;
   protected missing_msg_2get_e                   missing_msg_2get;
   protected speed_idle_entry_e                   speed_idle_entry;
+  protected train_error_dir_e                    train_error_dir;
 
   ucie_RX_D2C_vseq                               ucie_RX_D2C;
   ucie_TX_D2C_vseq                               ucie_TX_D2C;
