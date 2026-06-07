@@ -1,20 +1,20 @@
 //=============================================================================
-// File       : ucie_mbtrain_till_valtrainvref_vseq.sv
+// File       : ucie_mbtrain_till_DTC1_vseq.sv
 // Project    : UCIe 3.0 System-Level Verification
 // Description: Master virtual sequence for orchestrating the happy path 
 //              across the LTSM, Sideband, RX-Path, and TX-Path agents.
 //=============================================================================
 
-class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
+class ucie_mbtrain_till_DTC1_vseq extends ucie_vseq_base;
 
-  `uvm_object_utils(ucie_mbtrain_till_valtrainvref_vseq)
+  `uvm_object_utils(ucie_mbtrain_till_DTC1_vseq)
 
   ucie_mbtrain_from_valtraincenter_to_DTC2_cfg vseq_cfg;
 
   // -------------------------------------------------------------------------
   //  Constructor
   // -------------------------------------------------------------------------
-  function new(string name = "ucie_mbtrain_till_valtrainvref_vseq");
+  function new(string name = "ucie_mbtrain_till_DTC1_vseq");
     super.new(name);
   endfunction
 
@@ -23,8 +23,6 @@ class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
   // -------------------------------------------------------------------------
   virtual task body();
   if (vseq_cfg.trainerror_cnt == 0) begin
-
-    $display("first time valtrainvref %0d", vseq_cfg.trainerror_cnt);
     
     mbinit_vseq.start(p_sequencer);
 
@@ -64,6 +62,16 @@ class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),
         .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .trainerror(NOT_TRAINERROR)
+    );
+
+    DTC1_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
         .info_mode(CORRECT),
         .message_mode(ALL_LANES_VALID),
         .valid_mode(VALID_CORRECT),
@@ -79,8 +87,8 @@ class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
     rxclkcal_vseq.start(p_sequencer);
     valtraincenter_vseq.start(p_sequencer);
     valtrainverf_vseq.start(p_sequencer);
+    DTC1_vseq.start(p_sequencer);
   end else if (vseq_cfg.trainerror_cnt == 1) begin
-    $display("second time valtrainvref %0d", vseq_cfg.trainerror_cnt);
     
     mbinit_vseq.start(p_sequencer);
 
@@ -123,6 +131,16 @@ class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
         .info_mode(CORRECT),
         .message_mode(ALL_LANES_VALID),
         .valid_mode(VALID_CORRECT),
+        .trainerror(NOT_TRAINERROR)
+    );
+
+    DTC1_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
         .trainerror(TIMEOUT)
     );
 
@@ -135,62 +153,7 @@ class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
     rxclkcal_vseq.start(p_sequencer);
     valtraincenter_vseq.start(p_sequencer);
     valtrainverf_vseq.start(p_sequencer);
-  end else if (vseq_cfg.trainerror_cnt == 2) begin
-    $display("third time valtrainvref %0d", vseq_cfg.trainerror_cnt);
-
-    mbinit_vseq.start(p_sequencer);
-
-    vseq_cfg.trainerror_cnt++;
-
-    valverf_vseq.configure(
-        .missing_msg(IDEAL),
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(VALID_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT)
-    );
-
-    dataverf_vseq.configure(
-        .missing_msg(IDEAL),
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(LFSR_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT)
-    );
-
-    valtraincenter_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(VALID_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT),
-        .trainerror(NOT_TRAINERROR)
-    );
-
-    valtrainverf_vseq.configure(
-        .D2c_mode(LOOP_TILL_ERROR),
-        .pattern_mode(PAT_UPPER_8_LANES_VALID),
-        .data_mode(VALID_PATTERN),
-        .info_mode(ERROR),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT),
-        .trainerror(NOT_TRAINERROR)
-    );
-
-    trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
-
-    valverf_vseq.start(p_sequencer);
-    dataverf_vseq.start(p_sequencer);
-    speedidle_vseq.start(p_sequencer);
-    txselfcal_vseq.start(p_sequencer);
-    rxclkcal_vseq.start(p_sequencer);
-    valtraincenter_vseq.start(p_sequencer);
-    valtrainverf_vseq.start(p_sequencer);
+    DTC1_vseq.start(p_sequencer);
   end else begin
     mbinit_vseq.start(p_sequencer);
 
@@ -242,7 +205,8 @@ class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
         .data_mode(LFSR_PATTERN),
         .info_mode(CORRECT),
         .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT)
+        .valid_mode(VALID_CORRECT),
+        .trainerror(NOT_TRAINERROR)
     );
 
     datatrainvref_vseq.configure(
@@ -311,4 +275,4 @@ class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
     join_any 
   end
   endtask
-endclass : ucie_mbtrain_till_valtrainvref_vseq
+endclass : ucie_mbtrain_till_DTC1_vseq
