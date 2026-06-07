@@ -152,7 +152,7 @@ import shared_ltsm_pkg::*;
              end
              else begin
                 train_start =0;
-                if((!train_latency > 3)) begin
+                if(!(train_latency > 3)) begin
                     return 1;
                 end
                 
