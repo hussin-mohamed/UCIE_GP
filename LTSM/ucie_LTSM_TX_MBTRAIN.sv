@@ -271,6 +271,13 @@ always @(posedge i_clk or posedge i_reset) begin
         o_pl_speedmode_old <= 0;
         phyretrain_linkspeed_transition_old <= 0;
         done_ack_old <= 0;
+    end else if (!init_train_en) begin
+        o_tx_encoding_old <= 0;  // Register to track previous encoding for done_ack logic
+        substates_done_old <= 0;  // Register to track previous substate completion
+        o_speedreg_old <= 0;
+        o_pl_speedmode_old <= 0;
+        phyretrain_linkspeed_transition_old <= 0;
+        done_ack_old <= 0;
     end else begin
         o_tx_encoding_old <= o_tx_encoding;  // Register to track previous encoding for done_ack logic
         substates_done_old <= substates_done;  // Register to track previous substate completion
@@ -562,7 +569,6 @@ always @(*) begin
                                         else begin
                                             trainerror = 1;    
                                         end
-                                        
                                     end
                                 end
                             end  
