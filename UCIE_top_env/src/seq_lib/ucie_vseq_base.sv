@@ -200,7 +200,6 @@ class ucie_vseq_base extends uvm_sequence;
   protected linkspeed_destination_e              linkspeed_dest;
   protected missing_msg_2get_e                   missing_msg_2get;
   protected speed_idle_entry_e                   speed_idle_entry;
-  protected train_error_dir_e                    train_error_dir;
 
   ucie_RX_D2C_vseq                               ucie_RX_D2C;
   ucie_TX_D2C_vseq                               ucie_TX_D2C;
@@ -309,8 +308,7 @@ class ucie_vseq_base extends uvm_sequence;
     if (_sb_ltsm_item.get_dir() == MSG_TO_RX || _sb_ltsm_item.get_dir() == MSG_TO_TX) begin
       `uvm_fatal(
           "VSEQ_BASE",
-          "TX/RX Encoding is not set. You must call sb_ltsm_item's set_tx/rx_encoding() before passing it to send_sb_msg(). \
-                  \n Most Probably, you have passed the sb_ltsm_item you got from tx/rx_fifo directly to send_sb_msg()")
+          "TX/RX Encoding is not set. You must call sb_ltsm_item's set_tx/rx_encoding() before passing it to send_sb_msg(). Most Probably, you have passed the sb_ltsm_item you got from tx/rx_fifo directly to send_sb_msg()")
     end
 
     tx_enc = _sb_ltsm_item.get_tx_encoding();
