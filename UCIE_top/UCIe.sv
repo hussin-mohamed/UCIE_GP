@@ -255,7 +255,6 @@ module UCIe_phy #(
     ltsm_intf.lane_map = LTSM_controllers_vif.o_lane_map_tx;
     LTSM_controllers_vif.i_tx_done = ltsm_intf.tx_done;
 
-    rp_rmblink_bfm_inst.i_rx_encoding = rp_ltsmc_bfm_inst.i_rx_encoding;
     rp_rmblink_bfm_inst.i_clk_p = i_clk_p;
     rp_rmblink_bfm_inst.i_clk_n = i_clk_n;
     rp_rmblink_bfm_inst.i_track = i_track;
@@ -274,6 +273,8 @@ module UCIe_phy #(
     rp_ltsmc_bfm_inst.i_error_threshold = 1;
     rp_ltsmc_bfm_inst.i_half_rate = 1;
   end
+
+  assign rp_rmblink_bfm_inst.i_rx_encoding = rp_ltsmc_bfm_inst.i_rx_encoding;
 
 
   valid_decoder decoder_rx (
