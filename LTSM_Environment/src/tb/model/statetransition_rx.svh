@@ -203,7 +203,7 @@ class StateTransitionUtil_rx extends State;
             end
             fsm_rx_trainerror : begin
                // `uvm_info("l1_state_rx", $sformatf("i_reset: %0b, i_sb_cur_msg_done = %0b , i_lp_linkerror = %0b ", item_controllers_in.i_reset,item_controllers_in.i_sb_cur_msg_done, item_rdi_in.i_lp_linkerror), UVM_LOW);
-               if (item_controllers_in.i_reset || (item_controllers_in.i_sb_cur_msg_done && !item_rdi_in.i_lp_linkerror))begin
+               if (item_controllers_in.i_reset || (item_controllers_in.i_sb_cur_msg_done && !item_rdi_in.i_lp_linkerror && train_end))begin
                   return ResetState_rx::Instance();
                end
                else begin
