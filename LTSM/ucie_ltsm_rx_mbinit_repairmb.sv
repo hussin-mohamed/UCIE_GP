@@ -26,6 +26,7 @@ module ucie_ltsm_rx_mbinit_repairmb #(
     output logic                      o_rx_sb_done,
     output logic [               2:0] r_lane_map,
     output logic                      o_train_error,
+    output logic                      o_saw_trainerror_req,
     output logic                      o_done_mbinit_repairmb_rx
 );
 
@@ -71,6 +72,8 @@ module ucie_ltsm_rx_mbinit_repairmb #(
 
   assign w_extracted_lane_map = i_rx_info[2:0];
 
+  logic goto_d2c;
+
   ucie_RX_Data_to_Clock_eye_sweep ucie_RX_Data_to_Clock_eye_sweep_inst (
       .i_clk            (i_clk),
       .i_reset          (r_eye_sweep_reset),
@@ -108,10 +111,12 @@ module ucie_ltsm_rx_mbinit_repairmb #(
     if (i_reset) begin
       current_substate <= INIT_HANDSHAKE;
       substates_done   <= 0;
+      goto_d2c <= 0;
       r_lane_map       <= ALL_LANES_FUNCTIONAL;
     end else if (i_current_state != MBINIT_REPAIRMB) begin
       current_substate <= INIT_HANDSHAKE;
       substates_done   <= 0;
+      // goto_d2c <= 0;
       r_lane_map       <= ALL_LANES_FUNCTIONAL;
     end else begin
       if (current_substate == DONE_HANDSHAKE && i_sb_rx_req && i_rx_decoding == 9'h3B) begin
@@ -124,7 +129,10 @@ module ucie_ltsm_rx_mbinit_repairmb #(
         if (current_substate == WAIT_FOR_DEGRADE_REQ &&
                     i_sb_rx_req && i_rx_decoding == 9'h3C &&
                     w_extracted_lane_map != r_lane_map)
+                    begin 
           r_lane_map <= w_extracted_lane_map;
+          // goto_d2c <= 1;
+                    end 
       end
     end
   end
@@ -132,7 +140,7 @@ module ucie_ltsm_rx_mbinit_repairmb #(
   always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) done_ack <= 1;
     else if (i_sb_rx_done) done_ack <= 1;
-    else if (i_sb_rx_req && (i_rx_decoding == 9'h38 || i_rx_decoding == 9'h3C || i_rx_decoding == 9'h3D || i_rx_decoding == 9'h180 || i_rx_decoding == 9'h181 || i_rx_decoding == 9'h183 || i_rx_decoding == 9'h184))
+    else if (i_sb_rx_req && (i_rx_decoding == 9'h38 || (i_rx_decoding == 9'h3C && next_substate == SEND_RESP) || i_rx_decoding == 9'h3D || i_rx_decoding == 9'h180 || i_rx_decoding == 9'h181 || i_rx_decoding == 9'h183 || i_rx_decoding == 9'h184))
       done_ack <= 0;
   end
 
@@ -149,11 +157,15 @@ module ucie_ltsm_rx_mbinit_repairmb #(
     // o_rx_sb_rsp               = 0;
     o_rx_sb_done              = 0;
     o_train_error             = 0;
+    o_saw_trainerror_req      = 0;
     o_done_mbinit_repairmb_rx = 0;
     next_substate             = DONE_HANDSHAKE;
     clock_to_test_enable      = 0;
 
-    if (!substates_done && (o_timer_8ms || train_error_sweep)) begin
+    if (i_current_state == MBINIT_REPAIRMB && i_sb_rx_req && i_rx_decoding == 9'h40) begin
+      o_train_error        = 1;
+      o_saw_trainerror_req = 1;
+    end else if (!substates_done && (o_timer_8ms || train_error_sweep)) begin
       o_train_error = 1;
       next_substate = INIT_HANDSHAKE;
     end else if (i_current_state == MBINIT_REPAIRMB) begin
@@ -188,28 +200,31 @@ module ucie_ltsm_rx_mbinit_repairmb #(
           o_rx_sb_req          = o_rx_sb_req_sweep;
           // o_rx_sb_rsp          = o_rx_sb_rsp_sweep;
           if (!substates_done) begin
-            if (clock_to_test_done) next_substate = WAIT_FOR_DEGRADE_REQ;
-            else next_substate = DATA_TO_CLOCK_TEST;
+            if (clock_to_test_done) begin
+              // goto_d2c <= 0;
+              next_substate = WAIT_FOR_DEGRADE_REQ;
+            end else next_substate = DATA_TO_CLOCK_TEST;
           end
         end
 
         WAIT_FOR_DEGRADE_REQ: begin
           o_rx_encoding = 9'h3A;
           if (!substates_done) begin
-            if (i_sb_rx_req && i_rx_decoding == 9'h3C) begin
-              if (w_extracted_lane_map == r_lane_map) next_substate = SEND_RESP;
-              else next_substate = DEGRADE;
-            end else next_substate = WAIT_FOR_DEGRADE_REQ;
+            if (i_sb_rx_req && i_rx_decoding == 9'h3C && w_extracted_lane_map != r_lane_map)
+              next_substate = WAIT_DATA_TO_CLOCK_TEST_REQ;
+            else if (i_sb_rx_req && i_rx_decoding == 9'h3C && w_extracted_lane_map == r_lane_map)
+              next_substate = SEND_RESP;
+            else next_substate = WAIT_FOR_DEGRADE_REQ;
           end
-        end
+        end 
 
-        DEGRADE: begin
-          o_rx_encoding = 9'h3B;
-          if (!substates_done) begin
-            if (i_rx_done) next_substate = DATA_TO_CLOCK_TEST;
-            else next_substate = DEGRADE;
-          end
-        end
+        // DEGRADE: begin
+        //   o_rx_encoding = 9'h3B;
+        //   if (!substates_done) begin
+        //     if (i_rx_done && i_sb_rx_done) next_substate = WAIT_DATA_TO_CLOCK_TEST_REQ;
+        //     else next_substate = DEGRADE;
+        //   end
+        // end
 
         SEND_RESP: begin
           o_rx_encoding = 9'h3C;

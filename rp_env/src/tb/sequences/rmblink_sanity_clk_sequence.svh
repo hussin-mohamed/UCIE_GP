@@ -37,6 +37,12 @@ class rmblink_sanity_clk_sequence extends rp_sequence_base #(rmblink_seq_item);
 
   clk_test_mode_e test_mode = TEST_CLK_IDEAL_ALL;
 
+  // Configuration for TEST_CLK_PURE_RANDOM selective randomization
+  // Default to 1 to preserve legacy behavior (fully randomized)
+  bit select_clkp = 1;
+  bit select_clkn = 1;
+  bit select_trk  = 1;
+
   // Function: new
   //
   // Creates a new rmblink_sanity_clk_sequence instance with the given name.
@@ -91,6 +97,14 @@ endtask : pre_body
 task rmblink_sanity_clk_sequence::body();
   int start_idx;
   int block_num;
+  bit rand_clkp;
+  bit rand_clkn;
+  bit rand_trk;
+
+  rand_clkp = select_clkp;
+  rand_clkn = select_clkn;
+  rand_trk  = select_trk;
+
   start_item(req);
   
   // Allocate arrays based on your parameters
@@ -114,9 +128,23 @@ task rmblink_sanity_clk_sequence::body();
   case (test_mode)
     
     TEST_CLK_PURE_RANDOM: begin
-      if (!std::randomize(req.clk_stream_p)) `uvm_error("SEQ", "Rand fail: clk_p")
-      if (!std::randomize(req.clk_stream_n)) `uvm_error("SEQ", "Rand fail: clk_n")
-      if (!std::randomize(req.track_stream)) `uvm_error("SEQ", "Rand fail: track")
+      if (rand_clkp) begin
+        if (!std::randomize(req.clk_stream_p)) `uvm_error("SEQ", "Rand fail: clk_p")
+      end else begin
+        foreach (req.clk_stream_p[i]) req.clk_stream_p[i] = (i % 2 == 0) ? 1'b1 : 1'b0;
+      end
+
+      if (rand_clkn) begin
+        if (!std::randomize(req.clk_stream_n)) `uvm_error("SEQ", "Rand fail: clk_n")
+      end else begin
+        foreach (req.clk_stream_n[i]) req.clk_stream_n[i] = (i % 2 == 0) ? 1'b0 : 1'b1;
+      end
+
+      if (rand_trk) begin
+        if (!std::randomize(req.track_stream)) `uvm_error("SEQ", "Rand fail: track")
+      end else begin
+        foreach (req.track_stream[i]) req.track_stream[i] = (i % 2 == 0) ? 1'b1 : 1'b0;
+      end
     end
 
     TEST_CLK_IDEAL_ALL: begin

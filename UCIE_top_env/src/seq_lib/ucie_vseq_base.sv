@@ -7,6 +7,8 @@
 
 typedef enum {
   NORMAL,
+  NORMAL_TX,
+  NORMAL_RX,
   MISS2TX,
   MISS2RX
 } missing_msg_2get_e;
@@ -81,10 +83,39 @@ typedef enum {
   OTHER_DIE
 } speed_idle_entry_e;
 
+
+// enums for choosing the state to fail during MBINIT
 typedef enum {
-  WAIT_FOR_REQ,
-  SEND_REQ
-} train_error_dir_e;
+  FAIL_PARAM,
+  FAIL_CAL,
+  FAIL_CLK,
+  FAIL_VAL,
+  FAIL_REVERSAL,
+  FAIL_REPAIR,
+  FAIL_ALL
+} mbinit_fail_state_e;
+
+// enum for failure side
+typedef enum {
+  FAIL_SIDE_TX,
+  FAIL_SIDE_RX,
+  FAIL_SIDE_BOTH
+} mbinit_fail_side_e;
+
+// enum for clock component to fail
+typedef enum {
+  FAIL_CLK_TRACK,
+  FAIL_CLK_CLKP,
+  FAIL_CLK_CLKN,
+  FAIL_CLK_ALL
+} clk_fail_select_e;
+
+// enum for lane mapping failure region
+typedef enum {
+  LANE_MAP_UPPER,
+  LANE_MAP_LOWER,
+  LANE_MAP_ALL
+} lane_map_fail_select_e;
 
 
 typedef class ucie_mbtrain_valverf_vseq;
