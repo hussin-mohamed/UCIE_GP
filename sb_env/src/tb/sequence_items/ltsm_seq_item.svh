@@ -31,7 +31,7 @@ class ltsm_seq_item extends uvm_sequence_item;
   rand logic [63:0] data;
   rand logic [15:0] info;
   rand msgtype_t    msgtype;
-  rand int unsigned wait_cycles;
+  rand int          wait_cycles;
 
   bit valid;
 

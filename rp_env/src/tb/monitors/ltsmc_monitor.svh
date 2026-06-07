@@ -23,11 +23,11 @@
 //-----------------------------------------------------------------------------
 
 class ltsmc_monitor extends rp_monitor_base #(
-   .ITEM_T(ltsmc_seq_item)
-  ,.INTF_T(virtual rp_ltsmc_bfm)
-  ,.is_reactive(0)
-  ,.collect_out(1)
-  ,.collect_in(1)
+    .ITEM_T(ltsmc_seq_item)
+    , .INTF_T(virtual rp_ltsmc_bfm)
+    , .is_reactive(0)
+    , .collect_out(1)
+    , .collect_in(1)
 );
   `uvm_component_utils(ltsmc_monitor)
 
@@ -80,12 +80,12 @@ task ltsmc_monitor::collect_item_out(output ltsmc_seq_item _item);
 
   do begin
     @(bfm.i_rx_encoding);
-  end while (bfm.i_rx_encoding !== MBINIT_REVERSAL_RX_Init_Handshake        &&       
-             bfm.i_rx_encoding !== MBINIT_REPAIRMB_RX_Init_Handshake        &&       
-             bfm.i_rx_encoding !== MBTRAIN_DATAVREF_RX_Start_Handshake      &&         
-             bfm.i_rx_encoding !== MBTRAIN_DTC1_RX_Start_Handshake          &&     
-             bfm.i_rx_encoding !== MBTRAIN_DATATRAINVREF_RX_Start_Handshake &&               
-             bfm.i_rx_encoding !== MBTRAIN_DTC2_RX_Start_Handshake          &&     
+  end while (bfm.i_rx_encoding !== MBINIT_REVERSAL_RX_Init_Handshake &&
+             bfm.i_rx_encoding !== MBINIT_REPAIRMB_RX_Init_Handshake &&
+             bfm.i_rx_encoding !== MBTRAIN_DATAVREF_RX_Start_Handshake &&
+             bfm.i_rx_encoding !== MBTRAIN_DTC1_RX_Start_Handshake &&
+             bfm.i_rx_encoding !== MBTRAIN_DATATRAINVREF_RX_Start_Handshake &&
+             bfm.i_rx_encoding !== MBTRAIN_DTC2_RX_Start_Handshake &&
              bfm.i_rx_encoding !== MBTRAIN_LINKSPEED_RX_Start_Handshake);
 
   if (bfm.i_rx_encoding == MBINIT_REVERSAL_RX_Init_Handshake) begin
@@ -98,15 +98,15 @@ task ltsmc_monitor::collect_item_out(output ltsmc_seq_item _item);
     end while (bfm.i_rx_encoding !== Data_To_Clock_test_RX_Result_Handshake_TX_Init &&
                bfm.i_rx_encoding !== Data_To_Clock_test_RX_Result_Handshake_RX_Init);
   end
-  
+
   @(posedge bfm.clk);
-  _item.lane_map_code   = bfm.i_lane_map_code;
-  _item.rx_encoding     = bfm.i_rx_encoding;
-  _item.error_threshold = bfm.i_error_threshold;
-  _item.half_rate       = bfm.i_half_rate;
-  _item.rx_data_results = bfm.o_rx_data_results;
-  _item.rx_clk_results  = bfm.o_clk_result;
-  _item.rx_valid_results= bfm.o_valid_result;
+  _item.lane_map_code    = bfm.i_lane_map_code;
+  _item.rx_encoding      = bfm.i_rx_encoding;
+  _item.error_threshold  = bfm.i_error_threshold;
+  _item.half_rate        = bfm.i_half_rate;
+  _item.rx_data_results  = bfm.o_rx_data_results;
+  _item.rx_clk_results   = bfm.o_clk_result;
+  _item.rx_valid_results = bfm.o_valid_result;
 endtask : collect_item_out
 
 // collect_item_in
@@ -116,11 +116,11 @@ task ltsmc_monitor::collect_item_in(output ltsmc_seq_item _item);
   _item = new();
   @(bfm.i_rx_encoding);
   @(posedge bfm.clk);
-  _item.lane_map_code   = bfm.i_lane_map_code;
-  _item.rx_encoding     = bfm.i_rx_encoding;
-  _item.error_threshold = bfm.i_error_threshold;
-  _item.half_rate       = bfm.i_half_rate;
-  _item.rx_data_results = bfm.o_rx_data_results;
-  _item.rx_clk_results  = bfm.o_clk_result;
-  _item.rx_valid_results= bfm.o_valid_result;
+  _item.lane_map_code    = bfm.i_lane_map_code;
+  _item.rx_encoding      = bfm.i_rx_encoding;
+  _item.error_threshold  = bfm.i_error_threshold;
+  _item.half_rate        = bfm.i_half_rate;
+  _item.rx_data_results  = bfm.o_rx_data_results;
+  _item.rx_clk_results   = bfm.o_clk_result;
+  _item.rx_valid_results = bfm.o_valid_result;
 endtask : collect_item_in

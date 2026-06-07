@@ -18,7 +18,7 @@ class ucie_trainerror_vseq extends ucie_vseq_base;
     super.new(name);
   endfunction
 
-   function configure (missing_msg_2get_e missing_msg_2get);
+  function configure(missing_msg_2get_e missing_msg_2get);
 
     this.missing_msg_2get = missing_msg_2get;
 
@@ -51,49 +51,46 @@ class ucie_trainerror_vseq extends ucie_vseq_base;
 
       // Trainerror_Start_RX_LTSM
       `uvm_info("VSEQ", $sformatf("Trainerror_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-      
+
       p_sequencer.tx_fifo.get(sb_ltsm_item);
       sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
       send_sb_msg(sb_ltsm_item);
-    end
-    else if (missing_msg_2get == NORMAL) begin
+    end else if (missing_msg_2get == NORMAL) begin
       p_sequencer.rx_fifo.get(sb_ltsm_item);
       sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
       send_sb_msg(sb_ltsm_item);
 
       // Trainerror_Start_RX_LTSM
       `uvm_info("VSEQ", $sformatf("Trainerror_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-      
+
       p_sequencer.tx_fifo.get(sb_ltsm_item);
       sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
       send_sb_msg(sb_ltsm_item);
-    end
-    else if (missing_msg_2get == NORMAL_TX) begin 
+    end else if (missing_msg_2get == NORMAL_TX) begin
       p_sequencer.rx_fifo.get(sb_ltsm_item);
       sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
       send_sb_msg(sb_ltsm_item);
 
       // Trainerror_Start_RX_LTSM
       `uvm_info("VSEQ", $sformatf("Trainerror_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-      
+
       p_sequencer.tx_fifo.get(sb_ltsm_item);
       sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
       send_sb_msg(sb_ltsm_item);
-    end 
-    else if (missing_msg_2get == NORMAL_RX) begin 
+    end else if (missing_msg_2get == NORMAL_RX) begin
       sb_ltsm_item.info = '0;
       sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
       send_sb_msg(sb_ltsm_item);
 
       // Trainerror_Start_RX_LTSM
       `uvm_info("VSEQ", $sformatf("Trainerror_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-      
+
       p_sequencer.rx_fifo.get(sb_ltsm_item);
       p_sequencer.tx_fifo.get(sb_ltsm_item);
       sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
       send_sb_msg(sb_ltsm_item);
 
-    end 
+    end
 
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask

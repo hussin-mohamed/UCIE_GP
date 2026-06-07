@@ -19,6 +19,8 @@ module ucie_ltsm_rx_trainerror #(
     input                      i_lp_linkerror,
     input                      i_skip_entry,
     input                      i_sbinit_error,
+    input                      i_skip_entry,
+    input                      i_sbinit_error,
 
     output logic [DECODING_WIDTH-1:0] o_rx_encoding,
     output logic [    DATA_WIDTH-1:0] o_rx_data,
@@ -55,6 +57,7 @@ module ucie_ltsm_rx_trainerror #(
       substates_done   <= 0;
     end else if (i_current_state != TRAINERROR) begin
       current_substate <= i_sbinit_error ? RX_TRAINERROR : ENTRY_HANDSHAKE;
+      current_substate <= i_sbinit_error ? RX_TRAINERROR : ENTRY_HANDSHAKE;
       substates_done   <= 0;
     end else begin
       current_substate <= next_substate;
@@ -67,6 +70,7 @@ module ucie_ltsm_rx_trainerror #(
   always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) done_ack <= 1;
     else if (i_sb_rx_done) done_ack <= 1;
+    else if ((i_sb_rx_req && i_rx_decoding == 9'h40) || (i_skip_entry && i_current_state == TRAINERROR)) done_ack <= 0;
     else if ((i_sb_rx_req && i_rx_decoding == 9'h40) || (i_skip_entry && i_current_state == TRAINERROR)) done_ack <= 0;
   end
 
@@ -97,6 +101,7 @@ module ucie_ltsm_rx_trainerror #(
       case (current_substate)
         ENTRY_HANDSHAKE: begin
           if ((i_skip_entry || (i_sb_rx_req && i_rx_decoding == 9'h40)) && i_current_state == TRAINERROR && substates_done == 0) begin
+          if ((i_skip_entry || (i_sb_rx_req && i_rx_decoding == 9'h40)) && i_current_state == TRAINERROR && substates_done == 0) begin
             // Output State Encoding
             o_rx_encoding = 9'h40;
 
@@ -105,6 +110,7 @@ module ucie_ltsm_rx_trainerror #(
           end
           o_rx_sb_rsp = done_ack ? 0 : 1;
           // Pulse done for one cycle on REQ detection.
+          // o_rx_sb_done = i_sb_rx_req && !sb_rx_req_d;
           // o_rx_sb_done = i_sb_rx_req && !sb_rx_req_d;
           o_rx_info = 16'h0000;
 

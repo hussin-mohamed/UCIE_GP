@@ -132,6 +132,9 @@ typedef class ucie_mbtrain_DTC2_vseq;
 typedef class ucie_mbtrain_linkspeed_vseq;
 typedef class ucie_mbinit_bringup_vseq;
 typedef class ucie_trainerror_vseq;
+typedef class ucie_sbinit_bringup_tx_vseq;
+typedef class ucie_sbinit_bringup_rx_vseq;
+typedef class ucie_sbinit_bringup_vseq;
 
 typedef class ucie_mbtrain_vseq;  
 
@@ -154,14 +157,18 @@ class ucie_vseq_base extends uvm_sequence;
   static int                                     ltsm2link_msg_cnt;
   local event                                    msg_serialization_finished;
 
-  active_phylink_sequence                        active_phylink_seq;
-  sbinit_phylink_sanity_seq                      sbinit_phylink_seq;
-  rmblink_sanity_clk_sequence                    rmblink_clk_seq;
-  rmblink_sanity_valid_sequence                  rmblink_valid_seq;
-  rmblink_sanity_lfsr_sequence                   rmblink_lfsr_seq;
-  rmblink_sanity_PerLaneID_sequence              rmblink_PerLaneID_seq;
+  active_phylink_sequence           active_phylink_seq;
+  sbinit_phylink_sanity_seq         sbinit_phylink_seq;
+  sbinit_phylink_rand_seq           sbinit_phylink_random_seq;
+  rmblink_sanity_clk_sequence       rmblink_clk_seq;
+  rmblink_sanity_valid_sequence     rmblink_valid_seq;
+  rmblink_sanity_lfsr_sequence      rmblink_lfsr_seq;
+  rmblink_sanity_PerLaneID_sequence rmblink_PerLaneID_seq;
 
   ucie_mbinit_bringup_vseq                       mbinit_vseq;
+  ucie_sbinit_bringup_rx_vseq                    sbinit_bringup_rx_vseq;
+  ucie_sbinit_bringup_tx_vseq                    sbinit_bringup_tx_vseq;
+  ucie_sbinit_bringup_vseq                       sbinit_bringup_vseq;
 
   ucie_mbtrain_valverf_vseq                      valverf_vseq;
   ucie_mbtrain_dataverf_vseq                     dataverf_vseq;
@@ -193,6 +200,7 @@ class ucie_vseq_base extends uvm_sequence;
   protected linkspeed_destination_e              linkspeed_dest;
   protected missing_msg_2get_e                   missing_msg_2get;
   protected speed_idle_entry_e                   speed_idle_entry;
+  protected train_error_dir_e                    train_error_dir;
 
   ucie_RX_D2C_vseq                               ucie_RX_D2C;
   ucie_TX_D2C_vseq                               ucie_TX_D2C;
@@ -201,6 +209,8 @@ class ucie_vseq_base extends uvm_sequence;
 
   LTSM_pkg::linkinit_wake_req_handshake          wake_req_handshake;
   LTSM_pkg::linkinit_state_req_handshake         state_req_handshake;
+
+  static event out_of_rst_msg_received;
 
   // -------------------------------------------------------------------------
   //  Constructor
@@ -223,20 +233,23 @@ class ucie_vseq_base extends uvm_sequence;
     rx_fifo = p_sequencer.rx_fifo;
 
     // Subsequences Creation
-    active_phylink_seq = active_phylink_sequence::type_id::create("active_phylink_seq");
-    sbinit_phylink_seq = sbinit_phylink_sanity_seq::type_id::create("sbinit_phylink_seq");
-    rmblink_clk_seq = rmblink_sanity_clk_sequence::type_id::create("rmblink_clk_seq");
-    rmblink_valid_seq = rmblink_sanity_valid_sequence::type_id::create("rmblink_valid_seq");
-    rmblink_lfsr_seq = rmblink_sanity_lfsr_sequence::type_id::create("rmblink_lfsr_seq");
-    active_rx_seq = rmblink_active_sequence::type_id::create("active_rx_seq");
-    active_tx_seq = rdi_base_seq::type_id::create("active_tx_seq");
-    rmblink_PerLaneID_seq =
-        rmblink_sanity_PerLaneID_sequence::type_id::create("rmblink_PerLaneID_seq");
-    wake_req_handshake = linkinit_wake_req_handshake::type_id::create("wake_req_handshake");
-    state_req_handshake = linkinit_state_req_handshake::type_id::create("state_req_handshake");
+    active_phylink_seq        = active_phylink_sequence::type_id::create("active_phylink_seq");
+    sbinit_phylink_seq        = sbinit_phylink_sanity_seq::type_id::create("sbinit_phylink_seq");
+    sbinit_phylink_random_seq = sbinit_phylink_rand_seq::type_id::create("sbinit_phylink_random_seq");
+    rmblink_clk_seq           = rmblink_sanity_clk_sequence::type_id::create("rmblink_clk_seq");
+    rmblink_valid_seq         = rmblink_sanity_valid_sequence::type_id::create("rmblink_valid_seq");
+    rmblink_lfsr_seq          = rmblink_sanity_lfsr_sequence::type_id::create("rmblink_lfsr_seq");
+    active_rx_seq             = rmblink_active_sequence::type_id::create("active_rx_seq");
+    active_tx_seq             = rdi_base_seq::type_id::create("active_tx_seq");
+    rmblink_PerLaneID_seq     = rmblink_sanity_PerLaneID_sequence::type_id::create("rmblink_PerLaneID_seq");
+    wake_req_handshake        = linkinit_wake_req_handshake::type_id::create("wake_req_handshake");
+    state_req_handshake       = linkinit_state_req_handshake::type_id::create("state_req_handshake");
 
     // Child Virtual Sequences Creation
     mbinit_vseq = ucie_mbinit_bringup_vseq::type_id::create("mbinit_vseq");
+    sbinit_bringup_tx_vseq = ucie_sbinit_bringup_tx_vseq::type_id::create("sbinit_bringup_tx_vseq");
+    sbinit_bringup_rx_vseq = ucie_sbinit_bringup_rx_vseq::type_id::create("sbinit_bringup_rx_vseq");
+    sbinit_bringup_vseq = ucie_sbinit_bringup_vseq::type_id::create("sbinit_bringup_vseq");
     valverf_vseq = ucie_mbtrain_valverf_vseq::type_id::create("valverf_vseq");
     dataverf_vseq = ucie_mbtrain_dataverf_vseq::type_id::create("valverf_vseq");
     speedidle_vseq = ucie_mbtrain_speedidle_vseq::type_id::create("speedidle_vseq");
@@ -258,6 +271,10 @@ class ucie_vseq_base extends uvm_sequence;
     // Sideband LTSM Sequence Item Creation
     sb_ltsm_item = new("sb_ltsm_item");
 
+    // Initialize the data and info to zero
+    sb_ltsm_item.data = 64'h0;
+    sb_ltsm_item.info = 16'h0;
+
     fork
       begin  // Sideband ltsm2link Transmission Thread
         forever begin
@@ -270,7 +287,7 @@ class ucie_vseq_base extends uvm_sequence;
       end
     join_none
 
-    `uvm_info("UCIE_VSEQ", $sformatf("Starting system-level %s virtual sequence", get_type_name()),
+    `uvm_info("UCIE_VSEQ", $sformatf(" %s virtual sequence", get_type_name()),
               UVM_LOW)
   endtask : pre_body
 
@@ -327,5 +344,10 @@ class ucie_vseq_base extends uvm_sequence;
       wait (p_sequencer.msg_ser_status == NO_MSG_SER_IN_PROGRESS);
     end
   endtask : wait_for_msg_ser_end
+
+  task send_sb_msg_blocking(sb_pkg::ltsm_seq_item _sb_ltsm_item);
+    send_sb_msg(_sb_ltsm_item);
+    wait_for_msg_ser_end();
+  endtask : send_sb_msg_blocking
 
 endclass : ucie_vseq_base

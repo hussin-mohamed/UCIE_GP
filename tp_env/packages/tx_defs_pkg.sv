@@ -179,7 +179,7 @@ package tx_defs_pkg;
 
     // 10. MBTRAIN SPEEDIDLE
     SPEEDIDLE_SPEED_TRANSITION     = 9'b01_1001_000,  // 9'h0C8  Change clock divider
-    SPEEDIDLE_END_HND              = 9'b01_1001_001,  // 9'h0C9  Success → Retrain
+    SPEEDIDLE_END_HND              = 9'b01_1001_010,  // 9'h0CA  Success → Retrain
     // NOTE: SPEEDIDLE fail → TRAINERROR_HND (9'h040) — same encoding, no dup needed
 
     // 11. MBTRAIN TXSELFCAL

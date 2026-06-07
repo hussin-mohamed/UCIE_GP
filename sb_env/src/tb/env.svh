@@ -79,6 +79,11 @@ class sb_env extends uvm_env;
 
   extern task pre_reset_phase(uvm_phase phase);
 
+  // Task: main_phase
+  //
+
+  extern task main_phase(uvm_phase phase);
+
 
   // Function: configure_agents
   //
@@ -222,6 +227,19 @@ task sb_env::pre_reset_phase(uvm_phase phase);
   super.pre_reset_phase(phase);
   vseqr.stop_sequences();
 endtask : pre_reset_phase
+
+// main_phase
+// ---------------
+
+task sb_env::main_phase(uvm_phase phase);
+  super.main_phase(phase);
+  begin
+    `uvm_info(get_type_name(), "Waiting for timeout...", UVM_DEBUG)
+    @(posedge ltsm_ctrl_cfg.bfm.timeout);
+    -> timeout_triggered;
+    `uvm_info(get_type_name(), "TRIGGERED timeout", UVM_DEBUG)
+  end
+endtask : main_phase
 
 
 // configure_agents

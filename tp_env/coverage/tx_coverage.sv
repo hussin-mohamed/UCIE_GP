@@ -124,8 +124,7 @@ class tx_coverage extends uvm_component;
 
     // Coverpoint on high-level state for degradation states only
     cp_state_degrade: coverpoint curr_state {
-      bins repairmb = {ST_REPAIRMB};
-      bins repair   = {ST_REPAIR};
+      bins repairmb = {ST_REPAIRMB}; bins repair = {ST_REPAIR};
     }
 
     // Cross: lane_map × high-level degradation states

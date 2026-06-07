@@ -17,13 +17,14 @@ class ucie_mbtrain_datatrainvref_vseq extends ucie_vseq_base;
   endfunction
 
   function configure (D2c_mode_e D2c_mode, pattern_mode_e pattern_mode,
-                      data_mode_e data_mode, info_mode_e info_mode, message_mode_e message_mode, valid_mode_e valid_mode);
+                      data_mode_e data_mode, info_mode_e info_mode, message_mode_e message_mode, valid_mode_e valid_mode, trainerror_e trainerror = NOT_TRAINERROR);
     this.D2c_mode = D2c_mode;
     this.pattern_mode = pattern_mode;
     this.data_mode = data_mode;
     this.info_mode = info_mode;
     this.message_mode = message_mode;
     this.valid_mode = valid_mode;
+    this.train_error_state = trainerror;
     is_configured = 1;
   endfunction
 
@@ -42,16 +43,39 @@ class ucie_mbtrain_datatrainvref_vseq extends ucie_vseq_base;
     // Datatrainvref_Start_TX_LTSM
     `uvm_info("VSEQ", $sformatf("Datatrainvref_Start_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_DATATRAINVREF_TX_Start_Handshake);
-    send_sb_msg(sb_ltsm_item);
+    if (train_error_state == TIMEOUT) begin
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
+      send_sb_msg(sb_ltsm_item);
+    end else if (train_error_state == TRAINERROR_STATE) begin
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
+      send_sb_msg(sb_ltsm_item);
+    end else begin
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_DATATRAINVREF_TX_Start_Handshake);
+      send_sb_msg(sb_ltsm_item);
+    end
 
     // Datatrainvref_Start_RX_LTSM
     `uvm_info("VSEQ", $sformatf("Datatrainvref_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
     
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_DATATRAINVREF_RX_Start_Handshake);
-    send_sb_msg(sb_ltsm_item);
+    if (train_error_state == TIMEOUT) begin
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
+      send_sb_msg(sb_ltsm_item);
+      return;
+    end else if (train_error_state == TRAINERROR_STATE) begin
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
+      send_sb_msg(sb_ltsm_item);
+      return;
+    end else begin
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_DATATRAINVREF_RX_Start_Handshake);
+      send_sb_msg(sb_ltsm_item);
+    end
 
     // Datatrainvref_D2C_RX_LTSM
     `uvm_info("VSEQ", $sformatf("Datatrainvref_D2C_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)

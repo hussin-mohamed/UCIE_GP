@@ -116,12 +116,16 @@ class ucie_TX_D2C_vseq extends ucie_vseq_base;
 
     if (data_mode == PER_LANE_ID_PATTERN) begin
       if (pattern_mode == PAT_ALL_LANES_VALID) begin
-        rmblink_PerLaneID_seq.configure(._scenario(SCENARIO_IDEAL), ._num_iterations('d32),
-                                        ._lane_map_code(X16_MODE), ._mixed_mode(MIXED_ALTERNATING),
-                                        ._err_region(ERR_INJECT_LOWER_LANES_ONLY));
-      end else if (pattern_mode == PAT_UPPER_8_LANES_VALID) begin
         rmblink_PerLaneID_seq.configure(._scenario(SCENARIO_IDEAL), ._num_iterations('d32)
-                                        , ._lane_map_code(X8_UPPER_MODE), ._mixed_mode());
+                                        // ,._lane_map_code(lane_map_code)
+                                        , ._mixed_mode(MIXED_ALTERNATING));
+      end else if (pattern_mode == PAT_UPPER_8_LANES_VALID) begin
+        // rmblink_PerLaneID_seq.configure(
+        //   ._scenario(SCENARIO_IDEAL)
+        //   ,._num_iterations(iters)
+        //   ,._lane_map_code(map_code)
+        //   ,._mixed_mode(SCENARIO_IDEAL)
+        // );
       end else if (pattern_mode == PAT_LOWER_8_LANES_VALID) begin
         // rmblink_PerLaneID_seq.configure(
         //   ._scenario(SCENARIO_IDEAL)

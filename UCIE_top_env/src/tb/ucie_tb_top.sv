@@ -40,8 +40,17 @@ module ucie_tb_top;
     reset = 1;
     #100ns;
     reset = 0;
-  end
 
+    forever begin
+      if (rdi_intf.reset_enb) begin
+        reset = 1;
+        #100ns;
+      end else begin
+        reset = 0;
+        #100ns;
+      end
+    end
+  end
 
   // -------------------------------------------------------------------------
   //  PLL & Supply Stable Logic (Reactive)
@@ -91,11 +100,12 @@ module ucie_tb_top;
   // -------------------------------------------------------------------------
   //  Assign Statements
   // -------------------------------------------------------------------------
-  assign  phylink_bfm.tms     = DUT.ltsm_ctrl_bfm.tms;
-  assign  phylink_bfm.timeout = DUT.ltsm_ctrl_bfm.timeout;
-  assign  phylink_bfm.start   = DUT.ltsm_ctrl_bfm.i_sb_init_start;
-  assign  ltsm_rdi_if_inst.o_pl_inband_pres   = DUT.ltsm_rdi_if_inst.o_pl_inband_pres;
-  assign  rdi_intf.pl_state_sts   = DUT.ltsm_rdi_if_inst.o_pl_state_sts;
+  assign  phylink_bfm.tms                   = DUT.ltsm_ctrl_bfm.tms;
+  assign  DUT.sideband.sva_inst.tms         = DUT.ltsm_ctrl_bfm.tms;
+  assign  phylink_bfm.timeout               = DUT.ltsm_ctrl_bfm.timeout;
+  assign  phylink_bfm.start                 = DUT.ltsm_ctrl_bfm.i_sb_init_start;
+  assign  ltsm_rdi_if_inst.o_pl_inband_pres = DUT.ltsm_rdi_if_inst.o_pl_inband_pres;
+  assign  rdi_intf.pl_state_sts             = DUT.ltsm_rdi_if_inst.o_pl_state_sts;
 
 
   // -------------------------------------------------------------------------
@@ -162,6 +172,7 @@ module ucie_tb_top;
   // -------------------------------------------------------------------------
   bind ucie_sb_top sb_sva sva_inst(
      .i_clk           (i_clk)
+    ,.clk_l           (DUT.clk_l)
     ,.clk_800MHz      (i_800MHz_clk)
     ,.i_reset         (i_reset)
 

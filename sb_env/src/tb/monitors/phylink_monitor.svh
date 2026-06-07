@@ -68,8 +68,6 @@ endfunction : new
 
 // collect_item_out
 // ----------------
-//
-// Deserializes one outgoing phylink message and converts it into an item.
 
 task phylink_monitor::collect_item_out(output phylink_seq_item _item);
     logic [127:0] msg_raw;
@@ -93,8 +91,6 @@ endtask : collect_item_out
 
 // collect_item_in
 // ----------------
-//
-// Deserializes one incoming phylink message and converts it into an item.
 
 task phylink_monitor::collect_item_in(output phylink_seq_item _item);
     logic [127:0] msg_raw;

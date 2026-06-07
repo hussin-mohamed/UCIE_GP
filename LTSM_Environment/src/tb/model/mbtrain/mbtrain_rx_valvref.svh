@@ -41,7 +41,7 @@ class mbtrain_rx_valvref extends State;
         // request from MbInitRepairMbState_rx. Reset end_sweep and guards,
         // set rsp. Verify only o_rx_encoding this cycle.
         // ----------------------------------------------------------------
-        if(item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_VALVREF_Start_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1 && cntxt.currentstate_rx == MbInitRepairMbState_rx::Instance())begin
+        if(item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_VALVREF_Start_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1)begin
             o_rx_encoding_expected = RX_MBTRAIN_VALVREF_Start_Handshake;
             end_sweep=0;
             o_rx_info_expected = 16'h0000;

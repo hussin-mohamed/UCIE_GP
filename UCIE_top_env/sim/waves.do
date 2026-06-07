@@ -325,7 +325,8 @@ add wave -noupdate -group {sb_env — sb_phylink_bfm} \
     sim:/ucie_tb_top/phylink_bfm/tms \
     sim:/ucie_tb_top/phylink_bfm/timeout \
     sim:/ucie_tb_top/phylink_bfm/start \
-    sim:/ucie_tb_top/phylink_bfm/pat_detected
+    sim:/ucie_tb_top/phylink_bfm/in_pat_detected \
+    sim:/ucie_tb_top/phylink_bfm/out_pat_detected
 
 # ---- sb_env/src/tb/sb_sva.sv ----
 add wave -group {sb_env — Assertions} -position insertpoint  \
@@ -337,6 +338,8 @@ add wave -group {sb_env — Assertions} -position insertpoint  \
     sim:/ucie_tb_top/DUT/sideband/sva_inst/chk_no_clk_glitch \
     sim:/ucie_tb_top/DUT/sideband/sva_inst/pat_detected \
     sim:/ucie_tb_top/DUT/sideband/sva_inst/timeout \
+    sim:/ucie_tb_top/DUT/sideband/sva_inst/clk_800MHz \
+    sim:/ucie_tb_top/DUT/sideband/sva_inst/i_timer_1ms \
     sim:/ucie_tb_top/DUT/sideband/sva_inst/tms
 
 .vcop Action toggleleafnames

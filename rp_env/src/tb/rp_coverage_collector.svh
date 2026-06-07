@@ -67,13 +67,13 @@ class rp_coverage_collector extends uvm_component;
   } ltsm_state_e;
 
   // Tracking variables for coverage sampling
-  rx_encoding_t   prev_encoding;
-  rx_encoding_t   curr_encoding;
-  lane_map_code_t curr_lane_map;
-  ltsm_state_e    curr_state;
-  logic [2:0]     curr_clk_results;
-  logic           curr_valid_results;
-  logic [15:0]    curr_data_results_16;
+  rx_encoding_t          prev_encoding;
+  rx_encoding_t          curr_encoding;
+  lane_map_code_t        curr_lane_map;
+  ltsm_state_e           curr_state;
+  logic           [ 2:0] curr_clk_results;
+  logic                  curr_valid_results;
+  logic           [15:0] curr_data_results_16;
 
   //---------------------------------------------------------------------------
   //
@@ -81,7 +81,7 @@ class rp_coverage_collector extends uvm_component;
   //
   //---------------------------------------------------------------------------
   covergroup cg_rmblink;
-    // Empty for now
+  // Empty for now
   endgroup : cg_rmblink
 
   //---------------------------------------------------------------------------
@@ -90,7 +90,7 @@ class rp_coverage_collector extends uvm_component;
   //
   //---------------------------------------------------------------------------
   covergroup cg_ltsm;
-    
+
     // 1. All encoding values coverpoint
     cp_encoding: coverpoint curr_encoding {
       // Phase 00: Initialization
@@ -158,15 +158,14 @@ class rp_coverage_collector extends uvm_component;
     cp_lane_map: coverpoint curr_lane_map {
       bins x8_lower = {X8_LOWER_MODE};
       bins x8_upper = {X8_UPPER_MODE};
-      bins x16      = {X16_MODE};
+      bins x16 = {X16_MODE};
       bins x4_lower = {X4_LOWER_MODE};
       bins x4_upper = {X4_UPPER_MODE};
     }
 
     // 3. Coverpoint on high-level state for degradation states only
     cp_state_degrade: coverpoint curr_state {
-      bins repairmb = {ST_REPAIRMB};
-      bins repair   = {ST_REPAIR};
+      bins repairmb = {ST_REPAIRMB}; bins repair = {ST_REPAIR};
     }
 
     // 4. Cross: lane_map x high-level degradation states
@@ -249,17 +248,14 @@ class rp_coverage_collector extends uvm_component;
 
     // 6. Clock Results in Clock Repair state
     cp_clk_results: coverpoint curr_clk_results {
-      bins values[] = {[3'b000:3'b111]};
+      bins values[] = {[3'b000 : 3'b111]};
     }
-    cp_state_repairclk: coverpoint curr_state {
-      bins repairclk = {ST_REPAIRCLK};
-    }
+    cp_state_repairclk: coverpoint curr_state {bins repairclk = {ST_REPAIRCLK};}
     cx_clk_x_repairclk: cross cp_state_repairclk, cp_clk_results;
 
     // 7. Valid Results in Repair Valid / ValVref / ValTrainCenter states
     cp_valid_results: coverpoint curr_valid_results {
-      bins zero = {1'b0};
-      bins one  = {1'b1};
+      bins zero = {1'b0}; bins one = {1'b1};
     }
     cp_state_valid_checks: coverpoint curr_state {
       bins states = {ST_REPAIRVAL, ST_VALVREF, ST_VALTRAINCTR};
@@ -269,15 +265,13 @@ class rp_coverage_collector extends uvm_component;
     // 8. Data Results (first 16 bits) in Reversal and D2C states
     cp_data_results: coverpoint curr_data_results_16 {
       bins all_zeros = {16'h0000};
-      bins all_ones  = {16'hFFFF};
+      bins all_ones = {16'hFFFF};
       bins first8_zeros_last8_ones = {16'hFF00};
       bins first8_ones_last8_zeros = {16'h00FF};
       bins alternating_5 = {16'h5555};
       bins alternating_A = {16'hAAAA};
     }
-    cp_state_data_checks: coverpoint curr_state {
-      bins states = {ST_D2C_TX, ST_D2C_RX, ST_REVERSAL};
-    }
+    cp_state_data_checks: coverpoint curr_state {bins states = {ST_D2C_TX, ST_D2C_RX, ST_REVERSAL};}
     cx_data_x_state: cross cp_state_data_checks, cp_data_results;
 
   endgroup : cg_ltsm
@@ -307,8 +301,8 @@ endclass : rp_coverage_collector
 // new
 function rp_coverage_collector::new(string name, uvm_component parent);
   super.new(name, parent);
-  rmblink_exp = new("rmblink_exp", this);
-  ltsm_exp    = new("ltsm_exp", this);
+  rmblink_exp          = new("rmblink_exp", this);
+  ltsm_exp             = new("ltsm_exp", this);
 
   prev_encoding        = RESET_Reset;
   curr_encoding        = RESET_Reset;
@@ -318,8 +312,8 @@ function rp_coverage_collector::new(string name, uvm_component parent);
   curr_valid_results   = 1'b0;
   curr_data_results_16 = 16'h0000;
 
-  cg_rmblink = new();
-  cg_ltsm    = new();
+  cg_rmblink           = new();
+  cg_ltsm              = new();
 endfunction : new
 
 // write_rmblink_cg
@@ -339,7 +333,7 @@ function void rp_coverage_collector::write_ltsm_cg(ltsmc_seq_item t);
     return;
   end
   $cast(ltsm_item, t.clone());
-  
+
   prev_encoding        = curr_encoding;
   curr_encoding        = ltsm_item.rx_encoding;
   curr_lane_map        = ltsm_item.lane_map_code;
@@ -347,7 +341,7 @@ function void rp_coverage_collector::write_ltsm_cg(ltsmc_seq_item t);
   curr_clk_results     = ltsm_item.rx_clk_results;
   curr_valid_results   = ltsm_item.rx_valid_results;
   curr_data_results_16 = ltsm_item.rx_data_results[15:0];
-  
+
   cg_ltsm.sample();
 endfunction : write_ltsm_cg
 
@@ -366,46 +360,60 @@ function void rp_coverage_collector::report_phase(uvm_phase phase);
 endfunction : report_phase
 
 // encoding_to_state mapping
-function rp_coverage_collector::ltsm_state_e rp_coverage_collector::encoding_to_state(rx_encoding_t enc);
+function rp_coverage_collector::ltsm_state_e rp_coverage_collector::encoding_to_state(
+    rx_encoding_t enc);
   case (enc)
     RESET_Reset: return ST_RESET;
     SBINIT_RX_Wait_Out_Of_Reset, SBINIT_RX_Done_Handshake: return ST_SBINIT;
-    MBINIT_PARAM_RX_Wait_Config_REQ, MBINIT_PARAM_RX_Check_Parameters, MBINIT_PARAM_RX_Send_RESP: return ST_PARAM;
+    MBINIT_PARAM_RX_Wait_Config_REQ, MBINIT_PARAM_RX_Check_Parameters, MBINIT_PARAM_RX_Send_RESP:
+    return ST_PARAM;
     MBINIT_CAL_RX_Done_Handshake: return ST_CAL;
     MBINIT_REPAIRCLK_RX_Init_Handshake, MBINIT_REPAIRCLK_RX_Pattern_Detection,
       MBINIT_REPAIRCLK_RX_Wait_Result_REQ, MBINIT_REPAIRCLK_RX_Send_RESP,
-      MBINIT_REPAIRCLK_RX_Done_Handshake: return ST_REPAIRCLK;
+      MBINIT_REPAIRCLK_RX_Done_Handshake:
+    return ST_REPAIRCLK;
     MBINIT_REPAIRVAL_RX_Init_Handshake, MBINIT_REPAIRVAL_RX_Valid_Pattern_Det,
       MBINIT_REPAIRVAL_RX_Wait_Result_REQ, MBINIT_REPAIRVAL_RX_Send_Result_RESP,
-      MBINIT_REPAIRVAL_RX_Done_Handshake: return ST_REPAIRVAL;
+      MBINIT_REPAIRVAL_RX_Done_Handshake:
+    return ST_REPAIRVAL;
     MBINIT_REVERSAL_RX_Init_Handshake, MBINIT_REVERSAL_RX_Clear_Log_Hnd,
       MBINIT_REVERSAL_RX_Per_Lane_ID_Det, MBINIT_REVERSAL_RX_Result_Handshake,
-      MBINIT_REVERSAL_RX_Done_Handshake: return ST_REVERSAL;
+      MBINIT_REVERSAL_RX_Done_Handshake:
+    return ST_REVERSAL;
     MBINIT_REPAIRMB_RX_Init_Handshake, MBINIT_REPAIRMB_RX_Wait_Apply_Degrade,
       MBINIT_REPAIRMB_RX_Degrade, MBINIT_REPAIRMB_RX_Send_Degrade_Resp,
-      MBINIT_REPAIRMB_RX_Done_Handshake: return ST_REPAIRMB;
+      MBINIT_REPAIRMB_RX_Done_Handshake:
+    return ST_REPAIRMB;
     TRAINERROR_RX_Handshake, TRAINERROR_RX_TrainError, TRAINERROR_RX_Reset: return ST_TRAINERROR;
     MBTRAIN_VALVREF_RX_Start_Handshake, MBTRAIN_VALVREF_RX_End_Handshake: return ST_VALVREF;
     MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake: return ST_DATAVREF;
     MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake: return ST_DTC1;
     MBTRAIN_RXCLKCAL_RX_Start_Handshake, MBTRAIN_RXCLKCAL_RX_Clock_Shifting_Op,
-      MBTRAIN_RXCLKCAL_RX_End_Handshake: return ST_RXCLKCAL;
-    MBTRAIN_VALTRAINCENTER_RX_Start_Handshake, MBTRAIN_VALTRAINCENTER_RX_End_Handshake: return ST_VALTRAINCTR;
+      MBTRAIN_RXCLKCAL_RX_End_Handshake:
+    return ST_RXCLKCAL;
+    MBTRAIN_VALTRAINCENTER_RX_Start_Handshake, MBTRAIN_VALTRAINCENTER_RX_End_Handshake:
+    return ST_VALTRAINCTR;
     MBTRAIN_RXDESKEW_RX_Start_Handshake, MBTRAIN_RXDESKEW_RX_EQ_Preset_Handshake,
       MBTRAIN_RXDESKEW_RX_Deskew_Operation, MBTRAIN_RXDESKEW_RX_Datacenter_Handshake,
-      MBTRAIN_RXDESKEW_RX_End_Handshake, MBTRAIN_RXDESKEW_RX_Train_Error_Handshake: return ST_RXDESKEW;
+      MBTRAIN_RXDESKEW_RX_End_Handshake, MBTRAIN_RXDESKEW_RX_Train_Error_Handshake:
+    return ST_RXDESKEW;
     MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake: return ST_DTC2;
     MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd,
       MBTRAIN_LINKSPEED_RX_Error_REQ, MBTRAIN_LINKSPEED_RX_Phy_Retrain_Hnd,
-      MBTRAIN_LINKSPEED_RX_Exit_Repair_Hnd, MBTRAIN_LINKSPEED_RX_Exit_SpeedDegrade_Hnd: return ST_LINKSPEED;
+      MBTRAIN_LINKSPEED_RX_Exit_Repair_Hnd, MBTRAIN_LINKSPEED_RX_Exit_SpeedDegrade_Hnd:
+    return ST_LINKSPEED;
     MBTRAIN_REPAIR_RX_Start_Handshake, MBTRAIN_REPAIR_RX_Apply_Degrade_Handshake,
-      MBTRAIN_REPAIR_RX_End_Handshake: return ST_REPAIR;
+      MBTRAIN_REPAIR_RX_End_Handshake:
+    return ST_REPAIR;
     MBTRAIN_SPEEDIDLE_RX_Speed_Transition, MBTRAIN_SPEEDIDLE_RX_End_Handshake: return ST_SPEEDIDLE;
     MBTRAIN_TXSELFCAL_RX_End_Handshake: return ST_TXSELFCAL;
-    MBTRAIN_VALTRAINVREF_RX_Start_Handshake, MBTRAIN_VALTRAINVREF_RX_End_Handshake: return ST_VALTRAINVREF;
-    MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake: return ST_DATATRAINVREF;
+    MBTRAIN_VALTRAINVREF_RX_Start_Handshake, MBTRAIN_VALTRAINVREF_RX_End_Handshake:
+    return ST_VALTRAINVREF;
+    MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake:
+    return ST_DATATRAINVREF;
     LINKINIT_RX_PL_Clk_Req_Handshake, LINKINIT_RX_LP_Wake_Req_Handshake,
-      LINKINIT_RX_State_Rsp_Handshake: return ST_LINKINIT;
+      LINKINIT_RX_State_Rsp_Handshake:
+    return ST_LINKINIT;
     ACTIVE_RX_Active: return ST_ACTIVE;
     L1_RX_Start_HS, L1_RX_L1_State, L1_RX_Wait1us, L1_RX_Refuse: return ST_L1;
     EXIT_HS_RX_Exit_Handshake: return ST_EXIT_HS;
@@ -413,13 +421,15 @@ function rp_coverage_collector::ltsm_state_e rp_coverage_collector::encoding_to_
       Data_To_Clock_test_RX_LFSR_Clear_Handshake_TX_Init,
       Data_To_Clock_test_RX_Pattern_Detection_TX_Init,
       Data_To_Clock_test_RX_Result_Handshake_TX_Init,
-      Data_To_Clock_test_RX_End_Init_Handshake_TX_Init: return ST_D2C_TX;
+      Data_To_Clock_test_RX_End_Init_Handshake_TX_Init:
+    return ST_D2C_TX;
     Data_To_Clock_test_RX_INIT_Handshake_RX_Init,
       Data_To_Clock_test_RX_LFSR_Clear_Handshake_RX_Init,
       Data_To_Clock_test_RX_Pattern_Detection_RX_Init,
       Data_To_Clock_test_RX_Result_Handshake_RX_Init,
       Data_To_Clock_test_RX_Sweep_Result_Handshake,
-      Data_To_Clock_test_RX_End_Init_Handshake_RX_Init: return ST_D2C_RX;
+      Data_To_Clock_test_RX_End_Init_Handshake_RX_Init:
+    return ST_D2C_RX;
     default: return ST_RESET;
   endcase
 endfunction : encoding_to_state

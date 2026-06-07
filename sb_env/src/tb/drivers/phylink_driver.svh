@@ -99,11 +99,12 @@ task phylink_driver::drive_item(inout phylink_seq_item req, output phylink_seq_i
     fork
       begin
         bfm.serialize_pattern(req.pattern, req.idle_ui_cnt, req.out_of_rst_ui_cnt);
-        rsp.pat_detected = bfm.pat_detected;
+        rsp.out_pat_detected = bfm.out_pat_detected;
+        rsp.in_pat_detected  = bfm.in_pat_detected;
       end
 
       begin
-        @(timeout_triggered);
+        wait(timeout_triggered.triggered);
         rsp.timeout_detected = 1;
       end
     join_any
@@ -116,6 +117,10 @@ task phylink_driver::drive_item(inout phylink_seq_item req, output phylink_seq_i
     msg = item2struct(req);
 
     msg_raw = struct2raw(msg);
+
+    if (req.wait_cycles != 0) begin
+      repeat(req.wait_cycles) @(posedge bfm.clk);
+    end
 
     bfm.serialize_data(msg_raw, req.idle_ui_cnt);
 

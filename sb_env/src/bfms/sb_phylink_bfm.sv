@@ -31,10 +31,12 @@ interface sb_phylink_bfm(
  ,input logic o_sb_ready
 );
     
-  bit pat_detected;
+  bit in_pat_detected;
+  bit out_pat_detected;
 
   bit [2:0] tms;
   bit timeout;
+  rx_encoding_t i_rx_encoding;
 
   //============================================================================
   // From Partner Die Signals (Inputs to DUT)
@@ -57,11 +59,20 @@ interface sb_phylink_bfm(
 
   always @(negedge o_tx_sb_clk) begin
     wait(q_pat_det(o_tx_sb_data, o_tx_sb_clk).triggered);
-    pat_detected = 1;
+    out_pat_detected = 1;
   end
 
   always @(negedge o_sb_ready) begin
-    pat_detected = 0;
+    out_pat_detected = 0;
+  end
+
+  always @(negedge i_rx_sb_clk) begin
+    wait(q_pat_det(i_rx_sb_data, i_rx_sb_clk).triggered);
+    in_pat_detected = 1;
+  end
+
+  always @(negedge o_sb_ready) begin
+    in_pat_detected = 0;
   end
 
   always_comb begin
@@ -89,26 +100,19 @@ interface sb_phylink_bfm(
     if (_idle_ui_cnt < 32) begin
       `uvm_fatal("PHYLINK_BFM", $sformatf("Invalid idle_ui_cnt: %0d, valid count range: 32 UI or more", _idle_ui_cnt))
     end
-    // $display("%0t: xxxxxxxxxxxxxxxxxxxxxxx", $time);
+
     if (is_first_iteration) begin
-    // $display("%0t: ffffffffffffffff, %0d", $time, start);
       @(posedge start);
-    // $display("%0t: yyyyyyyyyyyyyyyyyyyyyy", $time);
       @(posedge clk);
-    // $display("%0t: zzzzzzzzzzzzzzzzzzzzzzzzz", $time);
       is_first_iteration = 0;
     end
 
-    // $display("%0t: llllllllllllllllllllllllll", $time);
     if (_delay_ui_cnt != 0) begin
-    // $display("%0t: mmmmmmmmmmmmmmmmmmmmm, clk_800MHz = %0d, _delay_ui_cnt = %0d", $time, clk_800MHz, _delay_ui_cnt);
-      // repeat(10) @(posedge clk_800MHz);
-    // $display("%0t: nnnnnnnnnnnnnnnnnnnnnnnnn", $time);
+      repeat(_delay_ui_cnt) @(posedge clk_800MHz);
     end
     // 64 UI Pattern Phase
     for (int i = 0; i < 64; i++) begin
       @(posedge clk_800MHz iff (tms%2 == 0));
-      // $display("%0t: oooooooooooooooooooooo", $time);
       i_rx_sb_data <= _pattern[i];
       i_rx_sb_clk  <= 1'b1; // Strobe high
 

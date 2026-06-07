@@ -192,7 +192,7 @@ class StateTransitionUtil_rx extends State;
                if (item_controllers_in.i_reset)begin
                   return ResetState_rx::Instance();
                end
-               else if (item_rx_fsm_sb_in.i_rx_decoding == RX_MBTRAIN_VALVREF_Start_Handshake && item_rx_fsm_sb_in.i_sb_rx_req==1'b1) begin
+               else if (item_tx_fsm_sb_in.i_tx_decoding == MBINIT_REPAIRMB_TX_Done_Handshake && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1) begin
                   return mbtrain_rx_valvref::Instance();
                   state_done = 1;
                end
@@ -203,7 +203,7 @@ class StateTransitionUtil_rx extends State;
             end
             fsm_rx_trainerror : begin
                // `uvm_info("l1_state_rx", $sformatf("i_reset: %0b, i_sb_cur_msg_done = %0b , i_lp_linkerror = %0b ", item_controllers_in.i_reset,item_controllers_in.i_sb_cur_msg_done, item_rdi_in.i_lp_linkerror), UVM_LOW);
-               if (item_controllers_in.i_reset || (item_controllers_in.i_sb_cur_msg_done && !item_rdi_in.i_lp_linkerror))begin
+               if (item_controllers_in.i_reset || (item_controllers_in.i_sb_cur_msg_done && !item_rdi_in.i_lp_linkerror && train_end))begin
                   return ResetState_rx::Instance();
                end
                else begin

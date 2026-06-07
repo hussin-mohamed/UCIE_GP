@@ -215,9 +215,9 @@ class rp_pred extends uvm_component;
     if (t.rx_encoding == Data_To_Clock_test_RX_Result_Handshake_TX_Init  ||
         t.rx_encoding == Data_To_Clock_test_RX_Result_Handshake_RX_Init  ||
         t.rx_encoding == MBINIT_REVERSAL_RX_Result_Handshake) begin
-      
+
       logic [pNUM_LANES-1:0] packed_success; // Intermediate packed vector
-      
+
       // Fix SV Unpacked-to-Packed Conversion
       foreach (success_arr[i]) begin
         packed_success[i] = success_arr[i];
@@ -225,14 +225,14 @@ class rp_pred extends uvm_component;
 
       out_item = ltsmc_seq_item::type_id::create("out_item");
       out_item.lane_map_code = current_lane_map_code;
-      out_item.rx_encoding = current_rx_encoding;
+      out_item.rx_encoding   = current_rx_encoding;
       out_item.error_threshold = current_error_threshold;
       out_item.half_rate = 1;
-      
+
       // Now concatenation works perfectly
       out_item.rx_data_results = { {48{1'b1}}, packed_success };
       results_ap_ltsmc.write(out_item);
-      
+
       // Reset tracking vars for next sequence
       lfsr_train_iter_cnt = 0; 
       per_lane_iter_cnt = 0;

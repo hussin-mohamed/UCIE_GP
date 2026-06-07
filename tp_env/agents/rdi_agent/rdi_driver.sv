@@ -56,6 +56,16 @@ class rdi_driver extends uvm_driver #(rdi_seq_item);
       // Get next transaction from sequencer
       seq_item_port.get_next_item(req);
 
+      `ifdef UCIE_SYS_LVL
+        if (req.reset_enb) begin
+          rdi_vif.reset_enb <= req.reset_enb;
+          #100ns;
+          rdi_vif.reset_enb <= 0;
+          seq_item_port.item_done();
+          continue;
+        end
+      `endif
+
       // Apply inter-flit delay
       if (req.delay > 0) begin
         rdi_vif.lp_valid <= 1'b0;
@@ -66,7 +76,9 @@ class rdi_driver extends uvm_driver #(rdi_seq_item);
       $display("noooooooooooooo");
 
       // Drive the flit
-      drive_flit(req);
+      if (!req.reset_enb) begin
+        drive_flit(req);
+      end
 
       // Transaction complete
       seq_item_port.item_done();

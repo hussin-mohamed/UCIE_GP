@@ -267,7 +267,6 @@ module ucie_LTSM_RX_MBTRAIN #(
   always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
       o_rx_sb_done <= 0;
-      ;
     end else begin
       if (o_rx_sb_done) begin
         o_rx_sb_done <= 0;  // Self-clearing pulse

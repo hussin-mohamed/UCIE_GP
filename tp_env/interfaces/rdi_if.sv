@@ -33,6 +33,7 @@ interface rdi_if #(parameter int NBYTES = 256) (
   `ifdef UCIE_SYS_LVL
     // PL State Status: indicates current link/PHY state
     logic [3:0] pl_state_sts;
+    bit reset_enb;
   `endif
 
   // -------------------------------------------------------------------------

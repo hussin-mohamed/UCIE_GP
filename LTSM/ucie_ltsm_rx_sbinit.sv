@@ -1,9 +1,23 @@
 `define SIM 
+`define SIM 
 module ucie_ltsm_rx_sbinit #(
     parameter DECODING_WIDTH = 9,
     parameter DATA_WIDTH     = 64,
     parameter INFO_WIDTH     = 16
 ) (
+    input                      i_clk,
+    input                      i_reset,
+    input [DECODING_WIDTH-1:0] i_rx_decoding,
+    input [    DATA_WIDTH-1:0] i_rx_data,
+    input [    INFO_WIDTH-1:0] i_rx_info,
+    input                      i_sb_rx_req,
+    input                      i_sb_rx_rsp,
+    input                      i_sb_rx_done,
+    input                      i_rx_done,
+    input                      init_train_en,
+    input                      i_sb_ready,
+    input [               3:0] i_current_state,
+    input                      o_timer_8ms,
     input                      i_clk,
     input                      i_reset,
     input [DECODING_WIDTH-1:0] i_rx_decoding,
@@ -34,7 +48,15 @@ module ucie_ltsm_rx_sbinit #(
   // Local parameters
   // -------------------------------------------------------------------------
   localparam logic [3:0] SBINIT = 4'b0001;
+  // -------------------------------------------------------------------------
+  // Local parameters
+  // -------------------------------------------------------------------------
+  localparam logic [3:0] SBINIT = 4'b0001;
 
+  // RX SBINIT has only two substates — RX does not generate patterns,
+  // it waits for TX to finish then completes the handshake
+  localparam logic [2:0] WAIT_OUT_OF_RESET_MSG = 3'b000;
+  localparam logic [2:0] DONE_HANDSHAKE = 3'b001;
   // RX SBINIT has only two substates — RX does not generate patterns,
   // it waits for TX to finish then completes the handshake
   localparam logic [2:0] WAIT_OUT_OF_RESET_MSG = 3'b000;
@@ -47,7 +69,33 @@ module ucie_ltsm_rx_sbinit #(
   logic [2:0] next_substate;
   logic       done_ack;
   logic       substates_done;
+  // -------------------------------------------------------------------------
+  // Internal signals
+  // -------------------------------------------------------------------------
+  logic [2:0] current_substate;
+  logic [2:0] next_substate;
+  logic       done_ack;
+  logic       substates_done;
 
+  // -------------------------------------------------------------------------
+  // State memory
+  // -------------------------------------------------------------------------
+  always_ff @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) begin
+      current_substate <= WAIT_OUT_OF_RESET_MSG;
+      substates_done   <= 0;
+    end else if (i_current_state != SBINIT) begin
+      current_substate <= WAIT_OUT_OF_RESET_MSG;
+      substates_done   <= 0;
+    end else begin
+      if (current_substate == DONE_HANDSHAKE && i_rx_decoding == 9'h09 && i_sb_rx_req) begin
+        substates_done   <= 1;
+        current_substate <= DONE_HANDSHAKE;
+      end else begin
+        current_substate <= next_substate;
+      end
+    end
+  end
   // -------------------------------------------------------------------------
   // State memory
   // -------------------------------------------------------------------------
@@ -78,7 +126,20 @@ module ucie_ltsm_rx_sbinit #(
     else if (i_sb_rx_done) done_ack <= 1;
     else if (i_sb_rx_req && i_rx_decoding == 9'h09 && o_rx_encoding != 9'h08) done_ack <= 0;
   end
+  // -------------------------------------------------------------------------
+  // RSP / Done handshake register
+  // RX mirror of TX done_ack: latches when i_sb_rx_done arrives
+  // (our RSP was accepted by sideband), clears when next i_sb_rx_req comes in
+  // -------------------------------------------------------------------------
+  always_ff @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) done_ack <= 1;
+    else if (i_sb_rx_done) done_ack <= 1;
+    else if (i_sb_rx_req && i_rx_decoding == 9'h09 && o_rx_encoding != 9'h08) done_ack <= 0;
+  end
 
+  always_comb begin
+    o_rx_sb_rsp = done_ack ? 0 : 1;
+  end
   always_comb begin
     o_rx_sb_rsp = done_ack ? 0 : 1;
   end
@@ -115,13 +176,33 @@ module ucie_ltsm_rx_sbinit #(
         // --------------------------------------------------------------
         WAIT_OUT_OF_RESET_MSG: begin
           o_rx_encoding = 9'h08;
+        // --------------------------------------------------------------
+        // WAIT_OUT_OF_RESET_MSG
+        // RX waits for TX to send its out-of-reset message (encoding 0x09).
+        // Encoding held at 0x08 while waiting.
+        // --------------------------------------------------------------
+        WAIT_OUT_OF_RESET_MSG: begin
+          o_rx_encoding = 9'h08;
 
           if (!substates_done) begin
             if (i_rx_decoding == 9'h08) next_substate = DONE_HANDSHAKE;
             else next_substate = WAIT_OUT_OF_RESET_MSG;
           end
         end
+          if (!substates_done) begin
+            if (i_rx_decoding == 9'h08) next_substate = DONE_HANDSHAKE;
+            else next_substate = WAIT_OUT_OF_RESET_MSG;
+          end
+        end
 
+        // --------------------------------------------------------------
+        // DONE_HANDSHAKE
+        // RX sends RSP to acknowledge the done message from TX.
+        // --------------------------------------------------------------
+        DONE_HANDSHAKE: begin
+          o_rx_encoding = 9'h09;
+          if (!substates_done) begin
+            // o_rx_sb_rsp = done_ack ? 0 : 1;
         // --------------------------------------------------------------
         // DONE_HANDSHAKE
         // RX sends RSP to acknowledge the done message from TX.
@@ -139,13 +220,29 @@ module ucie_ltsm_rx_sbinit #(
             end
           end
         end
+            if (i_rx_decoding == 9'h09 && i_sb_rx_req) begin
+              next_substate    = DONE_HANDSHAKE;
+              o_done_sbinit_rx = 1;
+            end else begin
+              next_substate = DONE_HANDSHAKE;
+            end
+          end
+        end
 
+        default: next_substate = WAIT_OUT_OF_RESET_MSG;
         default: next_substate = WAIT_OUT_OF_RESET_MSG;
 
       endcase
     end
   end
+      endcase
+    end
+  end
 
+  // =========================================================================
+  // Assertions
+  // =========================================================================
+  /*
   // =========================================================================
   // Assertions
   // =========================================================================
@@ -238,3 +335,4 @@ module ucie_ltsm_rx_sbinit #(
 `endif
 */
 endmodule
+

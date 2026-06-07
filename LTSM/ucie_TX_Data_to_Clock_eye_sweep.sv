@@ -218,7 +218,7 @@ always @(*) begin
 
                     // Check result and decide on retry
                     if (i_sb_xx_rsp && i_xx_decoding == 'h183) begin
-                        failed_test = !(&i_xx_data);  // Test fails if any bit is 0
+                        failed_test = !(&i_xx_data) && !(&i_xx_info);  // Test fails if any bit is 0
                         per_lane_result = i_xx_data;  // Capture per-lane results for reporting
                         // Retry if failed and retries allowed, otherwise complete
                         if (failed_test && !no_retry) begin
@@ -323,7 +323,7 @@ always @(*) begin
 
                     // Check result and decide on retry
                     if (i_sb_xx_rsp && i_xx_decoding == 'h18B) begin
-                        failed_test = !(&i_xx_data);  // Test fails if any bit is 0
+                        failed_test = !(&i_xx_data) || !(i_xx_info == 'h30);  // Test fails if any bit is 0
                         per_lane_result = i_xx_data;  // Capture per-lane results for reporting
                         // Retry if failed and retries allowed, otherwise get sweep result
                         if (failed_test && !no_retry) begin

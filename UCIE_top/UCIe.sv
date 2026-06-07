@@ -60,6 +60,7 @@ module UCIe_phy #(
   logic sb_ready;
   logic sb_ready_reg;
   bit   t1_ms;
+  bit   t1_ms_reg;
   logic   reset_sb;
   logic   reset_sb_reg;
   PLL_model PLL (
@@ -99,7 +100,7 @@ module UCIe_phy #(
   // LTSM control interface
   sb_ltsm_ctrl_bfm ltsm_ctrl_bfm (
       .clk(i_clk_sb_100_m),
-      .clk_800(clk_l)
+      .clk_l(clk_l)
       , .reset(reset_sb)
       , .o_sb_ready(sb_ready)
   );
@@ -254,7 +255,6 @@ module UCIe_phy #(
     ltsm_intf.lane_map = LTSM_controllers_vif.o_lane_map_tx;
     LTSM_controllers_vif.i_tx_done = ltsm_intf.tx_done;
 
-    rp_rmblink_bfm_inst.i_rx_encoding = rp_ltsmc_bfm_inst.i_rx_encoding;
     rp_rmblink_bfm_inst.i_clk_p = i_clk_p;
     rp_rmblink_bfm_inst.i_clk_n = i_clk_n;
     rp_rmblink_bfm_inst.i_track = i_track;
@@ -273,6 +273,8 @@ module UCIe_phy #(
     rp_ltsmc_bfm_inst.i_error_threshold = 1;
     rp_ltsmc_bfm_inst.i_half_rate = 1;
   end
+
+  assign rp_rmblink_bfm_inst.i_rx_encoding = rp_ltsmc_bfm_inst.i_rx_encoding;
 
 
   valid_decoder decoder_rx (
@@ -311,15 +313,16 @@ module UCIe_phy #(
 
   always_ff @(posedge clk_l or posedge i_reset) begin
     if (i_reset) begin
-      ltsm_ctrl_bfm.i_timer_1ms <= 0;
+      t1_ms_reg <= 0;
     end else begin
-      if (!ltsm_ctrl_bfm.i_timer_1ms) begin
-        ltsm_ctrl_bfm.i_timer_1ms <= t1_ms;
+      if (!t1_ms_reg) begin
+        t1_ms_reg <= t1_ms;
       end else begin
-        ltsm_ctrl_bfm.i_timer_1ms <= 0;
+        t1_ms_reg <= 0;
       end
     end
   end
+  assign ltsm_ctrl_bfm.i_timer_1ms = t1_ms_reg | t1_ms; // ORing with t1_ms to ensure we capture the pulse even if it is shorter than a clock cycle
   always @(posedge i_clk_sb_100_m) begin
     sb_ready_reg <= sb_ready;
   end
