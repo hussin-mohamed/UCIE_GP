@@ -75,8 +75,6 @@ class ucie_mbtrain_valverf_vseq extends ucie_vseq_base;
     end
 
 
-
-
     // Valverf_D2C_RX_LTSM
     `uvm_info("VSEQ", $sformatf("Valverf_D2C_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
@@ -113,6 +111,8 @@ class ucie_mbtrain_valverf_vseq extends ucie_vseq_base;
     `uvm_info("VSEQ", $sformatf("Valverf_End_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
     
     p_sequencer.tx_fifo.get(sb_ltsm_item);
+
+
     if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 3)) begin
     TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     TRAINERROR_vseq.start(p_sequencer);
@@ -123,8 +123,6 @@ class ucie_mbtrain_valverf_vseq extends ucie_vseq_base;
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_VALVREF_RX_End_Handshake);
     send_sb_msg(sb_ltsm_item);
     end
-
-
 
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask

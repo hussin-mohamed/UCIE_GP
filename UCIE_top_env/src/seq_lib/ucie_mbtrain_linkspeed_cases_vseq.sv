@@ -39,6 +39,7 @@ class ucie_mbtrain_linkspeed_cases_vseq extends ucie_vseq_base;
         .info_mode(CORRECT),
         .message_mode(ALL_LANES_VALID),
         .valid_mode(VALID_CORRECT)
+        .missing_msg(IDEAL)
     );
 
     valtraincenter_vseq.configure(
@@ -128,6 +129,7 @@ class ucie_mbtrain_linkspeed_cases_vseq extends ucie_vseq_base;
         .info_mode(CORRECT),
         .message_mode(ALL_LANES_VALID),
         .valid_mode(VALID_CORRECT)
+        .missing_msg(IDEAL)
     );
 
     valtraincenter_vseq.configure(

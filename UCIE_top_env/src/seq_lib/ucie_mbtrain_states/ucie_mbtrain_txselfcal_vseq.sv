@@ -16,6 +16,10 @@ class ucie_mbtrain_txselfcal_vseq extends ucie_vseq_base;
     super.new(name);
   endfunction
 
+  function configure (missing_msg_e missing_msg = NORMAL);
+    this.missing_msg = missing_msg;
+  endfunction
+
   // -------------------------------------------------------------------------
   //  Body Task
   // -------------------------------------------------------------------------
@@ -26,15 +30,33 @@ class ucie_mbtrain_txselfcal_vseq extends ucie_vseq_base;
     `uvm_info("VSEQ", $sformatf("Txselfcal_End_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
     p_sequencer.rx_fifo.get(sb_ltsm_item);
+
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 10)) begin
+    TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
+    TRAINERROR_vseq.start(p_sequencer);
+    return;
+    end
+
+    else begin
     sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_TXSELFCAL_TX_End_Handshake);
     send_sb_msg(sb_ltsm_item);
+    end
 
     // Txselfcal_End_RX_LTSM
     `uvm_info("VSEQ", $sformatf("Txselfcal_End_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
     
     p_sequencer.tx_fifo.get(sb_ltsm_item);
+
+    if ((missing_msg == MISS) && (TRAINERROR_vseq.trainerr_cnt == 11)) begin
+    TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
+    TRAINERROR_vseq.start(p_sequencer);
+    return;
+    end
+
+    else begin
     sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_TXSELFCAL_RX_End_Handshake);
     send_sb_msg(sb_ltsm_item);
+    end
     
     `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
   endtask
