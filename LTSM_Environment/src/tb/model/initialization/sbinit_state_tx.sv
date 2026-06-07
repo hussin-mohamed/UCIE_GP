@@ -45,7 +45,7 @@ class SbInitState_tx extends State;
          end
             
          else begin
-            // `uvm_info("SbInitState_tx", $sformatf("Expected o_tx_encoding: %0h, Actual o_tx_encoding: %0h, Expected o_sbinit_start: %0b, Actual o_sbinit_start: %0b", o_tx_encoding_exp, item_tx_fsm_sb_out.o_tx_encoding, o_sbinit_start_exp, item_controllers_out.o_sbinit_start), UVM_LOW)
+            `uvm_info("SbInitState_tx", $sformatf("Expected o_tx_encoding: %0h, Actual o_tx_encoding: %0h, Expected o_sbinit_start: %0b, Actual o_sbinit_start: %0b", o_tx_encoding_exp, item_tx_fsm_sb_out.o_tx_encoding, o_sbinit_start_exp, item_controllers_out.o_sbinit_start), UVM_LOW)
             match = 0;
 
          end
@@ -56,7 +56,7 @@ class SbInitState_tx extends State;
          if(item_tx_fsm_sb_out.o_tx_encoding == o_tx_encoding_exp && item_controllers_out.o_sbinit_start == o_sbinit_start_exp)
             match = 1;
          else begin
-            // `uvm_info("SbInitState_tx", $sformatf("Expected o_tx_encoding: %0h, Actual o_tx_encoding: %0h, Expected o_sbinit_start: %0b, Actual o_sbinit_start: %0b", o_tx_encoding_exp, item_controllers_out.o_tx_encoding, o_sbinit_start_exp, item_controllers_out.o_sbinit_start), UVM_LOW)
+            `uvm_info("SbInitState_tx", $sformatf("Expected o_tx_encoding: %0h, Actual o_tx_encoding: %0h, Expected o_sbinit_start: %0b, Actual o_sbinit_start: %0b", o_tx_encoding_exp, item_controllers_out.o_tx_encoding, o_sbinit_start_exp, item_controllers_out.o_sbinit_start), UVM_LOW)
             match = 0;
          end
       end
@@ -74,7 +74,7 @@ class SbInitState_tx extends State;
            end
             
          else begin
-            // `uvm_info("SbInitState_tx", $sformatf("Expected o_tx_encoding: %0h, Actual o_tx_encoding: %0h, Expected o_sbinit_start: %0b, Actual o_sbinit_start: %0b, Expected o_tx_sb_req: %0b, Actual o_tx_sb_req: %0b, Expected o_tx_info: %0h, Actual o_tx_info: %0h", o_tx_encoding_exp, item_controllers_out.o_tx_encoding, o_sbinit_start_exp, item_controllers_out.o_sbinit_start, o_tx_sb_req_exp, item_tx_fsm_sb_out.o_tx_sb_req, o_tx_info_exp, item_tx_fsm_sb_out.o_tx_info), UVM_LOW)
+            `uvm_info("SbInitState_tx", $sformatf("Expected o_tx_encoding: %0h, Actual o_tx_encoding: %0h, Expected o_sbinit_start: %0b, Actual o_sbinit_start: %0b, Expected o_tx_sb_req: %0b, Actual o_tx_sb_req: %0b, Expected o_tx_info: %0h, Actual o_tx_info: %0h", o_tx_encoding_exp, item_controllers_out.o_tx_encoding, o_sbinit_start_exp, item_controllers_out.o_sbinit_start, o_tx_sb_req_exp, item_tx_fsm_sb_out.o_tx_sb_req, o_tx_info_exp, item_tx_fsm_sb_out.o_tx_info), UVM_LOW)
             match = 0;
          end
       end
@@ -100,7 +100,7 @@ class SbInitState_tx extends State;
 */
       else
          match = 1'b1;
-      return 1'b1;
+      return match;
    endfunction
 
    function fsm_t getStateId();

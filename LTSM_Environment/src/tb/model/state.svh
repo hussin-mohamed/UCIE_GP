@@ -75,6 +75,9 @@ import shared_ltsm_pkg::*;
         else begin
             counter = 0;
         end
+        if (cntxt.currentstate_tx== trainerror_tx::Instance() && nextState_tx == ResetState_tx::Instance()) begin
+            counter = -1;
+        end
         if (counter == (item_controllers_in.i_sim_cycles_8-3) && cntxt.currentstate_tx != ResetState_tx::Instance()) begin
             // if (cntxt.currentstate_tx == SbInitState_tx::Instance()) begin
             //     nextState_tx=ResetState_tx::Instance();

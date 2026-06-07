@@ -45,7 +45,7 @@ class SbInitState_rx extends State;
          end
            
          else begin
-            // `uvm_info("SbInitState_rx", $sformatf("Expected o_rx_encoding: %0h, Actual o_rx_encoding: %0h", o_rx_encoding_exp, item_controllers_out.o_rx_encoding), UVM_LOW)
+            `uvm_info("SbInitState_rx", $sformatf("Expected o_rx_encoding: %0h, Actual o_rx_encoding: %0h", o_rx_encoding_exp, item_controllers_out.o_rx_encoding), UVM_LOW)
 
             match = 0;
          end
@@ -62,7 +62,7 @@ class SbInitState_rx extends State;
 
          else begin
             match = 0;
-            // `uvm_info("SbInitState_rx", $sformatf("Expected o_rx_encoding: %0h, Actual o_rx_encoding: %0h, Expected o_rx_info: %0h, Actual o_rx_info: %0h, Expected o_rx_sb_rsp: %0b, Actual o_rx_sb_rsp: %0b", o_rx_encoding_exp, item_controllers_out.o_rx_encoding, o_rx_info_exp, item_rx_fsm_sb_out.o_rx_info, o_rx_sb_rsp_exp, item_rx_fsm_sb_out.o_rx_sb_rsp), UVM_LOW)
+            `uvm_info("SbInitState_rx", $sformatf("Expected o_rx_encoding: %0h, Actual o_rx_encoding: %0h, Expected o_rx_info: %0h, Actual o_rx_info: %0h, Expected o_rx_sb_rsp: %0b, Actual o_rx_sb_rsp: %0b", o_rx_encoding_exp, item_controllers_out.o_rx_encoding, o_rx_info_exp, item_rx_fsm_sb_out.o_rx_info, o_rx_sb_rsp_exp, item_rx_fsm_sb_out.o_rx_sb_rsp), UVM_LOW)
 
          end
       end
@@ -87,7 +87,7 @@ class SbInitState_rx extends State;
 */
       else
          match = 1'b1;
-      return 1'b1;
+      return match;
    endfunction
 
    function fsm_t getStateId();
