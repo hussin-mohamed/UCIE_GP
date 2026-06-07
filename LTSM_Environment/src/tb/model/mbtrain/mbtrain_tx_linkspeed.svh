@@ -197,7 +197,7 @@ class mbtrain_tx_linkspeed extends State;
             end else if (data[7:0] < 8'b1111_1111 && data[15:8] == 8'b1111_1111) begin
                 lane_map_tx = 3'b010;
             end else if (data[15:8] == 8'b1111_1111 && data[7:0] == 8'b1111_1111) begin
-                lane_map_tx = 3'b011;
+                lane_map_tx = item_controllers_out.o_lane_map_tx;
             end else if (data[15:8] < 8'b1111_1111 && data[7:4] < 4'b1111) begin
                 lane_map_tx = 3'b100;
             end else if (data[15:8] < 8'b1111_1111 && data[3:0] < 4'b1111) begin
