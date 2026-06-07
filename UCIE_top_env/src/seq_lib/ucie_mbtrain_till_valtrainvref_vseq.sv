@@ -41,6 +41,7 @@ class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
     );
 
     dataverf_vseq.configure(
+        .missing_msg(IDEAL),
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),
         .data_mode(LFSR_PATTERN),
@@ -96,6 +97,7 @@ class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
     );
 
     dataverf_vseq.configure(
+        .missing_msg(IDEAL),
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),
         .data_mode(LFSR_PATTERN),
@@ -151,6 +153,7 @@ class ucie_mbtrain_till_valtrainvref_vseq extends ucie_vseq_base;
     );
 
     dataverf_vseq.configure(
+        .missing_msg(IDEAL),
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),
         .data_mode(LFSR_PATTERN),

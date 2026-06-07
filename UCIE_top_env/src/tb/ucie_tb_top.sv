@@ -40,8 +40,17 @@ module ucie_tb_top;
     reset = 1;
     #100ns;
     reset = 0;
-  end
 
+    forever begin
+      if (rdi_intf.reset_enb) begin
+        reset = 1;
+        #100ns;
+      end else begin
+        reset = 0;
+        #100ns;
+      end
+    end
+  end
 
   // -------------------------------------------------------------------------
   //  PLL & Supply Stable Logic (Reactive)

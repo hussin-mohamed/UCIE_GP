@@ -52,6 +52,7 @@ package tx_tb_pkg;
   //  Layer 4: Sequencer Container & Sequences
   // -------------------------------------------------------------------------
   `include "sqr_pool.sv"
+  `include "reset_seq.sv"
   `include "rdi_base_seq.sv"
   `include "ltsm_base_seq.sv"
   `include "tx_virtual_seq.sv"

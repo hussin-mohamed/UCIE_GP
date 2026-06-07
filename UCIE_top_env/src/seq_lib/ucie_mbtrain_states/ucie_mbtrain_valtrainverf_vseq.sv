@@ -42,17 +42,40 @@ class ucie_mbtrain_valtrainverf_vseq extends ucie_vseq_base;
 
     // Valtrainverf_Start_TX_LTSM
     `uvm_info("VSEQ", $sformatf("Valtrainverf_Start_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
-
-    p_sequencer.rx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_VALTRAINVREF_TX_Start_Handshake);
-    send_sb_msg(sb_ltsm_item);
+    
+    if (train_error_state == TIMEOUT) begin
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
+      send_sb_msg(sb_ltsm_item);
+    end else if (train_error_state == TRAINERROR_STATE) begin
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
+      send_sb_msg(sb_ltsm_item);
+    end else begin
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_VALTRAINVREF_TX_Start_Handshake);
+      send_sb_msg(sb_ltsm_item);
+    end
 
     // Valtrainverf_Start_RX_LTSM
     `uvm_info("VSEQ", $sformatf("Valtrainverf_Start_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
     
-    p_sequencer.tx_fifo.get(sb_ltsm_item);
-    sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_VALTRAINVREF_RX_Start_Handshake);
-    send_sb_msg(sb_ltsm_item);
+    if (train_error_state == TIMEOUT) begin
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
+      send_sb_msg(sb_ltsm_item);
+      return;
+    end else if (train_error_state == TRAINERROR_STATE) begin
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
+      send_sb_msg(sb_ltsm_item);
+      return;
+    end else begin
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_VALTRAINVREF_RX_Start_Handshake);
+      send_sb_msg(sb_ltsm_item);
+    end
 
     // Valtrainverf_D2C_RX_LTSM
     `uvm_info("VSEQ", $sformatf("Valtrainverf_D2C_RX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
