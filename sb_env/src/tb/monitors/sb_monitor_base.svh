@@ -133,10 +133,23 @@ task sb_monitor_base::run_phase(uvm_phase phase);
     @(negedge bfm.reset);
 
     // Wait for the SBINIT to finish
-    @(posedge bfm.o_sb_ready);
+    fork
+      begin
+        @(posedge bfm.o_sb_ready);
+      end
+      begin
+        $display("%s %0t 111111111111111111111111 %s", get_type_name(), $time, bfm.rx_encoding.name());
+        wait(bfm.rx_encoding == TRAINERROR_RX_Handshake);
+        $display("%s %0t 222222222222222222222222 %s", get_type_name(), $time, bfm.rx_encoding.name());
+      end
+    join_any
+
+    $display("%s 333333333333333333333333333333333", get_type_name());
+
 
     fork
       begin
+    $display("%s 444444444444444444444444444444444", get_type_name());
         fork
           monitor_items_out();
           monitor_items_in();
@@ -155,6 +168,7 @@ endtask : run_phase
 
 task sb_monitor_base::monitor_items_out();
   forever begin
+    $display("%s 5555555555555555555555555555555", get_type_name());
     collect_item_out(item_out);
 
     // Write item_out to the analysis port and log the monitored item_out
@@ -179,6 +193,7 @@ endtask : monitor_items_out
 
 task sb_monitor_base::monitor_items_in();
   forever begin
+    $display("%s 666666666666666666666666666666666666", get_type_name());
     collect_item_in(item_in);
 
     // Write the item_in to the analysis port and log the monitored item_in

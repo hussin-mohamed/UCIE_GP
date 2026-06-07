@@ -6,8 +6,8 @@
 //
 //   RESET ? SBINIT ? MBINIT_PARAM ? MBINIT_CAL ? MBINIT_REPAIRCLK ?
 //   MBINIT_REPAIRVAL ? MBINIT_REVERSAL ? MBINIT_REPAIRMB --(stay)--
-//                                                              �
-//                                        i_train_active_error  �
+//                                                               
+//                                        i_train_active_error   
 //                                                              ?
 //                                                        TRAINERROR ? RESET
 //
@@ -145,7 +145,7 @@ module ucie_ltsm_init_fsm #(
   assign o_current_state = current_state;
 
   // =========================================================================
-  // Done latches � per state, for TX and RX independently
+  // Done latches   per state, for TX and RX independently
   // Each sub-FSM asserts its done for exactly one cycle; we latch here and
   // clear on state transition.
   // =========================================================================
@@ -237,8 +237,28 @@ module ucie_ltsm_init_fsm #(
     endcase
   end
 
+
+  // ---- Skip-entry flag: RX sub-module already consumed the 0x40 handshake ----
+  logic saw_trainerror_req_repairclk;
+  logic saw_trainerror_req_repairval;
+  logic saw_trainerror_req_reversal;
+  logic saw_trainerror_req_repairmb;
+  logic rx_saw_trainerror_req;
+  logic rx_entry_already_done;
+
+  assign rx_saw_trainerror_req = saw_trainerror_req_repairclk |
+                                 saw_trainerror_req_repairval |
+                                 saw_trainerror_req_reversal  |
+                                 saw_trainerror_req_repairmb;
+
+  always_ff @(posedge i_clk or posedge i_reset) begin
+    if (i_reset) rx_entry_already_done <= 0;
+    else if (rx_saw_trainerror_req) rx_entry_already_done <= 1;
+    else if (current_state != TRAINERROR) rx_entry_already_done <= 0;
+  end
+
   // =========================================================================
-  // Done latch always_ff  � latch each raw done pulse; clear on state exit
+  // Done latch always_ff    latch each raw done pulse; clear on state exit
   // =========================================================================
   always_ff @(posedge i_clk or posedge i_reset) begin
     if (i_reset) begin
@@ -362,7 +382,7 @@ module ucie_ltsm_init_fsm #(
   end
 
   // =========================================================================
-  // Main FSM  � sequential
+  // Main FSM    sequential
   // =========================================================================
   // always_ff @(posedge i_clk or posedge i_reset) begin
   //   if (i_reset) current_state <= RESET;
@@ -375,7 +395,7 @@ module ucie_ltsm_init_fsm #(
   // end
 
   // =========================================================================
-  // Main FSM  � combinational next-state logic
+  // Main FSM    combinational next-state logic
   // Priority (highest first):
   //   1. SBINIT train error       ? RESET
   //   2. Any other train error    ? TRAINERROR
@@ -397,14 +417,15 @@ module ucie_ltsm_init_fsm #(
     next_state = current_state;
 
     // ---- Global error overrides ----
-    if (any_sbinit_error && current_state == SBINIT) begin
-      next_state = RESET;
-    end else if (any_other_error) begin
+    // if (any_sbinit_error && current_state == SBINIT) begin
+    //   next_state = RESET;
+    // end else 
+    if (any_other_error || rx_saw_trainerror_req || any_sbinit_error) begin
       next_state = TRAINERROR;
     end else if (init_train_en_reg && i_train_active_error) begin
       next_state = TRAINERROR;
     end else begin
-      // Normal sequencing � only override next_state if transition
+      // Normal sequencing   only override next_state if transition
       case (current_state)
         RESET: begin
           // Next state if:
@@ -576,6 +597,7 @@ module ucie_ltsm_init_fsm #(
   logic [    INFO_WIDTH-1:0] rx_info_trainerror;
   logic rx_sb_req_trainerror, rx_sb_rsp_trainerror, rx_sb_done_trainerror;
 
+
   //================================================================================
   // Sideband Done Signal Logic
   //================================================================================
@@ -690,7 +712,7 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp     (rx_sb_rsp_sbinit),
       .o_rx_sb_done    (rx_sb_done_sbinit),
       .o_train_error   (te_rx_sbinit),
-      .o_sb_init_start (  /* open � TX drives this */),
+      .o_sb_init_start (  /* open   TX drives this */),
       .o_done_sbinit_rx(raw_done_rx_sbinit)
   );
 
@@ -858,6 +880,7 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp               (rx_sb_rsp_repairclk),
       .o_rx_sb_done              (rx_sb_done_repairclk),
       .o_train_error             (te_rx_repairclk),
+      .o_saw_trainerror_req      (saw_trainerror_req_repairclk),
       .o_done_mbinit_repairclk_rx(raw_done_rx_repairclk)
   );
 
@@ -916,6 +939,7 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp               (rx_sb_rsp_repairval),
       .o_rx_sb_done              (rx_sb_done_repairval),
       .o_train_error             (te_rx_repairval),
+      .o_saw_trainerror_req      (saw_trainerror_req_repairval),
       .o_done_mbinit_repairval_rx(raw_done_rx_repairval)
   );
 
@@ -974,6 +998,7 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp              (rx_sb_rsp_reversal),
       .o_rx_sb_done             (rx_sb_done_reversal),
       .o_train_error            (te_rx_reversal),
+      .o_saw_trainerror_req     (saw_trainerror_req_reversal),
       .o_done_mbinit_reversal_rx(raw_done_rx_reversal)
   );
 
@@ -1035,6 +1060,7 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp              (rx_sb_rsp_repairmb),
       .o_rx_sb_done             (rx_sb_done_repairmb),
       .o_train_error            (te_rx_repairmb),
+      .o_saw_trainerror_req     (saw_trainerror_req_repairmb),
       .o_done_mbinit_repairmb_rx(raw_done_rx_repairmb)
   );
 
@@ -1093,11 +1119,12 @@ module ucie_ltsm_init_fsm #(
       .o_rx_sb_rsp         (rx_sb_rsp_trainerror),
       .o_rx_sb_done        (rx_sb_done_trainerror),
       .o_train_error       (te_rx_trainerror),
-      .o_done_trainerror_rx(raw_done_rx_trainerror)
+      .o_done_trainerror_rx(raw_done_rx_trainerror),
+      .i_skip_entry        (rx_entry_already_done)
   );
 
   // =========================================================================
-  // Output MUX  � select active sub-FSM outputs based on current_state
+  // Output MUX    select active sub-FSM outputs based on current_state
   // =========================================================================
 
   // Internal wire needed for feedback to TX REPAIRVAL/REVERSAL/REPAIRMB

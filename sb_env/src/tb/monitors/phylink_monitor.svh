@@ -73,14 +73,17 @@ task phylink_monitor::collect_item_out(output phylink_seq_item _item);
     logic [127:0] msg_raw;
     message_t     msg;
 
+    $display("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
     _item = phylink_seq_item::type_id::create("_item");
 
     // Since collect_item_out() is executed, this means the SB is in the ACTIVE mode
     _item.op_mode = ACTIVE;
 
+    $display("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
     // Start deserialization
     bfm.deserialize_data_out(msg_raw);
 
+    $display("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
     // Convert the raw message into a message_t struct
     msg = raw2struct(msg_raw);
 
@@ -96,13 +99,16 @@ task phylink_monitor::collect_item_in(output phylink_seq_item _item);
     logic [127:0] msg_raw;
     message_t     msg;
 
+    $display("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
     _item = phylink_seq_item::type_id::create("_item");
 
     // Since collect_item_in() is executed, this means the SB is in the ACTIVE mode
     _item.op_mode = ACTIVE;
 
+    $display("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb");
     // Start deserialization
     bfm.deserialize_data_in(msg_raw);
+    $display("ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc");
 
     // Convert the raw message into a message_t struct
     msg = raw2struct(msg_raw);

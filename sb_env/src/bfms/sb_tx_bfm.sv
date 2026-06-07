@@ -19,11 +19,14 @@
 //              TX block
 //******************************************************************************
 
+import sb_shared_pkg::*;
+
 interface sb_tx_bfm(
   input logic clk
  ,input logic reset
  ,input logic o_sb_ready
 );
+  rx_encoding_t rx_encoding;
 
   //============================================================================
   // TX → SB Signals (Inputs to DUT)

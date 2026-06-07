@@ -30,6 +30,7 @@ interface sb_phylink_bfm(
  ,input logic reset
  ,input logic o_sb_ready
 );
+  rx_encoding_t rx_encoding;
     
   bit in_pat_detected;
   bit out_pat_detected;

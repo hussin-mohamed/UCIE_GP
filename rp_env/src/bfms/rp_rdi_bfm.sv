@@ -27,6 +27,7 @@ interface rp_rdi_bfm(
   input logic clk
  ,input logic reset
 );
+  rx_encoding_t rx_encoding;
   //============================================================================
   // Phy → RDI Signals (Outputs from DUT)
   //============================================================================
