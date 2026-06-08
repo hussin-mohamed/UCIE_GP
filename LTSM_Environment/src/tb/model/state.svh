@@ -78,7 +78,7 @@ import shared_ltsm_pkg::*;
         if (cntxt.currentstate_tx== trainerror_tx::Instance() && nextState_tx == ResetState_tx::Instance()) begin
             counter = -1;
         end
-        if (counter == (item_controllers_in.i_sim_cycles_8-3) && cntxt.currentstate_tx != ResetState_tx::Instance()) begin
+        if (counter == (item_controllers_in.i_sim_cycles_8-3) && cntxt.currentstate_tx != ResetState_tx::Instance() && cntxt.currentstate_tx !=trainerror_tx::Instance()) begin
             // if (cntxt.currentstate_tx == SbInitState_tx::Instance()) begin
             //     nextState_tx=ResetState_tx::Instance();
             //     nextState_rx=ResetState_rx::Instance();
@@ -192,7 +192,7 @@ import shared_ltsm_pkg::*;
             `uvm_info("state", $sformatf("Current State: TX: %s, RX: %s, Next State: TX: %s, RX: %s", cntxt.currentstate_tx.getStateId(), cntxt.currentstate_rx.getStateId(), nextState_tx.getStateId(), nextState_rx.getStateId()), UVM_MEDIUM)
         end
 
-        // `uvm_info("State", $sformatf("Evaluating state: TX: %s, RX: %s", cntxt.currentstate_tx.getStateId(), cntxt.currentstate_rx.getStateId()), UVM_LOW)
+        `uvm_info("State", $sformatf("Evaluating state: TX: %s, RX: %s", cntxt.currentstate_tx.getStateId(), cntxt.currentstate_rx.getStateId()), UVM_LOW)
 
         encoding_rx = item_rx_fsm_sb_out.o_rx_encoding;
         

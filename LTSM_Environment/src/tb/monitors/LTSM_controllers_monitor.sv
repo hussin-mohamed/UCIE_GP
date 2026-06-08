@@ -127,10 +127,12 @@ task LTSM_controllers_monitor::collect_transaction();
             end
                 end
                 begin
+                    forever begin
                     @(posedge vif.i_reset);
                     item_in.i_reset = 1'b1;
                     ap_in.write(item_in);
                     transaction_count_in++;
+                    end
                 end
             join_any
             

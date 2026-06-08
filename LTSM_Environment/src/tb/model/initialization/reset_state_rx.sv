@@ -43,7 +43,7 @@ class ResetState_rx extends State;
                                               LTSM_controllers_seq_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
       // predict combinational outputs in reset state
          o_rx_encoding_exp = 0;
-         
+         train_end=0;
          if(item_controllers_out.o_rx_encoding == o_rx_encoding_exp) begin
             match = 1;
 

@@ -56,7 +56,7 @@ class trainerror_tx extends State;
         //     end
         //     o_tx_encoding_expected =0;
         // end
-        else if(cntxt.currentstate_tx == trainerror_tx::Instance() && ((item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1)||(counter == item_controllers_in.i_sim_cycles_8+1)))  begin
+        else if(cntxt.currentstate_tx == trainerror_tx::Instance() && ((item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && item_tx_fsm_sb_in.i_tx_decoding == 'h40)||(counter == item_controllers_in.i_sim_cycles_8-2)))  begin
             o_tx_encoding_expected = TRAINERROR_TX_TrainError;
             train_end=1;
             if (o_tx_encoding_expected==item_tx_fsm_sb_out.o_tx_encoding) begin
@@ -67,7 +67,6 @@ class trainerror_tx extends State;
             end
         end
         else begin
-            train_end=0;
             match =1;
         end
         
