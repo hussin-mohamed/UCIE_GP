@@ -1,0 +1,764 @@
+\documentclass[11pt,a4paper]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{parskip}
+\usepackage{float}
+\usepackage{tcolorbox}
+
+% Colors
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.95}
+\definecolor{noteblue}{rgb}{0.85,0.9,1.0}
+
+% Listings style
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2,
+    frame=single,
+    framerule=0.5pt,
+    rulecolor=\color{codegray},
+}
+\lstset{style=mystyle}
+
+% Hyperref setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    urlcolor=blue!60!black,
+    citecolor=blue!60!black,
+}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small UCIe 3.0 TX Logical PHY}
+\fancyhead[R]{\small Verification Environment Specification}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Note box
+\newtcolorbox{notebox}{
+    colback=noteblue,
+    colframe=blue!40!black,
+    fonttitle=\bfseries,
+    title=Note,
+    boxrule=0.5pt,
+    arc=2pt,
+}
+
+\title{\textbf{UCIe 3.0 TX Logical PHY}\\[0.3em]\Large Verification Environment Specification}
+\author{UCIe Graduation Project}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\newpage
+\tableofcontents
+\newpage
+
+
+
+\section{1. Overview}
+
+This document describes the UVM-based verification environment for the \textbf{TX Logical PHY} of a UCIe 3.0 (Universal Chiplet Interconnect Express) die-to-die link. The TX path is responsible for accepting flit data from the D2D Adapter via the RDI (Raw Die-to-Die Interface), processing it through a datapath pipeline (byte-to-lane mapping, LFSR scrambling, lane reversal), and driving serialized output on 16 physical lanes toward the analog front-end.
+
+The environment verifies the TX Controller logic by driving the full LTSM (Link Training State Machine) encoding sequence --- spanning initialization, training, and active data transfer --- while injecting flit traffic on the RDI and observing the serialized egress output. A \textbf{reactive stimulus} architecture coordinates the three interface agents through TLM analysis FIFOs, ensuring protocol-correct temporal ordering without hard-coded synchronization.
+
+
+\section{2. UVM Architecture}
+
+\subsection{DUT Overview}
+
+The figure below shows the top-level testbench module (\texttt{tx\_tb\_top}) and its connectivity to the DUT. Three SystemVerilog interfaces --- \texttt{rdi\_if}, \texttt{ltsm\_if}, and \texttt{tx2link\_if} --- form the boundary between the verification environment and the TX Logical PHY. The SVA assertion module is bound directly to the DUT outputs.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{dut_overview_crop}
+\caption{DUT Overview}
+\end{figure}
+
+\subsection{UVM Architecture}
+
+The figure below illustrates the UVM environment (\texttt{tx\_env}) hierarchy, showing the three agents, TLM analysis connections, and the data flow through the predictor, scoreboard, and coverage collector.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{uvm_tx_architecture_2}
+\caption{UVM Architecture}
+\end{figure}
+
+The environment follows a standard UVM layered architecture with the following key components:
+
+
+\begin{tabularx}{\textwidth}{|X|X|}
+\hline
+\textbf{Component} & \textbf{Role} \\
+\hline
+\textbf{RDI Agent} (Active) & Drives flit data into the DUT; reacts to backpressure \\
+\hline
+\textbf{LTSM Agent} (Active) & Drives LTSM state encodings to control the DUT FSM \\
+\hline
+\textbf{TX2Link Agent} (Passive) & Monitors serialized egress output from the DUT \\
+\hline
+\textbf{Model} & Reference model --- generates expected egress output \\
+\hline
+\textbf{Scoreboard} & Compares golden predictions against actual observations \\
+\hline
+\textbf{Coverage} & Collects functional coverage on states, transitions, and lane maps \\
+\hline
+\textbf{SVA} & SVA module --- protocol assertions on DUT-driven signals \\
+\hline
+\end{tabularx}
+
+
+
+\section{3. Packages}
+
+Two SystemVerilog packages centralize all definitions and file includes.
+
+\subsection{3.1 \texttt{tx\_defs\_pkg}}
+
+The definitions package provides all shared types, parameters, and helper functions used across the environment.
+
+\paragraph{Parameters:}
+
+\begin{itemize}
+  \item \texttt{NUM\_LANES = 16} --- physical lane count.
+  \item \texttt{DEFAULT\_NBYTES = 256} --- default flit size in bytes.
+\end{itemize}
+
+
+\paragraph{Enumerations:}
+
+\begin{itemize}
+  \item \texttt{flit\_size\_e} --- supported flit sizes: 64, 128, 256, 512 bytes.
+  \item \texttt{ltsm\_state\_group\_e} --- TB-level constraint groups: \texttt{HAPPY\_PATH}, \texttt{PATTERN\_GEN}, \texttt{TRAIN\_ERROR}, \texttt{TRISTATE}, \texttt{ACTIVE}.
+  \item \texttt{ltsm\_encoding\_e} --- full 9-bit LTSM FSM encoding covering all states across four sub-FSMs (Initialization, Training, Active, Data-to-Clock Test).
+\end{itemize}
+
+
+\paragraph{Lane Map Constants:}
+
+\begin{itemize}
+  \item \texttt{LANE\_MAP\_DEGRADE\_NOT\_POSSIBLE} (3'b000), \texttt{LANE\_MAP\_LANES\_0\_TO\_7} (3'b001), \texttt{LANE\_MAP\_LANES\_8\_TO\_15} (3'b010), \texttt{LANE\_MAP\_ALL\_FUNCTIONAL} (3'b011).
+\end{itemize}
+
+
+\paragraph{Helper Functions:}
+
+
+\begin{tabularx}{\textwidth}{|X|X|}
+\hline
+\textbf{Function} & \textbf{Description} \\
+\hline
+\texttt{get\_fsm\_id()} & Extracts the 2-bit FSM\_ID from a 9-bit encoding \\
+\hline
+\texttt{is\_init\_fsm()} & Returns \texttt{1} if encoding is in FSM 00 (Initialization) \\
+\hline
+\texttt{is\_train\_fsm()} & Returns \texttt{1} if encoding is in FSM 01 (Training) \\
+\hline
+\texttt{is\_active\_fsm()} & Returns \texttt{1} if encoding is in FSM 10 (Active) \\
+\hline
+\texttt{is\_d2c\_fsm()} & Returns \texttt{1} if encoding is in FSM 11 (D2C Test) \\
+\hline
+\texttt{is\_tristate\_state()} & Returns \texttt{1} for states requiring Hi-Z outputs (RESET, SBINIT, PARAM, CAL) \\
+\hline
+\texttt{is\_active\_data()} & Returns \texttt{1} only for the \texttt{ACTIVE} encoding \\
+\hline
+\texttt{is\_pattern\_gen\_state()} & Returns \texttt{1} for pattern generation states \\
+\hline
+\texttt{uses\_lane\_map()} & Returns \texttt{1} for REPAIRMB/REPAIR states where lane\_map is relevant \\
+\hline
+\end{tabularx}
+
+
+\subsection{3.2 \texttt{tx\_tb\_pkg}}
+
+The testbench package imports UVM and \texttt{tx\_defs\_pkg}, then includes all verification component files in strict dependency order (sequence items $\rightarrow$ configuration $\rightarrow$ agents $\rightarrow$ sequences $\rightarrow$ reference model $\rightarrow$ environment $\rightarrow$ tests). This is the single import point for the entire TB.
+
+
+\section{4. Interfaces}
+
+Three SystemVerilog interfaces model the DUT boundaries. Each provides dedicated \texttt{modport} declarations for driver, monitor, and DUT roles.
+
+\subsection{4.1 RDI Interface (\texttt{rdi\_if})}
+
+The RDI interface carries flit payloads between the D2D Adapter and the TX Logical PHY using ready/valid handshaking.
+
+
+\begin{tabularx}{\textwidth}{|X|X|X|X|}
+\hline
+\textbf{Signal} & \textbf{Width} & \textbf{Direction (TB $\rightarrow$ DUT)} & \textbf{Description} \\
+\hline
+\texttt{lp\_data} & \texttt{[NBYTES-1:0][7:0]} & Input & Flit payload as a 2D byte array \\
+\hline
+\texttt{lp\_valid} & 1-bit & Input & Asserted when \texttt{lp\_data} carries a valid flit \\
+\hline
+\texttt{lp\_irdy} & 1-bit & Input & Adapter intent-to-send \\
+\hline
+\texttt{pl\_trdy} & 1-bit & Output & PHY backpressure --- when low, adapter must hold signals stable \\
+\hline
+\end{tabularx}
+
+
+Parameterized by \texttt{NBYTES} (default 256). Clocked on the logical clock domain (\texttt{clk}).
+
+\subsection{4.2 LTSM Interface (\texttt{ltsm\_if})}
+
+The LTSM interface bypasses the internal state machine, acting as a direct control vector into the TX Controller.
+
+
+\begin{tabularx}{\textwidth}{|X|X|X|X|}
+\hline
+\textbf{Signal} & \textbf{Width} & \textbf{Direction (TB $\rightarrow$ DUT)} & \textbf{Description} \\
+\hline
+\texttt{tx\_encoding} & 9-bit & Input & Active LTSM state/substate encoding \\
+\hline
+\texttt{lane\_map} & 3-bit & Input & Width degradation configuration \\
+\hline
+\texttt{pll\_stable} & 1-bit & Output & PLL lock indicator \\
+\hline
+\texttt{supply\_stable} & 1-bit & Output & Power supply rails stable \\
+\hline
+\texttt{tx\_done} & 1-bit & Output & Current operation complete \\
+\hline
+\end{tabularx}
+
+
+Clocked on the logical clock domain (\texttt{clk}).
+
+\subsection{4.3 TX2Link Interface (\texttt{tx2link\_if})}
+
+The TX-to-Link interface is the final physical output boundary before the analog serial drivers.
+
+
+\begin{tabularx}{\textwidth}{|X|X|X|X|}
+\hline
+\textbf{Signal} & \textbf{Width} & \textbf{Direction} & \textbf{Description} \\
+\hline
+\texttt{tx\_data} & 16-bit & Output & 16 serial data lanes (1 bit/UI each) \\
+\hline
+\texttt{tx\_clkp} / \texttt{tx\_clkn} & 1-bit each & Output & Forwarded differential clock pair \\
+\hline
+\texttt{tx\_valid} & 1-bit & Output & Physical valid lane \\
+\hline
+\texttt{tx\_track} & 1-bit & Output & Training synchronization signal \\
+\hline
+\end{tabularx}
+
+
+Operates on the fast UI clock domain (\texttt{ui\_clk}). Half-rate: 1 fast clock = 2 UI. During disabled/reset states, all signals are expected to be Hi-Z.
+
+
+\section{5. Agents}
+
+The environment contains \textbf{three agents} --- two active and one passive --- each targeting a distinct DUT interface.
+
+\subsection{5.1 RDI Agent (Active)}
+
+\textbf{Architecture:} Driver + Monitor + Sequencer.
+
+\begin{itemize}
+  \item \textbf{Driver (\texttt{rdi\_driver}):} Implements a \textbf{reactive backpressure} model. It drives \texttt{lp\_data}, \texttt{lp\_valid}, and \texttt{lp\_irdy}, then monitors \texttt{pl\_trdy} at each clock edge. While \texttt{pl\_trdy} is de-asserted, the driver holds all outputs stable --- no data is lost. Once \texttt{pl\_trdy} re-asserts, the transfer completes and the next flit is requested from the sequencer.
+  \item \textbf{Monitor (\texttt{rdi\_monitor}):} Passively detects completed flit transfers by sampling when \texttt{lp\_valid \&\& lp\_irdy \&\& pl\_trdy} are all high simultaneously. Extracts \texttt{active\_flit\_size} bytes from the interface and broadcasts a \texttt{rdi\_seq\_item} via its analysis port.
+  \item \textbf{Sequencer:} Standard UVM sequencer parameterized on \texttt{rdi\_seq\_item}.
+\end{itemize}
+
+
+\begin{notebox}
+\textbf{Note:} The RDI agent does \textbf{not} check \texttt{pl\_trdy} correctness --- this is a DUT output. The driver only reacts to it for protocol compliance.
+\end{notebox}
+
+\subsection{5.2 LTSM Agent (Active)}
+
+\textbf{Architecture:} Driver + Monitor + Sequencer.
+
+\begin{itemize}
+  \item \textbf{Driver (\texttt{ltsm\_driver}):} Drives \texttt{tx\_encoding} and \texttt{lane\_map}, then applies \textbf{state-dependent wait rules}:
+  \item \texttt{RESET} $\rightarrow$ blocks until \texttt{pll\_stable \&\& supply\_stable} (DUT signals).
+  \item Pattern generation / apply states $\rightarrow$ blocks until \texttt{tx\_done} (DUT signal).
+  \item All other states $\rightarrow$ holds for a randomized delay period.
+  \item \textbf{Monitor (\texttt{ltsm\_monitor}):} Detects encoding transitions by comparing the current \texttt{tx\_encoding} against the previous value each clock cycle. On change, it broadcasts a \texttt{ltsm\_seq\_item} containing the new encoding and lane\_map. This monitor is the \textbf{central hub for cross-agent reactivity} --- both the RDI sequence and the TX2Link monitor subscribe to its analysis port.
+  \item \textbf{Sequencer:} Standard UVM sequencer parameterized on \texttt{ltsm\_seq\_item}.
+\end{itemize}
+
+
+\begin{notebox}
+\textbf{Note:} The LTSM agent does \textbf{not} verify \texttt{pll\_stable}, \texttt{supply\_stable}, or \texttt{tx\_done} --- these are DUT outputs checked by the SVA module.
+\end{notebox}
+
+\subsection{5.3 TX2Link Agent (Passive)}
+
+\textbf{Architecture:} Monitor only (no driver or sequencer).
+
+\begin{itemize}
+  \item \textbf{Monitor (\texttt{tx2link\_monitor}):} A state-aware assembler that operates on the fast \texttt{ui\_clk} domain. It receives LTSM state updates via a \textbf{TLM analysis FIFO} connected to the LTSM monitor, and uses the current state to determine chunk sizes (number of UI cycles to sample). The monitor is "\textbf{blind}" --- it samples all 16 data lanes for the chunk duration regardless of state, tagging each chunk with \texttt{captured\_state} metadata. The scoreboard interprets which lanes carry valid data.
+
+  \item Active/Pattern states: 64 fast-clock samples per chunk.
+  \item Handshake-only states: no output expected (skip).
+\end{itemize}
+
+
+  Each write to the analysis port contains 64 UI samples $\times$ 16 lanes = 128 bytes of lane data, reducing write overhead compared to per-UI transactions.
+
+\subsection{5.4 Reactive Stimulus Flow}
+
+Cross-agent coordination uses \textbf{TLM analysis FIFOs} rather than hard-coded synchronization:
+
+\begin{lstlisting}
+LTSM Monitor ──ap──┬──► ltsm_to_rdi_fifo ──► RDI Sequence (gates flit gen on ACTIVE)
+                   ├──► tx2link_monitor.ltsm_state_fifo (determines chunk sizes)
+                   ├──► tx_predictor (updates internal state)
+                   └──► tx_coverage (samples LTSM covergroups)
+\end{lstlisting}
+
+
+The RDI sequence blocks on the FIFO until the LTSM enters \texttt{ACTIVE}, then generates flits. If the state leaves \texttt{ACTIVE}, flit generation halts and the sequence re-waits. This decouples stimulus timing from agent internals.
+
+
+\section{6. Environment}
+
+\subsection{6.1 \texttt{tx\_env\_cfg}}
+
+Centralized configuration object distributed via \texttt{uvm\_config\_db}:
+
+
+\begin{tabularx}{\textwidth}{|X|X|X|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\hline
+\texttt{rdi\_vif} & \texttt{virtual rdi\_if} & RDI interface handle \\
+\hline
+\texttt{ltsm\_vif} & \texttt{virtual ltsm\_if} & LTSM interface handle \\
+\hline
+\texttt{tx2link\_vif} & \texttt{virtual tx2link\_if} & TX2Link interface handle \\
+\hline
+\texttt{rdi\_agent\_mode} & \texttt{uvm\_active\_passive\_enum} & RDI agent mode (default:\texttt{UVM\_ACTIVE}) \\
+\hline
+\texttt{ltsm\_agent\_mode} & \texttt{uvm\_active\_passive\_enum} & LTSM agent mode (default:\texttt{UVM\_ACTIVE}) \\
+\hline
+\end{tabularx}
+
+
+\subsection{6.2 \texttt{tx\_env}}
+
+The top-level environment instantiates all sub-components and wires TLM connections in the connect phase:
+
+\begin{enumerate}
+  \item \textbf{LTSM Monitor $\rightarrow$ \texttt{ltsm\_to\_rdi\_fifo}} --- cross-agent reactivity for RDI sequence.
+  \item \textbf{LTSM Monitor $\rightarrow$ \texttt{tx2link\_monitor.ltsm\_state\_fifo}} --- state-aware chunk assembly.
+  \item \textbf{LTSM Monitor $\rightarrow$ Predictor} --- state tracking for golden model.
+  \item \textbf{LTSM Monitor $\rightarrow$ Coverage} --- LTSM covergroup sampling.
+  \item \textbf{RDI Monitor $\rightarrow$ Predictor} --- flit data for datapath prediction.
+  \item \textbf{RDI Monitor $\rightarrow$ Coverage} --- RDI covergroup sampling.
+  \item \textbf{Predictor $\rightarrow$ Scoreboard} (\texttt{golden\_fifo}) --- expected egress transactions.
+  \item \textbf{TX2Link Monitor $\rightarrow$ Scoreboard} (\texttt{actual\_fifo}) --- observed egress transactions.
+\end{enumerate}
+
+
+Active agent sequencers are registered in the global \textbf{\texttt{sqr\_pool}} (sequencer container pattern) for access by virtual sequences without requiring a virtual sequencer component.
+
+
+\section{7. Sequence Items}
+
+\subsection{7.1 \texttt{rdi\_seq\_item}}
+
+Represents a single flit transaction on the RDI interface.
+
+
+\begin{tabularx}{\textwidth}{|X|X|X|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\hline
+\texttt{data} & \texttt{rand logic [7:0][]} & Dynamic byte array sized to \texttt{active\_flit\_size} \\
+\hline
+\texttt{delay} & \texttt{rand int unsigned} & Inter-flit gap in clock cycles (0--20) \\
+\hline
+\texttt{active\_flit\_size} & \texttt{static flit\_size\_e} & Per-run flit size (set via \texttt{+FLIT\_SIZE} plusarg) \\
+\hline
+\end{tabularx}
+
+
+\subsection{7.2 \texttt{ltsm\_seq\_item}}
+
+Represents a single LTSM state command.
+
+
+\begin{tabularx}{\textwidth}{|X|X|X|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\hline
+\texttt{encoding} & \texttt{rand ltsm\_encoding\_e} & Target 9-bit LTSM encoding \\
+\hline
+\texttt{lane\_map} & \texttt{rand logic [2:0]} & Width degradation config (constrained to valid values) \\
+\hline
+\texttt{delay} & \texttt{rand int unsigned} & Inter-state delay in clocks (1--20) \\
+\hline
+\texttt{active\_group} & \texttt{ltsm\_state\_group\_e} & Selects which constraint group is active \\
+\hline
+\end{tabularx}
+
+
+Includes five mutually-exclusive constraint groups and static ordered state queues per group. The \texttt{set\_group()} method enables exactly one constraint at a time.
+
+\subsection{7.3 \texttt{tx2link\_item}}
+
+Represents an assembled chunk of serial data from the egress monitor. \textbf{Never randomized} --- constructed exclusively by the monitor.
+
+
+\begin{tabularx}{\textwidth}{|X|X|X|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\
+\hline
+\texttt{captured\_state} & \texttt{ltsm\_encoding\_e} & LTSM state active during assembly \\
+\hline
+\texttt{ui\_count} & \texttt{int unsigned} & Number of UI cycles in this chunk \\
+\hline
+\texttt{data\_lanes} & \texttt{logic [15:0][]} & Sampled data per UI (16 lanes per entry) \\
+\hline
+\end{tabularx}
+
+
+Implements \texttt{do\_compare()} with 4-state (\texttt{===}) comparison to properly handle Hi-Z values.
+
+
+\section{8. Sequences}
+
+\subsection{8.1 \texttt{ltsm\_base\_seq}}
+
+Drives LTSM state transitions in either \textbf{sequential walk} (ordered state list) or \textbf{random} (constrained random within group) mode. Control knobs:
+
+\begin{itemize}
+  \item \texttt{group} --- selects the state group (\texttt{GROUP\_HAPPY\_PATH} by default).
+  \item \texttt{is\_random} --- \texttt{0} for ordered walk, \texttt{1} for random pick.
+  \item \texttt{num\_iterations} --- overridden by \texttt{+ITER} plusarg.
+\end{itemize}
+
+
+\subsection{8.2 \texttt{rdi\_base\_seq}}
+
+A \textbf{reactive sequence} that blocks on a TLM FIFO until the LTSM state becomes \texttt{ACTIVE}, then generates randomized flits. If the state leaves \texttt{ACTIVE}, generation halts and the sequence re-waits. The number of flits per active window is controlled by the \texttt{+ITER} plusarg.
+
+\subsection{8.3 \texttt{tx\_virtual\_seq}}
+
+Orchestrates both sub-sequences in parallel using \texttt{fork}/\texttt{join}. Retrieves sequencer handles from the global \texttt{sqr\_pool} --- no virtual sequencer component is needed.
+
+\subsection{8.4 \texttt{sqr\_pool}}
+
+A singleton sequencer container (Cummings/Glasser DVCon pattern) mapping string names to sequencer handles via an associative array. Eliminates the need for virtual sequencer hierarchies.
+
+
+\section{9. Functional Coverage}
+
+The \texttt{tx\_coverage} component subscribes to both LTSM and RDI monitor analysis ports.
+
+\subsection{9.1 LTSM Covergroup (\texttt{cg\_ltsm})}
+
+
+\begin{tabularx}{\textwidth}{|X|X|}
+\hline
+\textbf{Coverpoint / Cross} & \textbf{Description} \\
+\hline
+\texttt{cp\_encoding} & All 9-bit LTSM encodings with bins grouped by phase (Init, Train, Active, D2C) \\
+\hline
+\texttt{cp\_lane\_map} & All four lane map configurations \\
+\hline
+\texttt{cx\_encoding\_x\_lane\_map} & Cross coverage of encoding $\times$ lane\_map, with ignore bins for non-degradation states \\
+\hline
+\texttt{cp\_transitions} & Key state transitions: any$\rightarrow$TRAINERROR, TRAINERROR$\rightarrow$RESET, LINKINIT$\rightarrow$ACTIVE, ACTIVE$\rightarrow$L1 \\
+\hline
+\end{tabularx}
+
+
+\subsection{9.2 RDI Covergroup (\texttt{cg\_rdi})}
+
+Currently a placeholder --- to be populated with flit size, backpressure, and data pattern coverage bins.
+
+
+\section{10. Assertions (SVA)}
+
+The \texttt{tx\_sva} module contains SystemVerilog Assertions that check \textbf{only DUT-driven output signals}. The active agents (RDI and LTSM) are intentionally kept free of output-checking logic for the signals driven by the DUT.
+
+\subsection{10.1 Checking Strategy}
+
+
+\begin{tabularx}{\textwidth}{|X|X|X|}
+\hline
+\textbf{Category} & \textbf{What is Checked} & \textbf{Where} \\
+\hline
+\textbf{DUT outputs from LTSM} (\texttt{pll\_stable}, \texttt{supply\_stable}, \texttt{tx\_done}) & Checked in (\textbf{SVA})  --- not in the LTSM agent &  \\
+\hline
+\textbf{DUT output from RDI} (\texttt{pl\_trdy}) & \textbf{Not checked} --- the RDI driver only reacts to it &  \\
+\hline
+\textbf{Egress signals} (\texttt{tx\_clkp/n}, \texttt{tx\_valid}, \texttt{tx\_track}) & Checked in (\textbf{SVA}) --- offloaded from the passive monitor &  \\
+\hline
+\textbf{Egress data} (\texttt{tx\_data[15:0]}) & Checked in the (\textbf{SVA}) when IDLE or Hi-Z + (\textbf{Scoreboard}) &  \\
+\hline
+\end{tabularx}
+
+
+\subsection{10.2 Tri-State Assertions}
+
+During RESET, SBINIT, PARAM, and CAL states, all egress outputs must be Hi-Z:
+
+\begin{itemize}
+  \item \texttt{assert\_data\_tristate} --- \texttt{tx\_data === 16'hzzzz}
+  \item \texttt{assert\_valid\_tristate} --- \texttt{tx\_valid === 1'bz}
+  \item \texttt{assert\_track\_tristate} --- \texttt{tx\_track === 1'bz}
+  \item \texttt{assert\_clk\_tristate} --- \texttt{tx\_clkp === 1'bz \&\& tx\_clkn === 1'bz}
+\end{itemize}
+
+
+This offloads idle/tristate checking from the passive agent to hardware assertions.
+
+\subsection{10.3 LTSM Status Assertions}
+
+\begin{itemize}
+  \item \texttt{assert\_pll\_stable} --- \texttt{pll\_stable} must assert 1 cycle after entering \texttt{RESET}.
+  \item \texttt{assert\_supply\_stable} --- \texttt{supply\_stable} must assert 1 cycle after entering \texttt{RESET}.
+  \item \texttt{assert\_tx\_done\_valid\_state} --- \texttt{tx\_done} may only rise during operation states (pattern gen + apply).
+\end{itemize}
+
+
+\subsection{10.4 Per-State \texttt{tx\_done} Timing}
+
+
+\begin{tabularx}{\textwidth}{|X|X|X|}
+\hline
+\textbf{Assertion} & \textbf{State} & \textbf{Expected Latency} \\
+\hline
+\texttt{assert\_tx\_done\_repairclk} & \texttt{REPAIRCLK\_CLK\_PATTERN\_GEN} & 128 $\times$ 24 = 3072 cycles \\
+\hline
+\texttt{assert\_tx\_done\_repairval} & \texttt{REPAIRVAL\_VALID\_PATTERN\_GEN} & 128 $\times$ 8 = 1024 cycles \\
+\hline
+\texttt{assert\_tx\_done\_reversal\_id} & \texttt{REVERSAL\_PER\_LANE\_ID\_GEN} & 128 $\times$ 16 = 2048 cycles \\
+\hline
+\texttt{assert\_tx\_done\_d2c\_tx} & \texttt{D2C\_TX\_PATTERN\_GEN} & 128 $\times$ 8 = 1024 cycles \\
+\hline
+\texttt{assert\_tx\_done\_d2c\_rx} & \texttt{D2C\_RX\_PATTERN\_GEN} & 4000 cycles \\
+\hline
+\texttt{assert\_tx\_done\_reversal\_apply} & \texttt{REVERSAL\_APPLY} & 1 cycle \\
+\hline
+\texttt{assert\_tx\_done\_repairmb} & \texttt{REPAIRMB\_APPLY\_DEGRADE\_HND} & 1 cycle \\
+\hline
+\texttt{assert\_tx\_done\_repair} & \texttt{REPAIR\_APPLY\_DEGRADE\_HND} & 1 cycle \\
+\hline
+\end{tabularx}
+
+
+\subsection{10.5 Cover Properties}
+
+\begin{itemize}
+  \item \texttt{cover\_backpressure} --- RDI backpressure event during \texttt{ACTIVE} state.
+  \item \texttt{cover\_flit\_transfer} --- successful flit transfer during \texttt{ACTIVE} state.
+\end{itemize}
+
+
+
+\section{11. Reference Model \& Scoreboard}
+
+\subsection{11.1 Predictor (\texttt{tx\_predictor})}
+
+The predictor subscribes to both the RDI and LTSM monitors. It maintains internal copies of the current LTSM state and lane map, and produces golden \texttt{tx2link\_item} transactions by modeling the TX datapath pipeline.
+
+\subsubsection{TX Datapath Pipeline}
+
+The figure below illustrates the datapath blocks inside the predictor and how they interconnect. The TX Controller decodes the current LTSM encoding and asserts enable signals to each downstream block, selecting the active data path through the output multiplexer.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{tx_datapath_pipeline}
+\caption{TX Datapath Pipeline}
+\end{figure}
+
+\paragraph{Block Descriptions:}
+
+\paragraph{TX Controller}
+
+\begin{itemize}
+  \item \textbf{Central Coordinator:} Acts as the primary router for the output path, dynamically enabling downstream reference models based on the current LTSM state.
+  \item \textbf{Decoding Logic:} Utilizes state-based logic to assert targeted enable signals across the modeling environment. For example, during \texttt{ACTIVE} state it enables B2L + LFSR (scrambler mode), during \texttt{REVERSAL\_PER\_LANE\_ID\_GEN} it enables B2L + Per-Lane ID, and during \texttt{D2C\_TX\_PATTERN\_GEN} it enables LFSR (pattern generator mode).
+\end{itemize}
+
+
+\paragraph{B2L (Byte-to-Lane Mapping)}
+
+\begin{itemize}
+  \item \textbf{Byte-to-Lane Mapping:} Distributes the incoming data stream across 16 parallel lanes, allocating exactly 4 bytes per lane.
+  \item \textbf{Lane Degradation Support:} Implements protocol-compliant data striping for full x16 operation, seamlessly re-routing data payloads when the link degrades to x8 modes (utilizing either Lanes 0--7 or Lanes 8--15).
+  \item \textbf{Protocol Compliance:} Implements the exact lane-mapping tables defined in the protocol specification for data striping.
+  \item \textbf{Flow Control \& Buffering:} Utilizes a FIFO queue to safely buffer incoming data transactions while the current transmission cycle completes.
+\end{itemize}
+
+
+\paragraph{LFSR}
+
+\begin{itemize}
+  \item \textbf{Dual-Mode Operation:} Functions as a standalone pattern generator during Link Training states, and switches to a data scrambler during the Active state.
+  \item \textbf{Parallel Architecture:} Utilizes a fully unrolled polynomial implementation to calculate and output the next 64 bits of the sequence in a single clock cycle.
+\end{itemize}
+
+
+\paragraph{Per-Lane ID Generator}
+
+\begin{itemize}
+  \item \textbf{Unique Pattern Synthesis:} Generates protocol-compliant, unique identifier sequences (IDs) for each individual physical lane. Used during the \texttt{REVERSAL\_PER\_LANE\_ID\_GEN} state for lane identification and reversal detection.
+\end{itemize}
+
+
+\paragraph{Reversal}
+
+\begin{itemize}
+  \item \textbf{Lane Order Reversal:} Optionally reverses the physical lane ordering (Lane 0 $\leftrightarrow$ Lane 15, Lane 1 $\leftrightarrow$ Lane 14, etc.) when the reversal result from the REVERSAL state indicates a reversed connection to the link partner.
+  \item \textbf{Enable Control:} The TX Controller asserts the reversal enable based on the outcome of the reversal detection phase. When disabled, lanes pass through unchanged.
+\end{itemize}
+
+
+\paragraph{Output Mux}
+
+\begin{itemize}
+  \item \textbf{Path Selection:} A 2:1 multiplexer controlled by the TX Controller that selects between the Per-Lane ID output (training/reversal detection) and the LFSR output (pattern generation or scrambled active data). The selected output feeds into the Reversal block before reaching the egress interface.
+\end{itemize}
+
+
+\paragraph{Datapath pipeline functions:}
+
+
+\begin{tabularx}{\textwidth}{|X|X|}
+\hline
+\textbf{Stage} & \textbf{Function} \\
+\hline
+1. Byte-to-Lane Map & \texttt{byte\_to\_lane\_map()} \\
+\hline
+2. LFSR Scramble / Pattern Gen & \texttt{lfsr\_scramble()} \\
+\hline
+3. Per-Lane ID Generation & \texttt{per\_lane\_id\_gen()} \\
+\hline
+4. Lane Reversal & \texttt{lane\_reversal()} \\
+\hline
+5. Output Mux Select & \texttt{output\_mux\_select()} \\
+\hline
+\end{tabularx}
+
+
+\subsection{11.2 Scoreboard (\texttt{tx\_scoreboard})}
+
+Receives golden items from the predictor and actual items from the TX2Link monitor via two independent TLM analysis FIFOs. Comparison is \textbf{event-based} --- both FIFOs block until data is available.
+
+Checks performed:
+
+\begin{enumerate}
+  \item \textbf{State metadata match} --- \texttt{captured\_state} must agree.
+  \item \textbf{UI count match} --- chunk sizes must be equal.
+  \item \textbf{Data comparison} --- field-level \texttt{compare()} using 4-state logic for Hi-Z correctness.
+\end{enumerate}
+
+
+Reports match/mismatch statistics in \texttt{report\_phase}.
+
+
+\section{12. Configuration \& Plusargs}
+
+
+\begin{tabularx}{\textwidth}{|X|X|X|X|}
+\hline
+\textbf{Plusarg} & \textbf{Parsed By} & \textbf{Default} & \textbf{Description} \\
+\hline
+\texttt{+FLIT\_SIZE=N} & \texttt{rdi\_seq\_item} & 256 & Flit size in bytes (64, 128, 256, 512) \\
+\hline
+\texttt{+ITER=N} & \texttt{rdi\_base\_seq}, \texttt{ltsm\_base\_seq} & 10 & Number of iterations (flits or state transitions) \\
+\hline
+\texttt{+UVM\_TESTNAME=name} & UVM core & --- & Selects the test class to run \\
+\hline
+\end{tabularx}
+
+
+The \texttt{tx\_env\_cfg.parse\_plusargs()} method is reserved for future test knobs.
+
+
+\section{13. Testbench Top (\texttt{tx\_tb\_top})}
+
+The top module instantiates:
+
+\begin{itemize}
+  \item \textbf{Clocks:} \texttt{clk} at 100 MHz (logical domain), \texttt{ui\_clk} at 1 GHz (fast UI domain).
+  \item \textbf{Reset:} Active-low, de-asserts after 100 ns.
+  \item \textbf{Interfaces:} \texttt{rdi\_if}, \texttt{ltsm\_if}, \texttt{tx2link\_if} --- all published to \texttt{uvm\_config\_db}.
+  \item \textbf{DUT Stub:} Minimal connectivity (always-ready \texttt{pl\_trdy}, delayed \texttt{pll\_stable}/\texttt{supply\_stable}, pulsed \texttt{tx\_done}, Hi-Z egress). To be replaced with the actual RTL.
+  \item \textbf{SVA Bind:} Commented out; to be enabled upon RTL integration.
+\end{itemize}
+
+
+
+\section{14. File Organization}
+
+{\small
+\begin{verbatim}
+tb/
++-- packages/
+|   +-- tx_defs_pkg.sv          # Enums, parameters, helper functions
+|   +-- tx_tb_pkg.sv            # Single-import testbench package
++-- interfaces/
+|   +-- rdi_if.sv               # RDI interface (parameterized)
+|   +-- ltsm_if.sv              # LTSM controller interface
+|   +-- tx2link_if.sv           # Egress physical interface
++-- agents/
+|   +-- rdi_agent/              # Active: driver, monitor, sequencer
+|   +-- ltsm_agent/             # Active: driver, monitor, sequencer
+|   +-- tx2link_agent/          # Passive: monitor only
++-- seq_items/
+|   +-- rdi_seq_item.sv         # Flit transaction
+|   +-- ltsm_seq_item.sv        # LTSM state command
+|   +-- tx2link_item.sv         # Assembled egress chunk
++-- seq_lib/
+|   +-- sqr_pool.sv             # Sequencer container (singleton)
+|   +-- rdi_base_seq.sv         # Reactive RDI sequence
+|   +-- ltsm_base_seq.sv        # LTSM state walk sequence
+|   +-- tx_virtual_seq.sv       # Top-level virtual sequence
++-- env/
+|   +-- tx_env_cfg.sv           # Centralized configuration
+|   +-- tx_env.sv               # Top-level UVM environment
++-- ref_model/
+|   +-- tx_predictor.sv         # Golden reference model
++-- scoreboard/
+|   +-- tx_scoreboard.sv        # Golden vs. actual comparison
++-- coverage/
+|   +-- tx_coverage.sv          # Functional coverage collector
++-- assertions/
+|   +-- tx_sva.sv               # SVA protocol assertions
++-- tests/
+|   +-- tx_base_test.sv         # Base test (config, setup)
+|   +-- tx_smoke_test.sv        # End-to-end smoke test
++-- top/
+    +-- tx_tb_top.sv            # Top module (clocks, reset, DUT stub)
+\end{verbatim}
+}
+
+
+
+\end{document}
