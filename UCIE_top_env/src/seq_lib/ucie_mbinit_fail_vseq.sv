@@ -59,7 +59,7 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
       target_step = TRAINERROR_vseq.trainerr_cnt + 1;
       step = 0;
 
-      if (TRAINERROR_vseq.trainerr_cnt == 0) is_configured = 0;
+      // We clear is_configured during final recovery at step 32 instead of step 0
 
       if (TRAINERROR_vseq.trainerr_cnt <= 31) begin
 
@@ -658,13 +658,15 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
             UVM_LOW)
         mbinit_vseq.start(p_sequencer);
         // train_vseq.start(p_sequencer);
+        is_configured = 0;  // Clear configuration flag once test completes
       end
 
       return;
     end  // fail_state == FAIL_ALL
 
+    $display("%0t -- count trainerror = %0d", $time, TRAINERROR_vseq.trainerr_cnt);
     if (TRAINERROR_vseq.trainerr_cnt == 0) begin
-      is_configured = 0;  // Reset configured flag for next run
+      // We clear is_configured at the end of recovery instead of here
 
       sbinit_phylink_seq.start(sb_phylink_seqr);
 
@@ -787,7 +789,7 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
       // send RMBLink Clock Pattern Sequence
       `uvm_info("UCIE_VSEQ", "Starting rmblink_clk_seq on rp_rmblink_seqr", UVM_LOW)
       if (fail_state == FAIL_CLK && (fail_side == FAIL_SIDE_RX || fail_side == FAIL_SIDE_BOTH)) begin
-        rmblink_clk_seq.select_clkn = 1;
+        rmblink_clk_seq.select_clkn = 0;
         rmblink_clk_seq.select_clkp = 0;
         rmblink_clk_seq.select_trk  = 0;
         rmblink_clk_seq.test_mode   = TEST_CLK_PURE_RANDOM;
@@ -833,13 +835,13 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
           send_sb_msg(sb_ltsm_item);
 
           // Done Handshake
-          p_sequencer.rx_fifo.get(sb_ltsm_item);
-          sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_TX_Done_Handshake);
-          send_sb_msg(sb_ltsm_item);
+          // p_sequencer.rx_fifo.get(sb_ltsm_item);
+          // sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_TX_Done_Handshake);
+          // send_sb_msg(sb_ltsm_item);
 
-          p_sequencer.tx_fifo.get(sb_ltsm_item);
-          sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_RX_Done_Handshake);
-          send_sb_msg(sb_ltsm_item);
+          // p_sequencer.tx_fifo.get(sb_ltsm_item);
+          // sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRCLK_RX_Done_Handshake);
+          // send_sb_msg(sb_ltsm_item);
 
           TRAINERROR_vseq.configure(NORMAL_RX);
         end else begin
@@ -922,19 +924,19 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
           send_sb_msg(sb_ltsm_item);
           TRAINERROR_vseq.configure(NORMAL_TX);
         end else if (fail_side == FAIL_SIDE_RX) begin
-          sb_ltsm_item.info = 16'h1;
+          sb_ltsm_item.info = 16'h0;
           sb_ltsm_item.msgtype = RSP_MSG;
           sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRVAL_RX_Send_Result_RESP);
           send_sb_msg(sb_ltsm_item);
 
-          // Done Handshake
-          p_sequencer.rx_fifo.get(sb_ltsm_item);
-          sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRVAL_TX_Done_Handshake);
-          send_sb_msg(sb_ltsm_item);
+          // // Done Handshake
+          // p_sequencer.rx_fifo.get(sb_ltsm_item);
+          // sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRVAL_TX_Done_Handshake);
+          // send_sb_msg(sb_ltsm_item);
 
-          p_sequencer.tx_fifo.get(sb_ltsm_item);
-          sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRVAL_RX_Done_Handshake);
-          send_sb_msg(sb_ltsm_item);
+          // p_sequencer.tx_fifo.get(sb_ltsm_item);
+          // sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRVAL_RX_Done_Handshake);
+          // send_sb_msg(sb_ltsm_item);
 
           TRAINERROR_vseq.configure(NORMAL_RX);
         end else begin
@@ -1093,10 +1095,10 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
           p_sequencer.tx_fifo.get(sb_ltsm_item);
           `uvm_info("MBINIT_BRINGUP_VSEQ", $sformatf("RECEIVED SB MESSAGE:22\n %s",
                                                      sb_ltsm_item.sprint()), UVM_LOW)
-
+ 
           // send RMBLink Per Lane ID Pattern Sequence
           `uvm_info("UCIE_VSEQ", "Starting rmblink_PerLaneID_seq on rp_rmblink_seqr", UVM_LOW)
-          rmblink_PerLaneID_seq.configure(SCENARIO_IDEAL, 32);
+          rmblink_PerLaneID_seq.configure(SCENARIO_MIXED_SUCCESS, 32, X16_MODE, MIXED_ALTERNATING,ERR_INJECT_ALTERNATING_A);
           rmblink_PerLaneID_seq.start(rp_rmblink_seqr);
           `uvm_info("UCIE_VSEQ", "rmblink_PerLaneID_seq completed", UVM_LOW)
 
@@ -1109,14 +1111,14 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
           `uvm_info("MBINIT_BRINGUP_VSEQ", $sformatf("RECEIVED SB MESSAGE:\n %s",
                                                      sb_ltsm_item.sprint()), UVM_LOW)
 
-          sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REVERSAL_TX_Done_Handshake);
-          send_sb_msg(sb_ltsm_item);
+          // sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REVERSAL_TX_Done_Handshake);
+          // send_sb_msg(sb_ltsm_item);
 
-          p_sequencer.tx_fifo.get(sb_ltsm_item);
-          sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REVERSAL_RX_Done_Handshake);
-          send_sb_msg(sb_ltsm_item);
+          // p_sequencer.tx_fifo.get(sb_ltsm_item);
+          // sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REVERSAL_RX_Done_Handshake);
+          // send_sb_msg(sb_ltsm_item);
 
-          // TRAINERROR_vseq.configure(NORMAL_RX);
+          TRAINERROR_vseq.configure(NORMAL_RX);
         end else begin
           // BOTH
           sb_ltsm_item.data    = 64'h0;
@@ -1181,8 +1183,8 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
 
           // TRAINERROR_vseq.configure(NORMAL);
         end
-        // TRAINERROR_vseq.start(p_sequencer);
-        // return;
+        TRAINERROR_vseq.start(p_sequencer);
+        return;
       end else begin
         // Good result resp
         sb_ltsm_item.data    = 64'h000000000000FFFF;
@@ -1272,9 +1274,9 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
                 sb_shared_pkg::Data_To_Clock_test_RX_TX_INIT_LFSR_Clear_Handshake);
             send_sb_msg(sb_ltsm_item);
 
-            // rmblink_PerLaneID_seq.configure(._scenario(SCENARIO_IDEAL), ._num_iterations('d32)
-            //                                 // ,._lane_map_code(lane_map_code)
-            //                                 , ._mixed_mode(MIXED_ALTERNATING));
+            rmblink_PerLaneID_seq.configure(._scenario(SCENARIO_IDEAL), ._num_iterations('d32)
+                                            , ._lane_map_code(X8_LOWER_MODE)
+                                            , ._mixed_mode(MIXED_ALTERNATING));
 
             p_sequencer.rx_fifo.get(sb_ltsm_item);
             #50ns;
@@ -1332,7 +1334,7 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
           endcase
 
           // Good REPAIRMB
-          ucie_TX_D2C.configure(SUCCESS, PAT_UPPER_8_LANES_VALID, PER_LANE_ID_PATTERN, CORRECT,
+          ucie_TX_D2C.configure(SUCCESS, PAT_LOWER_8_LANES_VALID, PER_LANE_ID_PATTERN, CORRECT,
                                 ALL_LANES_VALID, VALID_CORRECT, ALL_LANES);
           ucie_TX_D2C.start(p_sequencer);
 
@@ -1397,7 +1399,7 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
             p_sequencer.tx_fifo.get(sb_ltsm_item);
 
 
-            sb_ltsm_item.info = 3'b010;
+            sb_ltsm_item.info = 3'b001;
             sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRMB_TX_Apply_Degrade_Hnd);
             send_sb_msg(sb_ltsm_item);
 
@@ -1446,7 +1448,7 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
         end else begin
           // BOTH
         end
-        // return;
+      //  return;
       end else begin
         // Good REPAIRMB
         ucie_TX_D2C.configure(SUCCESS, PAT_ALL_LANES_VALID, PER_LANE_ID_PATTERN, CORRECT,
@@ -1467,10 +1469,12 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
         send_sb_msg(sb_ltsm_item);
       end
 
+      train_vseq.start(p_sequencer);
       `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
     end else if (TRAINERROR_vseq.trainerr_cnt == 1) begin
-      // mbinit_vseq.start(p_sequencer);
-      // train_vseq.start(p_sequencer);
+      mbinit_vseq.start(p_sequencer);
+      train_vseq.start(p_sequencer);
+      is_configured = 0;  // Clear configuration flag once test completes
     end
 
     // if (fail_state == FAIL_REVERSAL) mbinit_vseq.start(p_sequencer);

@@ -57,7 +57,7 @@ if {[info exists SKIP_COMPILE_ONCE] && $SKIP_COMPILE_ONCE == 1} {
 # LAUNCH SIMULATION
 # -----------------------------------------------------------------------------
 if {$ENABLE_COVERAGE == 1} {
-    vsim opt_ucie_tb_top -nodpiexports -uvmcontrol=all -classdebug -cover \
+    vsim opt_ucie_tb_top -nodpiexports -uvmcontrol=all -classdebug -coverage -onfinish stop \
         +UVM_TESTNAME=$TEST_NAME \
         +UVM_VERBOSITY=$UVM_VERB \
         +UVM_NO_RELNOTES \

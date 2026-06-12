@@ -45,7 +45,9 @@ typedef enum {
 typedef enum {
   ERR_INJECT_ALL_LANES,
   ERR_INJECT_LOWER_LANES_ONLY,
-  ERR_INJECT_UPPER_LANES_ONLY
+  ERR_INJECT_UPPER_LANES_ONLY,
+  ERR_INJECT_ALTERNATING_5,
+  ERR_INJECT_ALTERNATING_A
 } error_inject_region_e;
 
 //-----------------------------------------------------------------------------
@@ -187,6 +189,8 @@ task rmblink_sanity_PerLaneID_sequence::body();
           ERR_INJECT_LOWER_LANES_ONLY: lane_eligible_for_error = (lane < 8);
           ERR_INJECT_UPPER_LANES_ONLY: lane_eligible_for_error = (lane >= 8);
           ERR_INJECT_ALL_LANES:        lane_eligible_for_error = 1'b1;
+          ERR_INJECT_ALTERNATING_5:    lane_eligible_for_error = (lane inside {0, 2, 4, 6, 8, 10, 12, 14});
+          ERR_INJECT_ALTERNATING_A:    lane_eligible_for_error = (lane inside {1, 3, 5, 7, 9, 11, 13, 15});
         endcase
       end else begin
         lane_eligible_for_error = 1'b1;  // Default behavior for non-X16 modes

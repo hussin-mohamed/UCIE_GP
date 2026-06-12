@@ -207,8 +207,12 @@ class ucie_mbinit_fail_all_vseq extends ucie_vseq_base;
         is_recovery = 0;
         fail_all_step = 0;
         
-        // Immediately start next combo's injection in the same phase run
-        start_next_inject();
+        // Trigger a reset to transition the RTL back to RESET state and cause a UVM phase jump
+        begin
+          reset_seq rst_seq;
+          rst_seq = reset_seq::type_id::create("rst_seq");
+          rst_seq.start(tx_rdi_seqr);
+        end
       end
     end
     
@@ -231,8 +235,12 @@ class ucie_mbinit_fail_all_vseq extends ucie_vseq_base;
         combo_idx++;
         is_recovery = 0;
         
-        // Immediately start next combo's injection in the same phase run
-        start_next_inject();
+        // Trigger a reset to transition the RTL back to RESET state and cause a UVM phase jump
+        begin
+          reset_seq rst_seq;
+          rst_seq = reset_seq::type_id::create("rst_seq");
+          rst_seq.start(tx_rdi_seqr);
+        end
       end
     end
   endtask : body

@@ -30,7 +30,7 @@ class ucie_mbinit_fail_all_test extends ucie_base_test;
   virtual function void start_of_simulation_phase(uvm_phase phase);
     super.start_of_simulation_phase(phase);
     // Set the drain time to be waited before exiting the main phase
-    set_main_phase_drain_time(10000000000ns);
+    set_main_phase_drain_time(300ns);
   endfunction : start_of_simulation_phase
 
 endclass : ucie_mbinit_fail_all_test
