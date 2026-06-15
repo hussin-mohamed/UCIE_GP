@@ -91,6 +91,17 @@ class ucie_mbtrain_valtrainverf_vseq extends ucie_vseq_base;
 
     ucie_RX_D2C.start(p_sequencer);
 
+    if (D2c_mode == LOOP_TILL_ERROR) begin
+      p_sequencer.rx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::TRAINERROR_TX_Handshake);
+      send_sb_msg(sb_ltsm_item);
+
+      p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::TRAINERROR_RX_Handshake);
+      send_sb_msg(sb_ltsm_item);
+      return;
+    end
+
     // Valtrainverf_End_TX_LTSM
     `uvm_info("VSEQ", $sformatf("Valtrainverf_End_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
