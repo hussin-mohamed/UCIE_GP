@@ -47,6 +47,9 @@ class rdi_driver extends uvm_driver #(rdi_seq_item);
     rdi_vif.lp_data  <= '0;
     rdi_vif.lp_valid <= 1'b0;
     rdi_vif.lp_irdy  <= 1'b0;
+    `ifdef UCIE_SYS_LVL
+      rdi_vif.reset_enb <= 1'b0;  // Initialize reset_enb to prevent undefined behavior
+    `endif
 
     // Wait for reset de-assertion
     @(negedge rdi_vif.rst);
@@ -57,12 +60,14 @@ class rdi_driver extends uvm_driver #(rdi_seq_item);
       seq_item_port.get_next_item(req);
 
       `ifdef UCIE_SYS_LVL
-        if (req.reset_enb) begin
+        if (req.reset_enb === 1) begin
           rdi_vif.reset_enb <= req.reset_enb;
           #100ns;
           rdi_vif.reset_enb <= 0;
           seq_item_port.item_done();
           continue;
+        end else begin
+          rdi_vif.reset_enb <= 0;
         end
       `endif
 
@@ -72,8 +77,6 @@ class rdi_driver extends uvm_driver #(rdi_seq_item);
         rdi_vif.lp_irdy  <= 1'b0;
         repeat (req.delay) @(posedge rdi_vif.clk);
       end
-
-      $display("noooooooooooooo");
 
       // Drive the flit
       if (!req.reset_enb) begin

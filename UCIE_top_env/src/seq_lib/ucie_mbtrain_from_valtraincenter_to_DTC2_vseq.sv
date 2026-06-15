@@ -43,24 +43,39 @@ class ucie_mbtrain_from_valtraincenter_to_DTC2_vseq extends ucie_vseq_base;
 
   if (reset.reset_counter == 0) begin
     ucie_mbtrain_till_valtraincenter.start(p_sequencer);
-    reset.reset_counter++;
-    reset.start(tx_rdi_seqr);
+    // If trainerror_cnt == 0, sub-sequence completed all branches - move to next
+      wait(!vseq_cfg.trainerror_cnt)
+      reset.reset_counter++;
+      $display("All valtraincenter branches completed, moving to valtrainvref");
+      reset.start(tx_rdi_seqr);
   end else if(reset.reset_counter ==  1) begin
     ucie_mbtrain_till_valtrainvref.start(p_sequencer);
-    reset.reset_counter++;
-    reset.start(tx_rdi_seqr);
+    // If trainerror_cnt == 0, sub-sequence completed all branches - move to next
+      wait(!vseq_cfg.trainerror_cnt)
+      reset.reset_counter++;
+      $display("All valtrainvref branches completed, moving to DTC1");
+      reset.start(tx_rdi_seqr);
   end else if(reset.reset_counter ==  2) begin
     ucie_mbtrain_till_DTC1.start(p_sequencer);
-    reset.reset_counter++;
-    reset.start(tx_rdi_seqr);
+    // If trainerror_cnt == 0, sub-sequence completed all branches - move to next
+      wait(!vseq_cfg.trainerror_cnt)
+      reset.reset_counter++;
+      $display("All DTC1 branches completed, moving to datatrainvref");
+      reset.start(tx_rdi_seqr);
   end else if(reset.reset_counter ==  3) begin
     ucie_mbtrain_till_datatrainvref.start(p_sequencer);
-    reset.reset_counter++;
-    reset.start(tx_rdi_seqr);
+    // If trainerror_cnt == 0, sub-sequence completed all branches - move to next
+      wait(!vseq_cfg.trainerror_cnt)
+      reset.reset_counter++;
+      $display("All datatrainvref branches completed, moving to DTC2");
+      reset.start(tx_rdi_seqr);
   end else if(reset.reset_counter ==  4) begin
     ucie_mbtrain_till_DTC2.start(p_sequencer);
-    reset.reset_counter++;
-    reset.start(tx_rdi_seqr);
+    // If trainerror_cnt == 0, sub-sequence completed all branches - move to next
+      wait(!vseq_cfg.trainerror_cnt)
+      reset.reset_counter++;
+      $display("All DTC2 branches completed, sequence done");
+      reset.start(tx_rdi_seqr);
   end
   endtask
 endclass : ucie_mbtrain_from_valtraincenter_to_DTC2_vseq

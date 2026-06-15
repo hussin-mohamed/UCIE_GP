@@ -26,7 +26,7 @@ class rdi_seq_item extends uvm_sequence_item;
   `ifdef UCIE_SYS_LVL
     // PL State Status: indicates current link/PHY state
     logic [3:0] pl_state_sts;
-    static bit reset_enb;
+    bit reset_enb;  // Removed 'static' - each instance should have its own value
   `endif
 
   // -------------------------------------------------------------------------

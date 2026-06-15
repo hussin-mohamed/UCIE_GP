@@ -199,8 +199,6 @@ class ucie_mbtrain_till_DTC2_vseq extends ucie_vseq_base;
   end else begin
     mbinit_vseq.start(p_sequencer);
 
-    vseq_cfg.trainerror_cnt = 0;
-
     valverf_vseq.configure(
         .missing_msg(IDEAL),
         .D2c_mode(SUCCESS),
@@ -314,7 +312,9 @@ class ucie_mbtrain_till_DTC2_vseq extends ucie_vseq_base;
             );
             active_rx_seq.start(rp_rmblink_seqr);
         end     
-    join_any 
+    join_any
+
+    vseq_cfg.trainerror_cnt = 0;
   end
   endtask
 endclass : ucie_mbtrain_till_DTC2_vseq
