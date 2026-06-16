@@ -64,6 +64,7 @@ package ucie_pkg;
   `include "ucie_mbtrain_states/ucie_mbtrain_rxdskew_vseq.sv"
   `include "ucie_mbtrain_states/ucie_mbtrain_DTC2_vseq.sv"
   `include "ucie_mbtrain_states/ucie_mbtrain_linkspeed_vseq.sv"
+  `include "ucie_mbtrain_states/ucie_mbtrain_repair_vseq.sv"
   `include "ucie_mbtrain_linkspeed_cases_vseq.sv"
   `include "ucie_mbinit_fail_vseq.sv"
   `include "ucie_mbinit_fail_all_vseq.sv"

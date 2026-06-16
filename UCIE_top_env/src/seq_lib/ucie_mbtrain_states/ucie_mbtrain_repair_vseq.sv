@@ -73,7 +73,7 @@ class ucie_mbtrain_repair_vseq extends ucie_vseq_base;
         send_sb_msg(sb_ltsm_item);
     end
     else begin
-        return 1;
+        return;
     end
 
 
