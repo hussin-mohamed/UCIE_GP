@@ -135,6 +135,7 @@ typedef class ucie_trainerror_vseq;
 typedef class ucie_sbinit_bringup_tx_vseq;
 typedef class ucie_sbinit_bringup_rx_vseq;
 typedef class ucie_sbinit_bringup_vseq;
+typedef class ucie_mbtrain_repair_vseq;
 
 typedef class ucie_mbtrain_vseq;  
 
@@ -183,6 +184,7 @@ class ucie_vseq_base extends uvm_sequence;
   ucie_mbtrain_DTC2_vseq                         DTC2_vseq;
   ucie_mbtrain_linkspeed_vseq                    LINKSPEED_vseq;
   ucie_trainerror_vseq                           TRAINERROR_vseq;
+  ucie_mbtrain_repair_vseq                       repair_vseq;
 
   rdi_base_seq                                   active_tx_seq;
   rmblink_active_sequence                        active_rx_seq;
@@ -266,6 +268,7 @@ class ucie_vseq_base extends uvm_sequence;
     ucie_TX_D2C = ucie_TX_D2C_vseq::type_id::create("ucie_TX_D2C");
     trainerror_rdi_exit_vseq = trainerror_rdiexit::type_id::create("trainerror_rdi_exit_vseq");
     train_vseq = ucie_mbtrain_vseq::type_id::create("train_vseq");
+    repair_vseq = ucie_mbtrain_repair_vseq::type_id::create("train_vseq");
 
     // Sideband LTSM Sequence Item Creation
     sb_ltsm_item = new("sb_ltsm_item");

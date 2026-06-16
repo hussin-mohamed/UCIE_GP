@@ -102,89 +102,90 @@ class ucie_mbtrain_linkspeed_cases_vseq extends ucie_vseq_base;
     valverf_vseq.start(p_sequencer);
     dataverf_vseq.start(p_sequencer);
     for (i =0 ;i < 7 ; i++ ) begin
-        speedidle_vseq.start(p_sequencer);
         if (i!=6) begin
-        txselfcal_till_linkspeed();
+        speedidle_till_linkspeed();
         end
         else begin
+            // hashof el speedidle btet3eml ezay
             TRAINERROR_vseq.start(p_sequencer);
         end
     end
   end
 
-    valverf_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(VALID_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT),
-        .missing_msg(IDEAL)
-    );
+  if (TRAINERROR_vseq.trainerr_cnt == 1)begin
+    // valverf_vseq.configure(
+    //     .D2c_mode(SUCCESS),
+    //     .pattern_mode(PAT_ALL_LANES_VALID),
+    //     .data_mode(VALID_PATTERN),
+    //     .info_mode(CORRECT),
+    //     .message_mode(ALL_LANES_VALID),
+    //     .valid_mode(VALID_CORRECT),
+    //     .missing_msg(IDEAL)
+    // );
 
-    dataverf_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(LFSR_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT),
-        .missing_msg(IDEAL)
-    );
+    // dataverf_vseq.configure(
+    //     .D2c_mode(SUCCESS),
+    //     .pattern_mode(PAT_ALL_LANES_VALID),
+    //     .data_mode(LFSR_PATTERN),
+    //     .info_mode(CORRECT),
+    //     .message_mode(ALL_LANES_VALID),
+    //     .valid_mode(VALID_CORRECT),
+    //     .missing_msg(IDEAL)
+    // );
 
-    valtraincenter_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(VALID_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT),
-        .trainerror(NOT_TRAINERROR)
-    );
+    // valtraincenter_vseq.configure(
+    //     .D2c_mode(SUCCESS),
+    //     .pattern_mode(PAT_ALL_LANES_VALID),
+    //     .data_mode(VALID_PATTERN),
+    //     .info_mode(CORRECT),
+    //     .message_mode(ALL_LANES_VALID),
+    //     .valid_mode(VALID_CORRECT),
+    //     .trainerror(NOT_TRAINERROR)
+    // );
 
-    valtrainverf_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(VALID_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT),
-        .trainerror(NOT_TRAINERROR)
-    );
+    // valtrainverf_vseq.configure(
+    //     .D2c_mode(SUCCESS),
+    //     .pattern_mode(PAT_ALL_LANES_VALID),
+    //     .data_mode(VALID_PATTERN),
+    //     .info_mode(CORRECT),
+    //     .message_mode(ALL_LANES_VALID),
+    //     .valid_mode(VALID_CORRECT),
+    //     .trainerror(NOT_TRAINERROR)
+    // );
     
-    DTC1_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(LFSR_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT)
-    );
+    // DTC1_vseq.configure(
+    //     .D2c_mode(SUCCESS),
+    //     .pattern_mode(PAT_ALL_LANES_VALID),
+    //     .data_mode(LFSR_PATTERN),
+    //     .info_mode(CORRECT),
+    //     .message_mode(ALL_LANES_VALID),
+    //     .valid_mode(VALID_CORRECT)
+    // );
 
-    datatrainvref_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(LFSR_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT)
-    );
+    // datatrainvref_vseq.configure(
+    //     .D2c_mode(SUCCESS),
+    //     .pattern_mode(PAT_ALL_LANES_VALID),
+    //     .data_mode(LFSR_PATTERN),
+    //     .info_mode(CORRECT),
+    //     .message_mode(ALL_LANES_VALID),
+    //     .valid_mode(VALID_CORRECT)
+    // );
 
-    DTC2_vseq.configure(
-        .D2c_mode(SUCCESS),
-        .pattern_mode(PAT_ALL_LANES_VALID),
-        .data_mode(LFSR_PATTERN),
-        .info_mode(CORRECT),
-        .message_mode(ALL_LANES_VALID),
-        .valid_mode(VALID_CORRECT)
-    );
+    // DTC2_vseq.configure(
+    //     .D2c_mode(SUCCESS),
+    //     .pattern_mode(PAT_ALL_LANES_VALID),
+    //     .data_mode(LFSR_PATTERN),
+    //     .info_mode(CORRECT),
+    //     .message_mode(ALL_LANES_VALID),
+    //     .valid_mode(VALID_CORRECT)
+    // );
 
-    LINKSPEED_vseq.configure(
-        .linkspeed_dest(SPEEDIDLE)
-        ,.pattern_mode(PAT_ALL_LANES_VALID)
-        ,.message_mode(ALL_LANES_VALID)
-        ,.speed_idle_entry(CURRENT_DIE)
-    );
+    // LINKSPEED_vseq.configure(
+    //     .linkspeed_dest(SPEEDIDLE)
+    //     ,.pattern_mode(PAT_ALL_LANES_VALID)
+    //     ,.message_mode(ALL_LANES_VALID)
+    //     ,.speed_idle_entry(CURRENT_DIE)
+    // );
     // mbinit_vseq.start(p_sequencer);
     // trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
 
@@ -200,35 +201,63 @@ class ucie_mbtrain_linkspeed_cases_vseq extends ucie_vseq_base;
     // );
     // speedidle_till_linkspeed();
 
-    // wait_for_msg_ser_end();
-    // #1000ns;
+    // LINKSPEED_vseq.configure(
+    //     .linkspeed_dest(REPAIR)
+    //     ,.pattern_mode(PAT_ALL_LANES_VALID)
+    //     ,.message_mode(UPPER_8_LANES_VALID)
+    //     ,.speed_idle_entry(OTHER_DIE)
+    // );
+    // repair_vseq.configure(
+    //     .lane_map_code(ALL_LANES)
+    // )
 
-    // wake_req_handshake.start(ltsm_rdi_seqr);
-    // state_req_handshake.start(ltsm_rdi_seqr);
+    // speedidle_till_linkspeed();
+
     
-    // p_sequencer.rx_fifo.get(sb_ltsm_item);
-    // sb_ltsm_item.set_tx_encoding(sb_shared_pkg::ACTIVE_LINKINIT_STATE_REQ);
-    // send_sb_msg(sb_ltsm_item);
+    
+    // LINKSPEED_vseq.configure(
+    //     .linkspeed_dest(REPAIR)
+    //     ,.pattern_mode(PAT_UPPER_8_LANES_VALID)
+    //     ,.message_mode(LOWER_8_LANES_VALID)
+    //     ,.speed_idle_entry(OTHER_DIE)
+    // );
+    // repair_vseq.configure(
+    //     .lane_map_code(LOWER_8_LANES)
+    // )
 
-    // p_sequencer.tx_fifo.get(sb_ltsm_item);
-    // sb_ltsm_item.set_rx_encoding(sb_shared_pkg::ACTIVE_LINKINIT_STATE_RESP);
-    // send_sb_msg(sb_ltsm_item);
+    // txselfcal_till_linkspeed();
+    
 
-    // wait_for_msg_ser_end();
+    // LINKSPEED_vseq.configure(
+    //     .linkspeed_dest(REPAIR)
+    //     ,.pattern_mode(PAT_LOWER_8_LANES_VALID)
+    //     ,.message_mode(UPPER_8_LANES_VALID)
+    //     ,.speed_idle_entry(OTHER_DIE)
+    // );
+    // repair_vseq.configure(
+    //     .lane_map_code(UPPER_8_LANES)
+    // )
 
-    // fork
-    //     begin
-    //         active_tx_seq.start(tx_rdi_seqr);
-    //     end
-    //     begin
-    //         active_rx_seq.configure(
-    //             ._num_256b_chunks(2),
-    //             ._lane_map_code(X16_MODE),
-    //             ._scenario(ACTIVE_SCENARIO_IDEAL)
-    //         );
-    //         active_rx_seq.start(rp_rmblink_seqr);
-    //     end     
-    // join_any
+    // txselfcal_till_linkspeed();
+
+    // LINKSPEED_vseq.configure(
+    //     .linkspeed_dest(REPAIR)
+    //     ,.pattern_mode(PAT_LOWER_8_LANES_VALID)
+    //     ,.message_mode(UPPER_8_LANES_VALID)
+    //     ,.speed_idle_entry(OTHER_DIE)
+    // );
+    // repair_vseq.configure(
+    //     .lane_map_code(NO_LANES)
+    // )
+
+    // txselfcal_till_linkspeed();
+    // TRAINERROR_vseq.start(p_sequencer);
+  end
+  if (TRAINERROR_vseq.trainerr_cnt == 2) begin
+    // mbinit_vseq.start(p_sequencer);
+    // trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
+    // train_vseq.start(p_sequencer);
+  end
 
 
   endtask
@@ -255,5 +284,6 @@ class ucie_mbtrain_linkspeed_cases_vseq extends ucie_vseq_base;
         rxdskew_vseq.start(p_sequencer);
         DTC2_vseq.start(p_sequencer);
         LINKSPEED_vseq.start(p_sequencer);
+        repair_vseq.start(p_sequencer);
   endtask
 endclass : ucie_mbtrain_linkspeed_cases_vseq
