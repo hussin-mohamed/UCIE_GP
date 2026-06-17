@@ -103,6 +103,12 @@ class ucie_mbtrain_linkspeed_cases_vseq extends ucie_vseq_base;
     dataverf_vseq.start(p_sequencer);
     for (i =0 ;i < 7 ; i++ ) begin
         if (i!=6) begin
+        LINKSPEED_vseq.configure(
+        .linkspeed_dest(TRAINERROR)
+        ,.pattern_mode(PAT_ALL_LANES_VALID)
+        ,.message_mode(ALL_LANES_VALID)
+        ,.speed_idle_entry(CURRENT_DIE)
+        );
         speedidle_till_linkspeed();
         end
         else begin
@@ -263,6 +269,52 @@ class ucie_mbtrain_linkspeed_cases_vseq extends ucie_vseq_base;
   endtask
 
   task speedidle_till_linkspeed();
+        valtraincenter_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .trainerror(NOT_TRAINERROR)
+    );
+
+    valtrainverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .trainerror(NOT_TRAINERROR)
+    );
+    
+    DTC1_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
+
+    datatrainvref_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
+
+    DTC2_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
         speedidle_vseq.start(p_sequencer);
         txselfcal_vseq.start(p_sequencer);
         rxclkcal_vseq.start(p_sequencer);
@@ -275,6 +327,52 @@ class ucie_mbtrain_linkspeed_cases_vseq extends ucie_vseq_base;
         LINKSPEED_vseq.start(p_sequencer);
   endtask
   task txselfcal_till_linkspeed();
+  valtraincenter_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .trainerror(NOT_TRAINERROR)
+    );
+
+    valtrainverf_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(VALID_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT),
+        .trainerror(NOT_TRAINERROR)
+    );
+    
+    DTC1_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
+
+    datatrainvref_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
+
+    DTC2_vseq.configure(
+        .D2c_mode(SUCCESS),
+        .pattern_mode(PAT_ALL_LANES_VALID),
+        .data_mode(LFSR_PATTERN),
+        .info_mode(CORRECT),
+        .message_mode(ALL_LANES_VALID),
+        .valid_mode(VALID_CORRECT)
+    );
         txselfcal_vseq.start(p_sequencer);
         rxclkcal_vseq.start(p_sequencer);
         valtraincenter_vseq.start(p_sequencer);

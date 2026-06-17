@@ -192,19 +192,20 @@ class mbtrain_tx_linkspeed extends State;
                 error_count=1;
             end
             data = item_tx_fsm_sb_in.i_tx_data;
-            if (data[15:8] < 8'b1111_1111 && data[7:0] == 8'b1111_1111) begin
+            if (data[15:8] != 8'b1111_1111 && data[7:0] == 8'b1111_1111) begin
                 lane_map_tx = 3'b001;
-            end else if (data[7:0] < 8'b1111_1111 && data[15:8] == 8'b1111_1111) begin
+            end else if (data[7:0] != 8'b1111_1111 && data[15:8] == 8'b1111_1111) begin
                 lane_map_tx = 3'b010;
             end else if (data[15:8] == 8'b1111_1111 && data[7:0] == 8'b1111_1111) begin
                 lane_map_tx = item_controllers_out.o_lane_map_tx;
-            end else if (data[15:8] < 8'b1111_1111 && data[7:4] < 4'b1111) begin
-                lane_map_tx = 3'b100;
-            end else if (data[15:8] < 8'b1111_1111 && data[3:0] < 4'b1111) begin
-                lane_map_tx = 3'b101;
+            // end else if (data[15:8] < 8'b1111_1111 && data[7:4] < 4'b1111) begin
+            //     lane_map_tx = 3'b100;
+            // end else if (data[15:8] < 8'b1111_1111 && data[3:0] < 4'b1111) begin
+            //     lane_map_tx = 3'b101;
             end else begin
                 lane_map_tx = 3'b000;
             end
+            // `uvm_info("mbtrain_tx_linkspeed",$sformatf("lane_map_tx = %0b", lane_map_tx), UVM_LOW)
             train = 0;
             o_tx_sb_req_expected = 1'b1;
             if (o_tx_encoding_expected == item_tx_fsm_sb_out.o_tx_encoding) begin

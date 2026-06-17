@@ -192,7 +192,7 @@ import shared_ltsm_pkg::*;
             `uvm_info("state", $sformatf("Current State: TX: %s, RX: %s, Next State: TX: %s, RX: %s", cntxt.currentstate_tx.getStateId(), cntxt.currentstate_rx.getStateId(), nextState_tx.getStateId(), nextState_rx.getStateId()), UVM_MEDIUM)
         end
 
-        `uvm_info("State", $sformatf("Evaluating state: TX: %s, RX: %s", cntxt.currentstate_tx.getStateId(), cntxt.currentstate_rx.getStateId()), UVM_LOW)
+        // `uvm_info("State", $sformatf("Evaluating state: TX: %s, RX: %s", cntxt.currentstate_tx.getStateId(), cntxt.currentstate_rx.getStateId()), UVM_LOW)
 
         encoding_rx = item_rx_fsm_sb_out.o_rx_encoding;
         
