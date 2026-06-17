@@ -1337,6 +1337,7 @@ module ucie_LTSM_RX_MBTRAIN #(
                   o_rx_sb_rsp_reg = 0;
                   o_rx_sb_req_reg = 0;
                   next_substate = 1;
+                  o_lane_map_rx = i_rx_info[2:0];  // Capture repaired lane map from RX info field
                 end else next_substate = 0;
               end
 
@@ -1344,8 +1345,6 @@ module ucie_LTSM_RX_MBTRAIN #(
                 clock_to_test_enable = 0;
                 o_rx_encoding_reg = 'hC1;
                 NS = REPAIR;
-
-                o_lane_map_rx = i_rx_info[2:0];  // Capture repaired lane map from RX info field
 
                 if (done_ack) o_rx_sb_rsp_reg = 0;
                 else o_rx_sb_rsp_reg = 1;
