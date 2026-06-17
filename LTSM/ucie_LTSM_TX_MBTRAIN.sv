@@ -331,7 +331,6 @@ always @(*) begin
     o_tx_data_reg = 0;
     o_tx_info_reg = 0;
     NS = CS;
-    o_lane_map_tx = lane_map_old;
     next_substate = current_substate;
     substates_done = substates_done_old;  // Default to retaining previous value
     o_speedreg = o_speedreg_old;
@@ -1486,6 +1485,7 @@ always @(*) begin
     end
 
     always @(*) begin
+        o_lane_map_tx = lane_map_old;
         if (lane_map_calc) begin
              if (&per_lane_result[15:0] && (o_lane_map_tx == 3'b011))
             o_lane_map_tx = 3'b011;  // ALL_LANES_FUNCTIONAL
