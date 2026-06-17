@@ -277,17 +277,20 @@ class ucie_vseq_base extends uvm_sequence;
     sb_ltsm_item.data = 64'h0;
     sb_ltsm_item.info = 16'h0;
 
-    fork
-      begin  // Sideband ltsm2link Transmission Thread
-        forever begin
-          p_sequencer.link_fifo.get(phylink_item);
-          active_phylink_seq.req = phylink_item;
-          p_sequencer.msg_ser_status = MSG_SER_IN_PROGRESS;
-          active_phylink_seq.start(sb_phylink_seqr);
-          p_sequencer.msg_ser_status = NO_MSG_SER_IN_PROGRESS;
+    if (p_sequencer != null && !p_sequencer.transmission_thread_started) begin
+      p_sequencer.transmission_thread_started = 1;
+      fork
+        begin  // Sideband ltsm2link Transmission Thread
+          forever begin
+            p_sequencer.link_fifo.get(phylink_item);
+            active_phylink_seq.req = phylink_item;
+            p_sequencer.msg_ser_status = MSG_SER_IN_PROGRESS;
+            active_phylink_seq.start(sb_phylink_seqr);
+            p_sequencer.msg_ser_status = NO_MSG_SER_IN_PROGRESS;
+          end
         end
-      end
-    join_none
+      join_none
+    end
 
     `uvm_info("UCIE_VSEQ", $sformatf(" %s virtual sequence", get_type_name()),
               UVM_LOW)

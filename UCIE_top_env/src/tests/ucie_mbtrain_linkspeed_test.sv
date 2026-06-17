@@ -13,7 +13,7 @@ class ucie_mbtrain_linkspeed_test extends ucie_base_test;
   // -------------------------------------------------------------------------
   function new(string name = "ucie_mbtrain_linkspeed_test", uvm_component parent = null);
     super.new(name, parent);
-    uvm_top.set_timeout(100ms, 0);
+    uvm_top.set_timeout(10000ms, 0);
   endfunction
 
   function void build_phase(uvm_phase phase);

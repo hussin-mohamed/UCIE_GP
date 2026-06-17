@@ -29,6 +29,7 @@ class ucie_vseqr extends uvm_sequencer;
   uvm_tlm_analysis_fifo #(sb_pkg::phylink_seq_item) link_fifo;
 
   msg_ser_status_e msg_ser_status;
+  bit transmission_thread_started;
 
   // -------------------------------------------------------------------------
   //  Constructor
@@ -69,6 +70,7 @@ class ucie_vseqr extends uvm_sequencer;
 
     // Stop all the virtual sequences before restarting the main phase
     stop_sequences();
+    transmission_thread_started = 0;
 
     // Flush the FIFOs to avoid getting old messages from the prvious main phase run
     tx_fifo.flush();
