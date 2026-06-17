@@ -113,12 +113,8 @@ always @(posedge i_clk or posedge i_reset) begin
 end
 
 always @(posedge i_clk or posedge i_reset) begin
-    if (i_reset) begin
-        failed_test_old     <= 1'b0;
-    end else begin
-        per_lane_result_old <= per_lane_result;  // Capture previous per-lane result for reporting
-        failed_test_old     <= failed_test;      // Capture previous test result for reporting
-    end
+    per_lane_result_old <= per_lane_result;  // Capture previous per-lane result for reporting
+    failed_test_old     <= failed_test;      // Capture previous test result for reporting
 end
 
 
@@ -148,6 +144,7 @@ always @(*) begin
                 REQ_HANDSHAKE: begin
                     o_xx_encoding = 'h180;  // Request encoding
                     done = 0;
+                    failed_test = 0;
                     count_reg = 0;  // Reset retry count
                     train_error = 0;
                     o_xx_sb_rsp = 0;
@@ -264,6 +261,7 @@ always @(*) begin
                     done = 0;
                     count_reg = 0;  // Reset retry count
                     train_error = 0;
+                    failed_test = 0;
 
                     // Response handshake
                     if (i_sb_xx_done) o_xx_sb_rsp = 0;
