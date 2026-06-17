@@ -144,7 +144,6 @@ always @(*) begin
                 REQ_HANDSHAKE: begin
                     o_xx_encoding = 'h180;  // Request encoding
                     done = 0;
-                    failed_test = 0;
                     count_reg = 0;  // Reset retry count
                     train_error = 0;
                     o_xx_sb_rsp = 0;
@@ -175,6 +174,7 @@ always @(*) begin
                 LFSR_HANDSHAKE: begin
                     o_xx_encoding = 'h181;  // LFSR setup encoding
                     done = 0;
+                    failed_test = 0;
 
                     if (done_ack) o_xx_sb_req = 0;
                     else o_xx_sb_req = 1;
@@ -261,7 +261,6 @@ always @(*) begin
                     done = 0;
                     count_reg = 0;  // Reset retry count
                     train_error = 0;
-                    failed_test = 0;
 
                     // Response handshake
                     if (i_sb_xx_done) o_xx_sb_rsp = 0;
@@ -282,6 +281,7 @@ always @(*) begin
                 LFSR_HANDSHAKE: begin
                     o_xx_encoding = 'h189;  // LFSR setup encoding
                     done = 0;
+                    failed_test = 0;
 
                     if (done_ack) o_xx_sb_req = 0;
                     else o_xx_sb_req = 1;
