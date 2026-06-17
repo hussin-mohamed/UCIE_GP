@@ -343,7 +343,6 @@ always @(*) begin
     o_tx_sb_req_reg = 0;
     o_tx_sb_rsp_reg = 0;
     o_tx_encoding_reg = 0;
-    o_tx_encoding_reg = 0;
     lane_map_calc = 0;
     clock_to_test_enable = 0;  // Default to eye sweep disabled
     init = 0;        // Default to not initialization mode
@@ -1295,7 +1294,7 @@ always @(*) begin
                                 if (done_ack) o_tx_sb_req_reg = 0;
                                 else o_tx_sb_req_reg = 1;
 
-                                if ((i_sb_tx_rsp && i_tx_decoding == 'hBD) || (encoding_rsp_sent == 'hBE)) begin
+                                if ((i_sb_tx_rsp && i_tx_decoding == 'hBD) || (i_sb_tx_rsp && i_tx_decoding == 'hBE)) begin
                                     substates_done = 1;
                                     next_substate = 0;
                                 end else begin
@@ -1350,7 +1349,7 @@ always @(*) begin
                     end
 
                     // need to add the priority flag for speed idle
-                    if ((previous_state_done && encoding_rsp_sent == 'hBE && encoding_rsp_received == 'hBE)) begin
+                    if ((previous_state_done && encoding_rsp_sent == 'hBE && encoding_rsp_received == 'hBE) || (previous_state_done && encoding_rsp_sent == 'hBE && encoding_rsp_received == 'hBE)) begin
                         NS = SPEEDIDLE;
                         o_tx_encoding_reg = 'hC8;
                         train_link_init_en_reg = 0;
