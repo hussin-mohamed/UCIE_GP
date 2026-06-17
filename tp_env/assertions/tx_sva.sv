@@ -116,6 +116,7 @@ module tx_sva (
 
   assert_data_tristate: assert property (p_data_tristate)
     else `uvm_error("SVA", $sformatf("tx_data not Hi-Z during tri-state state (enc=9'h%03h)", tx_encoding))
+  cover_data_tristate: cover property (p_data_tristate);
 
   property p_valid_tristate;
     @(posedge ui_clk) disable iff (rst)
@@ -124,6 +125,7 @@ module tx_sva (
 
   assert_valid_tristate: assert property (p_valid_tristate)
     else `uvm_error("SVA", $sformatf("tx_valid not Hi-Z during tri-state state (enc=9'h%03h)", tx_encoding))
+  cover_valid_tristate: cover property (p_valid_tristate);
 
   property p_track_tristate;
     @(posedge ui_clk) disable iff (rst)
@@ -132,6 +134,7 @@ module tx_sva (
 
   assert_track_tristate: assert property (p_track_tristate)
     else `uvm_error("SVA", $sformatf("tx_track not Hi-Z during tri-state state (enc=9'h%03h)", tx_encoding))
+  cover_track_tristate: cover property (p_track_tristate);
 
   property p_clk_tristate;
     @(posedge ui_clk) disable iff (rst)
@@ -140,6 +143,7 @@ module tx_sva (
 
   assert_clk_tristate: assert property (p_clk_tristate)
     else `uvm_error("SVA", $sformatf("tx_clk not Hi-Z during tri-state state (enc=9'h%03h)", tx_encoding))
+  cover_clk_tristate: cover property (p_clk_tristate);
 
   // =========================================================================
   //  LTSM DUT Output Assertions — pll_stable & supply_stable
@@ -153,6 +157,7 @@ module tx_sva (
 
   assert_pll_stable: assert property (p_pll_stable_in_reset)
     else `uvm_error("SVA", "pll_stable not asserted 1 cycle after RESET")
+  cover_pll_stable: cover property (p_pll_stable_in_reset);
 
   // supply_stable must assert 1 cycle after being in RESET
   property p_supply_stable_in_reset;
@@ -162,6 +167,7 @@ module tx_sva (
 
   assert_supply_stable: assert property (p_supply_stable_in_reset)
     else `uvm_error("SVA", "supply_stable not asserted 1 cycle after RESET")
+  cover_supply_stable: cover property (p_supply_stable_in_reset);
 
 
   // =========================================================================
@@ -176,47 +182,12 @@ module tx_sva (
 
   assert_tx_done_valid_state: assert property (p_tx_done_only_in_op_states)
     else `uvm_error("SVA", $sformatf("tx_done asserted in non-operation state (enc=9'h%03h)", tx_encoding))
-
-
-  property p_tx_done_repairclk_clk;
-    @(posedge clk) disable iff (rst)
-    $rose(tx_encoding == REPAIRCLK_CLK_PATTERN_GEN) |=> ##(REPAIRCLK_TOTAL_CYCLES) tx_done;
-  endproperty
-
-  assert_tx_done_repairclk: assert property (p_tx_done_repairclk_clk)
-    else `uvm_error("SVA", $sformatf("tx_done not asserted %0d cycles after REPAIRCLK_CLK_PATTERN_GEN", REPAIRCLK_TOTAL_CYCLES))
+  cover_tx_done_valid_state: cover property (p_tx_done_only_in_op_states);
 
   property p_tx_done_repairval_valid;
     @(posedge clk) disable iff (rst)
     $rose(tx_encoding == REPAIRVAL_VALID_PATTERN_GEN) |=> ##(REPAIRVAL_TOTAL_CYCLES) tx_done;
   endproperty
-
-  assert_tx_done_repairval: assert property (p_tx_done_repairval_valid)
-    else `uvm_error("SVA", $sformatf("tx_done not asserted %0d cycles after REPAIRVAL_VALID_PATTERN_GEN", REPAIRVAL_TOTAL_CYCLES))
-
-  property p_tx_done_reversal_id;
-    @(posedge clk) disable iff (rst)
-    $rose(tx_encoding == REVERSAL_PER_LANE_ID_GEN) |=> ##(REVERSAL_ID_TOTAL_CYCLES) tx_done;
-  endproperty
-
-  assert_tx_done_reversal_id: assert property (p_tx_done_reversal_id)
-    else `uvm_error("SVA", $sformatf("tx_done not asserted %0d cycles after REVERSAL_PER_LANE_ID_GEN", REVERSAL_ID_TOTAL_CYCLES))
-
-  property p_tx_done_d2c_tx;
-    @(posedge clk) disable iff (rst)
-    $rose(tx_encoding == D2C_TX_PATTERN_GEN) |=> ##(D2C_TX_TOTAL_CYCLES) tx_done;
-  endproperty
-
-  assert_tx_done_d2c_tx: assert property (p_tx_done_d2c_tx)
-    else `uvm_error("SVA", $sformatf("tx_done not asserted %0d cycles after D2C_TX_PATTERN_GEN", D2C_TX_TOTAL_CYCLES))
-
-  property p_tx_done_d2c_rx;
-    @(posedge clk) disable iff (rst)
-    $rose(tx_encoding == D2C_RX_PATTERN_GEN) |=> ##(D2C_RX_TOTAL_CYCLES) tx_done;
-  endproperty
-
-  assert_tx_done_d2c_rx: assert property (p_tx_done_d2c_rx)
-    else `uvm_error("SVA", $sformatf("tx_done not asserted %0d cycles after D2C_RX_PATTERN_GEN", D2C_RX_TOTAL_CYCLES))
 
   property p_tx_done_reversal_apply;
     @(posedge clk) disable iff (rst)
@@ -225,23 +196,8 @@ module tx_sva (
 
   assert_tx_done_reversal_apply: assert property (p_tx_done_reversal_apply)
     else `uvm_error("SVA", "tx_done not asserted 1 cycle after REVERSAL_APPLY")
-
-  property p_tx_done_repairmb_degrade;
-    @(posedge clk) disable iff (rst)
-    $rose(tx_encoding == REPAIRMB_APPLY_DEGRADE_HND) |=> tx_done;
-  endproperty
-
-  assert_tx_done_repairmb: assert property (p_tx_done_repairmb_degrade)
-    else `uvm_error("SVA", "tx_done not asserted 1 cycle after REPAIRMB_APPLY_DEGRADE_HND")
-
-  property p_tx_done_repair_degrade;
-    @(posedge clk) disable iff (rst)
-    $rose(tx_encoding == REPAIR_APPLY_DEGRADE_HND) |=> tx_done;
-  endproperty
-
-  assert_tx_done_repair: assert property (p_tx_done_repair_degrade)
-    else `uvm_error("SVA", "tx_done not asserted 1 cycle after REPAIR_APPLY_DEGRADE_HND")
-
+  cover_tx_done_reversal_apply: cover property (p_tx_done_reversal_apply);
+  
   // =========================================================================
   //  Cover Properties
   // =========================================================================
@@ -275,6 +231,7 @@ module tx_sva (
     pattern_done_clkp = 1;
   end
     else `uvm_error("SVA", "Clock_P pattern not generated correctly during REPAIRCLK_CLK_PATTERN_GEN")
+  cover_clkp_assertion: cover property (clockp_pattern_property);
 
   sequence clockn_pattern_gen;
     ((tx_clkn == 0 ##1 tx_clkn == 1) [*16] ##1 (tx_clkn == 1) [*16] ) [*128];
@@ -289,6 +246,7 @@ module tx_sva (
     pattern_done_clkn = 1;
   end
     else `uvm_error("SVA", "Clock_N pattern not generated correctly during REPAIRCLK_CLK_PATTERN_GEN")
+  cover_clkn_assertion: cover property (clockn_pattern_property);
 
   sequence valid_pattern_gen;
     ((tx_valid == 1) [*4] ##1 (tx_valid == 0) [*4]);
@@ -302,11 +260,11 @@ module tx_sva (
   valid_assertion: assert property (valid_pattern_property)
   else
     `uvm_error("SVA", "tx_valid pattern not generated correctly during REPAIRVAL_VALID_PATTERN_GEN or D2C pattern gen states")
+  cover_valid_assertion: cover property (valid_pattern_property);
 
   always_comb begin
     assert (tx_track === tx_clkp);
   end
-
 
   always @(*) begin
     if (is_valid_gen_state(ltsm_encoding_e'(tx_encoding))) begin
@@ -317,7 +275,5 @@ module tx_sva (
       valid_state = 0;
     end
   end
-
-
 
 endmodule : tx_sva

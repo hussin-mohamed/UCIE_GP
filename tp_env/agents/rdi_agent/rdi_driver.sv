@@ -79,9 +79,13 @@ class rdi_driver extends uvm_driver #(rdi_seq_item);
       end
 
       // Drive the flit
-      if (!req.reset_enb) begin
+      `ifdef UCIE_SYS_LVL
+        if (!req.reset_enb) begin
+          drive_flit(req);
+        end
+      `else
         drive_flit(req);
-      end
+      `endif
 
       // Transaction complete
       seq_item_port.item_done();

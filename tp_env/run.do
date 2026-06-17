@@ -1,8 +1,13 @@
 vlib work
-vlog -sv tb/packages/tx_defs_pkg.sv tb/ref_model/B2L_modelling.sv tb/ref_model/LFSR_modelling.sv tb/ref_model/per_lane_id_modelling.sv tb/ref_model/reversal_modelling.sv tb/ref_model/TX_controller_modelling.sv tb/ref_model/tx_predictor.sv tb/packages/tx_tb_pkg.sv tb/ref_model/dut_copy/dut_B2L_modelling.sv tb/ref_model/dut_copy/dut_LFSR_modelling.sv tb/ref_model/dut_copy/dut_per_lane_id_modelling.sv tb/ref_model/dut_copy/dut_TX_controller_modelling.sv tb/ref_model/dut_copy/dut_tx_tb_pkg.sv tb/interfaces/*.sv tb/assertions/tx_sva.sv tb/top/tx_tb_top.sv +incdir+tb/packages +incdir+tb/interfaces +incdir+tb/seq_items +incdir+tb/seq_lib +incdir+tb/agents/rdi_agent +incdir+tb/agents/ltsm_agent +incdir+tb/agents/tx2link_agent +incdir+tb/ref_model +incdir+tb/ref_model/dut_copy +incdir+tb/scoreboard +incdir+tb/coverage +incdir+tb/env +incdir+tb/tests -l compile.log
-vlog -sv -suppress 7033 \
-  tb/packages/tx_defs_pkg.sv \
-  tb/packages/tx_tb_pkg.sv \
+vlog -sv -suppress 7033 -l compile.log \
+  packages/tx_defs_pkg.sv \
+  ref_model/B2L_modelling.sv \
+  ref_model/LFSR_modelling.sv \
+  ref_model/per_lane_id_modelling.sv \
+  ref_model/reversal_modelling.sv \
+  ref_model/TX_controller_modelling.sv \
+  interfaces/*.sv \
+  packages/tx_tb_pkg.sv \
   tx_path/synchonizer.sv \
   tx_path/ucie_mux_4_to_1.sv \
   tx_path/ucie_shift_register_b2l.sv \
@@ -24,23 +29,22 @@ vlog -sv -suppress 7033 \
   tx_path/tx_controller.sv \
   tx_path/tx_path.sv \
   tx_path/per_lane_id_generator_top.svh \
-  tb/interfaces/*.sv \
-  tb/assertions/tx_sva.sv \
-  tb/top/tx_dut_rtl_wrapper.sv \
-  tb/top/tx_tb_top.sv \
+  assertions/tx_sva.sv \
+  top/tx_dut_rtl_wrapper.sv \
+  top/tx_tb_top.sv \
   +incdir+tx_path \
-  +incdir+tb/packages \
-  +incdir+tb/interfaces \
-  +incdir+tb/seq_items \
-  +incdir+tb/seq_lib \
-  +incdir+tb/agents/rdi_agent \
-  +incdir+tb/agents/ltsm_agent \
-  +incdir+tb/agents/tx2link_agent \
-  +incdir+tb/ref_model \
-  +incdir+tb/scoreboard \
-  +incdir+tb/coverage \
-  +incdir+tb/env \
-  +incdir+tb/tests
+  +incdir+packages \
+  +incdir+interfaces \
+  +incdir+seq_items \
+  +incdir+seq_lib \
+  +incdir+agents/rdi_agent \
+  +incdir+agents/ltsm_agent \
+  +incdir+agents/tx2link_agent \
+  +incdir+ref_model \
+  +incdir+scoreboard \
+  +incdir+coverage \
+  +incdir+env \
+  +incdir+tests
 vopt +acc tx_tb_top -o opt_tx_tb_top
 vsim -suppress 7033 opt_tx_tb_top -classdebug -l log.log -c +UVM_TESTNAME=tx_smoke_test
 # Add waves for the 3 interfaces

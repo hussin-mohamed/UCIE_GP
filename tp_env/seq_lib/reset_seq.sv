@@ -13,7 +13,9 @@ class reset_seq extends uvm_sequence #(rdi_seq_item);
 
     req = rdi_seq_item::type_id::create("req");
     start_item(req);
+      `ifdef UCIE_SYS_LVL
       req.reset_enb = 1;
+      `endif
     finish_item(req);
 
   endtask
