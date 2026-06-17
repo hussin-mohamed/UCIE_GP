@@ -128,6 +128,7 @@ logic [2:0] o_speedreg_old;             // All substates completed
 logic previous_state_done;        // Previous state handshake complete
 
 logic clock_to_test_enable;       // Enable the eye sweep test module
+logic lane_map_calc;       // Enable the eye sweep test module
 logic init;        // Initialization mode for eye sweep test
 logic comparison_type;        // Initialization mode for eye sweep test
 logic no_retry;    // No retry mode for eye sweep test
@@ -344,6 +345,7 @@ always @(*) begin
     o_tx_sb_rsp_reg = 0;
     o_tx_encoding_reg = 0;
     o_tx_encoding_reg = 0;
+    lane_map_calc = 0;
     clock_to_test_enable = 0;  // Default to eye sweep disabled
     init = 0;        // Default to not initialization mode
     comparison_type = 0;        // Default to data signal training
@@ -1172,6 +1174,7 @@ always @(*) begin
 
                             1: begin
                                 clock_to_test_enable = 1;
+                                lane_map_calc = 1;
                                 o_tx_encoding_reg = o_tx_encoding_data_to_clock_test;
                                 o_tx_data_reg = o_tx_data_data_to_clock_test;
                                 o_tx_info_reg = o_tx_info_data_to_clock_test;
@@ -1410,29 +1413,6 @@ always @(*) begin
                                 o_tx_encoding_reg = 'hC1; 
                                 NS = REPAIR;
 
-                                if (&per_lane_result[15:0] && (o_lane_map_tx == 3'b011))
-                                    o_lane_map_tx = 3'b011;  // ALL_LANES_FUNCTIONAL
-                                else if (&per_lane_result[7:0] && !(&per_lane_result[15:8])) begin
-                                    if (o_lane_map_tx == 3'b011) begin
-                                        o_lane_map_tx = 3'b001;
-                                    end else if (o_lane_map_tx == 3'b010) begin
-                                        o_lane_map_tx = 3'b000;
-                                    end else begin
-                                        o_lane_map_tx = 3'b001;
-                                    end
-                                end else if (!(&per_lane_result[7:0]) && &per_lane_result[15:8]) begin
-                                    if (o_lane_map_tx == 3'b011) begin
-                                        o_lane_map_tx = 3'b010;
-                                    end else if (o_lane_map_tx == 3'b001) begin
-                                        o_lane_map_tx = 3'b000;
-                                    end else begin
-                                        o_lane_map_tx = 3'b010;
-                                    end
-                                end else if (!(&per_lane_result[7:0]) && !(&per_lane_result[15:8])) 
-                                    o_lane_map_tx = 3'b000;
-                                else 
-                                    o_lane_map_tx = 3'b011;  // DEGRADE_NOT_POSSIBLE
-
                                 o_tx_info_reg[2:0] = o_lane_map_tx; 
 
                                 if (done_ack) o_tx_sb_req_reg = 0;
@@ -1502,6 +1482,33 @@ always @(*) begin
                     o_tx_info_reg = 0;
                 end
             endcase
+        end
+    end
+
+    always @(*) begin
+        if (lane_map_calc) begin
+             if (&per_lane_result[15:0] && (o_lane_map_tx == 3'b011))
+            o_lane_map_tx = 3'b011;  // ALL_LANES_FUNCTIONAL
+        else if (&per_lane_result[7:0] && !(&per_lane_result[15:8])) begin
+            if (o_lane_map_tx == 3'b011) begin
+                o_lane_map_tx = 3'b001;
+            end else if (o_lane_map_tx == 3'b010) begin
+                o_lane_map_tx = 3'b000;
+            end else begin
+                o_lane_map_tx = 3'b001;
+            end
+        end else if (!(&per_lane_result[7:0]) && &per_lane_result[15:8]) begin
+            if (o_lane_map_tx == 3'b011) begin
+                o_lane_map_tx = 3'b010;
+            end else if (o_lane_map_tx == 3'b001) begin
+                o_lane_map_tx = 3'b000;
+            end else begin
+                o_lane_map_tx = 3'b010;
+            end
+        end else if (!(&per_lane_result[7:0]) && !(&per_lane_result[15:8])) 
+            o_lane_map_tx = 3'b000;
+        else 
+            o_lane_map_tx = 3'b011;  // DEGRADE_NOT_POSSIBLE
         end
     end
 
