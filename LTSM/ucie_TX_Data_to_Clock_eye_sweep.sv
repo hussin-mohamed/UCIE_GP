@@ -112,7 +112,7 @@ always @(posedge i_clk or posedge i_reset) begin
     end
 end
 
-always @(posedge i_clk or posedge i_reset) begin
+always @(posedge i_clk) begin
     per_lane_result_old <= per_lane_result;  // Capture previous per-lane result for reporting
     failed_test_old     <= failed_test;      // Capture previous test result for reporting
 end
