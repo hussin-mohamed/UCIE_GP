@@ -51,6 +51,12 @@ class rmblink_monitor extends rp_monitor_base #(
 
   extern virtual task collect_item_in(output rmblink_seq_item _item);
 
+  // Task: monitor_items_in
+  //
+  // Overridden monitor_items_in task to handle aborted deserialization.
+
+  extern virtual task monitor_items_in();
+
 endclass : rmblink_monitor
 
 
@@ -85,28 +91,53 @@ endtask : collect_item_out
 
 task rmblink_monitor::collect_item_in(output rmblink_seq_item _item);
   _item = new();
-
-  while (
-    bfm.i_rx_encoding != MBINIT_REVERSAL_RX_Per_Lane_ID_Det               &&  // Per Lane ID pattern
-    bfm.i_rx_encoding != Data_To_Clock_test_RX_Pattern_Detection_TX_Init  &&  // LFSR pattern or Per Lane ID pattern
-    bfm.i_rx_encoding != Data_To_Clock_test_RX_Pattern_Detection_RX_Init  &&  // LFSR pattern
-    bfm.i_rx_encoding != ACTIVE_RX_Active                                     // Active data transmission
-  ) begin
-    @(posedge bfm.clk);
-  end
-
-  fork
-    begin
-      bfm.deserialize_data(
-         ._data(_item.data)
-        ,._val_stream(_item.val_stream)
-      );
-    end
-
-    begin
-      @(bfm.i_rx_encoding);
-    end
-  join_any
-
-  disable fork;
 endtask : collect_item_in
+
+
+// monitor_items_in
+// ----------------
+
+task rmblink_monitor::monitor_items_in();
+  forever begin
+    if (collect_in) begin
+      bit success = 0;
+      item_in = new();
+
+      // Wait for a valid training or active state
+      while (
+        bfm.i_rx_encoding != MBINIT_REVERSAL_RX_Per_Lane_ID_Det               &&  
+        bfm.i_rx_encoding != Data_To_Clock_test_RX_Pattern_Detection_TX_Init  &&  
+        bfm.i_rx_encoding != Data_To_Clock_test_RX_Pattern_Detection_RX_Init  &&  
+        bfm.i_rx_encoding != ACTIVE_RX_Active                                     
+      ) begin
+        @(posedge bfm.clk);
+      end
+
+      fork
+        begin
+          bfm.deserialize_data(
+             ._data(item_in.data)
+            ,._val_stream(item_in.val_stream)
+          );
+          success = 1;
+        end
+
+        begin
+          @(bfm.i_rx_encoding);
+        end
+      join_any
+
+      disable fork;
+
+      if (success) begin
+        in_ap.write(item_in);
+        `uvm_info(get_type_name(), $sformatf("MONITORED item_in %s: \n%s", item_in.get_type_name(), item_in.sprint()), UVM_DEBUG)
+        txn_in_cnt++;
+      end else begin
+        `uvm_info(get_type_name(), "deserialize_data was aborted because i_rx_encoding changed. Discarding transaction.", UVM_DEBUG)
+      end
+    end else begin
+      #100;
+    end
+  end
+endtask : monitor_items_in
