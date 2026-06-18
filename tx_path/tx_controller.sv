@@ -54,6 +54,7 @@ module tx_controller #(
         ENC_MBTRAIN_DTC2             = 9'h0B0,
         ENC_MBTRAIN_LINKSPEED        = 9'h0B8,
         ENC_MBTRAIN_REPAIR           = 9'h0C0,
+        ENC_MBTRAIN_REPAIR_APPLY_DEGRADE = 9'h0C1,
         ENC_MBTRAIN_SPEEDIDLE        = 9'h0C8,
         ENC_MBTRAIN_TXSELFCAL        = 9'h0D0,
         ENC_PHYRETRAIN               = 9'h0D8,
@@ -391,7 +392,7 @@ module tx_controller #(
 
             // Per LTSM MBINIT.REPAIRMB sequence, sample lane map code during
             // TX_Apply_Degrade_Hnd substate (encoding 0x3A).
-            if ((i_tx_encoding == ENC_MBINIT_REPAIRMB_APPLY_DEGRADE) && lane_map_code_valid) begin
+            if (((i_tx_encoding == ENC_MBINIT_REPAIRMB_APPLY_DEGRADE) || (i_tx_encoding == ENC_MBTRAIN_REPAIR_APPLY_DEGRADE)) && lane_map_code_valid) begin
                 lane_mask_q <= lane_mask_from_code;
             end
 

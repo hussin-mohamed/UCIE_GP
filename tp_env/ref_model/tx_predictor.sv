@@ -51,6 +51,8 @@
       logic        o_pl_trdy;
       logic        o_b2l_enable;
       logic        o_data_sent;
+      logic        o_apply_degrade;
+      logic [2:0]  o_degraded_lane_map;
 
       logic [B2L_modelling_pkg::DATA_WIDTH-1:0] o_lane_b2l [0:B2L_modelling_pkg::LANES_NUMBER-1];
       logic [B2L_modelling_pkg::DATA_WIDTH-1:0] o_lane_lfsr [0:B2L_modelling_pkg::LANES_NUMBER-1];
@@ -67,7 +69,9 @@
       o_per_lane_id_gen_enable,
       o_b2l_enable,
       o_tx_reverse,
-      o_tx_done
+      o_tx_done,
+      o_apply_degrade,
+      o_degraded_lane_map
     );
 
     B2L_modelling (
@@ -78,6 +82,8 @@
       pl_trdy,
       o_b2l_enable,
       i_disable,
+      o_apply_degrade,
+      o_degraded_lane_map,
       i_lp_data,
       o_lane_b2l,
       o_data_sent
@@ -110,13 +116,20 @@
     // Reversal is applied within the active lane group only
     apply_lane_reversal(o_tx_reverse, i_lane_map_code, o_lane, o_lane);
 
-    if (i_lane_map_code == LOGICAL_LANES_0_TO_7) begin
-      for (int i=8; i < 16; i++) begin
-        o_lane[i] = 'bz;
-      end
-    end else if (i_lane_map_code == LOGICAL_LANES_8_TO_15) begin
-      for (int i=0; i < 8; i++) begin
-        o_lane[i] = 'bz;
+    // Tri-state inactive lanes based on effective lane map
+    // Use degraded lane map after Apply Degrade; otherwise use i_lane_map_code
+    begin
+      logic [2:0] effective_map;
+      effective_map = o_apply_degrade ? o_degraded_lane_map : i_lane_map_code;
+
+      if (effective_map == LOGICAL_LANES_0_TO_7) begin
+        for (int i=8; i < 16; i++) begin
+          o_lane[i] = 'bz;
+        end
+      end else if (effective_map == LOGICAL_LANES_8_TO_15) begin
+        for (int i=0; i < 8; i++) begin
+          o_lane[i] = 'bz;
+        end
       end
     end
 

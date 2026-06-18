@@ -17,6 +17,8 @@ package B2L_modelling_pkg;
         input pl_trdy,
         input enable,
         input i_disable,
+        input i_apply_degrade,
+        input [2:0] i_degraded_lane_map,
         input [7:0] i_lp_data [0:NBYTES-1],
         output [DATA_WIDTH-1:0] o_lane [0:LANES_NUMBER-1],
         output o_data_sent
@@ -27,6 +29,14 @@ package B2L_modelling_pkg;
     
         logic idle;
         int count_byte;
+
+        // Width degradation: use degraded lane map only after Apply Degrade
+        // state ('hC1 / 'h3A) has been reached; otherwise default to ALL_LANES
+        logic [2:0] effective_lane_map;
+        if (i_apply_degrade)
+            effective_lane_map = i_degraded_lane_map;
+        else
+            effective_lane_map = ALL_LANES;
     
         if (!i_reset || !enable) begin
             lane_data.delete();
@@ -57,7 +67,7 @@ package B2L_modelling_pkg;
             count_byte = 0;
         end else if (i_disable) begin
         end else begin
-            case (i_lane_map_code)
+            case (effective_lane_map)
                 NONE: begin
                     foreach (o_lane[i]) begin
                         o_lane[i] = 0;

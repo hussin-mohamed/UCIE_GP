@@ -229,28 +229,34 @@ package tx_controller_modelling_pkg;
         logic       done_prev;
         logic       o_tx_reverse;
         logic [8:0] encoding_prev;  // Track previous encoding internally
+        logic       apply_degrade;  // Latched: width degradation has been applied
+        logic [2:0] degraded_lane_map; // Latched lane_map_code at time of degrade
     } tx_controller_state_t;
 
     // =========================================================================
     // Initialize state structure
     // =========================================================================
     function automatic void tx_controller_state_init(ref tx_controller_state_t state);
-        state.parent_q      = PAR_NONE;
-        state.done_cnt_q    = 8'd0;
-        state.done_prev     = 1'b0;
-        state.o_tx_reverse  = 1'b0;
-        state.encoding_prev = 9'h000;
+        state.parent_q          = PAR_NONE;
+        state.done_cnt_q        = 8'd0;
+        state.done_prev         = 1'b0;
+        state.o_tx_reverse      = 1'b0;
+        state.encoding_prev     = 9'h000;
+        state.apply_degrade     = 1'b0;
+        state.degraded_lane_map = 3'b011;  // default: ALL_LANES
     endfunction
 
     // =========================================================================
     // Copy state from source to destination (for scoreboard synchronization)
     // =========================================================================
     function automatic void tx_controller_state_copy(ref tx_controller_state_t dest, input tx_controller_state_t src);
-        dest.parent_q      = src.parent_q;
-        dest.done_cnt_q    = src.done_cnt_q;
-        dest.done_prev     = src.done_prev;
-        dest.o_tx_reverse  = src.o_tx_reverse;
-        dest.encoding_prev = src.encoding_prev;
+        dest.parent_q          = src.parent_q;
+        dest.done_cnt_q        = src.done_cnt_q;
+        dest.done_prev         = src.done_prev;
+        dest.o_tx_reverse      = src.o_tx_reverse;
+        dest.encoding_prev     = src.encoding_prev;
+        dest.apply_degrade     = src.apply_degrade;
+        dest.degraded_lane_map = src.degraded_lane_map;
     endfunction
 
     // =========================================================================
@@ -268,7 +274,9 @@ package tx_controller_modelling_pkg;
         output logic        o_per_lane_id_gen_enable,
         output logic        b2l_enable,
         output logic        o_tx_reverse,
-        output logic        o_tx_done
+        output logic        o_tx_done,
+        output logic        o_apply_degrade,
+        output logic [2:0]  o_degraded_lane_map
     );
 
         // ----- local temporaries -----
@@ -282,11 +290,13 @@ package tx_controller_modelling_pkg;
         // Reset handling
         // =================================================================
         if (!i_reset) begin
-            state_ref.parent_q      = PAR_NONE;
-            state_ref.done_cnt_q    = 8'd0;
-            state_ref.done_prev     = 1'b0;
-            state_ref.o_tx_reverse  = 1'b0;
-            state_ref.encoding_prev = 9'h000;
+            state_ref.parent_q          = PAR_NONE;
+            state_ref.done_cnt_q        = 8'd0;
+            state_ref.done_prev         = 1'b0;
+            state_ref.o_tx_reverse      = 1'b0;
+            state_ref.encoding_prev     = 9'h000;
+            state_ref.apply_degrade     = 1'b0;
+            state_ref.degraded_lane_map = 3'b011;  // ALL_LANES
 
             o_tx_lfsr_enable         = 1'b0;
             o_tx_lfsr_load           = 1'b0;
@@ -295,6 +305,8 @@ package tx_controller_modelling_pkg;
             o_tx_reverse             = 1'b0;
             b2l_enable               = 1'b0;
             o_tx_done                = 1'b0;
+            o_apply_degrade          = 1'b0;
+            o_degraded_lane_map      = 3'b011;
             return;
         end
 
@@ -473,6 +485,20 @@ package tx_controller_modelling_pkg;
         // Only tx_reverse is preserved
         // =================================================================
         state_ref.o_tx_reverse = o_tx_reverse;
+
+        // =================================================================
+        // Width degradation: latch lane_map_code on Apply Degrade states
+        // MBTRAIN.REPAIR.APPLY_DEG (0xC1) or MBINIT.REPAIRMB.APPLY_DEG (0x3A)
+        // =================================================================
+        if ((i_tx_encoding == ENC_REPAIR_APPLY_DEG ||
+             i_tx_encoding == ENC_REPAIRMB_APPLY_DEG) &&
+            (i_lane_map_code != 3'b000)) begin
+            state_ref.apply_degrade     = 1'b1;
+            state_ref.degraded_lane_map = i_lane_map_code;
+        end
+
+        o_apply_degrade     = state_ref.apply_degrade;
+        o_degraded_lane_map = state_ref.degraded_lane_map;
 
         // =================================================================
         // Sequential state update (happens at end — models posedge behaviour)
