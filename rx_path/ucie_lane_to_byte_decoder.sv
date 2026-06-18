@@ -47,7 +47,7 @@ module ucie_lane_to_byte_decoder (
             LANE_MAP_0_TO_3     : o_decoding    = 5'b00001    ; // Lanes 0-3 active
             LANE_MAP_4_TO_7     : o_decoding    = 5'b01001    ; // Lanes 4-7 active
             
-            default: o_decoding = 5'b0000000                    ; // No lane active
+            default: o_decoding = 5'b00100                    ; // No lane active
         endcase
     end
     

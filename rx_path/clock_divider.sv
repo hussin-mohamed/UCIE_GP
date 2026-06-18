@@ -4,10 +4,10 @@ module clock_divider (
 );
     always_ff @( posedge i_clk or posedge i_reset) begin 
         if(i_reset)begin
-            o_clk<=0;
+            o_clk=0;
         end
         else if (i_enable)begin
-            o_clk<=~o_clk;
+            o_clk=~o_clk;
         end
     end
 endmodule
