@@ -320,10 +320,10 @@ package sb_shared_pkg;
   MBTRAIN_LINKSPEED_RX_Start_Handshake               = 9'b01_0111_000, // Hex: 'h0B8, Send Start RESP
   MBTRAIN_LINKSPEED_RX_Data_Clock_Test_Det           = 9'b01_0111_001, // Hex: 'h0B9, Check LFSR
   MBTRAIN_LINKSPEED_RX_Wait_REQ                      = 9'b01_0111_010, // Hex: 'h0BA, Wait for Decision
-  MBTRAIN_LINKSPEED_RX_Send_SpeedDegrade_RESP        = 9'b01_0111_011, // Hex: 'h0BB, Ack Speed Drop
+  MBTRAIN_LINKSPEED_RX_Send_SpeedDegrade_RESP        = 9'b01_0111_011, // Hex: 'h0BE, Ack Speed Drop
   MBTRAIN_LINKSPEED_RX_Send_PhyRetrain_RESP          = 9'b01_0111_100, // Hex: 'h0BC, Ack Retrain
   MBTRAIN_LINKSPEED_RX_Send_Repair_RESP              = 9'b01_0111_101, // Hex: 'h0BD, Ack Repair
-  MBTRAIN_LINKSPEED_RX_Send_Done_RESP                = 9'b01_0111_110, // Hex: 'h0BE, Ack Success
+  MBTRAIN_LINKSPEED_RX_Send_Done_RESP                = 9'b01_0111_110, // Hex: 'h0BA, Ack Success
   MBTRAIN_LINKSPEED_RX_Send_Error_RESP               = 9'b01_0111_111, // Hex: 'h0BF, Send Error resp
   
   // 9. MBTRAIN REPAIR
@@ -331,9 +331,9 @@ package sb_shared_pkg;
   // MBTRAIN_REPAIR_RX_Wait_Apply_Degrade_REQ          = 9'b01_1000_001, // Hex: 'h0C1, Receive Map
   MBTRAIN_REPAIR_RX_Apply_Degrade_Handshake          = 9'b01_1000_001, // Hex: 'h0C1, Update Hardware
   // MBTRAIN_REPAIR_RX_Send_Apply_Degrade_RESP         = 9'b01_1000_011, // Hex: 'h0C3, Confirm Degrade
-  MBTRAIN_REPAIR_RX_End_Handshake                    = 9'b01_1000_100, // Hex: 'h0C4, Send End RESP
+  MBTRAIN_REPAIR_RX_End_Handshake                    = 9'b01_1000_100, // Hex: 'h0C2, Send End RESP
 
-  
+
   // 10. MBTRAIN SPEEDIDLE
   MBTRAIN_SPEEDIDLE_RX_Speed_Transition              = 9'b01_1001_000, // Hex: 'h0C8, Change Clock Div
   // MBTRAIN_SPEEDIDLE_RX_End_Handshake                = 9'b01_1001_001, // Hex: 'h0C9, Fail -> Error
