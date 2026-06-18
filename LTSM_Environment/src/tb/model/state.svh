@@ -42,6 +42,7 @@ import shared_ltsm_pkg::*;
     static bit train_start;
     static bit train_end;
     static bit w_state_changed;
+    static bit sbinit_entry;
     static logic [5:0] r_rx_encoding_msb_prev;
 
     static int train_latency;
@@ -84,6 +85,19 @@ import shared_ltsm_pkg::*;
             //     nextState_rx=ResetState_rx::Instance();
             // end
             // else begin
+                nextState_tx = trainerror_tx::Instance();
+                nextState_rx = trainerror_rx::Instance();
+                counter = 0;
+                error_enter =1;
+            // end
+        end
+        if (counter == (item_controllers_in.i_sim_cycles_8-4) && cntxt.currentstate_tx != ResetState_tx::Instance() && cntxt.currentstate_tx !=trainerror_tx::Instance() && cntxt.currentstate_tx == SbInitState_tx::Instance()) begin
+            // if (cntxt.currentstate_tx == SbInitState_tx::Instance()) begin
+            //     nextState_tx=ResetState_tx::Instance();
+            //     nextState_rx=ResetState_rx::Instance();
+            // end
+            // else begin
+                sbinit_entry=1;
                 nextState_tx = trainerror_tx::Instance();
                 nextState_rx = trainerror_rx::Instance();
                 counter = 0;

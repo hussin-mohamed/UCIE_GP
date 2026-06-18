@@ -30,7 +30,7 @@ class trainerror_tx extends State;
 
     virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_seq_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
                                               LTSM_controllers_seq_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
-        if(cntxt.currentstate_tx != trainerror_tx::Instance()) begin
+        if(cntxt.currentstate_tx != trainerror_tx::Instance() && !sbinit_entry) begin
             o_tx_encoding_expected = TRAINERROR_TX_Handshake;
             o_tx_info_expected = 16'h0000;
             train_end=0;
@@ -56,7 +56,7 @@ class trainerror_tx extends State;
         //     end
         //     o_tx_encoding_expected =0;
         // end
-        else if(cntxt.currentstate_tx == trainerror_tx::Instance() && ((item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && item_tx_fsm_sb_in.i_tx_decoding == 'h40)||(counter == item_controllers_in.i_sim_cycles_8-2)))  begin
+        else if((cntxt.currentstate_tx == trainerror_tx::Instance() && ((item_tx_fsm_sb_in.i_sb_tx_rsp==1'b1 && item_tx_fsm_sb_in.i_tx_decoding == 'h40)||(counter == item_controllers_in.i_sim_cycles_8-2)))||sbinit_entry)  begin
             o_tx_encoding_expected = TRAINERROR_TX_TrainError;
             train_end=1;
             if (o_tx_encoding_expected==item_tx_fsm_sb_out.o_tx_encoding) begin

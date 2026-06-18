@@ -41,7 +41,7 @@ class ResetState_tx extends State;
    virtual function bit doSpecificCombAction(FSMContext cntxt,LTSM_controllers_seq_item item_controllers_in,ltsm_rdi_sequence_item item_rdi_in,rx_fsm_sb_sequence_item item_rx_fsm_sb_in,tx_fsm_sb_sequence_item item_tx_fsm_sb_in,
                                               LTSM_controllers_seq_item item_controllers_out,ltsm_rdi_sequence_item item_rdi_out,rx_fsm_sb_sequence_item item_rx_fsm_sb_out,tx_fsm_sb_sequence_item item_tx_fsm_sb_out);
       // predict combinational outputs in reset state
-      
+         sbinit_entry =0;
          o_tx_encoding_exp = 0;
 
          if(item_tx_fsm_sb_out.o_tx_encoding == 0 || item_tx_fsm_sb_out.o_tx_encoding == 'h108) begin

@@ -55,7 +55,7 @@ class trainerror_rx extends State;
         //     end
         //     o_rx_encoding_expected =0
         // end
-        else if(cntxt.currentstate_rx == trainerror_rx::Instance() && ((item_rx_fsm_sb_in.i_sb_rx_done==1'b1)))  begin
+        else if((cntxt.currentstate_rx == trainerror_rx::Instance() && ((item_rx_fsm_sb_in.i_sb_rx_done==1'b1)))||sbinit_entry)  begin
             o_rx_encoding_expected = RX_TRAINERROR_TrainError;
             if (o_rx_encoding_expected==item_rx_fsm_sb_out.o_rx_encoding) begin
                 match = 1;
