@@ -95,8 +95,18 @@ task rmblink_monitor::collect_item_in(output rmblink_seq_item _item);
     @(posedge bfm.clk);
   end
 
-  bfm.deserialize_data(
-     ._data(_item.data)
-    ,._val_stream(_item.val_stream)
-  );
+  fork
+    begin
+      bfm.deserialize_data(
+         ._data(_item.data)
+        ,._val_stream(_item.val_stream)
+      );
+    end
+
+    begin
+      @(bfm.i_rx_encoding);
+    end
+  join_any
+
+  disable fork;
 endtask : collect_item_in
