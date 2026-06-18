@@ -136,9 +136,9 @@ class ucie_TX_D2C_vseq extends ucie_vseq_base;
       if (pattern_mode == PAT_ALL_LANES_VALID) begin
         rmblink_lfsr_seq.scenario = SCENARIO_EXACT_MATCH;
       end else if (pattern_mode == PAT_UPPER_8_LANES_VALID) begin
-        // rmblink_lfsr_seq.scenario       = scen;
+        rmblink_lfsr_seq.scenario       = SCENARIO_ERROR_LOWER_RAND_LANE_ABOVE_THRESH_RANDOM;
       end else if (pattern_mode == PAT_LOWER_8_LANES_VALID) begin
-        // rmblink_lfsr_seq.scenario       = scen;
+        rmblink_lfsr_seq.scenario       = SCENARIO_ERROR_UPPER_RAND_LANE_ABOVE_THRESH_RANDOM;
       end else begin
         rmblink_lfsr_seq.scenario = SCENARIO_ERROR_ABOVE_THRESH_RANDOM;
       end

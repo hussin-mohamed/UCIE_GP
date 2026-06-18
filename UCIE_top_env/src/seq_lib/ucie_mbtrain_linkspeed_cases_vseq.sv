@@ -119,6 +119,7 @@ class ucie_mbtrain_linkspeed_cases_vseq extends ucie_vseq_base;
   end
 
   if (TRAINERROR_vseq.trainerr_cnt == 1)begin
+    TRAINERROR_vseq.configure(.missing_msg_2get(NORMAL));
     valverf_vseq.configure(
         .D2c_mode(SUCCESS),
         .pattern_mode(PAT_ALL_LANES_VALID),
@@ -209,7 +210,7 @@ class ucie_mbtrain_linkspeed_cases_vseq extends ucie_vseq_base;
 
     LINKSPEED_vseq.configure(
         .linkspeed_dest(REPAIR)
-        ,.pattern_mode(PAT_ALL_LANES_VALID)
+        ,.pattern_mode(PAT_LOWER_8_LANES_VALID)
         ,.message_mode(UPPER_8_LANES_VALID)
         ,.speed_idle_entry(OTHER_DIE)
     );
@@ -218,6 +219,7 @@ class ucie_mbtrain_linkspeed_cases_vseq extends ucie_vseq_base;
     );
 
     speedidle_till_linkspeed();
+    repair_vseq.start(p_sequencer);
 
     
     

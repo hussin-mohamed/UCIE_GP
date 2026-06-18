@@ -47,10 +47,10 @@ class ucie_mbtrain_repair_vseq extends ucie_vseq_base;
     if (lane_map_code == ALL_LANES) begin
         sb_ltsm_item.info[2:0] = 3'b011;
     end
-    else if (lane_map_code == LANE_MAP_UPPER) begin
+    else if (lane_map_code == UPPER_8_LANES) begin
         sb_ltsm_item.info[2:0] = 3'b010;
     end
-    else if (lane_map_code == LANE_MAP_LOWER) begin
+    else if (lane_map_code == LOWER_8_LANES) begin
         sb_ltsm_item.info[2:0] = 3'b001;
     end
     else begin

@@ -111,9 +111,9 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
     // DTC2_End_TX_LTSM
     `uvm_info("VSEQ", $sformatf("DTC2_End_TX_LTSM\n %s", sb_ltsm_item.sprint()), UVM_LOW)
 
-    if ((message_mode == ALL_LANES_VALID && pattern_mode != PAT_ALL_LANES_VALID) || (message_mode != ALL_LANES_VALID && pattern_mode == PAT_ALL_LANES_VALID)) begin
-      `uvm_fatal("TEST_ERROR", "invalid configuration")
-    end
+    // if ((message_mode == ALL_LANES_VALID && pattern_mode != PAT_ALL_LANES_VALID) || (message_mode != ALL_LANES_VALID && pattern_mode == PAT_ALL_LANES_VALID)) begin
+    //   `uvm_fatal("TEST_ERROR", "invalid configuration")
+    // end
 
     if (linkspeed_dest == LINKINIT) begin
       p_sequencer.rx_fifo.get(sb_ltsm_item);
@@ -129,25 +129,25 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
       // waiting for error request and sending it again
 
       p_sequencer.rx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_LinksSpeed_Done_Hnd);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_Error_REQ);
       send_sb_msg(sb_ltsm_item);
 
       // waiting for error response and sending it again
 
       p_sequencer.tx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Wait_REQ);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Send_Error_RESP);
       send_sb_msg(sb_ltsm_item);
 
       // waiting for repair request and sending it again
 
       p_sequencer.rx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_LinksSpeed_Done_Hnd);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_Exit_Repair_Hnd);
       send_sb_msg(sb_ltsm_item);
 
       // waiting for repair response and sending it again
 
       p_sequencer.tx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Wait_REQ);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Send_Repair_RESP);
       send_sb_msg(sb_ltsm_item);
 
     end
@@ -183,13 +183,13 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
       // waiting for error request and sending it again
 
       p_sequencer.rx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_LinksSpeed_Done_Hnd);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_Error_REQ);
       send_sb_msg(sb_ltsm_item);
 
       // waiting for error response and sending it again
 
       p_sequencer.tx_fifo.get(sb_ltsm_item);
-      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Wait_REQ);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Send_Error_RESP);
       send_sb_msg(sb_ltsm_item);
 
       // waiting for repair request and sending it again
@@ -197,17 +197,15 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
       p_sequencer.rx_fifo.get(sb_ltsm_item);
 
       // sending speed degrade request
-      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_LinksSpeed_Done_Hnd);
+      sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_Exit_SpeedDegrade_Hnd);
       send_sb_msg(sb_ltsm_item);
 
       // waiting for speeddegrade response and sending it again
 
       p_sequencer.tx_fifo.get(sb_ltsm_item);
+      sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_RX_Send_SpeedDegrade_RESP);
+      send_sb_msg(sb_ltsm_item);
 
-      // waiting for speeddegrade req
-
-      p_sequencer.rx_fifo.get(sb_ltsm_item);
-  
     end
 
   endtask

@@ -91,7 +91,7 @@ module ucie_ltsm_tx_mbinit_repairval #(
 
 
   always_comb begin
-
+    o_tx_data=0;
     o_tx_encoding = 9'h28;
     o_tx_sb_req = 0;
     o_tx_sb_rsp = 0;

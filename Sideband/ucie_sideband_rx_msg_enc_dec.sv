@@ -156,7 +156,7 @@ module ucie_sideband_rx_msg_enc_dec
     
     // ========== MBTRAIN.REPAIR Messages ==========
     MBTRAIN_REPAIR_INIT_RESP              = 'hC0,
-    MBTRAIN_REPAIR_END_RESP               = 'hC4,
+    MBTRAIN_REPAIR_END_RESP               = 'hC2,
     MBTRAIN_REPAIR_APPLY_DEGRADE_RESP     = 'hC1,
     
     // ========== PHYRETRAIN Messages ==========
@@ -269,7 +269,7 @@ typedef enum logic [pDECODING_WIDTH-1:0] {
   // ========== MBTRAIN.REPAIR Messages ==========
   MBTRAIN_REPAIR_INIT_REQ            = 'hC0,
   MBTRAIN_REPAIR_APPDEG_REQ          = 'hC1,
-  MBTRAIN_REPAIR_END_REQ             = 'hC4,
+  MBTRAIN_REPAIR_END_REQ             = 'hC2,
 
   // ========== PHYRETRAIN Messages ==========
   PHYRETRAIN_START_REQ               = 'hDA,

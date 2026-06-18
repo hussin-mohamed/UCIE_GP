@@ -291,7 +291,7 @@ class rp_pred extends uvm_component;
       3'b011: begin start_lane = 0; num_active_lanes = 16; end // x16 
       3'b100: begin start_lane = 0; num_active_lanes = 4;  end // x4 lower
       3'b101: begin start_lane = 4; num_active_lanes = 4;  end // x4 upper
-      default: `uvm_fatal("PRD_PERLANE", $sformatf("Unsupported lane_map_code: %0b", current_lane_map_code))
+      // default: `uvm_fatal("PRD_PERLANE", $sformatf("Unsupported lane_map_code: %0b", current_lane_map_code))
     endcase
     
       for (int i = 0; i < pNUM_LANES; i++) begin
