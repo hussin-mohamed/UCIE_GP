@@ -17,7 +17,7 @@
 
 module ucie_lane_to_byte_decoder (
     input   logic   [2:0]        i_lane_map_code                ,
-    output  logic   [6:0]        o_decoding
+    output  logic   [4:0]        o_decoding
 );
 
     // =========================================================================
