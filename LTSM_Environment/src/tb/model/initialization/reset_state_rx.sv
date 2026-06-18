@@ -44,9 +44,13 @@ class ResetState_rx extends State;
       // predict combinational outputs in reset state
          o_rx_encoding_exp = 0;
          train_end=0;
-         if(item_controllers_out.o_rx_encoding == 0 || item_controllers_out.o_rx_encoding == 'h108) begin
-            match = 1;
 
+         if (item_controllers_in.i_reset) begin
+            return 1;
+         end
+         
+         if(item_controllers_out.o_rx_encoding == 0) begin
+            match = 1;
          end
             
          else begin

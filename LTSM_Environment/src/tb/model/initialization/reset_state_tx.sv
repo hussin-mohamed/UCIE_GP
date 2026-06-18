@@ -44,9 +44,12 @@ class ResetState_tx extends State;
          sbinit_entry =0;
          o_tx_encoding_exp = 0;
 
-         if(item_tx_fsm_sb_out.o_tx_encoding == 0 || item_tx_fsm_sb_out.o_tx_encoding == 'h108) begin
-                match = 1;
+         if (item_controllers_in.i_reset) begin
+            return 1;
+         end
 
+         if(item_controllers_out.o_tx_encoding == 0) begin
+            match = 1;
          end
            
          else begin
