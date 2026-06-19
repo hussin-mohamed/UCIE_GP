@@ -83,6 +83,9 @@ module ucie_reordering_block #(
     // First 16 bytes received are LSB, stored at MSB of lane
     // Extract from high bits downward: (TOTAL_BYTES/16-1-i)*8
     // =========================================================================
+    x16_bytes = '{default: '0};
+    x8_bytes  = '{default: '0};
+    x4_bytes  = '{default: '0};
         if(i_mode_x16)begin
         for (int i = 0; i < TOTAL_BYTES/16; i++) begin
             x16_bytes[i*16 + 0]  = i_x16_lane_0[(i*8)+:8]       ;

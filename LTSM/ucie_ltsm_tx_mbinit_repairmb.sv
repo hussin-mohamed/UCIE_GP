@@ -192,7 +192,7 @@ module ucie_ltsm_tx_mbinit_repairmb #(
   // REQ & Done Handshake 
   always @(posedge i_clk or posedge i_reset) begin
     if (i_reset) done_ack <= 1;
-    else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack = 0;
+    else if (o_tx_encoding[2:0] != o_tx_encoding_old[2:0]) done_ack <= 0;
     else if (i_sb_tx_done) begin
       done_ack <= 1;
     end else if (i_sb_tx_rsp || i_sb_tx_req) begin
