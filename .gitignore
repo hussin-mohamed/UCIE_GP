@@ -120,3 +120,9 @@ UCIE_top_env/sim/wlft9vg6hm
 UCIE_top_env/sim/wlftb895iq
 UCIE_top_env/sim/wlftixfvmf
 UCIE_top_env/sim/wlfttmw3ys
+
+# Allow ucdb files inside the sim/out folder, keep all other files ignored
+!UCIE_top_env/sim/out/
+UCIE_top_env/sim/out/**/*
+!UCIE_top_env/sim/out/**/
+!UCIE_top_env/sim/out/**/*.ucdb
