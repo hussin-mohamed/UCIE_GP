@@ -665,7 +665,12 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
     end  // fail_state == FAIL_ALL
 
     $display("%0t -- count trainerror = %0d", $time, TRAINERROR_vseq.trainerr_cnt);
-    if (TRAINERROR_vseq.trainerr_cnt == 0) begin
+    if ((fail_state == FAIL_CLK && TRAINERROR_vseq.trainerr_cnt < 8) 
+        || (fail_state == FAIL_VAL && TRAINERROR_vseq.trainerr_cnt == 0)
+        || (fail_state == FAIL_REVERSAL && TRAINERROR_vseq.trainerr_cnt < 5)
+        || (fail_state == FAIL_REPAIR && fail_side == FAIL_SIDE_TX && TRAINERROR_vseq.trainerr_cnt < 3)
+        || (fail_state == FAIL_REPAIR && fail_side == FAIL_SIDE_RX && TRAINERROR_vseq.trainerr_cnt < 2)
+        ) begin
       // We clear is_configured at the end of recovery instead of here
 
       sbinit_phylink_seq.start(sb_phylink_seqr);
@@ -789,9 +794,9 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
       // send RMBLink Clock Pattern Sequence
       `uvm_info("UCIE_VSEQ", "Starting rmblink_clk_seq on rp_rmblink_seqr", UVM_LOW)
       if (fail_state == FAIL_CLK && (fail_side == FAIL_SIDE_RX || fail_side == FAIL_SIDE_BOTH)) begin
-        rmblink_clk_seq.select_clkn = 0;
-        rmblink_clk_seq.select_clkp = 0;
-        rmblink_clk_seq.select_trk  = 0;
+        rmblink_clk_seq.select_clkn = TRAINERROR_vseq.trainerr_cnt[2];
+        rmblink_clk_seq.select_clkp = TRAINERROR_vseq.trainerr_cnt[1];
+        rmblink_clk_seq.select_trk  = TRAINERROR_vseq.trainerr_cnt[0];
         rmblink_clk_seq.test_mode   = TEST_CLK_PURE_RANDOM;
       end else begin
         rmblink_clk_seq.test_mode = TEST_CLK_IDEAL_ALL;
@@ -1009,7 +1014,7 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
       `uvm_info("UCIE_VSEQ", "Starting rmblink_PerLaneID_seq on rp_rmblink_seqr", UVM_LOW)
       if (fail_state == FAIL_REVERSAL && (fail_side == FAIL_SIDE_RX || fail_side == FAIL_SIDE_BOTH)) begin
         rmblink_PerLaneID_seq.configure(SCENARIO_MIXED_SUCCESS, 32,
-                                        ._err_region(ERR_INJECT_ALL_LANES));
+                                        ._err_region(error_inject_region_e'(TRAINERROR_vseq.trainerr_cnt % 5)));
       end else begin
         rmblink_PerLaneID_seq.configure(SCENARIO_IDEAL, 32);
       end
@@ -1229,16 +1234,20 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
         pattern_mode_e pattern_mode_val;
         lane_map_code_e lane_map_code_val;
         message_mode_e message_mode_val;
+        static int count = 1;
 
         // Set TX parameters based on tx_lane_map
         if (fail_side == FAIL_SIDE_TX || fail_side == FAIL_SIDE_BOTH) begin
           info_mode_val = ERROR;
-          message_mode_val = NO_LANES_VALID;
+          message_mode_val = message_mode_e'(count % 4);
+          // message_mode_val = NO_LANES_VALID;
+        
 
           // Good REPAIRMB
           ucie_TX_D2C.configure(SUCCESS, PAT_ALL_LANES_VALID, PER_LANE_ID_PATTERN, ERROR,
                                 message_mode_val, VALID_CORRECT, ALL_LANES);
           ucie_TX_D2C.start(p_sequencer);
+          count++;
 
           // Good Degrade / Done Handshake
           p_sequencer.rx_fifo.get(sb_ltsm_item);
@@ -1275,13 +1284,27 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
             send_sb_msg(sb_ltsm_item);
 
             rmblink_PerLaneID_seq.configure(._scenario(SCENARIO_IDEAL), ._num_iterations('d32)
-                                            , ._lane_map_code(X8_LOWER_MODE)
+                                            , ._lane_map_code(message_mode_val == LOWER_8_LANES_VALID ? X8_LOWER_MODE :
+                                                              message_mode_val == UPPER_8_LANES_VALID ? X8_UPPER_MODE :
+                                                              X16_MODE)
                                             , ._mixed_mode(MIXED_ALTERNATING));
+            rmblink_PerLaneID_seq.start(rp_rmblink_seqr);
 
             p_sequencer.rx_fifo.get(sb_ltsm_item);
             #50ns;
-            sb_ltsm_item.data[15:8] = '0;
-            sb_ltsm_item.data[7:0]  = '0;
+            if (message_mode_val == LOWER_8_LANES_VALID) begin
+              sb_ltsm_item.data[15:8] = '0;
+              sb_ltsm_item.data[7:0]  = '1;
+            end else if (message_mode_val == UPPER_8_LANES_VALID) begin
+              sb_ltsm_item.data[15:8] = '1;
+              sb_ltsm_item.data[7:0]  = '0;
+            end else if (message_mode_val == ALL_LANES_VALID) begin
+              sb_ltsm_item.data[15:8] = '1;
+              sb_ltsm_item.data[7:0]  = '1;
+            end else begin
+              sb_ltsm_item.data[15:8] = '0;
+              sb_ltsm_item.data[7:0]  = '0;
+            end
             sb_ltsm_item.set_rx_encoding(
                 sb_shared_pkg::Data_To_Clock_test_RX_TX_INIT_Result_Handshake);
             send_sb_msg(sb_ltsm_item);
@@ -1296,6 +1319,10 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
             // Good Degrade / Done Handshake
             p_sequencer.rx_fifo.get(sb_ltsm_item);
             #50ns;
+
+            TRAINERROR_vseq.configure(NORMAL_RX);
+            TRAINERROR_vseq.start(p_sequencer);
+
             sb_ltsm_item.set_rx_encoding(sb_shared_pkg::MBINIT_REPAIRMB_RX_Send_Degrade_Resp);
             send_sb_msg(sb_ltsm_item);
 
@@ -1321,22 +1348,24 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
           // endcase
         end else begin
           info_mode_val = CORRECT;
-          pattern_mode_val = PAT_ALL_LANES_VALID;
           lane_map_code_val = ALL_LANES;
         end
 
         // Set RX parameters based on rx_lane_map
         if (fail_side == FAIL_SIDE_RX || fail_side == FAIL_SIDE_BOTH) begin
+          static int rx_count = 1;
+          pattern_mode_val = pattern_mode_e'(rx_count % 4);
+
           case (rx_lane_map)
             LANE_MAP_UPPER: message_mode_val = LOWER_8_LANES_VALID;
             LANE_MAP_LOWER: message_mode_val = UPPER_8_LANES_VALID;
             default:        message_mode_val = NO_LANES_VALID;  // LANE_MAP_ALL
           endcase
 
-          // Good REPAIRMB
-          ucie_TX_D2C.configure(SUCCESS, PAT_LOWER_8_LANES_VALID, PER_LANE_ID_PATTERN, CORRECT,
+          ucie_TX_D2C.configure(SUCCESS, pattern_mode_val, PER_LANE_ID_PATTERN, CORRECT,
                                 ALL_LANES_VALID, VALID_CORRECT, ALL_LANES);
           ucie_TX_D2C.start(p_sequencer);
+          rx_count++;
 
           // Good Degrade / Done Handshake
           p_sequencer.rx_fifo.get(sb_ltsm_item);
@@ -1357,7 +1386,9 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
 
             #50ns;
 
-            sb_ltsm_item.info = 3'b010;
+            sb_ltsm_item.info = pattern_mode_val == PAT_LOWER_8_LANES_VALID ? 3'b001 :
+                                pattern_mode_val == PAT_UPPER_8_LANES_VALID ? 3'b010 :
+                                3'b011;
             sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRMB_TX_Apply_Degrade_Hnd);
             send_sb_msg(sb_ltsm_item);
 
@@ -1380,7 +1411,9 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
             p_sequencer.tx_fifo.get(sb_ltsm_item);
 
             rmblink_PerLaneID_seq.configure(._scenario(SCENARIO_IDEAL), ._num_iterations('d32)
-                                            , ._lane_map_code(X8_UPPER_MODE)
+                                            , ._lane_map_code((pattern_mode_val == PAT_LOWER_8_LANES_VALID ? X8_LOWER_MODE :
+                                                              pattern_mode_val == PAT_UPPER_8_LANES_VALID ? X8_UPPER_MODE :
+                                                              X16_MODE))
                                             , ._mixed_mode(MIXED_ALTERNATING));
             rmblink_PerLaneID_seq.start(rp_rmblink_seqr);
 
@@ -1399,7 +1432,9 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
             p_sequencer.tx_fifo.get(sb_ltsm_item);
 
 
-            sb_ltsm_item.info = 3'b001;
+            sb_ltsm_item.info = pattern_mode_val == PAT_LOWER_8_LANES_VALID ? 3'b001 :
+                                pattern_mode_val == PAT_UPPER_8_LANES_VALID ? 3'b010 :
+                                3'b011;
             sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRMB_TX_Apply_Degrade_Hnd);
             send_sb_msg(sb_ltsm_item);
 
@@ -1409,6 +1444,8 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
             sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBINIT_REPAIRMB_TX_Done_Handshake);
             send_sb_msg(sb_ltsm_item);
 
+            TRAINERROR_vseq.configure(NORMAL_RX);
+            TRAINERROR_vseq.start(p_sequencer);
 
             // rmblink_PerLaneID_seq.configure(._scenario(SCENARIO_IDEAL), ._num_iterations('d32)
             //                                 // ,._lane_map_code(lane_map_code)
@@ -1469,9 +1506,14 @@ class ucie_mbinit_fail_vseq extends ucie_vseq_base;
         send_sb_msg(sb_ltsm_item);
       end
 
-      train_vseq.start(p_sequencer);
+      // train_vseq.start(p_sequencer);
       `uvm_info("UCIE_VSEQ", "System-level sanity virtual sequence finished", UVM_LOW)
-    end else if (TRAINERROR_vseq.trainerr_cnt == 1) begin
+    end else if ((fail_state == FAIL_CLK && TRAINERROR_vseq.trainerr_cnt >= 8) 
+          || (fail_state == FAIL_VAL && TRAINERROR_vseq.trainerr_cnt != 0)
+          || (fail_state == FAIL_REVERSAL && TRAINERROR_vseq.trainerr_cnt >= 5)
+          || (fail_state == FAIL_REPAIR && fail_side == FAIL_SIDE_TX && TRAINERROR_vseq.trainerr_cnt >= 3)
+          || (fail_state == FAIL_REPAIR && fail_side == FAIL_SIDE_RX && TRAINERROR_vseq.trainerr_cnt >= 2)
+          ) begin
       mbinit_vseq.start(p_sequencer);
       train_vseq.start(p_sequencer);
       is_configured = 0;  // Clear configuration flag once test completes

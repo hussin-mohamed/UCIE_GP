@@ -38,6 +38,8 @@ class ltsmc_seq_item extends uvm_sequence_item;
     `uvm_field_int(error_threshold, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_int(half_rate, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK | UVM_NOCOMPARE)
     `uvm_field_int(rx_data_results, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
+    `uvm_field_int(rx_clk_results, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
+    `uvm_field_int(rx_valid_results, UVM_DEFAULT | UVM_NORECORD | UVM_NOPACK)
   `uvm_object_utils_end
 
   // Function: new
