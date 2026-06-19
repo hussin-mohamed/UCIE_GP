@@ -32,6 +32,7 @@ class sbinit_phylink_rand_seq extends sb_sequence_base #(phylink_seq_item);
   `uvm_object_utils(sbinit_phylink_rand_seq)
 
   sbinit_seq_mode_e m_sbinit_seq_mode = RAND_TILL_DETECTION;
+  bit timeout_detected = 0;
 
   // Function: new
   //
@@ -85,25 +86,36 @@ endfunction : configure
 
 task sbinit_phylink_rand_seq::body();
   bit force_pattern_error = (m_sbinit_seq_mode == RAND_TILL_DETECTION)? 0 : 1;
+  timeout_detected = 0;
 
   start_item(req);
   req.configure_randomization(._mode(SBINIT), ._is_first_iteration(1), ._force_pattern_error(force_pattern_error));
   assert(req.randomize());
   finish_item(req);
-  forever begin
-    start_item(req);
-    req.configure_randomization(._mode(SBINIT), ._force_pattern_error(force_pattern_error));
-    assert(req.randomize());
-    finish_item(req);
+  get_response(rsp);
 
-    // Get the driver response that reports pattern detection or timeout.
-    get_response(rsp);
+  if (rsp.in_pat_detected) begin
+    // Pattern detected on the first item
+  end else if (rsp.timeout_detected) begin
+    `uvm_info(get_type_name(), "Timeout is DETECTED", UVM_DEBUG)
+    timeout_detected = 1;
+  end else begin
+    forever begin
+      start_item(req);
+      req.configure_randomization(._mode(SBINIT), ._force_pattern_error(force_pattern_error));
+      assert(req.randomize());
+      finish_item(req);
 
-    if (rsp.in_pat_detected) begin
-      break;
-    end else if (rsp.timeout_detected) begin
-      `uvm_info(get_type_name(), "Timeout is DETECTED", UVM_DEBUG)
-      break;
+      // Get the driver response that reports pattern detection or timeout.
+      get_response(rsp);
+
+      if (rsp.in_pat_detected) begin
+        break;
+      end else if (rsp.timeout_detected) begin
+        `uvm_info(get_type_name(), "Timeout is DETECTED", UVM_DEBUG)
+        timeout_detected = 1;
+        break;
+      end
     end
   end
 

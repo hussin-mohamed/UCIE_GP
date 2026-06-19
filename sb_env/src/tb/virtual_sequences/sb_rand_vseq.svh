@@ -96,6 +96,7 @@ task sb_rand_vseq::body();
     end
 
     begin
+      sbinit_rand_seq.configure(._sbinit_seq_mode(RAND_TILL_DETECTION));
       sbinit_rand_seq.start(phylink_seqr);
     end
   join
@@ -104,19 +105,5 @@ task sb_rand_vseq::body();
   tx_rand_seq.start(tx_seqr);
   rx_rand_seq.start(rx_seqr);
   phylink_rand_seq.start(phylink_seqr);
-
-  // active_phylink_seq.start(phylink_seqr);
-  // fork
-  //   begin
-  //   end
-
-  //   begin
-  //     rx_conc_seq.start(rx_seqr);
-  //   end
-
-  //   begin
-  //     phylink_conc_seq.start(phylink_seqr);
-  //   end
-  // join
 
 endtask : body

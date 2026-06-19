@@ -127,8 +127,8 @@ class tx2link_monitor extends uvm_monitor;
       return;
     end
 
-    $display("[Monitor] Starting sampling - state=%s (0x%h), chunk_size=%0d",
-             ltsm_vif.tx_encoding.name(), ltsm_vif.tx_encoding, chunk_size);
+    // $display("[Monitor] Starting sampling - state=%s (0x%h), chunk_size=%0d",
+    //          ltsm_vif.tx_encoding.name(), ltsm_vif.tx_encoding, chunk_size);
 
     txn = tx2link_item::type_id::create("egr_mon_txn");
     txn.captured_state = ltsm_vif.tx_encoding;  // Direct from interface
@@ -150,8 +150,8 @@ class tx2link_monitor extends uvm_monitor;
       end else counter = 0;
     end
 
-    $display($sformatf("Chunk assembled: state=%s, ui_count=%0d",
-              txn.captured_state.name(), txn.ui_count));
+    // $display($sformatf("Chunk assembled: state=%s, ui_count=%0d",
+    //           txn.captured_state.name(), txn.ui_count));
     `uvm_info("EGR_MON", $sformatf("Chunk assembled: state=%s, ui_count=%0d",
               txn.captured_state.name(), txn.ui_count), UVM_HIGH)
 

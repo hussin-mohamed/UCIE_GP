@@ -49,7 +49,7 @@ module ucie_sb_tx_path (
   // we should go to Extra Iter state but we need to wait for the slow clock edge to come
   // and between that the ui counter might move to 0 again to start next iterations before 
   // the slow clock edge come --- That is why we need a flag to remeber this scene
-  logic       latch_flag;
+  // logic       latch_flag;
 
   // --------------------------------------------------------
   // 1ms Alternating Logic
@@ -75,15 +75,15 @@ module ucie_sb_tx_path (
     end
   end
 
-  always_ff @(posedge i_s_clk or posedge i_reset) begin
-    if (i_reset) begin
-      latch_flag <= 0;
-    end
-    // else begin
-      // if (ui_counter == 95 && i_rx_done && current_state == CYCLING) latch_flag <= 1;
-      // else if (current_state != CYCLING) latch_flag <= 0;
-    // end
-  end
+  // always_ff @(posedge i_s_clk or posedge i_reset) begin
+  //   if (i_reset) begin
+  //     latch_flag <= 0;
+  //   end
+  //   // else begin
+  //     // if (ui_counter == 95 && i_rx_done && current_state == CYCLING) latch_flag <= 1;
+  //     // else if (current_state != CYCLING) latch_flag <= 0;
+  //   // end
+  // end
 
   always_comb begin
     next_state = current_state;

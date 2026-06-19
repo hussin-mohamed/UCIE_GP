@@ -156,7 +156,6 @@ class ucie_mbtrain_linkspeed_vseq extends ucie_vseq_base;
       // waiting for error request and sending it again
 
       p_sequencer.rx_fifo.get(sb_ltsm_item);
-      $display("zobryyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy");
       sb_ltsm_item.set_tx_encoding(sb_shared_pkg::MBTRAIN_LINKSPEED_TX_Error_REQ);
       send_sb_msg(sb_ltsm_item);
 

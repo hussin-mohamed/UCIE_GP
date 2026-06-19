@@ -57,14 +57,14 @@ if {[info exists SKIP_COMPILE_ONCE] && $SKIP_COMPILE_ONCE == 1} {
 # LAUNCH SIMULATION
 # -----------------------------------------------------------------------------
 if {$ENABLE_COVERAGE == 1} {
-    vsim opt_ucie_tb_top -nodpiexports -uvmcontrol=all -classdebug -coverage -onfinish stop \
+    vsim opt_ucie_tb_top -nodpiexports -uvmcontrol=all -classdebug -coverage -onfinish stop -suppress 4036 \
         +UVM_TESTNAME=$TEST_NAME \
         +UVM_VERBOSITY=$UVM_VERB \
         +UVM_NO_RELNOTES \
         +UVM_TIMEOUT=$UVM_TIMEOUT,YES \
         -sv_seed $SIM_SEED
 } else {
-    vsim opt_ucie_tb_top -nodpiexports -uvmcontrol=all -classdebug \
+    vsim opt_ucie_tb_top -nodpiexports -uvmcontrol=all -classdebug -suppress 4036 \
         +UVM_TESTNAME=$TEST_NAME \
         +UVM_VERBOSITY=$UVM_VERB \
         +UVM_NO_RELNOTES \

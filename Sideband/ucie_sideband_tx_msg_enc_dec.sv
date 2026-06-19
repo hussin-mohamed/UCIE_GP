@@ -46,7 +46,8 @@ module ucie_sideband_tx_msg_enc_dec
   reg  [2:0] enc_dstid;
   reg  enc_dp;
   reg  enc_cp;
-  reg  [1:0] enc_state;
+  // reg  [1:0] enc_state;
+
 
   wire  [pMSG_CODE_WIDTH-1:0] dec_msg_code;
   wire  [pMSG_SUBCODE_WIDTH-1:0] dec_msg_subcode;

@@ -142,6 +142,10 @@ class phylink_seq_item extends uvm_sequence_item;
     out_of_rst_ui_cnt inside {[500:2000]};
   }
 
+  constraint c_wait_cycles {
+    wait_cycles inside {[0:10]};
+  }
+
 endclass : phylink_seq_item
 
 //-----------------------------------------------------------------------------

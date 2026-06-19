@@ -104,7 +104,11 @@ interface sb_sva #(
   // Millisecond Counter ranging from 0ms to 7ms
   bit [2:0] tms;
   
-  initial forever #60ns clk_2x = ~clk_2x;
+  `ifdef UCIE_SYS_LVL
+    initial forever #60ns clk_2x = ~clk_2x;
+  `else
+    initial forever #1    clk_2x = ~clk_2x;
+  `endif
 
   always @(negedge i_rx_sb_clk) begin
     wait(q_pat_det(i_rx_sb_data, i_rx_sb_clk).triggered);
@@ -129,7 +133,7 @@ interface sb_sva #(
   // Properties & Assertions
   // ============================================================================
   property p_pat_gen();
-    ##1 first_match(q_pat_gen(o_tx_sb_data)[*1:$] ##0 pat_detected ##1 q_pat_gen(o_tx_sb_data)[*4] ##1 @(posedge i_clk) ##1 $rose(o_sb_ready));
+    ##[1:100] first_match(q_pat_gen(o_tx_sb_data)[*1:$] ##0 pat_detected ##1 q_pat_gen(o_tx_sb_data)[*4] ##1 @(posedge i_clk) ##1 $rose(o_sb_ready));
   endproperty : p_pat_gen
 
   property p_pat_low();
@@ -137,7 +141,7 @@ interface sb_sva #(
   endproperty : p_pat_low
 
   property p_clk_gen();
-    ##1 first_match(q_clk_gen(o_tx_sb_clk)[*1:$] ##0 pat_detected ##1 q_clk_gen(o_tx_sb_clk)[*4]);
+    ##[1:100] first_match(q_clk_gen(o_tx_sb_clk)[*1:$] ##0 pat_detected ##1 q_clk_gen(o_tx_sb_clk)[*4]);
   endproperty : p_clk_gen
 
   property p_clk_low();

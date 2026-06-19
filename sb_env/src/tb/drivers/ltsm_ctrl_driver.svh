@@ -91,6 +91,7 @@ task ltsm_ctrl_driver::drive_item(inout ltsm_ctrl_seq_item req, output ltsm_ctrl
         `uvm_info(get_type_name(), "Waiting for timeout...", UVM_DEBUG)
         @(posedge bfm.timeout);
         -> timeout_triggered;
+        bfm.i_sb_init_start <= 0;
         `uvm_info(get_type_name(), "TRIGGERED timeout", UVM_DEBUG)
       end
 

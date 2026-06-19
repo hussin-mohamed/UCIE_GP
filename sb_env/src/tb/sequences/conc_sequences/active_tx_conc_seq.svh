@@ -89,6 +89,8 @@ endtask : pre_body
 // Issues a randomized TX item, then waits for the paired reactive response.
 
 task active_tx_conc_seq::body();
+  ltsm_seq_item dummy;
+  while(seqr.reactive_fifo.try_get(dummy)); // Flush any stale responses
   repeat (900) begin
     start_item(req);
     req.set_dir(MSG_FROM_TX);

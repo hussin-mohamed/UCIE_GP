@@ -183,6 +183,16 @@ task sb_test_base::main_phase(uvm_phase phase);
   
       phase.drop_objection(this); 
     end
+
+    begin
+      // Wait for SBINIT timeout event to trigger a reset/retry jump
+      @(timeout_triggered);
+      `uvm_info(get_type_name(), "SBINIT timeout detected in test! Jumping backward to uvm_pre_reset_phase...", UVM_LOW)
+      hit_reset = 0;
+      phase.drop_objection(this);
+      phase.get_objection().set_report_severity_id_override(UVM_WARNING, "OBJTN_CLEAR", UVM_INFO);
+      phase.jump(uvm_pre_reset_phase::get());
+    end
   join_none
 
   if(hit_reset) begin
@@ -193,8 +203,8 @@ task sb_test_base::main_phase(uvm_phase phase);
     #(reset_delay_ns);
     phase.drop_objection(this);
     phase.get_objection().set_report_severity_id_override(UVM_WARNING, "OBJTN_CLEAR", UVM_INFO);
-    phase.jump(uvm_pre_reset_phase::get());
     hit_reset = 0;
+    phase.jump(uvm_pre_reset_phase::get());
   end 
 
 endtask : main_phase

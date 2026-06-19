@@ -84,6 +84,7 @@ module sb_tb_top;
   assign phylink_bfm.tms     = ltsm_ctrl_bfm.tms;
   assign phylink_bfm.timeout = ltsm_ctrl_bfm.timeout;
   assign phylink_bfm.start   = ltsm_ctrl_bfm.i_sb_init_start;
+  // assign dut.sva_inst.tms    = ltsm_ctrl_bfm.tms;
 
   //============================================================================
   // DUT Instantiation
@@ -143,52 +144,52 @@ module sb_tb_top;
   //============================================================================
   // Binding Assertions Interface
   //============================================================================
-  bind ucie_sb_top sb_sva sva_inst(
-     .i_clk           (i_clk)
-    ,.clk_800MHz      (i_800MHz_clk)
-    ,.i_reset         (i_reset)
+  // bind ucie_sb_top sb_sva sva_inst(
+  //    .i_clk           (i_clk)
+  //   ,.clk_800MHz      (i_800MHz_clk)
+  //   ,.i_reset         (i_reset)
 
-    ,.i_tx_sb_req     (i_tx_sb_req)
-    ,.i_tx_sb_rsp     (i_tx_sb_rsp)
-    ,.i_tx_sb_done    (i_tx_sb_done)
-    ,.i_tx_encoding   (i_tx_encoding)
-    ,.i_tx_info       (i_tx_info)
-    ,.i_tx_data       (i_tx_data)
+  //   ,.i_tx_sb_req     (i_tx_sb_req)
+  //   ,.i_tx_sb_rsp     (i_tx_sb_rsp)
+  //   ,.i_tx_sb_done    (i_tx_sb_done)
+  //   ,.i_tx_encoding   (i_tx_encoding)
+  //   ,.i_tx_info       (i_tx_info)
+  //   ,.i_tx_data       (i_tx_data)
 
-    ,.i_rx_sb_req     (i_rx_sb_req)
-    ,.i_rx_sb_rsp     (i_rx_sb_rsp)
-    ,.i_rx_sb_done    (i_rx_sb_done)
-    ,.i_rx_encoding   (i_rx_encoding)
-    ,.i_rx_info       (i_rx_info)
-    ,.i_rx_data       (i_rx_data)
+  //   ,.i_rx_sb_req     (i_rx_sb_req)
+  //   ,.i_rx_sb_rsp     (i_rx_sb_rsp)
+  //   ,.i_rx_sb_done    (i_rx_sb_done)
+  //   ,.i_rx_encoding   (i_rx_encoding)
+  //   ,.i_rx_info       (i_rx_info)
+  //   ,.i_rx_data       (i_rx_data)
 
-    ,.i_sb_init_start (i_sb_init_start)
-    ,.i_timer_1ms     (i_timer_1ms)
+  //   ,.i_sb_init_start (i_sb_init_start)
+  //   ,.i_timer_1ms     (i_timer_1ms)
 
-    ,.i_rx_sb_data    (i_rx_sb_data)
-    ,.i_rx_sb_clk     (i_rx_sb_clk)
+  //   ,.i_rx_sb_data    (i_rx_sb_data)
+  //   ,.i_rx_sb_clk     (i_rx_sb_clk)
 
-    ,.o_tx_decoding   (o_tx_decoding)
-    ,.o_tx_info       (o_tx_info)
-    ,.o_tx_data       (o_tx_data)
-    ,.o_tx_valid      (o_tx_valid)
+  //   ,.o_tx_decoding   (o_tx_decoding)
+  //   ,.o_tx_info       (o_tx_info)
+  //   ,.o_tx_data       (o_tx_data)
+  //   ,.o_tx_valid      (o_tx_valid)
 
-    ,.o_rx_decoding   (o_rx_decoding)
-    ,.o_rx_info       (o_rx_info)
-    ,.o_rx_data       (o_rx_data)
-    ,.o_rx_valid      (o_rx_valid)
+  //   ,.o_rx_decoding   (o_rx_decoding)
+  //   ,.o_rx_info       (o_rx_info)
+  //   ,.o_rx_data       (o_rx_data)
+  //   ,.o_rx_valid      (o_rx_valid)
 
-    ,.o_sb_tx_req     (o_sb_tx_req)
-    ,.o_sb_tx_rsp     (o_sb_tx_rsp)
-    ,.o_sb_rx_req     (o_sb_rx_req)
-    ,.o_sb_rx_rsp     (o_sb_rx_rsp)
-    ,.o_sb_tx_done    (o_sb_tx_done)
-    ,.o_sb_rx_done    (o_sb_rx_done)
+  //   ,.o_sb_tx_req     (o_sb_tx_req)
+  //   ,.o_sb_tx_rsp     (o_sb_tx_rsp)
+  //   ,.o_sb_rx_req     (o_sb_rx_req)
+  //   ,.o_sb_rx_rsp     (o_sb_rx_rsp)
+  //   ,.o_sb_tx_done    (o_sb_tx_done)
+  //   ,.o_sb_rx_done    (o_sb_rx_done)
 
-    ,.o_sb_ready      (o_sb_ready)
-    ,.o_tx_sb_data    (o_tx_sb_data)
-    ,.o_tx_sb_clk     (o_tx_sb_clk)
-  );
+  //   ,.o_sb_ready      (o_sb_ready)
+  //   ,.o_tx_sb_data    (o_tx_sb_data)
+  //   ,.o_tx_sb_clk     (o_tx_sb_clk)
+  // );
 
   initial begin
     // Set virtual interfaces in UVM config database

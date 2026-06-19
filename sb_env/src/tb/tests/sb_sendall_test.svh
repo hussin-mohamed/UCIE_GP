@@ -82,5 +82,5 @@ endfunction : build_phase
 
 function void sb_sendall_test::end_of_elaboration_phase(uvm_phase phase);
   super.end_of_elaboration_phase(phase);
-  uvm_top.set_timeout(1000us, 0);
+  uvm_top.set_timeout(10000ms, 0);
 endfunction

@@ -36,8 +36,9 @@ module ucie_sb_traffic
   localparam tx_n_empty_rx_n_empty = 2'd3;
 
   
-  reg [1:0] flag_rd_on; // bit 0: read from tx_traffic_fifo, bit 1: read from rx_traffic_fifo
+  // reg [1:0] flag_rd_on; // bit 0: read from tx_traffic_fifo, bit 1: read from rx_traffic_fifo
   reg  tx_rd_first;
+
   wire [7:0] msg_code;
   wire [7:0] msg_subcode;
   wire  [2:0] srcid;

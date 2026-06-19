@@ -62,7 +62,7 @@ interface sb_phylink_bfm(
     out_pat_detected = 1;
   end
 
-  always @(negedge o_sb_ready) begin
+  always @(negedge o_sb_ready or posedge reset) begin
     out_pat_detected = 0;
   end
 
@@ -71,7 +71,7 @@ interface sb_phylink_bfm(
     in_pat_detected = 1;
   end
 
-  always @(negedge o_sb_ready) begin
+  always @(negedge o_sb_ready or posedge reset) begin
     in_pat_detected = 0;
   end
 
@@ -89,6 +89,8 @@ interface sb_phylink_bfm(
     i_rx_sb_data <= 0;
     i_rx_sb_clk  <= 0;
     is_first_iteration = 1;
+    in_pat_detected = 0;
+    out_pat_detected = 0;
   endtask : clear
 
   task serialize_pattern(

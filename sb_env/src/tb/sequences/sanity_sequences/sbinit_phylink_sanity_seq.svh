@@ -26,6 +26,8 @@
 class sbinit_phylink_sanity_seq extends sb_sequence_base #(phylink_seq_item);
   `uvm_object_utils(sbinit_phylink_sanity_seq)
 
+  bit timeout_detected = 0;
+
 
   // Function: new
   //
@@ -70,38 +72,60 @@ endfunction : new
 // SBINIT patterns until pattern detection or timeout is reported.
 
 task sbinit_phylink_sanity_seq::body();
+  timeout_detected = 0;
   start_item(req);
   req.op_mode           = SBINIT;
   req.pattern           = `SBINIT_PATTERN;
   req.idle_ui_cnt       = 32;
   req.out_of_rst_ui_cnt = 1000;
   finish_item(req);
-  forever begin
-    start_item(req);
-    req.op_mode           = SBINIT;
-    req.pattern           = `SBINIT_PATTERN;
-    req.idle_ui_cnt       = 32;
-    req.out_of_rst_ui_cnt = 0;
-    finish_item(req);
+  get_response(rsp);
 
-    // Get the driver response that reports pattern detection or timeout.
-    get_response(rsp);
+  if (rsp.out_pat_detected) begin
+    `uvm_info(get_type_name(), "Pattern is DETECTED, Sending 4 more pattern iterations...", UVM_DEBUG)
+    for (int i = 0; i < 1; i++) begin
+      start_item(req);
+      `uvm_info(get_type_name(), $sformatf("ITERATION%0d...", i), UVM_DEBUG)
+      req.op_mode           = SBINIT;
+      req.pattern           = `SBINIT_PATTERN;
+      req.idle_ui_cnt       = 32;
+      req.out_of_rst_ui_cnt = 0;
+      finish_item(req);
+    end
+    timeout_detected = 0;
+  end else if (rsp.timeout_detected) begin
+    `uvm_info(get_type_name(), "Timeout is DETECTED", UVM_DEBUG)
+    timeout_detected = 1;
+  end else begin
+    forever begin
+      start_item(req);
+      req.op_mode           = SBINIT;
+      req.pattern           = `SBINIT_PATTERN;
+      req.idle_ui_cnt       = 32;
+      req.out_of_rst_ui_cnt = 0;
+      finish_item(req);
 
-    if (rsp.out_pat_detected) begin
-      `uvm_info(get_type_name(), "Pattern is DETECTED, Sending 4 more pattern iterations...", UVM_DEBUG)
-      for (int i = 0; i < 1; i++) begin
-        start_item(req);
-        `uvm_info(get_type_name(), $sformatf("ITERATION%0d...", i), UVM_DEBUG)
-        req.op_mode           = SBINIT;
-        req.pattern           = `SBINIT_PATTERN;
-        req.idle_ui_cnt       = 32;
-        req.out_of_rst_ui_cnt = 0;
-        finish_item(req);
+      // Get the driver response that reports pattern detection or timeout.
+      get_response(rsp);
+
+      if (rsp.out_pat_detected) begin
+        `uvm_info(get_type_name(), "Pattern is DETECTED, Sending 4 more pattern iterations...", UVM_DEBUG)
+        for (int i = 0; i < 1; i++) begin
+          start_item(req);
+          `uvm_info(get_type_name(), $sformatf("ITERATION%0d...", i), UVM_DEBUG)
+          req.op_mode           = SBINIT;
+          req.pattern           = `SBINIT_PATTERN;
+          req.idle_ui_cnt       = 32;
+          req.out_of_rst_ui_cnt = 0;
+          finish_item(req);
+        end
+        timeout_detected = 0;
+        break;
+      end else if (rsp.timeout_detected) begin
+        `uvm_info(get_type_name(), "Timeout is DETECTED", UVM_DEBUG)
+        timeout_detected = 1;
+        break;
       end
-      break;
-    end else if (rsp.timeout_detected) begin
-      `uvm_info(get_type_name(), "Timeout is DETECTED", UVM_DEBUG)
-      break;
     end
   end
 

@@ -27,6 +27,7 @@
 class sb_conc_vseq extends sb_sanity_vseq;
   `uvm_object_utils(sb_conc_vseq)
 
+  sbinit_phylink_rand_seq sbinit_rand_seq;
   active_tx_conc_seq      tx_conc_seq;
   active_rx_conc_seq      rx_conc_seq;
   active_phylink_conc_seq phylink_conc_seq;
@@ -78,6 +79,7 @@ endfunction : new
 
 task sb_conc_vseq::pre_body();
   super.pre_body();
+  sbinit_rand_seq  = sbinit_phylink_rand_seq::type_id::create("sbinit_rand_seq");
   tx_conc_seq      = active_tx_conc_seq::type_id::create("tx_conc_seq");
   rx_conc_seq      = active_rx_conc_seq::type_id::create("rx_conc_seq");
   phylink_conc_seq = active_phylink_conc_seq::type_id::create("phylink_conc_seq");
@@ -93,7 +95,8 @@ task sb_conc_vseq::body();
     end
 
     begin
-      sbinit_phylink_seq.start(phylink_seqr);
+      sbinit_rand_seq.configure(._sbinit_seq_mode(RAND_TILL_DETECTION));
+      sbinit_rand_seq.start(phylink_seqr);
     end
   join
   #100;

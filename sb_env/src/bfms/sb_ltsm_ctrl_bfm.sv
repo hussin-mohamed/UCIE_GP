@@ -38,33 +38,41 @@ interface sb_ltsm_ctrl_bfm(
   `endif
   endtask : clear
 
-  // Millisecond Counter ranging from 0ms to 7ms
+  // Millisecond Counter ranging from 0ms to 7ms and Timeout logic
   bit [2:0] tms;
+  bit       timeout;
+  reg       sb_init_start_d;
+  reg       timer_1ms_d;
+  reg [2:0] delay_line;
+
   always @(posedge clk) begin
     if (reset) begin
-      tms <= 0;
-    end
-  end
+      sb_init_start_d <= 0;
+      timer_1ms_d     <= 0;
+      delay_line      <= 0;
+      tms             <= 0;
+      timeout         <= 0;
+    end else begin
+      sb_init_start_d <= i_sb_init_start;
+      timer_1ms_d     <= i_timer_1ms;
 
-  initial begin
-    forever begin
-      @(posedge i_timer_1ms);
-      repeat(3) @(posedge clk);
-      if (i_sb_init_start) begin
-        tms <= tms + 1;
+      if (i_sb_init_start && !sb_init_start_d) begin
+        // Reset counter and timeout flag on the rising edge of start initialization
+        tms        <= 0;
+        timeout    <= 0;
+        delay_line <= 0;
+      end else begin
+        delay_line <= {delay_line[1:0], (i_timer_1ms && !timer_1ms_d)};
+        if (delay_line[1]) begin
+          if (i_sb_init_start) begin
+            tms <= tms + 1;
+          end
+        end
+        if (tms == 7 && i_timer_1ms) begin
+          timeout <= 1;
+        end
       end
     end
-  end
-
-  // Timout flag generator
-  bit timeout;
-  always @(posedge clk) begin
-    if (tms == 7 && i_timer_1ms) begin
-      timeout = 1;
-    end
-  end
-  always @(posedge i_sb_init_start) begin
-    timeout = 0;
   end
 
   // Latch the start pulse and clear it on reset or timeout
@@ -87,11 +95,15 @@ interface sb_ltsm_ctrl_bfm(
       i_timer_1ms <= 1'b0;
     end else begin
       // Count 0 to 83 to create an exact 84-cycle interval
-      if (ms_counter == 83) begin
-        i_timer_1ms <= 1'b1;  // Pulse high for 1 logic cycle
-        ms_counter  <= 0;
+      if (ms_counter == 82 || ms_counter == 83) begin
+        i_timer_1ms <= 1'b1;
       end else begin
         i_timer_1ms <= 1'b0;
+      end
+
+      if (ms_counter == 83) begin
+        ms_counter  <= 0;
+      end else begin
         ms_counter  <= ms_counter + 1;
       end
     end
