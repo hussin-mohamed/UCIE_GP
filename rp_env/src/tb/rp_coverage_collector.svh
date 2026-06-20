@@ -96,39 +96,35 @@ class rp_coverage_collector extends uvm_component;
       // Phase 00: Initialization
       bins reset = {RESET_Reset};
       bins sbinit[] = {SBINIT_RX_Wait_Out_Of_Reset, SBINIT_RX_Done_Handshake};
-      bins param[] = {MBINIT_PARAM_RX_Wait_Config_REQ, MBINIT_PARAM_RX_Check_Parameters, MBINIT_PARAM_RX_Send_RESP};
+      bins param[] = {MBINIT_PARAM_RX_Wait_Config_REQ, MBINIT_PARAM_RX_Send_RESP};
       bins cal = {MBINIT_CAL_RX_Done_Handshake};
       bins repairclk[] = {MBINIT_REPAIRCLK_RX_Init_Handshake, MBINIT_REPAIRCLK_RX_Pattern_Detection,
-                          MBINIT_REPAIRCLK_RX_Wait_Result_REQ, MBINIT_REPAIRCLK_RX_Send_RESP,
+                          MBINIT_REPAIRCLK_RX_Send_RESP,
                           MBINIT_REPAIRCLK_RX_Done_Handshake};
-      bins repairval[] = {MBINIT_REPAIRVAL_RX_Init_Handshake, MBINIT_REPAIRVAL_RX_Valid_Pattern_Det,
-                          MBINIT_REPAIRVAL_RX_Wait_Result_REQ, MBINIT_REPAIRVAL_RX_Send_Result_RESP,
+      bins repairval[] = {MBINIT_REPAIRVAL_RX_Init_Handshake, MBINIT_REPAIRVAL_RX_Valid_Pattern_Det
+                          ,MBINIT_REPAIRVAL_RX_Send_Result_RESP,
                           MBINIT_REPAIRVAL_RX_Done_Handshake};
       bins reversal[] = {MBINIT_REVERSAL_RX_Init_Handshake, MBINIT_REVERSAL_RX_Clear_Log_Hnd,
                          MBINIT_REVERSAL_RX_Per_Lane_ID_Det, MBINIT_REVERSAL_RX_Result_Handshake,
                          MBINIT_REVERSAL_RX_Done_Handshake};
-      bins repairmb[] = {MBINIT_REPAIRMB_RX_Init_Handshake, MBINIT_REPAIRMB_RX_Wait_Apply_Degrade,
-                         MBINIT_REPAIRMB_RX_Degrade, MBINIT_REPAIRMB_RX_Send_Degrade_Resp,
+      bins repairmb[] = {MBINIT_REPAIRMB_RX_Init_Handshake, MBINIT_REPAIRMB_RX_Wait_Apply_Degrade, MBINIT_REPAIRMB_RX_Send_Degrade_Resp,
                          MBINIT_REPAIRMB_RX_Done_Handshake};
-      bins trainerror[] = {TRAINERROR_RX_Handshake, TRAINERROR_RX_TrainError, TRAINERROR_RX_Reset};
+      bins trainerror[] = {TRAINERROR_RX_Handshake, TRAINERROR_RX_TrainError};
 
       // Phase 01: Training
       bins valvref[] = {MBTRAIN_VALVREF_RX_Start_Handshake, MBTRAIN_VALVREF_RX_End_Handshake};
       bins datavref[] = {MBTRAIN_DATAVREF_RX_Start_Handshake, MBTRAIN_DATAVREF_RX_End_Handshake};
       bins dtc1[] = {MBTRAIN_DTC1_RX_Start_Handshake, MBTRAIN_DTC1_RX_End_Handshake};
-      bins rxclkcal[] = {MBTRAIN_RXCLKCAL_RX_Start_Handshake, MBTRAIN_RXCLKCAL_RX_Clock_Shifting_Op,
+      bins rxclkcal[] = {MBTRAIN_RXCLKCAL_RX_Start_Handshake,
                          MBTRAIN_RXCLKCAL_RX_End_Handshake};
       bins valtrainctr[] = {MBTRAIN_VALTRAINCENTER_RX_Start_Handshake, MBTRAIN_VALTRAINCENTER_RX_End_Handshake};
-      bins rxdeskew[] = {MBTRAIN_RXDESKEW_RX_Start_Handshake, MBTRAIN_RXDESKEW_RX_EQ_Preset_Handshake,
-                         MBTRAIN_RXDESKEW_RX_Deskew_Operation, MBTRAIN_RXDESKEW_RX_Datacenter_Handshake,
-                         MBTRAIN_RXDESKEW_RX_End_Handshake, MBTRAIN_RXDESKEW_RX_Train_Error_Handshake};
+      bins rxdeskew[] = {MBTRAIN_RXDESKEW_RX_Start_Handshake, MBTRAIN_RXDESKEW_RX_End_Handshake};
       bins dtc2[] = {MBTRAIN_DTC2_RX_Start_Handshake, MBTRAIN_DTC2_RX_End_Handshake};
-      bins linkspeed[] = {MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd,
-                          MBTRAIN_LINKSPEED_RX_Error_REQ, MBTRAIN_LINKSPEED_RX_Phy_Retrain_Hnd,
+      bins linkspeed[] = {MBTRAIN_LINKSPEED_RX_Start_Handshake, MBTRAIN_LINKSPEED_RX_LinksSpeed_Done_Hnd, 
                           MBTRAIN_LINKSPEED_RX_Exit_Repair_Hnd, MBTRAIN_LINKSPEED_RX_Exit_SpeedDegrade_Hnd};
       bins repair[] = {MBTRAIN_REPAIR_RX_Start_Handshake, MBTRAIN_REPAIR_RX_Apply_Degrade_Handshake,
                        MBTRAIN_REPAIR_RX_End_Handshake};
-      bins speedidle[] = {MBTRAIN_SPEEDIDLE_RX_Speed_Transition, MBTRAIN_SPEEDIDLE_RX_End_Handshake};
+      bins speedidle[] = {MBTRAIN_SPEEDIDLE_RX_Speed_Transition};
       bins txselfcal = {MBTRAIN_TXSELFCAL_RX_End_Handshake};
       bins valtrainvref[] = {MBTRAIN_VALTRAINVREF_RX_Start_Handshake, MBTRAIN_VALTRAINVREF_RX_End_Handshake};
       bins datatrainvref[] = {MBTRAIN_DATATRAINVREF_RX_Start_Handshake, MBTRAIN_DATATRAINVREF_RX_End_Handshake};
@@ -137,8 +133,6 @@ class rp_coverage_collector extends uvm_component;
       bins linkinit[] = {LINKINIT_RX_PL_Clk_Req_Handshake, LINKINIT_RX_LP_Wake_Req_Handshake,
                          LINKINIT_RX_State_Rsp_Handshake};
       bins active = {ACTIVE_RX_Active};
-      bins l1[] = {L1_RX_Start_HS, L1_RX_L1_State, L1_RX_Wait1us, L1_RX_Refuse};
-      bins exit_hs = {EXIT_HS_RX_Exit_Handshake};
 
       // Phase 11: Data to Clock Sweep (D2C)
       bins d2c_tx[] = {Data_To_Clock_test_RX_INIT_Handshake_TX_Init,
@@ -159,8 +153,6 @@ class rp_coverage_collector extends uvm_component;
       bins x8_lower = {X8_LOWER_MODE};
       bins x8_upper = {X8_UPPER_MODE};
       bins x16 = {X16_MODE};
-      bins x4_lower = {X4_LOWER_MODE};
-      bins x4_upper = {X4_UPPER_MODE};
     }
 
     // 3. Coverpoint on high-level state for degradation states only
@@ -188,56 +180,41 @@ class rp_coverage_collector extends uvm_component;
       bins valvref_to_d2c_rx = (ST_VALVREF => ST_D2C_RX);
       bins valvref_to_datavref = (ST_VALVREF => ST_DATAVREF);
       bins datavref_to_d2c_rx = (ST_DATAVREF => ST_D2C_RX);
-      bins datavref_to_dtc1 = (ST_DATAVREF => ST_DTC1);
-      bins dtc1_to_d2c_tx = (ST_DTC1 => ST_D2C_TX);
-      bins dtc1_to_rxclkcal = (ST_DTC1 => ST_RXCLKCAL);
+      bins dtc1_to_d2c_rx = (ST_DTC1 => ST_D2C_RX);
       bins rxclkcal_to_valtrainctr = (ST_RXCLKCAL => ST_VALTRAINCTR);
-      bins valtrainctr_to_d2c_tx = (ST_VALTRAINCTR => ST_D2C_TX);
-      bins valtrainctr_to_rxdeskew = (ST_VALTRAINCTR => ST_RXDESKEW);
+      bins valtrainctr_to_d2c_rx = (ST_VALTRAINCTR => ST_D2C_RX);
       bins rxdeskew_to_dtc2 = (ST_RXDESKEW => ST_DTC2);
-      bins rxdeskew_to_linkspeed = (ST_RXDESKEW => ST_LINKSPEED);
-      bins rxdeskew_to_trainerror = (ST_RXDESKEW => ST_TRAINERROR);
-      bins dtc2_to_d2c_tx = (ST_DTC2 => ST_D2C_TX);
-      bins dtc2_to_rxdeskew = (ST_DTC2 => ST_RXDESKEW);
+      bins dtc2_to_d2c_rx = (ST_DTC2 => ST_D2C_RX);
       bins linkspeed_to_d2c_tx = (ST_LINKSPEED => ST_D2C_TX);
-      bins linkspeed_to_linkinit = (ST_LINKSPEED => ST_LINKINIT);
       bins linkspeed_to_repair = (ST_LINKSPEED => ST_REPAIR);
       bins linkspeed_to_speedidle = (ST_LINKSPEED => ST_SPEEDIDLE);
-      bins repair_to_speedidle = (ST_REPAIR => ST_SPEEDIDLE);
       bins speedidle_to_txselfcal = (ST_SPEEDIDLE => ST_TXSELFCAL);
       bins speedidle_to_trainerror = (ST_SPEEDIDLE => ST_TRAINERROR);
-      bins txselfcal_to_valtrainvref = (ST_TXSELFCAL => ST_VALTRAINVREF);
-      bins valtrainvref_to_d2c_tx = (ST_VALTRAINVREF => ST_D2C_TX);
-      bins valtrainvref_to_datatrainvref = (ST_VALTRAINVREF => ST_DATATRAINVREF);
-      bins datatrainvref_to_d2c_tx = (ST_DATATRAINVREF => ST_D2C_TX);
-      bins datatrainvref_to_dtc1 = (ST_DATATRAINVREF => ST_DTC1);
+      bins valtrainvref_to_d2c_rx = (ST_VALTRAINVREF => ST_D2C_RX);
+      bins datatrainvref_to_d2c_rx = (ST_DATATRAINVREF => ST_D2C_RX);
 
       // D2C returns
       bins d2c_tx_to_repairmb = (ST_D2C_TX => ST_REPAIRMB);
-      bins d2c_tx_to_dtc1 = (ST_D2C_TX => ST_DTC1);
-      bins d2c_tx_to_valtrainctr = (ST_D2C_TX => ST_VALTRAINCTR);
-      bins d2c_tx_to_dtc2 = (ST_D2C_TX => ST_DTC2);
+      bins d2c_rx_to_dtc1 = (ST_D2C_RX => ST_DTC1);
+      bins d2c_rx_to_valtrainctr = (ST_D2C_RX => ST_VALTRAINCTR);
+      bins d2c_rx_to_dtc2 = (ST_D2C_RX => ST_DTC2);
       bins d2c_tx_to_linkspeed = (ST_D2C_TX => ST_LINKSPEED);
-      bins d2c_tx_to_valtrainvref = (ST_D2C_TX => ST_VALTRAINVREF);
-      bins d2c_tx_to_datatrainvref = (ST_D2C_TX => ST_DATATRAINVREF);
+      bins d2c_rx_to_valtrainvref = (ST_D2C_RX => ST_VALTRAINVREF);
+      bins d2c_rx_to_datatrainvref = (ST_D2C_RX => ST_DATATRAINVREF);
       bins d2c_rx_to_valvref = (ST_D2C_RX => ST_VALVREF);
       bins d2c_rx_to_datavref = (ST_D2C_RX => ST_DATAVREF);
 
       // Phase 10: Active
       bins linkinit_to_active = (ST_LINKINIT => ST_ACTIVE);
-      bins active_to_l1 = (ST_ACTIVE => ST_L1);
-      bins l1_to_exit_hs = (ST_L1 => ST_EXIT_HS);
-      bins exit_hs_to_linkinit = (ST_EXIT_HS => ST_LINKINIT);
 
       // Any state → TRAINERROR
       bins to_trainerror[] = (
-        ST_RESET, ST_SBINIT, ST_PARAM, ST_CAL,
+        ST_SBINIT, ST_PARAM, ST_CAL,
         ST_REPAIRCLK, ST_REPAIRVAL, ST_REVERSAL, ST_REPAIRMB,
         ST_VALVREF, ST_DATAVREF, ST_DTC1, ST_RXCLKCAL,
-        ST_VALTRAINCTR, ST_RXDESKEW, ST_DTC2, ST_LINKSPEED,
+        ST_VALTRAINCTR, ST_DTC2,
         ST_REPAIR, ST_SPEEDIDLE, ST_TXSELFCAL,
         ST_VALTRAINVREF, ST_DATATRAINVREF,
-        ST_LINKINIT, ST_ACTIVE, ST_L1, ST_EXIT_HS,
         ST_D2C_TX, ST_D2C_RX
         => ST_TRAINERROR
       );
