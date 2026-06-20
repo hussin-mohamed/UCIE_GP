@@ -365,7 +365,7 @@ class ucie_mbtrain_till_datatrainvref_vseq extends ucie_vseq_base;
             );
             active_rx_seq.start(rp_rmblink_seqr);
         end     
-    join_any
+    join
 
     vseq_cfg.trainerror_cnt = 0;
   end
