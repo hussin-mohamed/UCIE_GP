@@ -126,12 +126,11 @@ class tx_coverage extends uvm_component;
       bins repair = {ST_REPAIR};
     }
 
-    // Cross: lane_map × high-level degradation states
     cx_state_x_lane_map: cross cp_state_degrade, cp_lane_map {
-      ignore_bins ignore_repair_x_allfunc   = binsof(cp_state_degrade.repair)   intersect binsof(cp_lane_map.all_func);
-      ignore_bins ignore_repairmb_x_nodeg   = binsof(cp_state_degrade.repairmb) intersect binsof(cp_lane_map.no_degrade);
+      ignore_bins ignore_repair_x_allfunc = binsof(cp_state_degrade.repair)   && binsof(cp_lane_map.all_func);
+      ignore_bins ignore_repairmb_x_nodeg = binsof(cp_state_degrade.repairmb) && binsof(cp_lane_map.no_degrade);
     }
-
+    
     // Key state-level transitions (one bin per state→state edge)
     cp_transitions: coverpoint curr_state {
       // Phase 00: Initialization happy path
