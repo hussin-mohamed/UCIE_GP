@@ -126,3 +126,5 @@ UCIE_top_env/sim/wlfttmw3ys
 
 # Ensure other simulation logs and coverage folders are ignored
 UCIE_top_env/sim/out/
+UCIE_top_env/sim/wlftch8hey
+UCIE_top_env/sim/wlftk9brqh
