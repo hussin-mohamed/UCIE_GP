@@ -149,6 +149,8 @@ The repository contains extensive markdown documentation generated during the de
 - [`UCIe_RX_Verification_Detailed_Notes.md`](UCIe_RX_Verification_Detailed_Notes.md)
 - [`UCIe_Sideband_Design_Detailed_Notes.md`](UCIe_Sideband_Design_Detailed_Notes.md)
 - [`UCIe_Future_Work_Specification.md`](UCIe_Future_Work_Specification.md)
+- [`UCIe_3_PHY_Design_and_Verification_GP_Presentation.pdf`](UCIe_3_PHY_Design_and_Verification_GP_Presentation.pdf)
+- [`UCIe_3_PHY_Design_and_Verification_GP_Thesis.pdf`](UCIe_3_PHY_Design_and_Verification_GP_Thesis.pdf)
 
 ---
 *Developed for the Graduation Project Final Discussion - June 2026*
