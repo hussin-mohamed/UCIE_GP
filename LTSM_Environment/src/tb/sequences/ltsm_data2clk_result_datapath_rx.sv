@@ -1,0 +1,41 @@
+// ****************************************************************************
+// *                                                                          *
+// * Copyright (c) 2014-2015 Synopsys Inc. All rights reserved.               *
+// *                                                                          *
+// * Synopsys Proprietary and Confidential. This file contains confidential   *
+// * information and the trade secrets of Synopsys Inc. Use, disclosure, or   *
+// * reproduction is prohibited without the prior express written permission  *
+// * of Synopsys, Inc.                                                        *
+// *                                                                          *
+// * Synopsys, Inc.                                                           *
+// * 700 East Middlefield Road                                                *
+// * Mountain View, California 94043                                          *
+// * (800) 541-7737                                                           *
+// *                                                                          *
+// ****************************************************************************
+
+// CLASS: ltsm_data2clk_result_datapath_rx
+//
+// This sequence is used to handle data-to-clock result datapath reception.
+//
+//------------------------------------------------------------------------------
+
+import ltsm_shared_pkg::*;
+
+class ltsm_data2clk_result_datapath_rx #(lane_result_t lane_result = 16'hFFFF) extends uvm_sequence #(LTSM_controllers_seq_item);
+
+  `uvm_object_param_utils(ltsm_data2clk_result_datapath_rx)
+
+  function new(string name = "ltsm_data2clk_result_datapath_rx");
+    super.new(name);
+  endfunction
+
+  virtual task body();
+    LTSM_controllers_seq_item tr;
+    tr = LTSM_controllers_seq_item::type_id::create("tr");
+    start_item(tr);
+        tr.i_rx_data_results[15:0] = lane_result;
+    finish_item(tr);
+  endtask
+
+endclass
