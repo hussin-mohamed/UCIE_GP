@@ -96,6 +96,7 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
 
     trainerror_rdi_exit_vseq.start(ltsm_rdi_seqr);
 
+    mbinit_vseq.start(p_sequencer);
     valverf_vseq.start(p_sequencer);
     dataverf_vseq.start(p_sequencer);
     speedidle_vseq.start(p_sequencer);
@@ -131,7 +132,7 @@ class ucie_mbtrain_vseq extends ucie_vseq_base;
         end
         begin
             active_rx_seq.configure(
-                ._num_256b_chunks(2),
+                ._num_256b_chunks(100),
                 ._lane_map_code(X16_MODE),
                 ._scenario(ACTIVE_SCENARIO_IDEAL)
             );

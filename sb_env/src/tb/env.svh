@@ -294,7 +294,7 @@ endfunction : configure_rx_agent
 
 function void sb_env::configure_phylink_agent();
   phylink_cfg.bfm         =   env_cfg.phylink_bfm;
-  phylink_cfg.bfm_drive         =   env_cfg.phylink_bfm_drive;
+  phylink_cfg.bfm_drive   =   env_cfg.phylink_bfm_drive;
   phylink_cfg.is_active   =   env_cfg.is_active_phylink;
   phylink_cfg.is_reactive =   env_cfg.is_reactive_phylink;
 endfunction : configure_phylink_agent

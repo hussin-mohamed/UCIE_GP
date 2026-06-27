@@ -156,6 +156,7 @@ interface sb_sva #(
     @(posedge clk_800MHz iff (tms%2 == 0))
     p_pat_gen()
   ) pat_detected = 0;
+  else `uvm_error("SVA_PAT_GEN", $sformatf("Pattern generation assertion failed at time %0t", $time))
   
   ap_pat_low : assert property(
     @(posedge clk_800MHz)
@@ -163,7 +164,7 @@ interface sb_sva #(
     ($changed(tms) && (tms%2 != 0))
     |->
     p_pat_low()
-  );
+  ) else `uvm_error("SVA_PAT_LOW", $sformatf("Pattern low assertion failed at time %0t", $time))
   
   ap_clk_gen : assert property (
     @(posedge i_clk)
@@ -172,7 +173,7 @@ interface sb_sva #(
     |=>
     @(posedge clk_2x iff (tms%2 == 0))
     p_clk_gen()
-  );
+  ) else `uvm_error("SVA_CLK_GEN", $sformatf("Clock generation assertion failed at time %0t", $time))
   
   ap_clk_low : assert property(
     @(posedge clk_2x)
@@ -180,7 +181,7 @@ interface sb_sva #(
     ($changed(tms) && (tms%2 != 0))
     |->
     p_clk_low()
-  );
+  ) else `uvm_error("SVA_CLK_LOW", $sformatf("Clock low assertion failed at time %0t", $time))
 
   always_comb
     if (i_reset) begin
@@ -204,7 +205,7 @@ interface sb_sva #(
             o_tx_sb_data, 
             o_tx_sb_clk
           } == '0
-        );
+        ) else `uvm_error("SVA_ASYNC_RESET", $sformatf("Async reset assertion failed: not all outputs are zero during reset at time %0t", $time))
     end
 
   // Track the exact simulation time of the last transition
