@@ -87,6 +87,10 @@ class rdi_driver extends uvm_driver #(rdi_seq_item);
         drive_flit(req);
       `endif
 
+      repeat (10) begin
+        @(posedge rdi_vif.clk);
+      end
+
       // Transaction complete
       seq_item_port.item_done();
     end

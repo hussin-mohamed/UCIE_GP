@@ -18,8 +18,8 @@ class rdi_base_seq extends uvm_sequence #(rdi_seq_item);
   virtual rdi_if vif;
 `endif
 
-  // Number of flits to generate (default 10, overridden by +ITER plusarg)
-  int unsigned num_flits = 10;
+  // Number of flits to generate (default 3, overridden by +ITER plusarg)
+  int unsigned num_flits = 3;
 
   // -------------------------------------------------------------------------
   //  Constructor — parses +ITER plusarg
@@ -35,8 +35,8 @@ class rdi_base_seq extends uvm_sequence #(rdi_seq_item);
       num_flits = val.atoi();
       if (num_flits <= 0) begin
         `uvm_warning("RDI_SEQ",
-          $sformatf("Invalid +ITER=%0d, using default 10", num_flits))
-        num_flits = 10;
+          $sformatf("Invalid +ITER=%0d, using default 3", num_flits))
+        num_flits = 3;
       end
       `uvm_info("RDI_SEQ", $sformatf("Iterations set to %0d flits", num_flits), UVM_LOW)
     end

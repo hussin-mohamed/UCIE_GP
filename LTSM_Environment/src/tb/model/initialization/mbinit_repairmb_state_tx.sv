@@ -139,7 +139,7 @@ class MbInitRepairMbState_tx extends State;
       // end handshake + // need to check the retry state
       else if(item_tx_fsm_sb_in.i_tx_decoding == 'h183 && item_tx_fsm_sb_in.i_sb_tx_rsp == 1'b1) begin
          lane_res = item_tx_fsm_sb_in.i_tx_data[15:0];
-         if(lane_res[7:0] == 8'b11111111 && lane_res[17:8] == 8'b00000000) begin
+         if(lane_res[7:0] == 8'b11111111 && lane_res[15:8] == 8'b00000000) begin
             lane_map_code_tx = 3'b001;
          end
          else if(lane_res[15:8] == 8'b11111111 && lane_res[7:0] == 8'b00000000)begin
@@ -161,7 +161,7 @@ class MbInitRepairMbState_tx extends State;
          o_tx_encoding_exp = 'h184;
          o_tx_sb_req_exp = 1;
          o_tx_info_exp = 15'h0;
-         //`uvm_info("183 state" , $sformatf("tx_lane_map = %b" , lane_map_code_tx) , UVM_LOW)
+         `uvm_info("183 state" , $sformatf("tx_lane_map = %b" , lane_map_code_tx) , UVM_LOW)
          
          if(item_controllers_out.o_tx_encoding == o_tx_encoding_exp && item_tx_fsm_sb_out.o_tx_sb_req == o_tx_sb_req_exp && item_tx_fsm_sb_out.o_tx_info == o_tx_info_exp)
             begin
