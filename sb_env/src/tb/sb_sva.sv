@@ -155,8 +155,7 @@ interface sb_sva #(
     |=>
     @(posedge clk_800MHz iff (tms%2 == 0))
     p_pat_gen()
-  ) pat_detected = 0;
-  else `uvm_error("SVA_PAT_GEN", $sformatf("Pattern generation assertion failed at time %0t", $time))
+  ) else `uvm_error("SVA_PAT_GEN", $sformatf("Pattern generation assertion failed at time %0t", $time))
   
   ap_pat_low : assert property(
     @(posedge clk_800MHz)
